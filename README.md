@@ -1,4 +1,3 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/master)
 
 # xSQLServer
 
@@ -235,6 +234,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **AvailabilityGroupPort** Port availability group should listen on
 * **ReadableSecondary** Mode secondaries should operate under (None, ReadOnly, ReadIntent)
 * **AutoBackupPreference** Where backups should be backed up from (Primary,Secondary)
+* **BackupPriority** The percentage weight for backup prority (default 50)
 * **EndPointPort** The TCP port for the SQL AG Endpoint (default 5022)
 * **SQLServer**: The SQL Server for the database
 * **SQLInstance**: The SQL instance for the database
@@ -285,6 +285,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Added Support for SQL Server 2016
 * Pester Tests for xSQLAOGroupEnsure and xSQLAlias
 * Correction on xSQLAOGroupEnsure to pass Setup Credential Correctly
+* xSQLAOGroupEnsure
+   - Fixed spelling mistake in AutoBackupPreference property
+   - Added BackupPriority property
 
 * Resources Added
 	* xSQLAlias	

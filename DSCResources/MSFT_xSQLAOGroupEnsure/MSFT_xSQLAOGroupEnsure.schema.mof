@@ -9,7 +9,8 @@ class MSFT_xSQLAOGroupEnsure : OMI_BaseResource
     [Write] String AvailabilityGroupSubMask[];
     [Write] Uint32 AvailabilityGroupPort;
     [Write, ValueMap{"None","ReadOnly","ReadIntent"}, Values{"None","ReadOnly","ReadIntent"}] String ReadableSecondary;
-    [Write, ValueMap{"Primary","Secondary"}, Values{"Primary","Secondary"}] String AutoBackupPrefernce;
+    [Write, ValueMap{"Primary","Secondary"}, Values{"Primary","Secondary"}] String AutoBackupPreference;
+    [Write] Uint32 BackupPriority;
     [Write] Uint32 EndPointPort;
     [Write] String SQLServer;
     [Write] String SQLInstanceName;
