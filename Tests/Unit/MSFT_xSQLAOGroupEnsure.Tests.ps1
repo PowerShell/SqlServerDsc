@@ -1,3 +1,7 @@
+# Suppressing this rule because PlainText is required for one of the functions used in this test
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
+param ()
+
 Import-Module "$PSScriptRoot\..\DSCResources\MSFT_xSQLAOGroupEnsure\MSFT_xSQLAOGroupEnsure.psm1" -Prefix Pester -Force
 
 Describe 'Get-TargetResource'{
