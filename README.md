@@ -34,6 +34,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **xSQLServerEndpoint** resource to ensure database endpoint is present or absent
 * **xWaitForAvailabilityGroup** resource to wait till availability group is created on primary server
 * **xSQLServerConfiguration** resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
+* **xSQLAlias** resource to manage SQL Server client Aliases
 
 ### xSQLServerSetup
 
@@ -270,12 +271,24 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **OptionValue**: (Required) SQL Server option value to be set.
 * **RestartService**: Default false. If true will restart SQL Service instance service after update.
 
+### xSqlAlias
+ 
+ * **Name**: The name of Alias (e.g. svr01\inst01).
+ * **ServerName**: The name of real SQL server.
+ * **Protocol**: The protocol of either tcp or np (named pipes).
+ * **RetryCount**: Maximum number of retries to check HA group existency.
+ * **TCPPort**: The tcp port of the instance.
 ## Versions
 
 ### Unreleased
 * Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
 * Added Support for SQL Server 2016
+* Pester Tests for xSQLAOGroupEnsure and xSQLAlias
+* Correction on xSQLAOGroupEnsure to pass Setup Credential Correctly
 
+* Resources Added
+	* xSQLAlias	
+	
 ### 1.7.0.0
 * Resources Added
   - xSQLServerConfiguration
