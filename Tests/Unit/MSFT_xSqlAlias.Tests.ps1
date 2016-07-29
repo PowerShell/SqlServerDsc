@@ -1,3 +1,7 @@
+# Suppressing this rule because PlainText is required for one of the functions used in this test
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
+param ()
+
 Import-Module "$PSScriptRoot\..\DSCResources\MSFT_xSqlAlias\MSFT_xSqlAlias.psm1" -Prefix 'xSqlAlias' -Force
 
 Describe 'Get-TargetResource'{
