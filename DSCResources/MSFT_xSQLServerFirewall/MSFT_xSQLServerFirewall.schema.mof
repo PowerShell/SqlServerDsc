@@ -12,4 +12,3 @@ class MSFT_xSQLServerFirewall : OMI_BaseResource
     [Read, Description("Is the firewall rule for Analysis Services enabled?")] boolean AnalysisServicesFirewall;
     [Read, Description("Is the firewall rule for the Integration Services enabled?")] boolean IntegrationServicesFirewall;
  };
- 
