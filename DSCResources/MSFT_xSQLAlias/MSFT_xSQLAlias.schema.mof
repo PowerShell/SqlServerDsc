@@ -1,0 +1,10 @@
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLAlias")]
+class MSFT_xSQLAlias : OMI_BaseResource
+{
+    [Key] String Name;
+    [Write, ValueMap{"TCP","NP"}, Values{"TCP","NP"}] String Protocol;
+    [Write] String ServerName;
+    [Write] Sint32 TCPPort;
+    [Read] String PipeName;
+    [Write, ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+};

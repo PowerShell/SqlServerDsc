@@ -38,6 +38,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **xSQLServerEndpointState** Change state of the endpoint.
 * **xSQLServerEndpointPermission** Grant or revoke permission on the endpoint.
 * **xSQLServerAvailabilityGroupListener** Create or remove an availability group listener.
+* **xSQLAlias** resource to manage SQL Server client Aliases
+
 
 ### xSQLServerSetup
 
@@ -275,6 +277,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **OptionValue**: (Required) SQL Server option value to be set.
 * **RestartService**: Default false. If true will restart SQL Service instance service after update.
 
+<<<<<<< 2e75c332031e78c7121bc2ca6013703c55b5f060
 ### xSQLServerPermission
 * **InstanceName** The SQL Server instance name.
 * **NodeName** The host name or FQDN.
@@ -307,6 +310,14 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **Port** The port used for the availability group listener.
 * **DHCP** If DHCP should be used for the availability group listener instead of static IP address.
 
+### xSqlAlias
+ 
+ * **Name**: The name of Alias (e.g. svr01\inst01).
+ * **ServerName**: The name of real SQL server.
+ * **Protocol**: The protocol of either tcp or np (named pipes).
+ * **RetryCount**: Maximum number of retries to check HA group existency.
+ * **TCPPort**: The tcp port of the instance.
+
 ## Versions
 
 ### Unreleased
@@ -328,7 +339,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 		- Get-SQLAlwaysOnEndpoint
 	- modified functions
 		- New-TerminatingError - *added optional parameter `InnerException` to be able to give the user more information in the returned message*
+* Pester Tests for xSQLAOGroupEnsure and xSQLAlias
+* Correction on xSQLAOGroupEnsure to pass Setup Credential Correctly
 
+* Resources Added
+	* xSQLAlias	
+	
 ### 1.7.0.0
 * Resources Added
   - xSQLServerConfiguration
