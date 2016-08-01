@@ -1,120 +1,182 @@
 # Suppressing this rule because PlainText is required for one of the functions used in this test
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
+<#
+.Synopsis
+   Template for creating DSC Resource Unit Tests
+.DESCRIPTION
+   To Use:
+     1. Copy to \Tests\Unit\ folder and rename <ResourceName>.tests.ps1 (e.g. MSFT_xFirewall.tests.ps1)
+     2. Customize TODO sections.
 
-Import-Module "$PSScriptRoot\..\DSCResources\MSFT_xSQLAOGroupEnsure\MSFT_xSQLAOGroupEnsure.psm1" -Prefix Pester -Force
+.NOTES
+   Code in HEADER and FOOTER regions are standard and may be moved into DSCResource.Tools in
+   Future and therefore should not be altered if possible.
+#>
 
-Describe 'Get-TargetResource'{
-    Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
-                # build a custom object to return which is close to the real SMO object
-                $smoObj = [PSCustomObject]@{
-                            SQLServer = 'Node01';
-                            SQLInstanceName = 'Prd01';
-                            ClusterName = 'Clust01';
-                        }
-                # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
-                $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
-                                    'AG01' = @{
-                                        AvailabilityGroupListeners = @{ 
-                                            name = 'AgList01';
-                                            availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
-                                            portnumber = 5022;};
-                                        AvailabilityDatabases = @(@{name='AdventureWorks'});
-                                        };
-                                    };
-                # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
-                #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
-                $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
-            return $smoObj
-        }
 
-    Context "When the configuration is already set" {
-        
-        $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
-        $username = "dba" 
-        $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+# TODO: Customize these parameters...
+$script:DSCModuleName      = 'MSFT_xSQLAOGroupEnsure' # Example xNetworking
+$script:DSCResourceName    = 'xSQLServer' # Example MSFT_xFirewall
+# /TODO
 
-        $SqlAOGroup = Get-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+#region HEADER
 
-        It 'Should return hashtable with Ensure = $true'{
-            $SqlAOGroup.Ensure | Should Be $true
-        }
-     }
-
-     Context "When the configuration is not yet set or has drift" {
-        
-        $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
-        $username = "dba" 
-        $credential = New-Object System.Management.Automation.PSCredential($username,$password)
-
-        $SqlAOGroup = Get-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
-
-        It 'Should return hashtable with Ensure = $false'{
-            $SqlAOGroup.Ensure | Should Be $false
-        }
-     }
+# Unit Test Template Version: 1.1.0
+[String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
+     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+{
+    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
+Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+$TestEnvironment = Initialize-TestEnvironment `
+    -DSCModuleName $script:DSCModuleName `
+    -DSCResourceName $script:DSCResourceName `
+    -TestType Unit 
 
+#endregion HEADER
 
-Describe 'Test-TargetResource'{
-    Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
-                # build a custom object to return which is close to the real SMO object
-                $smoObj = [PSCustomObject]@{
-                            SQLServer = 'Node01';
-                            SQLInstanceName = 'Prd01';
-                            ClusterName = 'Clust01';
-                        }
-                # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
-                $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
-                                    'AG01' = @{
-                                        AvailabilityGroupListeners = @{ 
-                                            name = 'AgList01';
-                                            availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
-                                            portnumber = 5022;};
-                                        AvailabilityDatabases = @(@{name='AdventureWorks'});
+# TODO: Other Optional Init Code Goes Here...
+
+# Begin Testing
+try
+{
+    #region Pester Test Initialization
+
+    # TODO: Optionally create any variables here for use by your tests
+    # See https://github.com/PowerShell/xNetworking/blob/dev/Tests/Unit/MSFT_xDhcpClient.Tests.ps1
+    # Mocks that should be applied to all cmdlets being tested may
+    # also be created here if required.
+
+    #endregion Pester Test Initialization
+
+    # TODO: Common DSC Resource describe block structure
+    # The following three Describe blocks are included as a common test pattern.
+    # If a different test pattern would be more suitable, then test describe blocks
+    # may be completely replaced. The goal of this pattern should be to describe 
+    # the potential states a system could be in so that the get/test/set cmdlets
+    # can be tested in those states. Any mocks that relate to that specific state
+    # can be included in the relevant describe block. For a more detailed description
+    # of this approach please review https://github.com/PowerShell/DscResources/issues/143 
+
+    # Add as many of these example 'states' as required to simulate the scenarions that
+    # the DSC resource is designed to work with, below a simple "is in desired state" and
+    # "is not in desired state" are used, but there may be more complex combinations of 
+    # factors, depending on how complex your resource is.
+
+    #region Get-TargetResource
+    Describe 'Get-TargetResource'{
+        Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
+                    # build a custom object to return which is close to the real SMO object
+                    $smoObj = [PSCustomObject]@{
+                                SQLServer = 'Node01';
+                                SQLInstanceName = 'Prd01';
+                                ClusterName = 'Clust01';
+                            }
+                    # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
+                    $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
+                                        'AG01' = @{
+                                            AvailabilityGroupListeners = @{ 
+                                                name = 'AgList01';
+                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
+                                                portnumber = 5022;};
+                                            AvailabilityDatabases = @(@{name='AdventureWorks'});
+                                            };
                                         };
-                                    };
-                # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
-                #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
-                $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
-            return $smoObj
-        }
+                    # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
+                    #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
+                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
+                return $smoObj
+            }
+    
+        Context "When the configuration is already set" {
+            
+            $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
+            $username = "dba" 
+            $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+    
+            $SqlAOGroup = Get-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+    
+            It 'Should return hashtable with Ensure = $true'{
+                $SqlAOGroup.Ensure | Should Be $true
+            }
+         }
+    
+         Context "When the configuration is not yet set or has drift" {
+            
+            $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
+            $username = "dba" 
+            $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+    
+            $SqlAOGroup = Get-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+    
+            It 'Should return hashtable with Ensure = $false'{
+                $SqlAOGroup.Ensure | Should Be $false
+            }
+         }
+    }
+    #endregion Get-TargetResource
 
-    Context "When the configuration is valid" {
-        
-        $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
-        $username = "dba" 
-        $credential = New-Object System.Management.Automation.PSCredential($username,$password)
-
-        $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
-
-        It 'Should return $true'{
-            $SqlAOGroupTest | Should Be $true
-        }
-     }
-
-     Context "When the configuration has drifted" {
-        
-        $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
-        $username = "dba" 
-        $credential = New-Object System.Management.Automation.PSCredential($username,$password)
-
-        $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
-
-        It 'Should return $false'{
-            $SqlAOGroupTest | Should Be $false
-        }
-     }
-}
-
-
+    #region Test-TargetResource
+    Describe 'Test-TargetResource'{
+        Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
+                    # build a custom object to return which is close to the real SMO object
+                    $smoObj = [PSCustomObject]@{
+                                SQLServer = 'Node01';
+                                SQLInstanceName = 'Prd01';
+                                ClusterName = 'Clust01';
+                            }
+                    # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
+                    $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
+                                        'AG01' = @{
+                                            AvailabilityGroupListeners = @{ 
+                                                name = 'AgList01';
+                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
+                                                portnumber = 5022;};
+                                            AvailabilityDatabases = @(@{name='AdventureWorks'});
+                                            };
+                                        };
+                    # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
+                    #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
+                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
+                return $smoObj
+            }
+    
+        Context "When the configuration is valid" {
+            
+            $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
+            $username = "dba" 
+            $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+    
+            $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+    
+            It 'Should return $true'{
+                $SqlAOGroupTest | Should Be $true
+            }
+         }
+    
+         Context "When the configuration has drifted" {
+            
+            $password = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
+            $username = "dba" 
+            $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+    
+            $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+    
+            It 'Should return $false'{
+                $SqlAOGroupTest | Should Be $false
+            }
+         }
+    }
+    #endregion Test-TargetResource
 
 Describe 'Set-TargetResource'{
     
@@ -286,4 +348,15 @@ namespace Microsoft.SqlServer.Management.Smo
         #this shouldn't have generated any errors which they are caught by pester without further checks
      }
     
+}
+}
+finally
+{
+    #region FOOTER
+
+    Restore-TestEnvironment -TestEnvironment $TestEnvironment
+
+    #endregion
+
+    # TODO: Other Optional Cleanup Code Goes Here...
 }
