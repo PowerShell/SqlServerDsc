@@ -337,7 +337,7 @@ namespace Microsoft.SqlServer.Management.Smo
                     AvailabilityGroupSubMask = '255.255.255.0';
                     AvailabilityGroupPort = 1433;
                     ReadableSecondary = 'ReadOnly';
-                    AutoBackupPrefernce = 'Primary';
+                    AutoBackupPreference = 'Primary';
                     SQLServer = 'localhost';
                     SQLInstanceName = 'MSSQLSERVER';
                     SetupCredential = $credential;
