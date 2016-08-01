@@ -17,8 +17,8 @@ param ()
 
 
 # TODO: Customize these parameters...
-$script:DSCModuleName      = 'MSFT_xSqlAlias' # Example xNetworking
-$script:DSCResourceName    = 'xSQLServer' # Example MSFT_xFirewall
+$script:DSCModuleName      = 'xSQLServer' # Example xNetworking
+$script:DSCResourceName    = 'MSFT_xSqlAlias' # Example MSFT_xFirewall
 # /TODO
 
 #region HEADER
