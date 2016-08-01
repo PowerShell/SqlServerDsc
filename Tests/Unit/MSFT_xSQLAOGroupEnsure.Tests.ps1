@@ -156,7 +156,7 @@ try
             $username = "dba" 
             $credential = New-Object System.Management.Automation.PSCredential($username,$password)
     
-            $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+            $SqlAOGroupTest = Test-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
     
             It 'Should return $true'{
                 $SqlAOGroupTest | Should Be $true
@@ -169,7 +169,7 @@ try
             $username = "dba" 
             $credential = New-Object System.Management.Automation.PSCredential($username,$password)
     
-            $SqlAOGroupTest = Test-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+            $SqlAOGroupTest = Test-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
     
             It 'Should return $false'{
                 $SqlAOGroupTest | Should Be $false
@@ -343,7 +343,7 @@ namespace Microsoft.SqlServer.Management.Smo
                     SetupCredential = $credential;
                 }
 
-        $SqlAOGroup = Set-PesterTargetResource @Params;
+        $SqlAOGroup = Set-TargetResource @Params;
         
         #this shouldn't have generated any errors which they are caught by pester without further checks
      }

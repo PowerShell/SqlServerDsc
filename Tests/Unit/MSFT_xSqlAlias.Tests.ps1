@@ -108,12 +108,12 @@ try
     }
 
     It 'Should not call Set-ItemProperty with value already set' {
-        Set-xSqlAliasTargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName 'localhost' -TCPPort 52002 -Ensure 'Present'
+        Set-TargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName 'localhost' -TCPPort 52002 -Ensure 'Present'
         Assert-MockCalled -ModuleName MSFT_xSqlAlias -CommandName Set-ItemProperty -Exactly 0
     }
 
     It 'Call Set-ItemProperty exactly 2 times (1 for 32bit and 1 for 64 bit reg keys)' {
-        Set-xSqlAliasTargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName 'localhost' -TCPPort 1433 -Ensure 'Present'
+        Set-TargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName 'localhost' -TCPPort 1433 -Ensure 'Present'
         Assert-MockCalled -ModuleName MSFT_xSqlAlias -CommandName Set-ItemProperty -Exactly 2
     }
 
@@ -140,11 +140,11 @@ try
     }
 
     It 'Should return true when Test is passed as Alias thats already set'{
-        Test-xSqlAliasTargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName localhost -TCPPort 1433 -Ensure 'Present' | Should Be $true
+        Test-TargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName localhost -TCPPort 1433 -Ensure 'Present' | Should Be $true
     }
 
     It 'Should return false when Test is passed as Alias that is not set'{
-        Test-xSqlAliasTargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName localhost -TCPPort 52002 -Ensure 'Present' | Should Be $false
+        Test-TargetResource -Name 'myServerAlias'  -Protocol 'TCP' -ServerName localhost -TCPPort 52002 -Ensure 'Present' | Should Be $false
     }
     }
     #end region Test-TargetResource
