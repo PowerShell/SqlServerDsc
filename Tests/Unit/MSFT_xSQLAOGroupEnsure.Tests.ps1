@@ -100,7 +100,7 @@ try
             $username = "dba" 
             $credential = New-Object System.Management.Automation.PSCredential($username,$password)
     
-            $SqlAOGroup = Get-PesterTargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+            $SqlAOGroup = Get-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
     
             It 'Should return hashtable with Ensure = $true'{
                 $SqlAOGroup.Ensure | Should Be $true
@@ -113,7 +113,7 @@ try
             $username = "dba" 
             $credential = New-Object System.Management.Automation.PSCredential($username,$password)
     
-            $SqlAOGroup = Get-PesterTargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
+            $SqlAOGroup = Get-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $credential;
     
             It 'Should return hashtable with Ensure = $false'{
                 $SqlAOGroup.Ensure | Should Be $false
