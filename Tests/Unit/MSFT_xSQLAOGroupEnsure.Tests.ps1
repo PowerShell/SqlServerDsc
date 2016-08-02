@@ -2,8 +2,8 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:DSCModuleName      = 'xSQLServer' # Example xNetworking
-$script:DSCResourceName    = 'MSFT_xSQLAOGroupEnsure' # Example MSFT_xFirewall
+$script:DSCModuleName      = 'xSQLServer' 
+$script:DSCResourceName    = 'MSFT_xSQLAOGroupEnsure'
 
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
@@ -30,32 +30,31 @@ try
         Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
                     # build a custom object to return which is close to the real SMO object
                     $smoObj = [PSCustomObject]@{
-                                SQLServer = 'Node01';
-                                SQLInstanceName = 'Prd01';
-                                ClusterName = 'Clust01';
+                                SQLServer = 'Node01'
+                                SQLInstanceName = 'Prd01'
+                                ClusterName = 'Clust01'
                             }
                     # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
                     $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
                                         'AG01' = @{
                                             AvailabilityGroupListeners = @{ 
-                                                name = 'AgList01';
-                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
-                                                portnumber = 5022;};
-                                            AvailabilityDatabases = @(@{name='AdventureWorks'});
-                                            };
-                                        };
-                    # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
-                    #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
-                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
+                                                name = 'AgList01'
+                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                                                portnumber = 5022}
+                                            AvailabilityDatabases = @(@{name='AdventureWorks'})
+                                            }
+                                        }
+
+                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force
                 return $smoObj
             }
         
         Context "When the configuration is already set" {
             
-            $SqlAOGroup = Get-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential;
+            $SqlAOGroup = Get-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential
     
             It 'Should return hashtable with Ensure = $true'{
                 $SqlAOGroup.Ensure | Should Be $true
@@ -64,7 +63,7 @@ try
     
          Context "When the configuration is not yet set or has drift" {
     
-            $SqlAOGroup = Get-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential;
+            $SqlAOGroup = Get-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential
     
             It 'Should return hashtable with Ensure = $false'{
                 $SqlAOGroup.Ensure | Should Be $false
@@ -78,32 +77,31 @@ try
         Mock -ModuleName 'MSFT_xSQLAOGroupEnsure' -CommandName Connect-SQL -MockWith {
                     # build a custom object to return which is close to the real SMO object
                     $smoObj = [PSCustomObject]@{
-                                SQLServer = 'Node01';
-                                SQLInstanceName = 'Prd01';
-                                ClusterName = 'Clust01';
+                                SQLServer = 'Node01'
+                                SQLInstanceName = 'Prd01'
+                                ClusterName = 'Clust01'
                             }
                     # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
                     $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
                                         'AG01' = @{
                                             AvailabilityGroupListeners = @{ 
-                                                name = 'AgList01';
-                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
-                                                portnumber = 5022;};
-                                            AvailabilityDatabases = @(@{name='AdventureWorks'});
-                                            };
-                                        };
-                    # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
-                    #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
-                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
-                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
+                                                name = 'AgList01'
+                                                availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                                                portnumber = 5022}
+                                            AvailabilityDatabases = @(@{name='AdventureWorks'})
+                                            }
+                                        }
+
+                    $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force
+                    $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force
                 return $smoObj
             }
     
         Context "When the configuration is valid" {
     
-            $SqlAOGroupTest = Test-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential;
+            $SqlAOGroupTest = Test-TargetResource -Ensure 'Present' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential
     
             It 'Should return $true'{
                 $SqlAOGroupTest | Should Be $true
@@ -112,7 +110,7 @@ try
     
          Context "When the configuration has drifted" {
               
-            $SqlAOGroupTest = Test-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential;
+            $SqlAOGroupTest = Test-TargetResource -Ensure 'Absent' -AvailabilityGroupName 'AG01' -SQLServer 'localhost' -SQLInstanceName 'MSSQLSERVER' -SetupCredential $mockcredential
     
             It 'Should return $false'{
                 $SqlAOGroupTest | Should Be $false
@@ -138,9 +136,9 @@ namespace Microsoft.SqlServer.Management.Smo
 {
     public class AvailabilityReplicaFailoverMode
     {
-        public static string Automatic = "Automatic";
-        public static string Manual = "Manual";
-        public static string Unknown = "Unknown";
+        public static string Automatic = "Automatic"
+        public static string Manual = "Manual"
+        public static string Unknown = "Unknown"
     }
 }
 "@
@@ -151,9 +149,9 @@ namespace Microsoft.SqlServer.Management.Smo
 {
     public class AvailabilityReplicaAvailabilityMode
     {
-        public static string AsynchronousCommit = "AsynchronousCommit";
-        public static string SynchronousCommit = "SynchronousCommit";
-        public static string Unknown = "Unknown";
+        public static string AsynchronousCommit = "AsynchronousCommit"
+        public static string SynchronousCommit = "SynchronousCommit"
+        public static string Unknown = "Unknown"
     }
 }
 "@
@@ -163,26 +161,25 @@ namespace Microsoft.SqlServer.Management.Smo
         Mock -CommandName Connect-SQL -MockWith {
                 # build a custom object to return which is close to the real SMO object
                 $smoObj = [PSCustomObject]@{
-                            SQLServer = 'Node01';
-                            SQLInstanceName = 'Prd01';
-                            ClusterName = 'Clust01';
+                            SQLServer = 'Node01'
+                            SQLInstanceName = 'Prd01'
+                            ClusterName = 'Clust01'
                         }
                 # add the AvailabilityGroups entry as this is an ArrayList and allows us the functionality later
                 $smoObj | Add-Member -MemberType NoteProperty -Name 'AvailabilityGroups' -Value @{
                                     'AG01' = @{
                                         AvailabilityGroupListeners = @{ 
-                                            name = 'AgList01';
-                                            availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'});
-                                            portnumber = 5022;};
-                                        AvailabilityDatabases = @(@{name='AdventureWorks'});
-                                        };
-                                    };
-                # we need to be able to call the Add method like we would for an array but it needs to also function like a hashtable so override the Add method
-                #$smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {param($value) $_.AvailabilityGroups[$value.Name] = $value} -Force;
-                $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force;
-                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force;
+                                            name = 'AgList01'
+                                            availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                                            portnumber = 5022}
+                                        AvailabilityDatabases = @(@{name='AdventureWorks'})
+                                        }
+                                    }
+
+                $smoObj.AvailabilityGroups | Add-Member -MemberType ScriptMethod -Name 'Add' -Value {return $true} -Force
+                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType NoteProperty -Name Name -Value 'AG01' -Force
+                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name ToString -Value {return 'AG01'} -Force
+                $smoObj.AvailabilityGroups['AG01'] | Add-Member -MemberType ScriptMethod -Name Drop -Value {return $true} -Force
             return $smoObj
         }
         Mock -CommandName Grant-ServerPerms -MockWith {
@@ -197,69 +194,69 @@ namespace Microsoft.SqlServer.Management.Smo
             {
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' {
                     $object = [PSCustomObject]@{
-                                Name = "MockedObject";
-                                AutomatedBackupPreference = '';
-                                FailureConditionLevel = '';
-                                HealthCheckTimeout = '';
-                                AvailabilityReplicas = [System.Collections.ArrayList]@();
-                                AvailabilityGroupListeners = [System.Collections.ArrayList]@();
+                                Name = "MockedObject"
+                                AutomatedBackupPreference = ''
+                                FailureConditionLevel = ''
+                                HealthCheckTimeout = ''
+                                AvailabilityReplicas = [System.Collections.ArrayList]@()
+                                AvailabilityGroupListeners = [System.Collections.ArrayList]@()
                             }
-                    $object | Add-Member -MemberType ScriptMethod -Name Create -Value {return $true};
+                    $object | Add-Member -MemberType ScriptMethod -Name Create -Value {return $true}
                 }
                 'Microsoft.SqlServer.Management.Smo.AvailabilityReplica' {
                     $object = [PSCustomObject]@{
-                                Name = "MockedObject";
-                                EndpointUrl = '';
-                                FailoverMode = '';
-                                AvailabilityMode = '';
-                                BackupPriority = 0;
-                                ConnectionModeInPrimaryRole = '';
-                                ConnectionModeInSecondaryRole = '';
+                                Name = "MockedObject"
+                                EndpointUrl = ''
+                                FailoverMode = ''
+                                AvailabilityMode = ''
+                                BackupPriority = 0
+                                ConnectionModeInPrimaryRole = ''
+                                ConnectionModeInSecondaryRole = ''
                              }
                 }
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroupListener' {
                     $object = [PSCustomObject]@{
-                                Name = "MockedObject";
-                                PortNumber = '';
-                                AvailabilityGroupListenerIPAddresses = [System.Collections.ArrayList]@();
+                                Name = "MockedObject"
+                                PortNumber = ''
+                                AvailabilityGroupListenerIPAddresses = [System.Collections.ArrayList]@()
                             }
                 }
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress' {
                     $object = [PSCustomObject]@{
-                                Name = "MockedObject";
-                                IsDHCP = '';
-                                IPAddress = '';
-                                SubnetMask = '';
+                                Name = "MockedObject"
+                                IsDHCP = ''
+                                IPAddress = ''
+                                SubnetMask = ''
                             }
                 }
                 Default {
                     $object = [PSCustomObject]@{
-                                Name = "MockedObject";
+                                Name = "MockedObject"
                             }
                 }
             }
-            return $object;
+            return $object
         }
         Mock Get-Module -MockWith {
-            return 'Module Name';
+            return 'Module Name'
         }
 
         Mock Get-ClusterNode -MockWith {
             $clusterNode = @(
                             [PSCustomObject]@{
-                                    Name = 'Node01';
-                                };
+                                    Name = 'Node01'
+                                }
                             , [PSCustomObject]@{
-                                    Name = 'Node02';
-                                };
+                                    Name = 'Node02'
+                                }
                             , [PSCustomObject]@{
-                                    Name = 'Node03';
-                                };
+                                    Name = 'Node03'
+                                }
                             , [PSCustomObject]@{
-                                    Name = 'Node04';
-                                };
+                                    Name = 'Node04'
+                                }
                             )
-            return $clusterNode;
+            return $clusterNode
         }
     }
 
@@ -268,20 +265,20 @@ namespace Microsoft.SqlServer.Management.Smo
         
         # setup the params for the function using splatting method
         $Params = @{
-                    Ensure = 'Present';
-                    AvailabilityGroupName = 'AG01';
-                    AvailabilityGroupNameListener = 'AgList01';
-                    AvailabilityGroupNameIP = '192.168.0.1';
-                    AvailabilityGroupSubMask = '255.255.255.0';
-                    AvailabilityGroupPort = 1433;
-                    ReadableSecondary = 'ReadOnly';
-                    AutoBackupPreference = 'Primary';
-                    SQLServer = 'localhost';
-                    SQLInstanceName = 'MSSQLSERVER';
-                    SetupCredential = $mockcredential;
+                    Ensure = 'Present'
+                    AvailabilityGroupName = 'AG01'
+                    AvailabilityGroupNameListener = 'AgList01'
+                    AvailabilityGroupNameIP = '192.168.0.1'
+                    AvailabilityGroupSubMask = '255.255.255.0'
+                    AvailabilityGroupPort = 1433
+                    ReadableSecondary = 'ReadOnly'
+                    AutoBackupPreference = 'Primary'
+                    SQLServer = 'localhost'
+                    SQLInstanceName = 'MSSQLSERVER'
+                    SetupCredential = $mockcredential
                 }
 
-        $SqlAOGroup = Set-TargetResource @Params;
+        $SqlAOGroup = Set-TargetResource @Params
         
         #this shouldn't have generated any errors which they are caught by pester without further checks
      }
@@ -290,11 +287,5 @@ namespace Microsoft.SqlServer.Management.Smo
 }
 finally
 {
-    #region FOOTER
-
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
-
-    #endregion
-
-    # TODO: Other Optional Cleanup Code Goes Here...
 }

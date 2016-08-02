@@ -76,16 +76,16 @@ function Set-TargetResource
 
     Write-Verbose -Message 'Set-TargetResource'
 
-    $ItemValue = [System.String]
+    $itemValue = [System.String]
     
     if ($Protocol -eq 'NP')
     {
-        $ItemValue = "DBNMPNTW,\\$ServerName\PIPE\sql\query"
+        $itemValue = "DBNMPNTW,\\$ServerName\PIPE\sql\query"
     }
 
     if ($Protocol -eq 'TCP')
     {
-        $ItemValue = "DBMSSOCN,$ServerName,$TCPPort"
+        $itemValue = "DBMSSOCN,$ServerName,$TCPPort"
     }
 
     #logic based on Ensure value
@@ -99,10 +99,10 @@ function Set-TargetResource
             {
                 Write-Debug -Message 'Check if value requires changing'
                 $CurrentValue = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name"
-                if ($ItemValue -ne $CurrentValue)
+                if ($itemValue -ne $CurrentValue)
                 {
                     Write-Debug -Message 'Set-ItemProperty'
-                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $ItemValue
+                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $itemValue
                 }
             }
             else
@@ -110,7 +110,7 @@ function Set-TargetResource
                 Write-Debug -Message 'New-Item'
                 New-Item -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' | Out-Null
                 Write-Debug -Message 'New-ItemProperty'
-                New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $ItemValue | Out-Null
+                New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $itemValue | Out-Null
             }
 
             Write-Debug -Message 'Check OSArchitecture'
@@ -122,10 +122,10 @@ function Set-TargetResource
                 {
                     Write-Debug -Message 'Check if value requires changing'
                     $CurrentValue = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name"
-                    if ($ItemValue -ne $CurrentValue)
+                    if ($itemValue -ne $CurrentValue)
                     {
                         Write-Debug -Message 'Set-ItemProperty'
-                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $ItemValue
+                        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $itemValue
                     }
                 }
                 else
@@ -133,7 +133,7 @@ function Set-TargetResource
                     Write-Debug -Message 'New-Item'
                     New-Item -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo'
                     Write-Debug -Message 'New-ItemProperty'
-                    New-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $ItemValue
+                    New-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name "$Name" -Value $itemValue
                 }
             }
         }
@@ -251,30 +251,34 @@ function Test-TargetResource
                     }
                     else
                     {
+                        #Wow6432Node
                         $result = $false
                     }
                 }
             }
             else
             {
+                #Existing Alias Not Found
                 $result = $false
             }
         }
         else
         {
+            #Registry Container Doesnt Exist
             if ($Ensure -eq 'Present') {$result = $false}
             else {$result = $true}
         }
     }
     else
     {
+        #Alias Not present
         if ($Ensure -eq 'Present') {$result = $false}
         else {$result = $true}
     }
 
     Write-Debug -Message "Test-TargetResource Result: $result"
     
-    Return $result
+    return $result
 }
 
 
