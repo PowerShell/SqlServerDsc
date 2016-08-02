@@ -2,8 +2,8 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:DSCModuleName      = 'xSQLServer' # Example xNetworking
-$script:DSCResourceName    = 'MSFT_xSqlAlias' # Example MSFT_xFirewall
+$script:DSCModuleName      = 'xSQLServer' 
+$script:DSCResourceName    = 'MSFT_xSqlAlias' 
 
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
@@ -22,7 +22,7 @@ try
 {
     #region Get-TargetResource
     Describe 'Get-TargetResource'{
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
         Write-Output 'DBMSSOCN,localhost,1433'
     }
     
@@ -41,19 +41,19 @@ try
     #region Set-TargetResource
     Describe 'Set-TargetResource'{
 
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Test-Path -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Test-Path -MockWith {
         Write-Output $true
     }
 
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
         Write-Output 'DBMSSOCN,localhost,52002'
     } 
     
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Set-ItemProperty -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Set-ItemProperty -MockWith {
         Write-Output $true
     }    
 
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Get-Wmiobject -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Get-Wmiobject -MockWith {
         Write-Output @{
             Class = 'win32_OperatingSystem'
             OSArchitecture = '64-bit'
@@ -75,17 +75,17 @@ try
 
     #region Test-TargetResource
     Describe 'Test-TargetResource'{
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Test-Path -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Test-Path -MockWith {
         Write-Output $true
     }
 
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Get-ItemProperty -MockWith {
         Write-Output @{
             myServerAlias = 'DBMSSOCN,localhost,1433'
         }
     }   
 
-    Mock -ModuleName MSFT_xSqlAlias -CommandName Get-Wmiobject -MockWith {
+        Mock -ModuleName MSFT_xSqlAlias -CommandName Get-Wmiobject -MockWith {
         Write-Output @{
             Class = 'win32_OperatingSystem'
             OSArchitecture = '64-bit'
