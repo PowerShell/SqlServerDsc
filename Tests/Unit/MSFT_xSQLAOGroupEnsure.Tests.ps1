@@ -136,9 +136,9 @@ namespace Microsoft.SqlServer.Management.Smo
 {
     public class AvailabilityReplicaFailoverMode
     {
-        public static string Automatic = "Automatic"
-        public static string Manual = "Manual"
-        public static string Unknown = "Unknown"
+        public static string Automatic = "Automatic";
+        public static string Manual = "Manual";
+        public static string Unknown = "Unknown";
     }
 }
 "@
@@ -149,9 +149,9 @@ namespace Microsoft.SqlServer.Management.Smo
 {
     public class AvailabilityReplicaAvailabilityMode
     {
-        public static string AsynchronousCommit = "AsynchronousCommit"
-        public static string SynchronousCommit = "SynchronousCommit"
-        public static string Unknown = "Unknown"
+        public static string AsynchronousCommit = "AsynchronousCommit";
+        public static string SynchronousCommit = "SynchronousCommit";
+        public static string Unknown = "Unknown";
     }
 }
 "@
