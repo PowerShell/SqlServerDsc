@@ -148,12 +148,11 @@ function Set-TargetResource
                 $availabilityGroup = New-Object -typename Microsoft.SqlServer.Management.Smo.AvailabilityGroup -ArgumentList $SQL, $AvailabilityGroupName
                 $availabilityGroup.AutomatedBackupPreference = $AutoBackupPreference
                 $availabilityGroup.FailureConditionLevel = $FailoverCondition
-                $availabilityGroup.HealthCheckTimeout = $HealthCheckTimeout
-            }
+                $availabilityGroup.HealthCheckTimeout =$HealthCheckTimeout
+           }
            Catch
            {
                 Throw "Failed to connect to Cluster Nodes from $($sql.ClusterName)"
-
                 Exit
             }
 

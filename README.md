@@ -1,4 +1,3 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/master)
 
 # xSQLServer
 
@@ -34,12 +33,16 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **xSQLServerEndpoint** resource to ensure database endpoint is present or absent
 * **xWaitForAvailabilityGroup** resource to wait till availability group is created on primary server
 * **xSQLServerConfiguration** resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
+<<<<<<< HEAD
 * **xSQLServerPermission** Grant or revoke permission on the SQL Server.
 * **xSQLServerEndpointState** Change state of the endpoint.
 * **xSQLServerEndpointPermission** Grant or revoke permission on the endpoint.
 * **xSQLServerAvailabilityGroupListener** Create or remove an availability group listener.
 * **xSQLAlias** resource to manage SQL Server client Aliases
 
+=======
+* **xSQLAlias** resource to manage SQL Server client Aliases
+>>>>>>> origin/dev
 
 ### xSQLServerSetup
 
@@ -277,7 +280,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **OptionValue**: (Required) SQL Server option value to be set.
 * **RestartService**: Default false. If true will restart SQL Service instance service after update.
 
-<<<<<<< 2e75c332031e78c7121bc2ca6013703c55b5f060
 ### xSQLServerPermission
 * **InstanceName** The SQL Server instance name.
 * **NodeName** The host name or FQDN.
@@ -323,6 +325,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ### Unreleased
 * Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
 * Added Support for SQL Server 2016
+* Pester Tests for xSQLAOGroupEnsure and xSQLAlias
+* Correction on xSQLAOGroupEnsure to pass Setup Credential Correctly
 * xSQLAOGroupEnsure
    - Fixed spelling mistake in AutoBackupPreference property
    - Added BackupPriority property
