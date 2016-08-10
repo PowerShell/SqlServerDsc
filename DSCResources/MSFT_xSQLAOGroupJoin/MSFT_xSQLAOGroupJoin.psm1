@@ -32,15 +32,15 @@ function Get-TargetResource
 
     if(!$SQL)
     {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $SetupCredential
     }
     
-    $vConfigured = Test-TargetResource -Ensure $Ensure -AvailabilityGroupName $AvailabilityGroupName -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName 
+    $vConfigured = Test-TargetResource -Ensure $Ensure -AvailabilityGroupName $AvailabilityGroupName -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $SetupCredential
 
 
     $returnValue = @{
     Ensure = $vConfigured
-    AvailabilityGroupName = $sql.AvailabilityGroups[$AvailabilityGroupName]
+    AvailabilityGroupName = $sql.AvailabilityGroups[$AvailabilityGroupName].name
     AvailabilityGroupNameListener = $sql.AvailabilityGroups[$AvailabilityGroupName].AvailabilityGroupListeners.name
     AvailabilityGroupNameIP = $sql.AvailabilityGroups[$AvailabilityGroupName].AvailabilityGroupListeners.availabilitygrouplisteneripaddresses.IPAddress
     AvailabilityGroupSubMask =  $sql.AvailabilityGroups[$AvailabilityGroupName].AvailabilityGroupListeners.availabilitygrouplisteneripaddresses.SubnetMask
@@ -84,8 +84,12 @@ function Set-TargetResource
 
         $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
         $null = [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.SmoExtended")
-
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $SetupCredential
+        
+        if(!$SQL)
+        {
+            $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $SetupCredential
+        }
+        
         Grant-ServerPerms -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -AuthorizedUser "NT AUTHORITY\SYSTEM" -SetupCredential $SetupCredential
         
 
