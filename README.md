@@ -333,7 +333,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Now the resource will throw 'Not supported' when IP is changed between Static and DHCP.
   - Fixed an issue where sometimes the listener wasn't removed.
   - Fixed the issue when trying to add a static IP to a listener was ignored.
-* Fixes in xSQLServerLogin
+* Changes to xSQLServerLogin
    - Fixed an issue when dropping logins.
    - Fixed an issue where it was not possible to add the same login to two instances on the same server.
    - Added unit test for the resource.
