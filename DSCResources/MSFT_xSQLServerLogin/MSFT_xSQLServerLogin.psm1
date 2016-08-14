@@ -198,7 +198,7 @@ function Test-TargetResource
 
     $sqlServerLogin = Get-TargetResource @PSBoundParameters
 
-    $result = ( $sqlServerLogin.Ensure -eq $Ensure ) -and ( $sqlServerLogin.LoginType -eq $LoginType )
+    $result = ( $sqlServerLogin.Ensure -eq $Ensure )
     
     $result
 }
