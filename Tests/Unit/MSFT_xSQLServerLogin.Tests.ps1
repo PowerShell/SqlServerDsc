@@ -1,3 +1,7 @@
+# Suppressing this rule because PlainText is required for one of the functions used in this test
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
+param()
+
 $script:DSCModuleName      = 'xSQLServer'
 $script:DSCResourceName    = 'MSFT_xSQLServerLogin'
 
