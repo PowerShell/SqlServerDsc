@@ -1,8 +1,33 @@
+// Stubs for the namespace Microsoft.SqlServer.Management.Smo. Used for mocking in tests.
+
 using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SqlServer.Management.Smo
 {
+    #region Public Enums
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.LoginType
+    // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
+    // Used by: 
+    //  MSFT_xSQLServerLogin
+    
+    public enum LoginType
+    {
+        AsymmetricKey = 4,
+        Certificate = 3,
+        ExternalGroup = 6,
+        ExternalUser = 5,
+        SqlLogin = 2,
+        WindowsGroup = 1,
+        WindowsUser = 0,
+        Unknown = -1    // Added for verification (mock) purposes, to verify that a login type is passed  
+    }
+
+    #endregion Public Enums
+
+    #region Public Classes
+
     public class Globals
     {
         // Static property that is switched on or off by tests if data should be mocked (true) or not (false).
@@ -77,7 +102,8 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.Server
     // BaseType: Microsoft.SqlServer.Management.Smo.SqlSmoObject
     // Used by: 
-    //  xSQLServerPermission.Tests.ps1
+    //  xSQLServerPermission
+    //  MSFT_xSQLServerLogin
     public class Server 
     { 
         public string MockGranteeName;
@@ -128,4 +154,40 @@ namespace Microsoft.SqlServer.Management.Smo
             }
         }
     }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.Login
+    // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
+    // Used by: 
+    //  MSFT_xSQLServerLogin
+    public class Login 
+    {
+        private bool _mockPasswordPassed = false;
+
+        public Login( Server server, string name ) {
+            this.Name = name;
+        } 
+            
+        public string Name;
+        public LoginType LoginType = LoginType.Unknown;
+
+        public void Create()
+        {
+            if( this.LoginType == LoginType.Unknown ) {
+                throw new System.Exception( "Called Create() method without a value for LoginType." );
+            }
+
+            if( this.LoginType == LoginType.SqlLogin && _mockPasswordPassed != true ) {
+                throw new System.Exception( "Called Create() method for the LoginType 'SqlLogin' but called with the wrong overloaded method. Did not pass the password with the Create() method." );
+            }
+        }
+
+        public void Create( System.Security.SecureString secureString )
+        {
+            _mockPasswordPassed = true;
+
+            this.Create();
+        }
+    }
+
+    #endregion Public Classes
 }
