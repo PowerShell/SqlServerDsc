@@ -1,12 +1,8 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
+$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Write-Debug -Message "CurrentPath: $script:currentPath"
 
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
-
-# DSC resource to manage SQL logins
-
-# NOTE: This resource requires WMF5 and PsDscRunAsCredential
+# Load helper functions
+Import-Module $script:currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
 function Get-TargetResource
 {
@@ -14,61 +10,61 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [System.String]
         $Name,
 
         [System.Management.Automation.PSCredential]
         $LoginCredential,
 
-        [ValidateSet("SqlLogin","WindowsUser","WindowsGroup")]
+        [ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
         [System.String]
         $LoginType,
 
+        [Parameter(Mandatory)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if($SQL)
+    if( $sql )
     {
-        Write-Verbose "Getting SQL logins"
-        $SQLLogins = $SQL.Logins
-        if($SQLLogins)
+        Write-Verbose 'Getting SQL logins'
+
+        $sqlLogins = $sql.Logins
+        if( $sqlLogins )
         {
-            if($SQLLogins[$Name])
+            if( $sqlLogins[ $Name ] )
             {
                 Write-Verbose "SQL login name $Name is present"
-                $Ensure = "Present"
-                $LoginType = $SQLLogins[$Name].LoginType
+                $Ensure = 'Present'
+                $LoginType = $sqlLogins[ $Name ].LoginType
                 Write-Verbose "SQL login name is of type $LoginType"
             }
             else
             {
                 Write-Verbose "SQL login name $Name is absent"
-                $Ensure = "Absent"
+                $Ensure = 'Absent'
             }
         }
         else
         {
-            Write-Verbose "Failed getting SQL logins"
-            $Ensure = "Absent"
+            Write-Verbose 'Failed getting SQL logins'
+            $Ensure = 'Absent'
         }
     }
     else
     {
-        $Ensure = "Absent"
+        $Ensure = 'Absent'
     }
 
     $returnValue = @{
@@ -82,62 +78,63 @@ function Get-TargetResource
     $returnValue
 }
 
-
 function Set-TargetResource
 {
     [CmdletBinding()]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [System.String]
         $Name,
 
         [System.Management.Automation.PSCredential]
         $LoginCredential,
 
-        [ValidateSet("SqlLogin","WindowsUser","WindowsGroup")]
+        [ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
         [System.String]
-        $LoginType = "WindowsUser",
+        $LoginType = 'WindowsUser',
 
+        [Parameter(Mandatory)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    if(($Ensure -eq "Present") -and ($LoginType -eq "SqlLogin") -and !$PSBoundParameters.ContainsKey('LoginCredential'))
+    if( ( $Ensure -eq 'Present' ) -and 
+        ( $LoginType -eq 'SqlLogin' ) -and 
+        !$PSBoundParameters.ContainsKey( 'LoginCredential' ) )
     {
         throw New-TerminatingError -ErrorType FailedLogin
     }
 
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if($SQL)
+    if( $sql )
     {
-        switch($Ensure)
+        switch( $Ensure )
         {
-            "Present"
+            'Present'
             {
                 try
                 {
                     Write-Verbose "Creating SQL login $Name of type $LoginType"
-                    $SQLLogin = New-Object Microsoft.SqlServer.Management.Smo.Login $SQL,$Name
-                    $SQLLogin.LoginType = $LoginType
-                    if($LoginType -eq "SqlLogin")
+
+                    $sqlLogin = New-Object Microsoft.SqlServer.Management.Smo.Login $sql, $Name
+                    $sqlLogin.LoginType = $LoginType
+                    if($LoginType -eq 'SqlLogin')
                     {
-                        $SQLLogin.Create($LoginCredential.GetNetworkCredential().Password)
+                        $sqlLogin.Create( $LoginCredential.GetNetworkCredential().Password )
                     }
                     else
                     {
-                        $SQLLogin.Create()
+                        $sqlLogin.Create()
                     }
                 }
                 catch
@@ -145,13 +142,15 @@ function Set-TargetResource
                     Write-Verbose "Failed creating SQL login $Name of type $LoginType"
                 }
             }
-            "Absent"
+            
+            'Absent'
             {
                 try
                 {
                     Write-Verbose "Deleting SQL login $Name"
-                    $SQLLogins = $SQL.Logins
-                    $SQLLogins[$Name].Drop()
+
+                    $sqlLogin = $sql.Logins
+                    $sqlLogin[ $Name ].Drop()
                 }
                 catch
                 {
@@ -161,13 +160,11 @@ function Set-TargetResource
         }
     }
 
-    ### TODO update with localized helper
-    if(!(Test-TargetResource @PSBoundParameters))
+    if( !( Test-TargetResource @PSBoundParameters ) )
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
 }
-
 
 function Test-TargetResource
 {
@@ -175,34 +172,35 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [System.String]
         $Name,
 
         [System.Management.Automation.PSCredential]
         $LoginCredential,
 
-        [ValidateSet("SqlLogin","WindowsUser","WindowsGroup")]
+        [ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
         [System.String]
-        $LoginType = "WindowsUser",
+        $LoginType = 'WindowsUser',
 
+        [Parameter(Mandatory)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    $SQLServerLogin = Get-TargetResource @PSBoundParameters
+    $sqlServerLogin = Get-TargetResource @PSBoundParameters
 
-    $result = ($SQLServerLogin.Ensure -eq $Ensure) -and ($SQLServerLogin.LoginType -eq $LoginType)
+    $result = ( $sqlServerLogin.Ensure -eq $Ensure ) -and ( $sqlServerLogin.LoginType -eq $LoginType )
     
     $result
 }
-
 
 Export-ModuleMember -Function *-TargetResource
