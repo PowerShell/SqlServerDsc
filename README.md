@@ -321,7 +321,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
-* xSQLServerLogin
+* Changes to xSQLServerLogin
    - Fixed an issue when dropping logins.
    - Fixed an issue where it was not possible to add the same login to two instances on the same server.
    - Added unit test for the resource.
