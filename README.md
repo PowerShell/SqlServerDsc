@@ -321,10 +321,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+* Added resources
+  - xSQLServerReplication
 * Changes to xSQLServerLogin
    - Fixed an issue when dropping logins.
    - Fixed an issue where it was not possible to add the same login to two instances on the same server.
-   - Added unit test for the resource.
+* Added unit test for the resource
+   - xSQLServerLogin
 
 ### 1.8.0.0
 * Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
@@ -337,7 +340,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - xSQLServerEndpointState
   - xSQLServerEndpointPermission
   - xSQLServerAvailabilityGroupListener
-  - xSQLServerReplication
 * xSQLServerHelper
     - added functions 
         - Import-SQLPSModule
