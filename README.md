@@ -183,11 +183,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **SQLInstance**: SQL Instance for the login
 
 ### xSQLServerDatabaseRole
-* **Name**: (Key) Name of the SQL Login or the role on the database
-* **SQLServer**: The SQL Server for the database
-* **SQLInstanceName**: The SQL Instance for the database
-* **Database**: The SQL Database for the role
-* **Role**: The SQL role for the database
+* **Ensure**: If 'Present' (the default value) then the login will be added to the role(s). If 'Absent' then the login will be removed from the role(s).
+* **Name**: (Key) The name of the login that will become a member, or removed as a member, of the role(s).
+* **SQLServer**: (Key) The SQL server on which the instance exist.
+* **SQLInstanceName**: (Key) The SQL instance in which the database exist.
+* **Database**: (Key) The database in which the users login and role exist.
+* **Role**: One or more role to which the login (user) will be added or removed.
 
 ###xSQLServerDatabasePermissions
 * **Database**: (Key) The SQL Database
@@ -373,6 +374,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - xSQLAOGroupEnsure
   - xSQLAlias
   - xSQLServerRole
+  - xSQLServerDatabaseRole
 * Fixes in xSQLServerAvailabilityGroupListener
   - In one case the Get-method did not report that DHCP was configured. 
   - Now the resource will throw 'Not supported' when IP is changed between Static and DHCP.
@@ -390,6 +392,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
    - BREAKING CHANGE: Fixed an issue where it was not possible to add the same login to two instances on the same server.
 * Changes to xSQLServerMaxDop
    - BREAKING CHANGE: Made SQLInstance parameter a key so that multiple instances on the same server can be configured
+* Fixes and enhancements in xSQLServerDatabaseRole
+  - Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer` and `SQLInstanceName` are mandatory. 
+  - Enhanced so the same user can now be added to more than one role
 
 ### 1.8.0.0
 
