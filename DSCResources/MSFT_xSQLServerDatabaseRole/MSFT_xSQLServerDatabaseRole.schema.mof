@@ -2,11 +2,11 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerDatabaseRole")]
 class MSFT_xSQLServerDatabaseRole : OMI_BaseResource
 {
-    [Write, Description("An enumerated value that describes if the login has the role on the database.\nPresent {default}  \nAbsent   \n"), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Key, Description("The name of the SQL login or the role on the database.")] String Name;
-    [Write, Description("The SQL Server for the database.")] String SQLServer;
-    [Write, Description("The SQL instance for the database.")] String SQLInstanceName;
-    [Required, Description("The SQL database for the role.")] String Database;
-    [Required, Description("The SQL role for the database.")] String Role;
+    [Write, Description("If 'Present' (the default value) then the login will be added to the role(s). If 'Absent' then the login will be removed from the role(s)."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Key, Description("The name of the login that will become a member, or removed as a member, of the role(s).")] String Name;
+    [Key, Description("The SQL server on which the instance exist.")] String SQLServer;
+    [Key, Description("The SQL instance in which the database exist.")] String SQLInstanceName;
+    [Key, Description("The database in which the users login and role exist.")] String Database;
+    [Required, Description("One or more role to which the login (user) will be added or removed.")] String Role[];
 };
 
