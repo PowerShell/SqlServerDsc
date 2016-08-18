@@ -8,6 +8,7 @@ RemoteConnectionFailed = Remote PowerShell connection to Server '{0}' failed.
 TODO = ToDo. Work not implemented at this time. 
 UnexpectedErrorFromGet = Got unexpected result from Get-TargetResource. No change is made.
 FailedToImportSQLPSModule = Failed to import SQLPS module. 
+NotConnectedToInstance = Was unable to connect to the instance {0}/{1}
 
 # SQLServer
 NoDatabase = Database '{0}' does not exist on SQL server '{1}\{2}'.
