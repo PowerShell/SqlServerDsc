@@ -1,7 +1,7 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
+$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Write-Debug -Message "CurrentPath: $($script:currentPath)"
 
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module $script:currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
 function Get-TargetResource
 {
