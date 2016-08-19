@@ -210,7 +210,7 @@ try
         }
 
         Context 'When the system is in the desired state' {
-            It 'Should return the state as present when desired windows user exist' {
+            It 'Should return the state as present when desired windows user exists' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\Stacy'
@@ -222,7 +222,7 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
-            It 'Should return the state as present when desired windows group exist' {
+            It 'Should return the state as present when desired windows group exists' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\SqlUsers'
@@ -235,7 +235,7 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
-            It 'Should return the state as present when desired sql login exist' {
+            It 'Should return the state as present when desired sql login exists' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'John'
