@@ -166,6 +166,10 @@ namespace Microsoft.SqlServer.Management.Smo
         public Login( Server server, string name ) {
             this.Name = name;
         } 
+
+        public Login( Object server, string name ) {
+            this.Name = name;
+        } 
             
         public string Name;
         public LoginType LoginType = LoginType.Unknown;
@@ -181,7 +185,7 @@ namespace Microsoft.SqlServer.Management.Smo
             }
         }
 
-        public void Create( System.Security.SecureString secureString )
+        public void Create( String secureString )
         {
             _mockPasswordPassed = true;
 
