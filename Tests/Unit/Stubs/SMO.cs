@@ -191,6 +191,10 @@ namespace Microsoft.SqlServer.Management.Smo
 
             this.Create();
         }
+
+        public void Drop()
+        {
+        }
     }
 
     #endregion Public Classes

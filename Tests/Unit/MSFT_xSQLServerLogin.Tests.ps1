@@ -51,12 +51,9 @@ try
             return New-Object Object | 
                 Add-Member ScriptProperty Logins {
                     return @{
-                        'COMPANY\Stacy' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsUser' -PassThru ) )
-                        'John' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'SqlLogin' -PassThru ) )
-                        'COMPANY\SqlUsers' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsGroup' -PassThru ) )
+                        'COMPANY\Stacy' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\Stacy') -Property @{ LoginType = 'WindowsUser'} ) )
+                        'John' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'John') -Property @{ LoginType = 'SqlLogin'} ) )
+                        'COMPANY\SqlUsers' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\SqlUsers') -Property @{ LoginType = 'WindowsGroup'} ) )
                     }
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
@@ -117,7 +114,7 @@ try
     
             $result = Get-TargetResource @testParameters
 
-            It 'Should not return the state as present' {
+            It 'Should return the state as present' {
                 $result.Ensure | Should Be 'Present'
                 $result.LoginType | Should Be 'WindowsGroup'
             }
@@ -141,7 +138,7 @@ try
     
             $result = Get-TargetResource @testParameters
 
-            It 'Should not return the state as present' {
+            It 'Should return the state as present' {
                 $result.Ensure | Should Be 'Present'
                 $result.LoginType | Should Be 'SqlLogin'
             }
@@ -165,18 +162,15 @@ try
             return New-Object Object | 
                 Add-Member ScriptProperty Logins {
                     return @{
-                        'COMPANY\Stacy' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsUser' -PassThru ) )
-                        'John' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'SqlLogin' -PassThru ) )
-                        'COMPANY\SqlUsers' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsGroup' -PassThru ) )
+                        'COMPANY\Stacy' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\Stacy') -Property @{ LoginType = 'WindowsUser'} ) )
+                        'John' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'John') -Property @{ LoginType = 'SqlLogin'} ) )
+                        'COMPANY\SqlUsers' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\SqlUsers') -Property @{ LoginType = 'WindowsGroup'} ) )
                     }
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the system is not in the desired state' {
-            It 'Should return desired state as absent when desired windows user don''t exists' {
+            It 'Should return the state as absent when desired windows user does not exist' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\UnknownUser'
@@ -188,7 +182,7 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
-            It 'Should return desired state as present when desired login exists regardless of login type' {
+            It 'Should return the state as present when desired login exists and login type is SQL login' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\SqlUsers'
@@ -198,6 +192,10 @@ try
                 $result = Test-TargetResource @testParameters
                 $result | Should Be $true
 
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
+            }
+
+            It 'Should return the state as present when desired login exists and login type is Windows' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'John'
@@ -207,12 +205,12 @@ try
                 $result = Test-TargetResource @testParameters
                 $result | Should Be $true
 
-                Assert-MockCalled Connect-SQL -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope It 
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
         }
 
         Context 'When the system is in the desired state' {
-            It 'Should return that desired state as present when desired windows user exist' {
+            It 'Should return the state as present when desired windows user exist' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\Stacy'
@@ -224,7 +222,7 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
-            It 'Should return that desired state as present when desired windows group exist' {
+            It 'Should return the state as present when desired windows group exist' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'COMPANY\SqlUsers'
@@ -237,7 +235,7 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
-            It 'Should return that desired state as present when desired sql login exist' {
+            It 'Should return the state as present when desired sql login exist' {
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     Name = 'John'
@@ -259,15 +257,9 @@ try
             return New-Object Object | 
                 Add-Member ScriptProperty Logins {
                     return @{
-                        'COMPANY\Stacy' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsUser' -PassThru |
-                                        Add-Member ScriptMethod Drop {} -PassThru ) )
-                        'John' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'SqlLogin' -PassThru |
-                                        Add-Member ScriptMethod Drop {} -PassThru ) )
-                        'COMPANY\SqlUsers' = @( ( New-Object Object |
-                                        Add-Member NoteProperty LoginType 'WindowsGroup' -PassThru |
-                                        Add-Member ScriptMethod Drop {} -PassThru ) )
+                        'COMPANY\Stacy' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\Stacy') -Property @{ LoginType = 'WindowsUser'} ) )
+                        'John' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'John') -Property @{ LoginType = 'SqlLogin'} ) )
+                        'COMPANY\SqlUsers' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'COMPANY\SqlUsers') -Property @{ LoginType = 'WindowsGroup'} ) )
                     }
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
@@ -339,18 +331,23 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 Ensure = 'Absent'
-                Name = 'John'
+                Name = 'COMPANY\Stacy'
             }
 
-            It 'Should not throw an error when desired login should be absent but are present' {
+            It 'Should call the function Remove-SqlLogin when desired state should be absent' {
+                # Mock the return value from the Get-method, because Test-method is ran at the end of the Set-method to validate that the removal (in this case) was successful.
                 Mock -CommandName Get-TargetResource -MockWith {
                     @{
                         Ensure = 'Absent'
                     }
                 } -ModuleName $script:DSCResourceName -Verifiable
 
-                { Set-TargetResource @testParameters } | Should Not Throw
+                Mock -CommandName Remove-SqlLogin -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+
+                Set-TargetResource @testParameters
+
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Remove-SqlLogin -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
         }
 
@@ -421,32 +418,24 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 Ensure = 'Absent'
-                Name = 'John'
+                Name = 'COMPANY\UnknownUser'
                 LoginType = 'SqlLogin'
             }
 
-            It 'Should not throw an error when desired login should be absent but are already absent' {
-                Mock -CommandName Connect-SQL -MockWith {
-                    return New-Object Object | 
-                        Add-Member ScriptProperty Logins {
-                            return @{
-                                'John' = @( ( New-Object Object |
-                                                Add-Member NoteProperty LoginType 'SqlLogin' -PassThru |
-                                                Add-Member ScriptMethod Drop { 
-                                                    throw 'Called Drop() method when the login is already absent'
-                                                } -PassThru ) )
-                            }
-                        } -PassThru -Force 
-                } -ModuleName $script:DSCResourceName -Verifiable
-
+            It 'Should not call the function Remove-SqlLogin when desired state is already absent' {
+                # Mock the return value from the Get-method, because Test-method is ran at the end of the Set-method to validate that the removal (in this case) was successful.
                 Mock -CommandName Get-TargetResource -MockWith {
                     @{
                         Ensure = 'Absent'
                     }
                 } -ModuleName $script:DSCResourceName -Verifiable
 
-                { Set-TargetResource @testParameters } | Should Not Throw
+                Mock -CommandName Remove-SqlLogin -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+
+                Set-TargetResource @testParameters
+
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Remove-SqlLogin -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope It
             }
         }
 
