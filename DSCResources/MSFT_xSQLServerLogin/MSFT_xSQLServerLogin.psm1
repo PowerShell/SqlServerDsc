@@ -140,6 +140,7 @@ function Set-TargetResource
                 catch
                 {
                     Write-Verbose "Failed creating SQL login $Name of type $LoginType"
+                    throw $_
                 }
             }
             
@@ -155,6 +156,7 @@ function Set-TargetResource
                 catch
                 {
                     Write-Verbose "Failed deleting SQL login $Name"
+                    throw $_
                 }
             }
         }
