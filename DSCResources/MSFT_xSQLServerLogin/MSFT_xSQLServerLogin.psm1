@@ -140,6 +140,7 @@ function Set-TargetResource
                 catch
                 {
                     Write-Verbose "Failed creating SQL login $Name of type $LoginType"
+                    
                     throw $_
                 }
             }
@@ -150,12 +151,16 @@ function Set-TargetResource
                 {
                     Write-Verbose "Deleting SQL login $Name"
 
-                    $sqlLogin = $sql.Logins
-                    $sqlLogin[ $Name ].Drop()
+                    $sqlLogin = $($sql.Logins[ $Name ])
+                    if( $sqlLogin )
+                    {
+                        Remove-SqlLogin -Login $sqlLogin
+                    }
                 }
                 catch
                 {
                     Write-Verbose "Failed deleting SQL login $Name"
+                    
                     throw $_
                 }
             }
@@ -203,6 +208,33 @@ function Test-TargetResource
     $result = ( $sqlServerLogin.Ensure -eq $Ensure )
     
     $result
+}
+
+<#
+    .SYNOPSIS
+        Removes a SQL login
+
+    .PARAMETER Login
+        A SQL login of the type Microsoft.SqlServer.Management.Smo.Login
+
+    .EXAMPLE
+        $server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server
+        $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $server, "MyLogin" )
+        Remove-SqlLogin -Login $login
+#>
+function Remove-SqlLogin
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Login]
+        $Login
+    )
+
+    if( ( $PSCmdlet.ShouldProcess( $($sqlLogin.Name), "Remove login" ) ) ) {
+        $sqlLogin.Drop()
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
