@@ -166,11 +166,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **IsInitialized**: Output is the Reporting Services instance initialized.
 
 ### xSQLServerLogin
-* **Name**: (Key) Name of the SQL Login to create
-* **LoginCredential**: PowerShell Credential for the SQL Login to be created
-* **LoginType**: Type of SQL login to create.(SQL, WindowsUser, WindowsGroup)
-* **SQLServer**: SQL Server where login should be created
-* **SQLInstance**: SQL Instance for the login
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
+* **Name**: (Key) The name of the SQL login. If LoginType is 'WindowsUser' or 'WindowsGroup' then provide the name in the format DOMAIN\name.
+* **LoginCredential**: If LoginType is 'SqlLogin' then a PSCredential is needed for the password to the login.
+* **LoginType**: The SQL login type. Valid values are 'SqlLogin', 'WindowsUser' or 'WindowsGroup'.
+* **SQLServer**: (Key) The SQL Server for the login.
+* **SQLInstanceName**: (Key) The SQL instance for the login.
 
 ### xSQLServerDatabaseRole
 * **Name**: (Key) Name of the SQL Login or the role on the database
