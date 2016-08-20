@@ -36,37 +36,37 @@ function Get-TargetResource
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if( $sql )
+    if ($sql)
     {
         # Check database exists
-        if( !( $sqlDatabase = $sql.Databases[ $Database ] ) )
+        if ( !($sqlDatabase = $sql.Databases[$Database]) )
         {
-            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @( $Database, $SQLServer, $SQLInstanceName ) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database, $SQLServer, $SQLInstanceName) -ErrorCategory ObjectNotFound
         }
 
         # Check role exists
-        foreach( $currentRole in $Role )
+        foreach ($currentRole in $Role)
         {
-            if( !( $sqlDatabase.Roles[ $currentRole ] ) )
+            if( !($sqlDatabase.Roles[$currentRole]) )
             {
-                throw New-TerminatingError -ErrorType RoleNotFound -FormatArgs @( $currentRole, $Database, $SQLServer, $SQLInstanceName ) -ErrorCategory ObjectNotFound
+                throw New-TerminatingError -ErrorType RoleNotFound -FormatArgs @($currentRole, $Database, $SQLServer, $SQLInstanceName) -ErrorCategory ObjectNotFound
             }
         }
 
         # Check login exists
-        if( !( $sql.Logins[ $Name ] ) )
+        if ( !($sql.Logins[$Name]) )
         {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @( $Name, $SQLServer, $SQLInstanceName ) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name, $SQLServer, $SQLInstanceName) -ErrorCategory ObjectNotFound
         }
 
         $Ensure = 'Absent'
         $grantedRole = @()
 
-        if( $sqlDatabaseUser = $sqlDatabase.Users[ $Name ])
+        if ($sqlDatabaseUser = $sqlDatabase.Users[$Name] )
         {
-            foreach( $currentRole in $Role )
+            foreach ($currentRole in $Role)
             {
-                if( $sqlDatabaseUser.IsMember( $currentRole ) )
+                if ($sqlDatabaseUser.IsMember($currentRole))
                 {
                     Write-Verbose "The login '$Name' is a member of the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
                     $grantedRole += $currentRole
@@ -77,7 +77,7 @@ function Get-TargetResource
                 }
             }
 
-            if( !( Compare-Object -ReferenceObject $role -DifferenceObject $grantedRole) )
+            if ( !(Compare-Object -ReferenceObject $role -DifferenceObject $grantedRole) )
             {
                 $Ensure = 'Present'
             }
@@ -89,7 +89,7 @@ function Get-TargetResource
     }
     else
     {
-        throw New-TerminatingError -ErrorType NotConnectedToInstance -FormatArgs @( $SQLServer, $SQLInstanceName ) -ErrorCategory InvalidResult
+        throw New-TerminatingError -ErrorType NotConnectedToInstance -FormatArgs @($SQLServer, $SQLInstanceName) -ErrorCategory InvalidResult
     }
 
     $returnValue = @{
@@ -136,19 +136,19 @@ function Set-TargetResource
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if( $sql )
+    if ($sql)
     {
         $sqlDatabase = $sql.Databases[ $Database ]
         
-        switch( $Ensure )
+        switch ($Ensure)
         {
             'Present'
             {
-                if( !( $sqlDatabase.Users[ $Name ] ) )
+                if ( !($sqlDatabase.Users[$Name]) )
                 {
                     try
                     {
-                        if( ( $PSCmdlet.ShouldProcess( $Name, "Adding the login as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName" ) ) ) 
+                        if ( ($PSCmdlet.ShouldProcess($Name, "Adding the login as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName")) ) 
                         {
                             $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $SQLDatabase, $Name
                             $sqlDatabaseUser.Login = $Name
@@ -161,16 +161,16 @@ function Set-TargetResource
                     }
                 }
 
-                if( $sqlDatabase.Users[ $Name ] )
+                if ($sqlDatabase.Users[$Name])
                 {
-                    foreach( $currentRole in $Role ) 
+                    foreach ($currentRole in $Role) 
                     {
                         try
                         {
-                            if( ( $PSCmdlet.ShouldProcess( $currentRole, "Adding the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName" ) ) )
+                            if ( ($PSCmdlet.ShouldProcess($currentRole, "Adding the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName")) )
                             { 
-                                $sqlDatabaseRole = $sqlDatabase.Roles[ $currentRole ]
-                                $sqlDatabaseRole.AddMember( $Name )
+                                $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
+                                $sqlDatabaseRole.AddMember($Name)
                             }
                         }
                         catch
@@ -185,12 +185,12 @@ function Set-TargetResource
             {
                 try
                 {
-                    foreach( $currentRole in $Role ) 
+                    foreach ($currentRole in $Role) 
                     {
-                        if( ( $PSCmdlet.ShouldProcess( $currentRole, "Removing the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName" ) ) )
+                        if ( ($PSCmdlet.ShouldProcess($currentRole, "Removing the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName")) )
                         { 
-                            $sqlDatabaseRole = $sqlDatabase.Roles[ $currentRole ]
-                            $sqlDatabaseRole.DropMember( $Name )
+                            $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
+                            $sqlDatabaseRole.DropMember($Name)
                         }
                     }
                 }
@@ -202,7 +202,7 @@ function Set-TargetResource
         }
     }
 
-    if( !( Test-TargetResource @PSBoundParameters ) )
+    if ( !(Test-TargetResource @PSBoundParameters) )
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
@@ -239,7 +239,7 @@ function Test-TargetResource
         $Role
     )
 
-    return ( ( ( Get-TargetResource @PSBoundParameters ).Ensure ) -eq $Ensure )
+    return (((Get-TargetResource @PSBoundParameters).Ensure) -eq $Ensure)
 }
 
 Export-ModuleMember -Function *-TargetResource
