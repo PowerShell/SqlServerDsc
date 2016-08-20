@@ -259,7 +259,33 @@ namespace Microsoft.SqlServer.Management.Smo
 		public void Drop()
         {
         }
-		
 	}
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.User
+    // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
+    // Used by: 
+    //  xSQLServerDatabaseRole.Tests.ps1
+    public class User 
+    {
+       public User( Server server, string name ) {
+            this.Name = name;
+        } 
+
+        public User( Object server, string name ) {
+            this.Name = name;
+        } 
+            
+        public string Name;
+        public string Login;
+
+        public void Create()
+        {
+        }
+
+        public void Drop()
+        {
+        }
+    }
+
     #endregion Public Classes
 }
