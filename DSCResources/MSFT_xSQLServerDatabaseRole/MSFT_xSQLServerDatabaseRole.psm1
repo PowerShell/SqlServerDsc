@@ -158,6 +158,8 @@ function Set-TargetResource
                     catch
                     {
                         Write-Verbose "Failed adding the login '$Name' as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                        throw $_
                     }
                 }
 
@@ -176,6 +178,8 @@ function Set-TargetResource
                         catch
                         {
                             Write-Verbose "Failed adding the login '$Name' to the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                            throw $_
                         }
                     }
                 }
@@ -197,6 +201,8 @@ function Set-TargetResource
                 catch
                 {
                     Write-Verbose "Failed removing the login '$Name' from the role '$Role' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                    throw $_
                 }
             }
         }
