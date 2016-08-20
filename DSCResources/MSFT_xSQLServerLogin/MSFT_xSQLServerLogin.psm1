@@ -36,18 +36,18 @@ function Get-TargetResource
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if( $sql )
+    if ($sql)
     {
         Write-Verbose 'Getting SQL logins'
 
         $sqlLogins = $sql.Logins
-        if( $sqlLogins )
+        if ($sqlLogins)
         {
-            if( $sqlLogins[ $Name ] )
+            if ($sqlLogins[$Name])
             {
                 Write-Verbose "SQL login name $Name is present"
                 $Ensure = 'Present'
-                $LoginType = $sqlLogins[ $Name ].LoginType
+                $LoginType = $sqlLogins[$Name].LoginType
                 Write-Verbose "SQL login name is of type $LoginType"
             }
             else
@@ -80,7 +80,7 @@ function Get-TargetResource
 
 function Set-TargetResource
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param
     (
         [ValidateSet('Present', 'Absent')]
@@ -107,18 +107,18 @@ function Set-TargetResource
         $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    if( ( $Ensure -eq 'Present' ) -and 
-        ( $LoginType -eq 'SqlLogin' ) -and 
-        !$PSBoundParameters.ContainsKey( 'LoginCredential' ) )
+    if ( ($Ensure -eq 'Present') -and 
+        ($LoginType -eq 'SqlLogin') -and 
+        !$PSBoundParameters.ContainsKey('LoginCredential') )
     {
         throw New-TerminatingError -ErrorType FailedLogin
     }
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if( $sql )
+    if ($sql)
     {
-        switch( $Ensure )
+        switch ($Ensure)
         {
             'Present'
             {
@@ -128,13 +128,17 @@ function Set-TargetResource
 
                     $sqlLogin = New-Object Microsoft.SqlServer.Management.Smo.Login $sql, $Name
                     $sqlLogin.LoginType = $LoginType
-                    if($LoginType -eq 'SqlLogin')
+                    if ($LoginType -eq 'SqlLogin')
                     {
-                        $sqlLogin.Create( $LoginCredential.GetNetworkCredential().Password )
+                        if ( ($PSCmdlet.ShouldProcess($($sqlLogin.Name), "Create login")) ) {
+                            $sqlLogin.Create( $LoginCredential.GetNetworkCredential().Password )
+                        }
                     }
                     else
                     {
-                        $sqlLogin.Create()
+                        if ( ($PSCmdlet.ShouldProcess($($sqlLogin.Name), "Create login")) ) {
+                            $sqlLogin.Create()
+                        }
                     }
                 }
                 catch
@@ -151,10 +155,12 @@ function Set-TargetResource
                 {
                     Write-Verbose "Deleting SQL login $Name"
 
-                    $sqlLogin = $($sql.Logins[ $Name ])
-                    if( $sqlLogin )
+                    $sqlLogin = $($sql.Logins[$Name])
+                    if ($sqlLogin)
                     {
-                        Remove-SqlLogin -Login $sqlLogin
+                        if ( ($PSCmdlet.ShouldProcess($($sqlLogin.Name), "Remove login")) ) {
+                            Remove-SqlLogin -Login $sqlLogin
+                        }
                     }
                 }
                 catch
@@ -167,7 +173,7 @@ function Set-TargetResource
         }
     }
 
-    if( !( Test-TargetResource @PSBoundParameters ) )
+    if ( !(Test-TargetResource @PSBoundParameters) )
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
@@ -205,7 +211,7 @@ function Test-TargetResource
 
     $sqlServerLogin = Get-TargetResource @PSBoundParameters
 
-    $result = ( $sqlServerLogin.Ensure -eq $Ensure )
+    $result = ($sqlServerLogin.Ensure -eq $Ensure)
     
     $result
 }
@@ -232,7 +238,7 @@ function Remove-SqlLogin
         $Login
     )
 
-    if( ( $PSCmdlet.ShouldProcess( $($sqlLogin.Name), "Remove login" ) ) ) {
+    if ( ($PSCmdlet.ShouldProcess($($sqlLogin.Name), "Drop login")) ) {
         $sqlLogin.Drop()
     }
 }
