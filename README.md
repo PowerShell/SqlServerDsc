@@ -366,6 +366,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
    - 1-SetDatabaseOwner.ps1
  * Added tests for resources
    - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
+  - xSQLServerDatabaseRole
+* Changes and enhancements in xSQLServerDatabaseRole
+  - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer` and `SQLInstanceName` are mandatory. 
+  - Enhanced so the same user can now be added to more than one role
 
 ### 2.0.0.0
 * Added resources
@@ -382,7 +386,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - xSQLAOGroupEnsure
   - xSQLAlias
   - xSQLServerRole
-  - xSQLServerDatabaseRole
 * Fixes in xSQLServerAvailabilityGroupListener
   - In one case the Get-method did not report that DHCP was configured. 
   - Now the resource will throw 'Not supported' when IP is changed between Static and DHCP.
@@ -400,9 +403,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
    - BREAKING CHANGE: Fixed an issue where it was not possible to add the same login to two instances on the same server.
 * Changes to xSQLServerMaxDop
    - BREAKING CHANGE: Made SQLInstance parameter a key so that multiple instances on the same server can be configured
-* Fixes and enhancements in xSQLServerDatabaseRole
-  - Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer` and `SQLInstanceName` are mandatory. 
-  - Enhanced so the same user can now be added to more than one role
 
 ### 1.8.0.0
 
