@@ -42,7 +42,7 @@ try
     Describe 'Get-TargetResource' {
         Mock -CommandName Connect-SQL -MockWith {
             # build a custom object to return which is close to the real SMO object
-            $smoObj = [PSCustomObject]@{
+            $smoObj = [PSCustomObject] @{
                 SQLServer = 'Node01'
                 SQLInstanceName = 'Prd01'
                 ClusterName = 'Clust01'
@@ -53,7 +53,7 @@ try
                 'AG01' = @{
                     AvailabilityGroupListeners = @{ 
                         name = 'AgList01'
-                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList] @(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
                         portnumber = 5022
                     }
                     
@@ -103,7 +103,7 @@ try
     Describe 'Test-TargetResource' {
         Mock -CommandName Connect-SQL -MockWith {
             # build a custom object to return which is close to the real SMO object
-            $smoObj = [PSCustomObject]@{
+            $smoObj = [PSCustomObject] @{
                 SQLServer = 'Node01'
                 SQLInstanceName = 'Prd01'
                 ClusterName = 'Clust01'
@@ -114,7 +114,7 @@ try
                 'AG01' = @{
                     AvailabilityGroupListeners = @{ 
                         name = 'AgList01'
-                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList] @(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
                         portnumber = 5022
                     }
                     
@@ -193,16 +193,16 @@ try
         Mock New-ListenerADObject -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
         Mock Get-ClusterNode -MockWith {
             $clusterNode = @(
-                [PSCustomObject]@{
+                [PSCustomObject] @{
                     Name = 'Node01'
-                }
-                , [PSCustomObject]@{
+                }, 
+                [PSCustomObject] @{
                     Name = 'Node02'
-                }
-                , [PSCustomObject]@{
+                },
+                [PSCustomObject] @{
                     Name = 'Node03'
-                }
-                , [PSCustomObject]@{
+                },
+                [PSCustomObject] @{
                     Name = 'Node04'
                 }
             )
@@ -211,7 +211,7 @@ try
 
         Mock Connect-SQL -MockWith {
             # build a custom object to return which is close to the real SMO object
-            $smoObj = [PSCustomObject]@{
+            $smoObj = [PSCustomObject] @{
                 SQLServer = 'Node01'
                 SQLInstanceName = 'Prd01'
                 ClusterName = 'Clust01'
@@ -222,7 +222,7 @@ try
                 'AG01' = @{
                     AvailabilityGroupListeners = @{ 
                         name = 'AgList01'
-                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList]@(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
+                        availabilitygrouplisteneripaddresses = [System.Collections.ArrayList] @(@{IpAddress = '192.168.0.1'; SubnetMask = '255.255.255.0'})
                         portnumber = 5022
                     }
 
@@ -247,19 +247,19 @@ try
             Switch ($TypeName)
             {
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' {
-                    $object = [PSCustomObject]@{
+                    $object = [PSCustomObject] @{
                                 Name = "MockedObject"
                                 AutomatedBackupPreference = ''
                                 FailureConditionLevel = ''
                                 HealthCheckTimeout = ''
-                                AvailabilityReplicas = [System.Collections.ArrayList]@()
-                                AvailabilityGroupListeners = [System.Collections.ArrayList]@()
+                                AvailabilityReplicas = [System.Collections.ArrayList] @()
+                                AvailabilityGroupListeners = [System.Collections.ArrayList] @()
                             }
                     $object | Add-Member -MemberType ScriptMethod -Name Create -Value {return $true}
                 }
 
                 'Microsoft.SqlServer.Management.Smo.AvailabilityReplica' {
-                    $object = [PSCustomObject]@{
+                    $object = [PSCustomObject] @{
                                 Name = "MockedObject"
                                 EndpointUrl = ''
                                 FailoverMode = ''
@@ -271,15 +271,15 @@ try
                 }
 
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroupListener' {
-                    $object = [PSCustomObject]@{
+                    $object = [PSCustomObject] @{
                                 Name = "MockedObject"
                                 PortNumber = ''
-                                AvailabilityGroupListenerIPAddresses = [System.Collections.ArrayList]@()
+                                AvailabilityGroupListenerIPAddresses = [System.Collections.ArrayList] @()
                             }
                 }
 
                 'Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress' {
-                    $object = [PSCustomObject]@{
+                    $object = [PSCustomObject] @{
                                 Name = "MockedObject"
                                 IsDHCP = ''
                                 IPAddress = ''
@@ -288,7 +288,7 @@ try
                 }
 
                 Default {
-                    $object = [PSCustomObject]@{
+                    $object = [PSCustomObject] @{
                                 Name = "MockedObject"
                             }
                 }
