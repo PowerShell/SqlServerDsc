@@ -544,9 +544,12 @@ function Set-TargetResource
     $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
 
     # Determine features to install
-    $FeaturesToInstall = ""
+    $featuresToInstall = ""
     foreach($feature in $Features.Split(","))
-    {   
+    {
+        # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
+        $feature = $feature.ToUpper();
+
         if(($SQLVersion -eq "13") -and (($feature -eq "SSMS") -or ($feature -eq "ADV_SSMS")))
         {
             Throw New-TerminatingError -ErrorType FeatureNotSupported -FormatArgs @($feature) -ErrorCategory InvalidData
@@ -554,10 +557,10 @@ function Set-TargetResource
 
         if(!($SQLData.Features.Contains($feature)))
         {
-            $FeaturesToInstall += "$feature,"
+            $featuresToInstall += "$feature,"
         }
     }
-    $Features = $FeaturesToInstall.Trim(",")
+    $Features = $featuresToInstall.Trim(",")
 
     # If SQL shared components already installed, clear InstallShared*Dir variables
     switch($SQLVersion)
@@ -957,12 +960,17 @@ function Test-TargetResource
     )
 
     $SQLData = Get-TargetResource @PSBoundParameters
+    Write-Verbose "Features found: '$($SQLData.Features)'"
 
     $result = $true
-    foreach($Feature in $Features.Split(","))
+    foreach($feature in $Features.Split(","))
     {
-        if(!($SQLData.Features.Contains($Feature)))
+        # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
+        $feature = $feature.ToUpper();
+
+        if(!($SQLData.Features.Contains($feature)))
         {
+            Write-Verbose "Unable to find feature '$feature' among the installed features: '$($SQLData.Features)'"
             $result = $false
         }
     }
