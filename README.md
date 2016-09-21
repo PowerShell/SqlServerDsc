@@ -365,6 +365,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
    - 1-SetDatabaseOwner.ps1
  * Added tests for resources
    - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
+* Changes to xSQLServerSetup
+  - Now `Features` parameter is case-insensitive. 
 
 ### 2.0.0.0
 * Added resources
