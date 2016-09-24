@@ -1,28 +1,49 @@
 ﻿$dom = [System.AppDomain]::CreateDomain("xSQLServerConfiguration")
 
+$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Write-Verbose -Message "CurrentPath: $currentPath"
+
+# Load Common Code
+Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+
 Function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        # Hostname of the SQL Server to be configured
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
+        # Name of the SQL instance to be configured
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $SQLInstanceName = "MSSQLSERVER",
+
+        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
+        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
+        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
 
-    $sqlServer = Get-SqlServerObject -InstanceName $InstanceName
-    $option = $sqlServer.Configuration.Properties | where {$_.DisplayName -eq $optionName}
+    if (! $sql)
+    {
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstance $SQLInstance
+    }
+
+    ## get the configuration option
+    $option = $sql.Configuration.Properties | where { $_.DisplayName -eq $optionName }
+    
     if(!$option)
     {
         throw "Specified option '$OptionName' was not found!"
@@ -42,25 +63,38 @@ Function Set-TargetResource
 {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        # Hostname of the SQL Server to be configured
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
+        # Name of the SQL instance to be configured
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $SQLInstanceName = "MSSQLSERVER",
+
+        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
+        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
+        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
 
-    $sqlServer = Get-SqlServerObject -InstanceName $InstanceName
+    if (! $sql)
+    {
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstance $SQLInstance
+    }
 
-    $option = $sqlServer.Configuration.Properties | where {$_.DisplayName -eq $optionName}
+    ## get the configuration option
+    $option = $sql.Configuration.Properties | where {$_.DisplayName -eq $optionName}
 
     if(!$option)
     {
@@ -68,20 +102,20 @@ Function Set-TargetResource
     }
 
     $option.ConfigValue = $OptionValue
-    $sqlServer.Configuration.Alter()
+    $sql.Configuration.Alter()
+    
     if ($option.IsDynamic -eq $true)
     {  
         Write-Verbose "Configuration option has been updated."
     }
-    elseif ($option.IsDynamic -eq $false -and $RestartService -eq $true)
+    elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
-        Write-Verbose "Configuration option has been updated ..."
-
+        Write-Verbose "Configuration option has been updated, restarting instance..."
         Restart-SqlServer -InstanceName $InstanceName
     }
     else
     {
-        Write-Warning "Configuration option was set but SQL Server restart is required."
+        Write-Warning "Configuration option has been updated. SQL Server restart is required!"
     }
 }
 
@@ -90,18 +124,27 @@ Function Test-TargetResource
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        # Hostname of the SQL Server to be configured
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
+        # Name of the SQL instance to be configured
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $SQLInstanceName = "MSSQLSERVER",
+
+        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
+        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
+        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
