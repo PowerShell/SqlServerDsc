@@ -1,8 +1,6 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
-
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Import-Module $script:currentPath\..\..\xSQLServerHelper.psm1 -ErrorAction Stop
+Import-Module $script:currentPath\..\..\xPDT.psm1
 
 function Get-TargetResource
 {
@@ -139,8 +137,6 @@ function Get-TargetResource
 
     $InstanceName = $InstanceName.ToUpper()
 
-    Import-Module $PSScriptRoot\..\..\xPDT.psm1
-
     if($SourceCredential)
     {
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure "Present"
@@ -194,15 +190,8 @@ function Get-TargetResource
 
         $InstanceID = $FullInstanceID.Split(".")[1]
         $InstanceDir = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$FullInstanceID\Setup" -Name 'SqlProgramDir').SqlProgramDir.Trim("\")
-        $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
-        if($InstanceName -eq "MSSQLSERVER")
-        {
-            $DBServer = New-Object ('Microsoft.SqlServer.Management.Smo.Server') "localhost"
-        }
-        else
-        {
-            $DBServer = New-Object ('Microsoft.SqlServer.Management.Smo.Server') "localhost\$InstanceName"
-        }
+
+        $DBServer = Connect-SQL -SQLServer 'localhost' -SQLInstanceName $InstanceName 
         $SQLCollation = $DBServer.Collation
         $SQLSysAdminAccounts = @() 
         foreach($SQLUser in $DBServer.Logins)
@@ -220,7 +209,7 @@ function Get-TargetResource
             $SecurityMode = "SQL"
         }
         else
-        {
+        { 
             $SecurityMode = "Windows"
         }
         $InstallSQLDataDir = $DBServer.InstallDataDirectory
@@ -509,8 +498,6 @@ function Set-TargetResource
 
     $SQLData = Get-TargetResource @PSBoundParameters
     $InstanceName = $InstanceName.ToUpper()
-
-    Import-Module $PSScriptRoot\..\..\xPDT.psm1
 
     if($SourceCredential)
     {
@@ -804,7 +791,7 @@ function Set-TargetResource
     Write-Verbose "Arguments: $Log"
 
     $Process = StartWin32Process -Path $Path -Arguments $Arguments
-    Write-Verbose $Process
+    Write-Verbose -Message $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments
 
     if($ForceReboot -or ((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue) -ne $null))
@@ -962,16 +949,21 @@ function Test-TargetResource
     $SQLData = Get-TargetResource @PSBoundParameters
     Write-Verbose "Features found: '$($SQLData.Features)'"
 
-    $result = $true
-    foreach($feature in $Features.Split(","))
-    {
-        # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
-        $feature = $feature.ToUpper();
+    $result = $false
+    if ($SQLData.Features )
+    { 
+        $result = $true
 
-        if(!($SQLData.Features.Contains($feature)))
+        foreach($feature in $Features.Split(","))
         {
-            Write-Verbose "Unable to find feature '$feature' among the installed features: '$($SQLData.Features)'"
-            $result = $false
+            # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
+            $feature = $feature.ToUpper();
+
+            if(!($SQLData.Features.Contains($feature)))
+            {
+                Write-Verbose "Unable to find feature '$feature' among the installed features: '$($SQLData.Features)'"
+                $result = $false
+            }
         }
     }
 
