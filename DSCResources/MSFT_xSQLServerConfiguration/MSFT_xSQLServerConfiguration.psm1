@@ -48,9 +48,10 @@ Function Get-TargetResource
     }
 
     $returnValue = @{
-        InstanceName   = $InstanceName
-        OptionName     = $option.DisplayName
-        OptionValue    = $option.ConfigValue
+        SqlServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        OptionName = $option.DisplayName
+        OptionValue = $option.ConfigValue
         RestartService = $RestartService
     }
 
