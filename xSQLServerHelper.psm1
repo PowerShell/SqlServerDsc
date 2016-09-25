@@ -1286,3 +1286,311 @@ function Restart-SqlService
         }
     }
 }
+
+<#
+    .SYNOPSIS
+    This cmdlet is used to return the permissions of a SQL database
+
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
+
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
+
+    .PARAMETER Database
+    This is the SQL database that will be getting
+
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be getting
+#>
+function Get-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $Sql,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState
+    )
+
+    Write-Verbose -Message "Getting Sql Databases and SQL Logins"
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
+
+    # Initialize variable permissions
+    [System.String[]] $permissions = @()
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            Write-Verbose -Message "Getting Permissions for SQL Login $Name in database $Database"
+
+            $enumDatabasePermissions = $sqlDatabase.EnumDatabasePermissions($Name)
+            $permissionSet = $enumDatabasePermissions | where { $_.PermissionState -eq $PermissionState }
+
+            foreach ($permission in $permissionSet)
+            {
+                $properties = ($permission.PermissionType | Get-Member -MemberType Property).Name
+                foreach ($property in $properties)
+                {
+                    if ($permission.PermissionType."$property")
+                    {
+                        $permissions += $property
+                    }
+                }
+            }
+        }
+        else
+        {
+            New-TerminatingError -ErrorType LoginNotFound `
+                                 -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                 -ErrorCategory ObjectNotFound 
+        }
+    }
+    else
+    {
+        New-TerminatingError -ErrorType NoDatabase `
+                             -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                             -ErrorCategory InvalidResult
+    }
+
+    $permissions
+}
+
+<#
+    .SYNOPSIS
+    This cmdlet is used to add the permissions of a SQL database
+
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
+
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
+
+    .PARAMETER Database
+    This is the SQL database that will be setting
+
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be setting
+
+    .PARAMETER Permissions
+    This is the type of permissions (Connect, Update, etc...) that will be setting
+#>
+function Add-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $Sql,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState,
+
+        [parameter(Mandatory = $true)]
+        [System.String[]]
+        $Permissions
+    )
+
+    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            if (!$sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
+                                           "$Database on $sqlServer\$sqlInstanceName"
+                    $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
+                    $sqlDatabaseUser.Login = $Name
+                    $sqlDatabaseUser.Create()
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
+                                           "database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+
+            if ($sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "$PermissionState - Adding SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
+                    foreach ($permission in $permissions)
+                    {
+                        $permissionSet."$permission" = $true
+                    }
+                    switch ($PermissionState) 
+                    {
+                        "Grant" { $sqlDatabase.Grant($permissionSet,$Name) }
+                        "Deny" { $sqlDatabase.Deny($permissionSet,$Name) }
+                    }                    
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed adding SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType LoginNotFound `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory ObjectNotFound
+        }
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType NoDatabase `
+                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                                   -ErrorCategory InvalidResult
+    }
+}
+
+<#
+    .SYNOPSIS
+    This cmdlet is used to remove the permissions of a SQL database
+
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
+
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
+
+    .PARAMETER Database
+    This is the SQL database that will be setting
+
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be setting
+
+    .PARAMETER Permissions
+    This is the type of permissions (Connect, Update, etc...) that will be setting
+#>
+function Remove-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $Sql,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState,
+
+        [parameter(Mandatory = $true)]
+        [System.String[]]
+        $Permissions
+    )
+
+    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            if (!$sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
+                                           "$Database on $sqlServer\$sqlInstanceName"
+                    $sqlDatabaseUser = New-Object -TypeName Microsoft.SqlServer.Management.Smo.User `
+                                                  -ArgumentList $sqlDatabase,$Name
+                    $sqlDatabaseUser.Login = $Name
+                    $sqlDatabaseUser.Create()
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
+                                           "database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+
+            if ($sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "$PermissionState - Removing SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
+                    foreach ($permission in $permissions)
+                    {
+                        $permissionSet."$permission" = $false
+                    }
+                    switch ($PermissionState) 
+                    {
+                        "Grant" { $sqlDatabase.Grant($permissionSet,$Name) }
+                        "Deny" { $sqlDatabase.Deny($permissionSet,$Name) }
+                    }                    
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed removing SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType LoginNotFound `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory ObjectNotFound
+        }
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType NoDatabase `
+                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                                   -ErrorCategory InvalidResult
+    }
+}
