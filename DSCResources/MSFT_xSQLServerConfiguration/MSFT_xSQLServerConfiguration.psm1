@@ -1,6 +1,4 @@
-﻿$dom = [System.AppDomain]::CreateDomain("xSQLServerConfiguration")
-
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Verbose -Message "CurrentPath: $currentPath"
 
 # Load Common Code
@@ -111,7 +109,7 @@ Function Set-TargetResource
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
         Write-Verbose "Configuration option has been updated, restarting instance..."
-        Restart-SqlServer -InstanceName $InstanceName
+        Restart-SqlService -ServerObject $sql
     }
     else
     {
@@ -155,144 +153,39 @@ Function Test-TargetResource
 }
 
 #region helper functions
-Function Get-SqlServerMajorVersion
+Function Restart-SqlService
 {
-    [CmdletBinding()]
-    [OutputType([System.String])]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
+    param
+    (
+        # SMO Server object for instance to restart
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject
     )
 
-    $instanceId = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL").$InstanceName
-    $sqlVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceId\Setup").Version
-    $sqlMajorVersion = $sqlVersion.Split(".")[0]
-    if (!$sqlMajorVersion)
+    if ($ServerObject.$IsClustered)
     {
-        throw "Unable to detect version for sql server instance: $InstanceName!"
-    }
-    return $sqlMajorVersion
-}
+        ## Get the cluster resources 
+        $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.InstanceName)%'"
+        $AgentService = Get-WmiObject -ComputerName root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.InstanceName)%'"
 
-Function Get-SqlServerObject
-{
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
-    )
+        ## Stop the SQL Server resource
+        $SqlService.TakeOffline(120)
 
-    if($InstanceName -eq "MSSQLSERVER")
-    {
-        $connectSQL = $env:COMPUTERNAME
+        ## Start the SQL Agent resource
+        $AgentService.BringOnline(120)
     }
     else
     {
-        $connectSQL = "$($env:COMPUTERNAME)\$InstanceName"
+        $SqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
+        $AgentService = $SqlService.DependentServices | Where-Object { $_.StartType -ne ""}
+
+        ## Restart the SQL Server service
+        $SqlService | Restart-Service -Force
+
+        ## Start the SQL Server Agent service
+        $AgentService | Start-Service 
     }
-
-    $sqlMajorVersion = Get-SqlServerMajorVersion -InstanceName $InstanceName
-    $smo = $dom.Load("Microsoft.SqlServer.Smo, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
-    Write-Verbose "Loaded assembly: $($smo.FullName)"
-
-    $sqlServer = new-object $smo.GetType("Microsoft.SqlServer.Management.Smo.Server") $connectSQL
-
-    if(!$sqlServer)
-    {
-        throw "Unable to connect to sql instance: $InstanceName"
-    }
-
-    return $sqlServer
-}
-
-Function Restart-SqlServer
-{
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
-    )
-
-    $sqlMajorVersion = Get-SqlServerMajorVersion -InstanceName $InstanceName
-    $sqlWmiManagement = $dom.Load("Microsoft.SqlServer.SqlWmiManagement, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
-    Write-Verbose "Loaded assembly: $($sqlWmiManagement.FullName)"
-    $wmi = new-object $sqlWmiManagement.GetType("Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer")
-
-    if(!$wmi)
-    {
-        throw "Unable to create wmi ManagedComputer object for sql instance: $InstanceName"
-    }
-
-    Write-Verbose "SQL Service will be restarted ..."
-    if($InstanceName -eq "MSSQLSERVER")
-    {
-        $dbServiceName = "MSSQLSERVER"
-        $agtServiceName = "SQLSERVERAGENT"
-    }
-    else
-    {
-        $dbServiceName = "MSSQL`$$InstanceName"
-        $agtServiceName = "SQLAgent`$$InstanceName"
-    }
-
-    $sqlService = $wmi.Services[$dbServiceName]
-    $agentService = $wmi.Services[$agtServiceName]
-    $startAgent = ($agentService.ServiceState -eq "Running")
-
-    if ($sqlService -eq $null)
-    {
-        throw "$dbServiceName service was not found, restart service failed"
-    }
-
-    Write-Verbose "Stopping [$dbServiceName] service ..."
-    $sqlService.Stop()
-    Wait-SqlServiceState -Service $sqlService -State "Stopped" 
-
-    Write-Verbose "Starting [$dbServiceName] service ..."
-    $sqlService.Start()
-    Wait-SqlServiceState -Service $sqlService -State "Running"
-
-    if ($startAgent)
-    {
-        Write-Verbose "Starting [$agtServiceName] service ..."
-        $agentService.Start()
-        Wait-SqlServiceState -Service $agentService -State "Running"
-    }
-}
-
-function Wait-SqlServiceState
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.Object]
-        $Service,
-        
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $State,
-        
-        [System.Int32]
-        $TimeOut = 60
-    )
-    
-    $startTime = Get-Date
-    
-    while($Service.ServiceState -ne $State)
-    {
-        if((New-TimeSpan -Start $startTime -End (Get-Date)).TotalSeconds -gt $TimeOut)
-        {
-            throw "Time out of $TimeOut seconds exceeded while waiting for service [$($Service.DisplayName)] to enter '$State' state!"
-        }
-        
-        Start-Sleep -Milliseconds 500
-        $Service.Refresh()
-    }
-    
-    Write-Verbose "[$($Service.DisplayName)] service is $State"
 }
 #endregion
 
