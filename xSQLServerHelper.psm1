@@ -618,3 +618,61 @@ function Confirm-SqlServerRole
 
     return $confirmServerRole
 }
+
+function Get-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database
+    )
+    # Check if database and login exist
+    Write-Verbose 'Getting SQL Databases and SQL Logins'
+    $sqlDatabase = $SQL.Databases[$Database]
+    $sqlLogin = $SQL.Logins[$Name]
+
+    # Initialize variables
+    $permissions = @()
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            Write-Verbose "Getting Permissions for SQL Login $Name in database $Database"
+            $permissionSet = $sqlDatabase.EnumDatabasePermissions($Name)
+            foreach ($permission in $permissionSet)
+            {
+                $properties = ($permission.PermissionType | Get-Member -MemberType Property).Name
+                foreach ($property in $properties)
+                {
+                    if ($permission.PermissionType."$property")
+                    {
+                        $permissions += $property
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$SQL.ComputerNamePhysicalNetBIOS,$SQL.InstanceName) -ErrorCategory ObjectNotFound
+            $null = $permissions   
+        }
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$SQL.ComputerNamePhysicalNetBIOS,$SQL.InstanceName) -ErrorCategory InvalidResult
+        $null = $permissions
+    }
+
+    $permissions
+}
