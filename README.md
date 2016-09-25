@@ -347,6 +347,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+* Fixes in xSQLServerConfiguration
+  - Added support for clustered SQL instances
+  - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
 
 ### 2.0.0.0
 * Added resources
