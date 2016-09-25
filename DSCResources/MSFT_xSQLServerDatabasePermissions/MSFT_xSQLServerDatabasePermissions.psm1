@@ -33,44 +33,17 @@ function Get-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    if(!$SQL)
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+
+    if ($sql)
     {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
-
-    if($SQL)
-    {
-        # Check database exists
-        if(!($SQLDatabase = $SQL.Databases[$Database]))
-        {
-            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$SQLServer,$SQLInstanceName) -ErrorCategory InvalidResult
-        }
-
-        # Check login exists
-        if(!($SQLLogin = $SQL.Logins[$Name]))
-        {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$SQLServer,$SQLInstanceName) -ErrorCategory ObjectNotFound
-        }
-
-        $Permissions = @()
-        $PermissionSet = $SQLDatabase.EnumDatabasePermissions($Name)
-        foreach($Permission in $PermissionSet)
-        {
-            $Properties = ($Permission.PermissionType | Get-Member -MemberType Property).Name
-            foreach($Property in $Properties)
-            {
-                if($Permission.PermissionType."$Property")
-                {
-                    $Permissions += $Property
-                }
-            }
-        }
+        $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database
     }
     else
     {
-        $Name = $null
+        $null = $Permissions
     }
-
+    
     $returnValue = @{
         Database = $Database
         Name = $Name
@@ -107,21 +80,18 @@ function Set-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    if(!$SQL)
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    
+    if ($sql)
     {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
-
-    if($SQL)
-    {
-        $SQLDatabase = $SQL.Databases[$Database]
+        $sqlDatabase = $sql.Databases[$Database]
         
-        if(!$SQLDatabase.Users[$Name])
+        if (!$sqlDatabase.Users[$Name])
         {
             try
             {
                 Write-Verbose "Adding SQL login $Name as a user of database $Database on $SQLServer\$SQLInstanceName"
-                $SQLDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $SQLDatabase,$Name
+                $SQLDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
                 $SQLDatabaseUser.Login = $Name
                 $SQLDatabaseUser.Create()
             }
@@ -131,17 +101,17 @@ function Set-TargetResource
             }
         }
         
-        if($SQLDatabase.Users[$Name])
+        if ($sqlDatabase.Users[$Name])
         {
             try
             {
                 Write-Verbose "Granting SQL login $Name to permissions $Permissions on database $Database on $SQLServer\$SQLInstanceName"
                 $PermissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
-                foreach($Permission in $Permissions)
+                foreach ($Permission in $Permissions)
                 {
                     $PermissionSet."$Permission" = $true
                 }
-                $SQLDatabase.Grant($PermissionSet,$Name)
+                $sqlDatabase.Grant($PermissionSet,$Name)
             }
             catch
             {
@@ -150,7 +120,7 @@ function Set-TargetResource
         }
     }
 
-    if(!(Test-TargetResource @PSBoundParameters))
+    if (!(Test-TargetResource @PSBoundParameters))
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
@@ -185,9 +155,9 @@ function Test-TargetResource
     $SQLDatabasePermissions = (Get-TargetResource @PSBoundParameters).Permissions
 
     $result = $true
-    foreach($Permission in $Permissions)
+    foreach ($Permission in $Permissions)
     {
-        if($SQLDatabasePermissions -notcontains $Permission)
+        if ($SQLDatabasePermissions -notcontains $Permission)
         {
             Write-Verbose "Failed test for permission $Permission"
             $result = $false
