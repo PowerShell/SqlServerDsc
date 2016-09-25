@@ -84,40 +84,7 @@ function Set-TargetResource
     
     if ($sql)
     {
-        $sqlDatabase = $sql.Databases[$Database]
-        
-        if (!$sqlDatabase.Users[$Name])
-        {
-            try
-            {
-                Write-Verbose "Adding SQL login $Name as a user of database $Database on $SQLServer\$SQLInstanceName"
-                $SQLDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
-                $SQLDatabaseUser.Login = $Name
-                $SQLDatabaseUser.Create()
-            }
-            catch
-            {
-                Write-Verbose "Failed adding SQL login $Name as a user of database $Database on $SQLServer\$SQLInstanceName"
-            }
-        }
-        
-        if ($sqlDatabase.Users[$Name])
-        {
-            try
-            {
-                Write-Verbose "Granting SQL login $Name to permissions $Permissions on database $Database on $SQLServer\$SQLInstanceName"
-                $PermissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
-                foreach ($Permission in $Permissions)
-                {
-                    $PermissionSet."$Permission" = $true
-                }
-                $sqlDatabase.Grant($PermissionSet,$Name)
-            }
-            catch
-            {
-                Write-Verbose "Failed granting SQL login $Name to permissions $Permissions on database $Database on $SQLServer\$SQLInstanceName"
-            }
-        }
+        Set-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database -Permissions $Permissions
     }
 
     if (!(Test-TargetResource @PSBoundParameters))
