@@ -1,5 +1,5 @@
 ﻿$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Verbose -Message "CurrentPath: $currentPath"
+New-VerboseMessage -Message -Message "CurrentPath: $currentPath"
 
 # Load Common Code
 Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
@@ -104,11 +104,11 @@ Function Set-TargetResource
     
     if ($option.IsDynamic -eq $true)
     {  
-        Write-Verbose "Configuration option has been updated."
+        New-VerboseMessage -Message "Configuration option has been updated."
     }
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
-        Write-Verbose "Configuration option has been updated, restarting instance..."
+        New-VerboseMessage -Message "Configuration option has been updated, restarting instance..."
         Restart-SqlService -ServerObject $sql
     }
     else
@@ -155,6 +155,7 @@ Function Test-TargetResource
 #region helper functions
 Function Restart-SqlService
 {
+    [CmdletBinding()]
     param
     (
         # SMO Server object for instance to restart
@@ -163,28 +164,39 @@ Function Restart-SqlService
         $ServerObject
     )
 
-    if ($ServerObject.$IsClustered)
+    if ($ServerObject.IsClustered)
     {
-        ## Get the cluster resources 
+        ## Get the cluster resources
+        New-VerboseMessage -Message "Getting cluster resource for SQL Server" 
         $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.InstanceName)%'"
-        $AgentService = Get-WmiObject -ComputerName root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.InstanceName)%'"
+
+        New-VerboseMessage -Message "Getting cluster resource for SQL Server Agent"
+        $AgentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.InstanceName)%'"
 
         ## Stop the SQL Server resource
+        New-VerboseMessage -Message "SQL Server resource --> Offline"
         $SqlService.TakeOffline(120)
 
         ## Start the SQL Agent resource
+        New-VerboseMessage -Message "SQL Server Agent --> Online"
         $AgentService.BringOnline(120)
     }
     else
     {
+        New-VerboseMessage -Message "Getting SQL Service information"
         $SqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
         $AgentService = $SqlService.DependentServices | Where-Object { $_.StartType -ne ""}
 
         ## Restart the SQL Server service
+        New-VerboseMessage -Message "SQL Server service restarting"
         $SqlService | Restart-Service -Force
 
         ## Start the SQL Server Agent service
-        $AgentService | Start-Service 
+        if ($AgentService)
+        {
+            New-VerboseMessage -Message "Starting SQL Server Agent"
+            $AgentService | Start-Service 
+        }
     }
 }
 #endregion
