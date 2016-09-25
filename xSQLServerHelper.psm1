@@ -640,6 +640,8 @@ function Get-SqlDatabasePermission
     Write-Verbose 'Getting SQL Databases and SQL Logins'
     $sqlDatabase = $SQL.Databases[$Database]
     $sqlLogin = $SQL.Logins[$Name]
+    $sqlInstanceName = $SQL.InstanceName
+    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
 
     # Initialize variables
     $permissions = @()
@@ -664,15 +666,92 @@ function Get-SqlDatabasePermission
         }
         else
         {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$SQL.ComputerNamePhysicalNetBIOS,$SQL.InstanceName) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$sqlServer,$sqlInstanceName) -ErrorCategory ObjectNotFound
             $null = $permissions   
         }
     }
     else
     {
-        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$SQL.ComputerNamePhysicalNetBIOS,$SQL.InstanceName) -ErrorCategory InvalidResult
+        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$sqlServer,$sqlInstanceName) -ErrorCategory InvalidResult
         $null = $permissions
     }
 
     $permissions
+}
+
+function Set-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database,
+
+        [parameter(Mandatory = $true)]
+        [System.String[]]
+        $Permissions
+    )
+
+    # Check if database and login exist
+    Write-Verbose 'Getting SQL Databases and SQL Logins'
+    $sqlDatabase = $SQL.Databases[$Database]
+    $sqlLogin = $SQL.Logins[$Name]
+    $sqlInstanceName = $SQL.InstanceName
+    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            if (!$sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose "Adding SQL login $Name as a user of database $Database on $sqlServer\$sqlInstanceName"
+                    $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
+                    $sqlDatabaseUser.Login = $Name
+                    $sqlDatabaseUser.Create()
+                }
+                catch
+                {
+                    Write-Verbose "Failed adding SQL login $Name as a user of database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+
+            if ($sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose "Granting SQL login $Name to permissions $permissions on database $Database on $sqlServer\$sqlInstanceName"
+                    $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
+                    foreach ($permission in $permissions)
+                    {
+                        $permissionSet."$permission" = $true
+                    }
+                    $sqlDatabase.Grant($permissionSet,$Name)
+                }
+                catch
+                {
+                    Write-Verbose "Failed granting SQL login $Name to permissions $permissions on database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$sqlServer,$sqlInstanceName) -ErrorCategory ObjectNotFound
+        }
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$sqlServer,$sqlInstanceName) -ErrorCategory InvalidResult
+    }
 }
