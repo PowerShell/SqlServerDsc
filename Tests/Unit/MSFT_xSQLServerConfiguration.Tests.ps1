@@ -1,0 +1,159 @@
+
+$script:DSCModuleName      = 'xSQLServer'
+$script:DSCResourceName    = 'MSFT_xSQLServerConfiguration'
+
+#region HEADER
+
+# Unit Test Template Version: 1.1.0
+[String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
+     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+{
+    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+}
+
+Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+$TestEnvironment = Initialize-TestEnvironment `
+    -DSCModuleName $script:DSCModuleName `
+    -DSCResourceName $script:DSCResourceName `
+    -TestType Unit 
+
+#endregion HEADER
+
+$desiredState = @{
+    SQLServer = "CLU01"
+    SQLInstanceName = "ClusteredInstance"
+    OptionName = "user connections"
+    OptionValue = 500
+    RestartService = $False
+}
+
+# Begin Testing
+try
+{
+    #region Not in the desired state
+    Describe 'The system is not in the desired state' {
+        
+        Mock -CommandName Connect-SQL -MockWith {
+            $mock = New-Object PSObject -Property @{ 
+                Configuration = @{
+                    Properties = @(
+                        @{
+                            DisplayName = "user connections"
+                            ConfigValue = 0
+                        }
+                    )
+                }
+            }
+
+            ## add the Alter method
+            $mock.Configuration | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+            return $mock
+        } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context "Validate returned properties" {
+            ## Get the current state
+            $result = Get-TargetResource @desiredState
+
+            It "Property: SQLServer" {
+                $result.SQLServer | Should Be $desiredState.SQLServer
+            }
+
+            It "Property: SQLInstanceName" {
+                $result.SQLInstanceName | Should Be $desiredState.SQLInstanceName
+            }
+
+            It "Property: OptionName" {
+                $result.OptionName | Should Be $desiredState.OptionName
+            }
+
+            It "Property: OptionValue" {
+                $result.OptionValue | Should Not Be $desiredState.OptionValue
+            }
+
+            It "Property: RestartService" {
+                $result.RestartService | Should Be $desiredState.RestartService
+            }
+        }
+
+        It 'Test method returns false' {
+            Test-TargetResource @desiredState | Should be $false
+        }
+
+        It 'Set method calls Connect-SQL' {
+            ## attempt to bring the system into the desired state
+            Set-TargetResource @desiredState
+
+            # Check that our mock was called at least 3 times
+            Assert-MockCalled -CommandName Connect-SQL -Times 3
+        }
+    }
+    #endregion Not in the desired state
+
+    #region In the desired state
+    Describe 'The system is in the desired state' {
+        
+        Mock -CommandName Connect-SQL -MockWith {
+            $mock = New-Object PSObject -Property @{ 
+                Configuration = @{
+                    Properties = @(
+                        @{
+                            DisplayName = "user connections"
+                            ConfigValue = 500
+                        }
+                    )
+                }
+            }
+
+            ## add the Alter method
+            $mock.Configuration | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+            return $mock
+        } -ModuleName $script:DSCResourceName -Verifiable
+
+        ## Test-TargetResource should return true when in the desired state
+        It 'Test method returns true' {
+            Test-TargetResource @desiredState | Should be $true
+        }
+    }
+    #endregion In the desired state
+
+    #region Non-Exported Function Unit Tests
+    InModuleScope $script:DSCResourceName {
+        Describe "Testing Restart-SqlService" {
+            ## Mock Get-WmiObject
+
+            ## Mock Get-Service
+
+            Context "Standalone Service Restart" {
+                It "Restart default instance" {}
+
+                It "Restart named instance" {}
+
+                It "Restart instance without Agent" {}
+
+                It "Assert Restart-SqlService called Mock" {}
+            }
+
+            Context "Clustered Service Restart" {
+                It "Restart default instance" {}
+
+                It "Restart named instance" {}
+
+                It "Restart instance without Agent" {}
+
+                It "Assert Restart-SqlService called Mock" {}
+            }
+        }
+    }
+    #endregion Non-Exported Function Unit Tests
+}
+finally
+{
+    #region FOOTER
+
+    Restore-TestEnvironment -TestEnvironment $TestEnvironment
+
+    #endregion
+}
