@@ -14,6 +14,10 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [ValidateSet("Present","Absent")]
+        [System.String]
+        $Ensure,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $Database,
@@ -21,6 +25,10 @@ function Get-TargetResource
         [parameter(Mandatory = $true)]
         [System.String]
         $Name,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $PermissionState,
 
         [parameter(Mandatory = $true)]
         [System.String[]]
@@ -37,17 +45,17 @@ function Get-TargetResource
 
     if ($sql)
     {
-        $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database
+        $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database -PermissionState $PermissionState
     }
     else
     {
-        $null = $Permissions
+        $null = $getSqlDatabasePermission
     }
     
     $returnValue = @{
         Database = $Database
         Name = $Name
-        Permissions = $Permissions
+        Permissions = $getSqlDatabasePermission
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
@@ -61,6 +69,10 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [ValidateSet("Present","Absent")]
+        [System.String]
+        $Ensure,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $Database,
@@ -68,6 +80,10 @@ function Set-TargetResource
         [parameter(Mandatory = $true)]
         [System.String]
         $Name,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $PermissionState,
 
         [parameter(Mandatory = $true)]
         [System.String[]]
@@ -100,6 +116,10 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [ValidateSet("Present","Absent")]
+        [System.String]
+        $Ensure,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $Database,
@@ -107,6 +127,10 @@ function Test-TargetResource
         [parameter(Mandatory = $true)]
         [System.String]
         $Name,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $PermissionState,
 
         [parameter(Mandatory = $true)]
         [System.String[]]
