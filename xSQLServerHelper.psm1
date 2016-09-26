@@ -651,7 +651,7 @@ function Get-SqlDatabasePermission
         if ($sqlLogin)
         {
             Write-Verbose "Getting Permissions for SQL Login $Name in database $Database"
-            $permissionSet = $sqlDatabase.EnumDatabasePermissions($Name)
+            $permissionSet = $sqlDatabase.EnumDatabasePermissions($Name) | where { $_.PermissionState -eq $PermissionState }
             foreach ($permission in $permissionSet)
             {
                 $properties = ($permission.PermissionType | Get-Member -MemberType Property).Name
