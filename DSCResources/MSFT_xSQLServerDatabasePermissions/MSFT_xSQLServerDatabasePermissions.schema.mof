@@ -4,7 +4,7 @@ class MSFT_xSQLServerDatabasePermissions : OMI_BaseResource
     [Write, Description("If the values should be present or absent. Valid values are 'Present' or 'Absent'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Key, Description("The SQL database.")] String Database;
     [Required, Description("The name of the SQL login for the permission set.")] String Name;
-    [Required, Description("The state of permission set. Valid values are 'Grant' or 'GrantWithGrant' or 'Deny'."), ValueMap{"Grant","GrantWithGrant","Deny"}, Values{"Grant","GrantWithGrant","Deny"}] String PermissionState;
+    [Required, Description("The state of permission set. Valid values are 'Grant' or 'Deny'."), ValueMap{"Grant","Deny"}, Values{"Grant","Deny"}] String PermissionState;
     [Required, Description("The set of permissions for the SQL database.")] String Permissions[];
     [Key, Description("The SQL Server for the database.")] String SQLServer;
     [Key, Description("The SQL instance for the database.")] String SQLInstanceName;

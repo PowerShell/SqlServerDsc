@@ -222,7 +222,6 @@ function Test-SQLDscParameterState
         [Object]
         $DesiredValues,
 
-        [Parameter()] 
         [Array]
         $ValuesToCheck
     )
