@@ -45,16 +45,39 @@ function Get-TargetResource
 
     if ($sql)
     {
-        $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database -PermissionState $PermissionState
+        $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql `
+                                                              -Name $Name `
+                                                              -Database $Database `
+                                                              -PermissionState $PermissionState
+        
+        if ($getSqlDatabasePermission)
+        {
+            $comparePermissions = Compare-Object -ReferenceObject $Permissions `                                                 -DifferenceObject $getSqlDatabasePermission
+            if ($null -eq $comparePermissions)
+            {
+                $Ensure = "Present"
+            }
+            else
+            {
+                $Ensure = "Absent"
+            }
+        }
+        else 
+        {
+            $Ensure = "Absent"
+        }
     }
     else
     {
         $null = $getSqlDatabasePermission
+        $Ensure = "Absent"
     }
     
     $returnValue = @{
+        Ensure = $Ensure
         Database = $Database
         Name = $Name
+        PermissionState = $PermissionState
         Permissions = $getSqlDatabasePermission
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
@@ -100,12 +123,24 @@ function Set-TargetResource
     
     if ($sql)
     {
-        Set-SqlDatabasePermission -SQL $sql -Name $Name -Database $Database -Permissions $Permissions
-    }
-
-    if (!(Test-TargetResource @PSBoundParameters))
-    {
-        throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
+        if ($Ensure -eq "Present")
+        {
+            Add-SqlDatabasePermission -SQL $sql `
+                                      -Name $Name `
+                                      -Database $Database `
+                                      -PermissionState $PermissionState `
+                                      -Permissions $Permissions
+            New-VerboseMessage -Message "$PermissionState - SQL Permissions for $Name, successfullly added in $Database"
+        }
+        else
+        {
+            Remove-SqlDatabasePermission -SQL $sql `
+                                         -Name $Name `
+                                         -Database $Database `
+                                         -PermissionState $PermissionState `
+                                         -Permissions $Permissions
+            New-VerboseMessage -Message "$PermissionState - SQL Permissions for $Name, successfullly removed in $Database"
+        }
     }
 }
 
@@ -143,20 +178,13 @@ function Test-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    $SQLDatabasePermissions = (Get-TargetResource @PSBoundParameters).Permissions
+    Write-Verbose -Message "Testing service application '$Name'"
 
-    $result = $true
-    foreach ($Permission in $Permissions)
-    {
-        if ($SQLDatabasePermissions -notcontains $Permission)
-        {
-            Write-Verbose "Failed test for permission $Permission"
-            $result = $false
-        }
-    }
-    
-    $result
+    $currentValues = Get-TargetResource @PSBoundParameters
+
+    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+                                     -DesiredValues $PSBoundParameters `
+                                     -ValuesToCheck @("Name", "Ensure", "PermissionState", "Permissions")
 }
-
 
 Export-ModuleMember -Function *-TargetResource

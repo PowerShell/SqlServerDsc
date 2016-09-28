@@ -128,7 +128,6 @@ function New-TerminatingError
     return $errorRecord
 }
 
-
 function New-VerboseMessage
 {
     [CmdletBinding()]
@@ -141,6 +140,165 @@ function New-VerboseMessage
     )
     Write-Verbose -Message ((Get-Date -format yyyy-MM-dd_HH-mm-ss) + ": $Message");
 
+}
+
+function Test-SQLDscParameterState 
+{
+    [CmdletBinding()]
+    param
+    (
+        [parameter(Mandatory = $true, Position=1)]  
+        [HashTable]
+        $CurrentValues,
+        
+        [parameter(Mandatory = $true, Position=2)]  
+        [Object]
+        $DesiredValues,
+
+        [parameter(Mandatory = $false, Position=3)] 
+        [Array]
+        $ValuesToCheck
+    )
+
+    $returnValue = $true
+
+    if (($DesiredValues.GetType().Name -ne "HashTable") `
+        -and ($DesiredValues.GetType().Name -ne "CimInstance") `
+        -and ($DesiredValues.GetType().Name -ne "PSBoundParametersDictionary")) 
+    {
+        throw ("Property 'DesiredValues' in Test-SQLDscParameterState must be either a " + `
+               "Hashtable or CimInstance. Type detected was $($DesiredValues.GetType().Name)")
+    }
+
+    if (($DesiredValues.GetType().Name -eq "CimInstance") -and ($null -eq $ValuesToCheck)) 
+    {
+        throw ("If 'DesiredValues' is a Hashtable then property 'ValuesToCheck' must contain " + `
+               "a value")
+    }
+
+    if (($null -eq $ValuesToCheck) -or ($ValuesToCheck.Count -lt 1)) 
+    {
+        $KeyList = $DesiredValues.Keys
+    } 
+    else 
+    {
+        $KeyList = $ValuesToCheck
+    }
+
+    $KeyList | ForEach-Object -Process {
+        if (($_ -ne "Verbose")) 
+        {
+            if (($CurrentValues.ContainsKey($_) -eq $false) `
+            -or ($CurrentValues.$_ -ne $DesiredValues.$_) `
+            -or (($DesiredValues.ContainsKey($_) -eq $true) -and ($DesiredValues.$_.GetType().IsArray))) 
+            {
+                if ($DesiredValues.GetType().Name -eq "HashTable" -or `
+                    $DesiredValues.GetType().Name -eq "PSBoundParametersDictionary") 
+                {
+                    
+                    $CheckDesiredValue = $DesiredValues.ContainsKey($_)
+                } 
+                else 
+                {
+                    $CheckDesiredValue = Test-SPDSCObjectHasProperty $DesiredValues $_
+                }
+
+                if ($CheckDesiredValue) 
+                {
+                    $desiredType = $DesiredValues.$_.GetType()
+                    $fieldName = $_
+                    if ($desiredType.IsArray -eq $true) 
+                    {
+                        if (($CurrentValues.ContainsKey($fieldName) -eq $false) `
+                        -or ($null -eq $CurrentValues.$fieldName)) 
+                        {
+                            Write-Verbose -Message ("Expected to find an array value for " + `
+                                                    "property $fieldName in the current " + `
+                                                    "values, but it was either not present or " + `
+                                                    "was null. This has caused the test method " + `
+                                                    "to return false.")
+                            $returnValue = $false
+                        } 
+                        else 
+                        {
+                            $arrayCompare = Compare-Object -ReferenceObject $CurrentValues.$fieldName `
+                                                           -DifferenceObject $DesiredValues.$fieldName
+                            if ($null -ne $arrayCompare) 
+                            {
+                                Write-Verbose -Message ("Found an array for property $fieldName " + `
+                                                        "in the current values, but this array " + `
+                                                        "does not match the desired state. " + `
+                                                        "Details of the changes are below.")
+                                $arrayCompare | ForEach-Object -Process {
+                                    Write-Verbose -Message "$($_.InputObject) - $($_.SideIndicator)"
+                                }
+                                $returnValue = $false
+                            }
+                        }
+                    } 
+                    else 
+                    {
+                        switch ($desiredType.Name) 
+                        {
+                            "String" {
+                                if ([string]::IsNullOrEmpty($CurrentValues.$fieldName) `
+                                -and [string]::IsNullOrEmpty($DesiredValues.$fieldName)) 
+                                {} 
+                                else 
+                                {
+                                    Write-Verbose -Message ("String value for property " + `
+                                                            "$fieldName does not match. " + `
+                                                            "Current state is " + `
+                                                            "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + `
+                                                            "'$($DesiredValues.$fieldName)'")
+                                    $returnValue = $false
+                                }
+                            }
+                            "Int32" {
+                                if (($DesiredValues.$fieldName -eq 0) `
+                                -and ($null -eq $CurrentValues.$fieldName)) 
+                                {} 
+                                else 
+                                {
+                                    Write-Verbose -Message ("Int32 value for property " + `
+                                                            "$fieldName does not match. " + `
+                                                            "Current state is " + `
+                                                            "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + `
+                                                            "'$($DesiredValues.$fieldName)'")
+                                    $returnValue = $false
+                                }
+                            }
+                            "Int16" {
+                                if (($DesiredValues.$fieldName -eq 0) `
+                                -and ($null -eq $CurrentValues.$fieldName)) 
+                                {} 
+                                else 
+                                {
+                                    Write-Verbose -Message ("Int16 value for property " + `
+                                                            "$fieldName does not match. " + `
+                                                            "Current state is " + `
+                                                            "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + `
+                                                            "'$($DesiredValues.$fieldName)'")
+                                    $returnValue = $false
+                                }
+                            }
+                            default {
+                                Write-Verbose -Message ("Unable to compare property $fieldName " + `
+                                                        "as the type ($($desiredType.Name)) is " + `
+                                                        "not handled by the " + `
+                                                        "Test-SQLDscParameterState cmdlet")
+                                $returnValue = $false
+                            }
+                        }
+                    }
+                }            
+            }
+        } 
+    }
+    return $returnValue
 }
 
 function Grant-ServerPerms
@@ -634,24 +792,31 @@ function Get-SqlDatabasePermission
 
         [ValidateNotNull()] 
         [System.String]
-        $Database
+        $Database,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState
     )
     # Check if database and login exist
-    Write-Verbose 'Getting SQL Databases and SQL Logins'
+    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
     $sqlDatabase = $SQL.Databases[$Database]
     $sqlLogin = $SQL.Logins[$Name]
     $sqlInstanceName = $SQL.InstanceName
     $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
 
     # Initialize variables
-    $permissions = @()
+    [System.String[]]$permissions = @()
 
     if ($sqlDatabase)
     {        
         if ($sqlLogin)
         {
-            Write-Verbose "Getting Permissions for SQL Login $Name in database $Database"
-            $permissionSet = $sqlDatabase.EnumDatabasePermissions($Name) | where { $_.PermissionState -eq $PermissionState }
+            Write-Verbose -Message "Getting Permissions for SQL Login $Name in database $Database"
+
+            $enumDatabasePermissions = $sqlDatabase.EnumDatabasePermissions($Name)
+            $permissionSet = $enumDatabasePermissions | where { $_.PermissionState -eq $PermissionState }
+
             foreach ($permission in $permissionSet)
             {
                 $properties = ($permission.PermissionType | Get-Member -MemberType Property).Name
@@ -666,20 +831,24 @@ function Get-SqlDatabasePermission
         }
         else
         {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$sqlServer,$sqlInstanceName) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType LoginNotFound `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory ObjectNotFound
             $null = $permissions   
         }
     }
     else
     {
-        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$sqlServer,$sqlInstanceName) -ErrorCategory InvalidResult
+        throw New-TerminatingError -ErrorType NoDatabase `
+                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                                   -ErrorCategory InvalidResult
         $null = $permissions
     }
 
     $permissions
 }
 
-function Set-SqlDatabasePermission
+function Add-SqlDatabasePermission
 {
     [CmdletBinding()]    
     param
@@ -696,13 +865,17 @@ function Set-SqlDatabasePermission
         [System.String]
         $Database,
 
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState,
+
         [parameter(Mandatory = $true)]
         [System.String[]]
         $Permissions
     )
 
     # Check if database and login exist
-    Write-Verbose 'Getting SQL Databases and SQL Logins'
+    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
     $sqlDatabase = $SQL.Databases[$Database]
     $sqlLogin = $SQL.Logins[$Name]
     $sqlInstanceName = $SQL.InstanceName
@@ -716,14 +889,16 @@ function Set-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose "Adding SQL login $Name as a user of database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
+                                           "$Database on $sqlServer\$sqlInstanceName"
                     $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
                     $sqlDatabaseUser.Login = $Name
                     $sqlDatabaseUser.Create()
                 }
                 catch
                 {
-                    Write-Verbose "Failed adding SQL login $Name as a user of database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
+                                           "database $Database on $sqlServer\$sqlInstanceName"
                 }
             }
 
@@ -731,27 +906,130 @@ function Set-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose "Granting SQL login $Name to permissions $permissions on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message "$PermissionState - Adding SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
                     $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
                     foreach ($permission in $permissions)
                     {
                         $permissionSet."$permission" = $true
                     }
-                    $sqlDatabase.Grant($permissionSet,$Name)
+                    switch ($PermissionState) 
+                    {
+                        "Grant" { $sqlDatabase.Grant($permissionSet,$Name) }
+                        "Deny" { $sqlDatabase.Deny($permissionSet,$Name) }
+                    }                    
                 }
                 catch
                 {
-                    Write-Verbose "Failed granting SQL login $Name to permissions $permissions on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message "Failed adding SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
                 }
             }
         }
         else
         {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name,$sqlServer,$sqlInstanceName) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType LoginNotFound `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory ObjectNotFound
         }
     }
     else
     {
-        throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$sqlServer,$sqlInstanceName) -ErrorCategory InvalidResult
+        throw New-TerminatingError -ErrorType NoDatabase `
+                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                                   -ErrorCategory InvalidResult
+    }
+}
+
+function Remove-SqlDatabasePermission
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $PermissionState,
+
+        [parameter(Mandatory = $true)]
+        [System.String[]]
+        $Permissions
+    )
+
+    # Check if database and login exist
+    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
+    $sqlDatabase = $SQL.Databases[$Database]
+    $sqlLogin = $SQL.Logins[$Name]
+    $sqlInstanceName = $SQL.InstanceName
+    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
+
+    if ($sqlDatabase)
+    {        
+        if ($sqlLogin)
+        {
+            if (!$sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
+                                           "$Database on $sqlServer\$sqlInstanceName"
+                    $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
+                    $sqlDatabaseUser.Login = $Name
+                    $sqlDatabaseUser.Create()
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
+                                           "database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+
+            if ($sqlDatabase.Users[$Name])
+            {
+                try
+                {
+                    Write-Verbose -Message "$PermissionState - Removing SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
+                    foreach ($permission in $permissions)
+                    {
+                        $permissionSet."$permission" = $false
+                    }
+                    switch ($PermissionState) 
+                    {
+                        "Grant" { $sqlDatabase.Grant($permissionSet,$Name) }
+                        "Deny" { $sqlDatabase.Deny($permissionSet,$Name) }
+                    }                    
+                }
+                catch
+                {
+                    Write-Verbose -Message "Failed removing SQL login $Name to permissions $permissions " + `
+                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                }
+            }
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType LoginNotFound `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory ObjectNotFound
+        }
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType NoDatabase `
+                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                                   -ErrorCategory InvalidResult
     }
 }
