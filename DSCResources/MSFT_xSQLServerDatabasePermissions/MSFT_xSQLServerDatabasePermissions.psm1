@@ -34,9 +34,11 @@ function Get-TargetResource
         [System.String[]]
         $Permissions,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLInstanceName = "MSSQLSERVER"
     )
@@ -52,7 +54,8 @@ function Get-TargetResource
         
         if ($getSqlDatabasePermission)
         {
-            $comparePermissions = Compare-Object -ReferenceObject $Permissions `                                                 -DifferenceObject $getSqlDatabasePermission
+            $comparePermissions = Compare-Object -ReferenceObject $Permissions `
+                                                 -DifferenceObject $getSqlDatabasePermission
             if ($null -eq $comparePermissions)
             {
                 $Ensure = "Present"
@@ -112,9 +115,11 @@ function Set-TargetResource
         [System.String[]]
         $Permissions,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLInstanceName = "MSSQLSERVER"
     )
@@ -171,9 +176,11 @@ function Test-TargetResource
         [System.String[]]
         $Permissions,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [parameter(Mandatory = $true)]
         [System.String]
         $SQLInstanceName = "MSSQLSERVER"
     )
