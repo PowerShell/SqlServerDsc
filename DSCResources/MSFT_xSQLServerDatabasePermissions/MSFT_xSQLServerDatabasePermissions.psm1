@@ -188,7 +188,7 @@ function Test-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    Write-Verbose -Message "Testing service application '$Name'"
+    Write-Verbose -Message "Testing permissions of database '$Database' for login '$Name'"
 
     $currentValues = Get-TargetResource @PSBoundParameters
 
