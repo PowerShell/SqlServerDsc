@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
     This example shows how to ensure that the user account CONTOSO\SQLAdmin
-    has "CONNECT" and "CREATE TABLE" SQL Permissions for database "AdventureWorks". 
+    hasn't "Select" and "Create Table" SQL Permissions for database "AdventureWorks". 
 #>
 
     Configuration Example 
@@ -29,9 +29,11 @@
             xSQLServerDatabasePermissions Add_SqlDatabasePermissions_SQLAdmin
             {
                 DependsOn = '[xSQLServerLogin]Add_SqlServerLogin_SQLAdmin'
+                Ensure = 'Absent'
                 Name = 'CONTOSO\SQLAdmin'
                 Database = 'AdventureWorks'
-                Permissions = "CONNECT","CREATE TABLE"
+                PermissionState = 'Deny'
+                Permissions = "Select","Create Table"
                 SQLServer = 'SQLServer'
                 SQLInstanceName = 'DSC'
                 PsDscRunAsCredential = $SysAdminAccount
