@@ -27,6 +27,7 @@ function Get-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
+        [ValidateSet("Grant","Deny")]
         [System.String]
         $PermissionState,
 
@@ -108,6 +109,7 @@ function Set-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
+        [ValidateSet("Grant","Deny")]
         [System.String]
         $PermissionState,
 
@@ -169,6 +171,7 @@ function Test-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
+        [ValidateSet("Grant","Deny")]
         [System.String]
         $PermissionState,
 
