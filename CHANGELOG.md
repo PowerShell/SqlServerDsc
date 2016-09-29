@@ -11,6 +11,7 @@
   - xSQLServerSetup
   - xSQLServerDatabaseRole
   - xSQLAOGroupJoin
+  - xSQLServerDatabasePermissions
 - Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
   - Get-TargetResource now works with Get-DscConfiguration

@@ -227,11 +227,13 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ### xSQLServerDatabasePermissions
 
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
 * **Database**: (Key) The SQL Database
 * **Name**: (Required) The name of permissions for the SQL database
+* **PermissionState**: (Required) The state of permission set. Valid values are 'Grant' or 'Deny'.
 * **Permissions**: (Required) The set of Permissions for the SQL database
-* **SQLServer**: The SQL Server for the database
-* **SQLInstanceName**: The SQL instance for the database
+* **SQLServer**: (Key) The SQL Server for the database
+* **SQLInstanceName**: (Key) The SQL instance for the database
 
 ### xSQLServerDatabaseOwner
 
