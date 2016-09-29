@@ -190,11 +190,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **Role**: The SQL role for the database
 
 ###xSQLServerDatabasePermissions
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
 * **Database**: (Key) The SQL Database
 * **Name**: (Required) The name of permissions for the SQL database
+* **PermissionState**: (Required) The state of permission set. Valid values are 'Grant' or 'Deny'.
 * **Permissions**: (Required) The set of Permissions for the SQL database
-* **SQLServer**: The SQL Server for the database
-* **SQLInstanceName**: The SQL instance for the database
+* **SQLServer**: (Key) The SQL Server for the database
+* **SQLInstanceName**: (Key) The SQL instance for the database
 
 ###xSQLServerDatabaseOwner
 * **Database**: (Key) The SQL Database
@@ -347,6 +349,18 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+* xSQLServerHelper
+  - added functions
+    - Test-SQLDscParameterState
+    - Get-SqlDatabasePermission
+    - Add-SqlDatabasePermission
+    - Remove-SqlDatabasePermission
+* Examples
+  - xSQLServerDatabasePermissions
+    - 1-AddDatabasePermissions.ps1
+    - 2-RemoveDatabasePermissions.ps1
+* Added tests for resources
+  - MSFT_xSQLServerDatabasePermissions.Tests.ps1
 
 ### 2.0.0.0
 * Added resources
