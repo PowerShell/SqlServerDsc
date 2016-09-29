@@ -190,11 +190,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **Role**: The SQL role for the database
 
 ###xSQLServerDatabasePermissions
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
 * **Database**: (Key) The SQL Database
 * **Name**: (Required) The name of permissions for the SQL database
+* **PermissionState**: (Required) The state of permission set. Valid values are 'Grant' or 'Deny'.
 * **Permissions**: (Required) The set of Permissions for the SQL database
-* **SQLServer**: The SQL Server for the database
-* **SQLInstanceName**: The SQL instance for the database
+* **SQLServer**: (Key) The SQL Server for the database
+* **SQLInstanceName**: (Key) The SQL instance for the database
 
 ###xSQLServerDatabaseOwner
 * **Database**: (Key) The SQL Database
@@ -352,9 +354,20 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Fixes in xSQLServerConfiguration
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
-* Created unit tests for xSQLServerConfiguration resource
+* Added tests for resources
+  - xSQLServerConfiguration
+  - xSQLServerDatabasePermissions
 * Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
+* xSQLServerHelper
+  - added functions
+    - Get-SqlDatabasePermission
+    - Add-SqlDatabasePermission
+    - Remove-SqlDatabasePermission
+* Examples
+  - xSQLServerDatabasePermissions
+    - 1-AddDatabasePermissions.ps1
+    - 2-RemoveDatabasePermissions.ps1
 
 ### 3.0.0.0
 * xSQLServerHelper
