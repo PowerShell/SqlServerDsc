@@ -1,5 +1,5 @@
 ﻿$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-New-VerboseMessage -Message -Message "CurrentPath: $currentPath"
+Write-Verbose -Message "CurrentPath: $currentPath"
 
 # Load Common Code
 Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
