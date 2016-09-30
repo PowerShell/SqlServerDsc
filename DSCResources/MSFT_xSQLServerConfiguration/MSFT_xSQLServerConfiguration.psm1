@@ -169,10 +169,10 @@ Function Restart-SqlService
     {
         ## Get the cluster resources
         New-VerboseMessage -Message "Getting cluster resource for SQL Server" 
-        $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.InstanceName)%'"
+        $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
         New-VerboseMessage -Message "Getting cluster resource for SQL Server Agent"
-        $AgentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.InstanceName)%'"
+        $AgentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
         ## Stop the SQL Server resource
         New-VerboseMessage -Message "SQL Server resource --> Offline"
