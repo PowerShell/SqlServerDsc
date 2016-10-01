@@ -130,6 +130,8 @@ namespace Microsoft.SqlServer.Management.Smo
         public string Name;
         public string DisplayName;
         public string InstanceName;
+        public string ServiceName;
+        public bool IsClustered = false;
         public bool IsHadrEnabled = false;
 
         public Server(){} 

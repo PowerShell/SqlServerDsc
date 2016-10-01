@@ -33,7 +33,9 @@ try
 {
     #region Not in the desired state
     Describe 'The system is not in the desired state' {
-        
+
+        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
+
         Mock -CommandName Connect-SQL -MockWith {
             $mock = New-Object PSObject -Property @{ 
                 Configuration = @{
@@ -83,10 +85,11 @@ try
 
         It 'Set method calls Connect-SQL' {
             ## attempt to bring the system into the desired state
-            Set-TargetResource @desiredState
+            Get-TargetResource @desiredState
 
             # Check that our mock was called at least 3 times
-            Assert-MockCalled -CommandName Connect-SQL -Times 3
+            ##Assert-MockCalled -CommandName Connect-SQL -Times 1 -Scope Describe
+            Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope Describe -Times 3
         }
     }
     #endregion Not in the desired state
@@ -94,6 +97,8 @@ try
     #region In the desired state
     Describe 'The system is in the desired state' {
         
+        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
+
         Mock -CommandName Connect-SQL -MockWith {
             $mock = New-Object PSObject -Property @{ 
                 Configuration = @{
@@ -122,28 +127,115 @@ try
     #region Non-Exported Function Unit Tests
     InModuleScope $script:DSCResourceName {
         Describe "Testing Restart-SqlService" {
-            ## Mock Get-WmiObject
+            
+            ## compile the SMO stub
+            Add-Type -Path .\Stubs\SMO.cs
 
-            ## Mock Get-Service
+            Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
             Context "Standalone Service Restart" {
-                It "Restart default instance" {}
 
-                It "Restart named instance" {}
+                ## Mock Get-Service
+                Mock -CommandName Get-Service {
+                    return @{
+                        Name = "MSSQLSERVER"
+                        DisplayName = "Microsoft SQL Server (MSSQLSERVER)"
+                        DependentServices = @(
+                            @{ 
+                                Name = "SQLSERVERAGENT"
+                                DisplayName = "SQL Server Agent (MSSQLSERVER)"
+                                DependentServices = @()
+                            }
+                        )
+                    }
+                } -Verifiable -ParameterFilter { $DisplayName -eq "SQL Server (MSSQLSERVER)" }
 
-                It "Restart instance without Agent" {}
+                ## Mock Get-Service for non-clustered, no agent instance
+                Mock -CommandName Get-Service {
+                    return @{
+                        Name = 'MSSQL$NOAGENT'
+                        DisplayName = 'Microsoft SQL Server (NOAGENT)'
+                        DependentServices = @()
+                    }
+                } -Verifiable -ParameterFilter { $DisplayName -eq "SQL Server (NOAGENT)" }
 
-                It "Assert Restart-SqlService called Mock" {}
+                Mock -CommandName Restart-Service {} -Verifiable
+
+                Mock -CommandName Start-Service {} -Verifiable
+
+                It "Restart instance" {
+                    $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
+                    $Sql.Name = "MSSQLSERVER"
+                    $Sql.InstanceName = ""
+                    $Sql.ServiceName = "MSSQLSERVER"
+
+                    ## Call Restart
+                    { Restart-SqlService -ServerObject $Sql } | Should Not Throw
+                }
+
+                It "Restart instance without Agent" {
+                    $Sql = New-Object Microsoft.Sqlserver.Management.Smo.Server
+                    $Sql.Name = "NOAGENT"
+                    $Sql.InstanceName = "NOAGENT"
+                    $Sql.ServiceName = "NOAGENT"
+
+                    { Restart-SqlService -ServerObject $Sql } | Should Not Throw
+                }
+
+                It "Assert Restart-SqlService called Mocks" {
+                    Assert-MockCalled -CommandName Get-Service -Scope Context -Times 2
+                    Assert-MockCalled -CommandName Restart-Service -Scope Context -Times 2
+                    Assert-MockCalled -CommandName Start-Service -Scope Context -Times 1
+                }
             }
 
             Context "Clustered Service Restart" {
-                It "Restart default instance" {}
+                
+                ## Mock Get-WmiObject for SQL Instance
+                Mock -CommandName Get-WmiObject {
+                    $mock = New-Object PSObject -Property @{
+                        Name = "SQL Server (MSSQLSERVER)"
+                    }
 
-                It "Restart named instance" {}
+                    $mock | Add-Member -MemberType ScriptMethod -Name TakeOffline -Value { param ( [int] $TimeOut ) }
 
-                It "Restart instance without Agent" {}
+                    return $mock
+                } -Verifiable -ParameterFilter { $Filter -imatch "Type = 'SQL Server'" }
 
-                It "Assert Restart-SqlService called Mock" {}
+                ## Mock Get-WmiObject for SQL Instance
+                Mock -CommandName Get-WmiObject {
+                    $mock = New-Object PSObject -Property @{
+                        Name = "SQL Server Agent (MSSQLSERVER)"
+                    }
+
+                    $mock | Add-Member -MemberType ScriptMethod -Name BringOnline -Value { param ( [int] $TimeOut ) }
+
+                    return $mock
+                } -Verifiable -ParameterFilter { $Filter -imatch "Type = 'SQL Server Agent'" }
+
+                It "Restart default instance" {
+                    $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
+                    $Sql.Name = "MSSQLSERVER"
+                    $Sql.InstanceName = ""
+                    $Sql.ServiceName = "MSSQLSERVER"
+                    $Sql.IsClustered = $true
+
+                    { Restart-SqlService -ServerObject $Sql } | Should Not Throw
+                }
+
+                It "Restart named instance" {
+                    $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
+                    $Sql.Name = "NAMEDINSTANCE"
+                    $Sql.InstanceName = ""
+                    $Sql.ServiceName = "NAMEDINSTANCE"
+                    $Sql.IsClustered = $true
+
+                    { Restart-SqlService -ServerObject $Sql } | Should Not Throw
+                }
+
+                It "Assert Restart-SqlService called Mock" {
+                    Assert-MockCalled -Scope Context -CommandName Get-WmiObject -Times 4
+                }
             }
         }
     }
