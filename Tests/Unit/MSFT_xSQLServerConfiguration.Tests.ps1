@@ -129,7 +129,7 @@ try
         Describe "Testing Restart-SqlService" {
             
             ## compile the SMO stub
-            Add-Type -Path .\Stubs\SMO.cs
+            Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 
             Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
