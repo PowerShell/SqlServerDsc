@@ -36,7 +36,7 @@ Function Get-TargetResource
 
     if (! $sql)
     {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstance $SQLInstance
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstance
     }
 
     ## get the configuration option
@@ -89,7 +89,7 @@ Function Set-TargetResource
 
     if (! $sql)
     {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstance $SQLInstance
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstance
     }
 
     ## get the configuration option
@@ -148,7 +148,7 @@ Function Test-TargetResource
         $RestartService = $false
     )
 
-    $state = Get-TargetResource -InstanceName $InstanceName -OptionName $OptionName -OptionValue $OptionValue
+    $state = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -OptionName $OptionName -OptionValue $OptionValue -RestartService $RestartService
 
     return ($state.OptionValue -eq $OptionValue)
 }
