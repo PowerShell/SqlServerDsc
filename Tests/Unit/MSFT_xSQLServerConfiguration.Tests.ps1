@@ -28,6 +28,9 @@ $desiredState = @{
     RestartService = $False
 }
 
+## compile the SMO stub
+Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
+
 # Begin Testing
 try
 {
@@ -127,9 +130,6 @@ try
     #region Non-Exported Function Unit Tests
     InModuleScope $script:DSCResourceName {
         Describe "Testing Restart-SqlService" {
-            
-            ## compile the SMO stub
-            Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 
             Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
