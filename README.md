@@ -280,7 +280,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **RetryCount**: Maximum number of retries to check availability group creation
 
 ###xSQLServerConfiguration
-* **InstanceName**: (Key) name of SQL Server instance for which configuration options will be configured.
+* **SQLServer**: (Key) The SQL Server for the configuration option.
+* **SQLInstanceName**: (Write) The SQL instance for the configuration option.
 * **OptionName**: (Key) SQL Server option name. For all possible values reference [MSDN](https://msdn.microsoft.com/en-us/library/ms189631.aspx) or run sp_configure.
 * **OptionValue**: (Required) SQL Server option value to be set.
 * **RestartService**: Default false. If true will restart SQL Service instance service after update.
@@ -350,6 +351,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Fixes in xSQLServerConfiguration
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
+* Created unit tests for resource
 
 ### 2.0.0.0
 * Added resources
