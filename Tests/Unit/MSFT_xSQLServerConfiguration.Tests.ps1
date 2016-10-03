@@ -57,27 +57,27 @@ try
             return $mock
         } -ModuleName $script:DSCResourceName -Verifiable
 
-        Context "Validate returned properties" {
+        Context 'Validate returned properties' {
             ## Get the current state
             $result = Get-TargetResource @desiredState
 
-            It "Property: SQLServer" {
+            It 'Property: SQLServer' {
                 $result.SQLServer | Should Be $desiredState.SQLServer
             }
 
-            It "Property: SQLInstanceName" {
+            It 'Property: SQLInstanceName' {
                 $result.SQLInstanceName | Should Be $desiredState.SQLInstanceName
             }
 
-            It "Property: OptionName" {
+            It 'Property: OptionName' {
                 $result.OptionName | Should Be $desiredState.OptionName
             }
 
-            It "Property: OptionValue" {
+            It 'Property: OptionValue' {
                 $result.OptionValue | Should Not Be $desiredState.OptionValue
             }
 
-            It "Property: RestartService" {
+            It 'Property: RestartService' {
                 $result.RestartService | Should Be $desiredState.RestartService
             }
         }
@@ -129,11 +129,11 @@ try
 
     #region Non-Exported Function Unit Tests
     InModuleScope $script:DSCResourceName {
-        Describe "Testing Restart-SqlService" {
+        Describe 'Testing Restart-SqlService' {
 
             Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
-            Context "Standalone Service Restart" {
+            Context 'Standalone Service Restart' {
 
                 ## Mock Get-Service
                 Mock -CommandName Get-Service {
@@ -163,7 +163,7 @@ try
 
                 Mock -CommandName Start-Service {} -Verifiable
 
-                It "Restart instance" {
+                It 'Restart instance' {
                     $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
                     $Sql.Name = "MSSQLSERVER"
                     $Sql.InstanceName = ""
@@ -173,7 +173,7 @@ try
                     { Restart-SqlService -ServerObject $Sql } | Should Not Throw
                 }
 
-                It "Restart instance without Agent" {
+                It 'Restart instance without Agent' {
                     $Sql = New-Object Microsoft.Sqlserver.Management.Smo.Server
                     $Sql.Name = "NOAGENT"
                     $Sql.InstanceName = "NOAGENT"
@@ -182,14 +182,14 @@ try
                     { Restart-SqlService -ServerObject $Sql } | Should Not Throw
                 }
 
-                It "Assert Restart-SqlService called Mocks" {
+                It 'Assert Restart-SqlService called Mocks' {
                     Assert-MockCalled -CommandName Get-Service -Scope Context -Times 2
                     Assert-MockCalled -CommandName Restart-Service -Scope Context -Times 2
                     Assert-MockCalled -CommandName Start-Service -Scope Context -Times 1
                 }
             }
 
-            Context "Clustered Service Restart" {
+            Context 'Clustered Service Restart' {
                 
                 ## Mock Get-WmiObject for SQL Instance
                 Mock -CommandName Get-WmiObject {
@@ -213,7 +213,7 @@ try
                     return $mock
                 } -Verifiable -ParameterFilter { $Filter -imatch "Type = 'SQL Server Agent'" }
 
-                It "Restart default instance" {
+                It 'Restart default instance' {
                     $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
                     $Sql.Name = "MSSQLSERVER"
                     $Sql.InstanceName = ""
@@ -223,7 +223,7 @@ try
                     { Restart-SqlService -ServerObject $Sql } | Should Not Throw
                 }
 
-                It "Restart named instance" {
+                It 'Restart named instance' {
                     $Sql = New-Object Microsoft.SqlServer.Management.Smo.Server 
                     $Sql.Name = "NAMEDINSTANCE"
                     $Sql.InstanceName = ""
@@ -233,7 +233,7 @@ try
                     { Restart-SqlService -ServerObject $Sql } | Should Not Throw
                 }
 
-                It "Assert Restart-SqlService called Mock" {
+                It 'Assert Restart-SqlService called Mock' {
                     Assert-MockCalled -Scope Context -CommandName Get-WmiObject -Times 4
                 }
             }
