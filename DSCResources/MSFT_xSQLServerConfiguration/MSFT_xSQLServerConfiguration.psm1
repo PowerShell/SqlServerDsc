@@ -4,32 +4,46 @@ Write-Verbose -Message "CurrentPath: $currentPath"
 # Load Common Code
 Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
-Function Get-TargetResource
+<#
+    .SYNOPSIS
+    Gets the current value of a SQL configuration option
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be checked
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    Determines whether the instance should be restarted after updating the configuration option
+#>
+function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param(
-        # Hostname of the SQL Server to be configured
         [Parameter(Mandatory = $true)]
         [String]
         $SQLServer,
 
-        # Name of the SQL instance to be configured
         [parameter(Mandatory = $false)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER",
+        $SQLInstanceName = 'MSSQLSERVER',
 
-        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
-        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
@@ -58,31 +72,45 @@ Function Get-TargetResource
     return $returnValue
 }
 
-Function Set-TargetResource
+<#
+    .SYNOPSIS
+    Sets the value of a SQL configuration option
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be set
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    Determines whether the instance should be restarted after updating the configuration option
+#>
+function Set-TargetResource
 {
     [CmdletBinding()]
     param(
-        # Hostname of the SQL Server to be configured
         [Parameter(Mandatory = $true)]
         [String]
         $SQLServer,
 
-        # Name of the SQL instance to be configured
         [parameter(Mandatory = $false)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER",
+        $SQLInstanceName = 'MSSQLSERVER',
 
-        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
-        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
@@ -105,45 +133,59 @@ Function Set-TargetResource
     
     if ($option.IsDynamic -eq $true)
     {  
-        New-VerboseMessage -Message "Configuration option has been updated."
+        New-VerboseMessage -Message 'Configuration option has been updated.'
     }
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
-        New-VerboseMessage -Message "Configuration option has been updated, restarting instance..."
+        New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
         Restart-SqlService -ServerObject $sql
     }
     else
     {
-        Write-Warning "Configuration option has been updated. SQL Server restart is required!"
+        Write-Warning 'Configuration option has been updated. SQL Server restart is required!'
     }
 }
 
-Function Test-TargetResource
+<#
+    .SYNOPSIS
+    Determines whether a SQL configuration option value is properly set
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be tested
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    Determines whether the instance should be restarted after updating the configuration option
+#>
+function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param(
-        # Hostname of the SQL Server to be configured
         [Parameter(Mandatory = $true)]
         [String]
         $SQLServer,
 
-        # Name of the SQL instance to be configured
         [parameter(Mandatory = $false)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER",
+        $SQLInstanceName = 'MSSQLSERVER',
 
-        # Name of the SQL Configuation option to be checked
         [parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        # Value of the SQL Configuration option
         [parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
-        # Determines whether the instance should be restarted
         [System.Boolean]
         $RestartService = $false
     )
@@ -154,7 +196,18 @@ Function Test-TargetResource
 }
 
 #region helper functions
-Function Restart-SqlService
+<#
+    .SYNOPSIS
+    Restarts a SQL Server instance and associated services
+
+    .PARAMETER ServerObject
+    SMO Server object for the SQL Server instance to be restarted
+
+    .EXAMPLE
+    $server = Connect-SQL -SQLServer $env:ComputerName
+    Restart-SqlService -ServerObject $server
+#>
+function Restart-SqlService
 {
     [CmdletBinding()]
     param
@@ -168,34 +221,34 @@ Function Restart-SqlService
     if ($ServerObject.IsClustered)
     {
         ## Get the cluster resources
-        New-VerboseMessage -Message "Getting cluster resource for SQL Server" 
+        New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
         $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
-        New-VerboseMessage -Message "Getting cluster resource for SQL Server Agent"
+        New-VerboseMessage -Message 'Getting cluster resource for SQL Server Agent'
         $AgentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
         ## Stop the SQL Server resource
-        New-VerboseMessage -Message "SQL Server resource --> Offline"
+        New-VerboseMessage -Message 'SQL Server resource --> Offline'
         $SqlService.TakeOffline(120)
 
         ## Start the SQL Agent resource
-        New-VerboseMessage -Message "SQL Server Agent --> Online"
+        New-VerboseMessage -Message 'SQL Server Agent --> Online'
         $AgentService.BringOnline(120)
     }
     else
     {
-        New-VerboseMessage -Message "Getting SQL Service information"
+        New-VerboseMessage -Message 'Getting SQL Service information'
         $SqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
-        $AgentService = $SqlService.DependentServices | Where-Object { $_.StartType -ne ""}
+        $AgentService = $SqlService.DependentServices | Where-Object { $_.StartType -ne ''}
 
         ## Restart the SQL Server service
-        New-VerboseMessage -Message "SQL Server service restarting"
+        New-VerboseMessage -Message 'SQL Server service restarting'
         $SqlService | Restart-Service -Force
 
         ## Start the SQL Server Agent service
         if ($AgentService)
         {
-            New-VerboseMessage -Message "Starting SQL Server Agent"
+            New-VerboseMessage -Message 'Starting SQL Server Agent'
             $AgentService | Start-Service 
         }
     }
