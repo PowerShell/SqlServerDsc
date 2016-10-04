@@ -58,7 +58,7 @@ function Get-TargetResource
     
     if(!$option)
     {
-        throw "Specified option '$OptionName' was not found!"
+        New-TerminatingError -Message "Specified option '$OptionName' was not found!"
     }
 
     $returnValue = @{
@@ -125,7 +125,7 @@ function Set-TargetResource
 
     if(!$option)
     {
-        throw "Specified option '$OptionName' was not found!"
+        New-TerminatingError -Message "Specified option '$OptionName' was not found!"
     }
 
     $option.ConfigValue = $OptionValue
