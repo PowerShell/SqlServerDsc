@@ -32,15 +32,15 @@ function Get-TargetResource
         [String]
         $SQLServer,
 
-        [parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
@@ -99,15 +99,15 @@ function Set-TargetResource
         [String]
         $SQLServer,
 
-        [parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
@@ -174,15 +174,15 @@ function Test-TargetResource
         [String]
         $SQLServer,
 
-        [parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Int32]
         $OptionValue,
 
