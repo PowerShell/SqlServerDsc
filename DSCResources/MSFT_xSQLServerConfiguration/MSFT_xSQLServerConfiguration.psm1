@@ -61,15 +61,13 @@ function Get-TargetResource
         New-TerminatingError -Message "Specified option '$OptionName' was not found!"
     }
 
-    $returnValue = @{
+     return @{
         SqlServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
         OptionName = $option.DisplayName
         OptionValue = $option.ConfigValue
         RestartService = $RestartService
     }
-
-    return $returnValue
 }
 
 <#
