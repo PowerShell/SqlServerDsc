@@ -222,34 +222,34 @@ function Restart-SqlService
     {
         ## Get the cluster resources
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
-        $SqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.ServiceName)%'"
+        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server Agent'
-        $AgentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.ServiceName)%'"
+        $agentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($ServerObject.ServiceName)%'"
 
         ## Stop the SQL Server resource
         New-VerboseMessage -Message 'SQL Server resource --> Offline'
-        $SqlService.TakeOffline(120)
+        $sqlService.TakeOffline(120)
 
         ## Start the SQL Agent resource
         New-VerboseMessage -Message 'SQL Server Agent --> Online'
-        $AgentService.BringOnline(120)
+        $agentService.BringOnline(120)
     }
     else
     {
         New-VerboseMessage -Message 'Getting SQL Service information'
-        $SqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
-        $AgentService = $SqlService.DependentServices | Where-Object { $_.StartType -ne ''}
+        $sqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
+        $agentService = $sqlService.DependentServices | Where-Object { $_.StartType -ne ''}
 
         ## Restart the SQL Server service
         New-VerboseMessage -Message 'SQL Server service restarting'
-        $SqlService | Restart-Service -Force
+        $sqlService | Restart-Service -Force
 
         ## Start the SQL Server Agent service
-        if ($AgentService)
+        if ($agentService)
         {
             New-VerboseMessage -Message 'Starting SQL Server Agent'
-            $AgentService | Start-Service 
+            $agentService | Start-Service 
         }
     }
 }
