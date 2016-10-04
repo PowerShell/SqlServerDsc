@@ -1,0 +1,15 @@
+
+[ClassVersion("0.1.0.0"), FriendlyName("xdBmail")]
+class MSFT_xdBmail : OMI_BaseResource
+{
+    [Key] String account_name;
+    [Required] String sqlServer;
+    [Required] String email_address;
+    [Required] String mailserver_name;
+    [Required] String profile_name;
+    [Write] String display_name;
+    [Write] String replyto_address;
+    [Write] String description;
+    [Write] String mailserver_type;
+    [Write] UInt16 port;
+};
