@@ -188,8 +188,10 @@ function Test-TargetResource
         $RestartService = $false
     )
 
-    $state = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -OptionName $OptionName -OptionValue $OptionValue -RestartService $RestartService
+    ## Get the current state of the configuration item
+    $state = Get-TargetResource @PSBoundParameters
 
+    ## return whether the value matches the desired state
     return ($state.OptionValue -eq $OptionValue)
 }
 
