@@ -23,7 +23,7 @@ function Get-TargetResource
         Name = [System.String] $Name
         Protocol = [System.String] ''
         ServerName = [System.String] ''
-        TcpPort = [System.UInt16] 0
+        TcpPort = [System.String] ''
         PipeName = [System.String] ''
         Ensure = [System.String] 'Absent'
     }
@@ -91,8 +91,8 @@ function Set-TargetResource
         [System.String]
         $ServerName,
 
-        [System.UInt16]
-        $TcpPort = 1433,
+        [System.String]
+        $TcpPort,
 
         [ValidateSet("Present","Absent")]
         [System.String]
@@ -106,7 +106,11 @@ function Set-TargetResource
 
     if ($Protocol -eq 'TCP')
     {
-        $itemValue = "DBMSSOCN,$ServerName,$TcpPort"
+        $itemValue = "DBMSSOCN,$ServerName"
+        if (![System.String]::IsNullOrEmpty($TcpPort))
+        {
+            $itemValue += ",$TcpPort"
+        }
     }
 
     $registryPath = 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo'
@@ -180,8 +184,8 @@ function Test-TargetResource
         [System.String]
         $ServerName,
 
-        [System.UInt16]
-        $TcpPort = 1433,
+        [System.String]
+        $TcpPort,
 
         [ValidateSet("Present","Absent")]
         [System.String]
