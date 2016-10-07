@@ -54,7 +54,7 @@ function Get-TargetResource
     }
 
     ## get the configuration option
-    $option = $sql.Configuration.Properties | where { $_.DisplayName -eq $optionName }
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $optionName }
     
     if(!$option)
     {
@@ -119,7 +119,7 @@ function Set-TargetResource
     }
 
     ## get the configuration option
-    $option = $sql.Configuration.Properties | where {$_.DisplayName -eq $optionName}
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $optionName }
 
     if(!$option)
     {
@@ -226,9 +226,10 @@ function Restart-SqlService
 
     ## get the instance name from the Server object
     $instanceName = $ServerObject.ServiceName
+    
+    ## sometimes default instances do not return a value
     if (! $instanceName)
     {
-        ## sometimes default instances do not return a value
         ## specify the default instance name
         $instanceName = "MSSQLSERVER"
     }
