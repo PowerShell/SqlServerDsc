@@ -1,7 +1,7 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerConfiguration")]
 class MSFT_xSQLServerConfiguration : OMI_BaseResource
 {
-    [Key, Description("The SQL Server for the configuration option.")] String SQLServer;
+    [Key, Description("The hostname of the SQL Server to configure.")] String SQLServer;
     [Write, Description("The SQL instance for the configuration option.")] String SQLInstanceName;
     [Key, Description("SQL Server configuration option to be set")] String OptionName;
     [Required, Description("Configuration option value to be set")] Sint32 OptionValue;
