@@ -224,24 +224,14 @@ function Restart-SqlService
         $Timeout = 120
     )
 
-    ## get the instance name from the Server object
-    $instanceName = $ServerObject.ServiceName
-    
-    ## sometimes default instances do not return a value
-    if (! $instanceName)
-    {
-        ## specify the default instance name
-        $instanceName = "MSSQLSERVER"
-    }
-
     if ($ServerObject.IsClustered)
     {
         ## Get the cluster resources
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
-        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server' AND Name LIKE '%($instanceName)%'"
+        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server'" | Where-Object { $_.PrivateProperties.InstanceName -eq $ServerObject.ServiceName }
 
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server Agent'
-        $agentService = Get-WmiObject -Namespace root/MSCLuster -Class MSCluster_Resource -Filter "Type = 'SQL Server Agent' AND Name LIKE '%$($instanceName)%'"
+        $agentService = Get-WmiObject -Namespace root/MSCluster -Query "ASSOCIATORS OF {$sqlService} WHERE ResultClass = MSCluster_Resource" | Where-Object { $_.Type -eq "SQL Server Agent" }
 
         ## Stop the SQL Server resource
         New-VerboseMessage -Message 'SQL Server resource --> Offline'
@@ -254,8 +244,8 @@ function Restart-SqlService
     else
     {
         New-VerboseMessage -Message 'Getting SQL Service information'
-        $sqlService = Get-Service -DisplayName "SQL Server ($($instanceName))"
-        $agentService = $sqlService.DependentServices | Where-Object { $_.StartType -ne ''}
+        $sqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
+        $agentService = $sqlService.DependentServices | Where-Object { $_.Status -eq "Running" }
 
         ## Restart the SQL Server service
         New-VerboseMessage -Message 'SQL Server service restarting'
