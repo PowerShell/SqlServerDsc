@@ -50,7 +50,7 @@ function Get-TargetResource
 
     if (! $sql)
     {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstance
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
 
     ## get the configuration option
@@ -58,7 +58,7 @@ function Get-TargetResource
     
     if(!$option)
     {
-        New-TerminatingError -Message "Specified option '$OptionName' was not found!"
+        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
     }
 
      return @{
@@ -115,15 +115,15 @@ function Set-TargetResource
 
     if (! $sql)
     {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstance
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
 
     ## get the configuration option
-    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $optionName }
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
 
     if(!$option)
     {
-        New-TerminatingError -Message "Specified option '$OptionName' was not found!"
+        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
     }
 
     $option.ConfigValue = $OptionValue
@@ -136,7 +136,7 @@ function Set-TargetResource
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
         New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
-        Restart-SqlService -ServerObject $sql
+        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
     else
     {
@@ -208,7 +208,7 @@ function Test-TargetResource
 
     .EXAMPLE
     $server = Connect-SQL -SQLServer $env:ComputerName
-    Restart-SqlService -ServerObject $server
+    Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 #>
 function Restart-SqlService
 {
@@ -216,13 +216,22 @@ function Restart-SqlService
     param
     (
         [Parameter(Mandatory = $true)]
-        [Microsoft.SqlServer.Management.Smo.Server]
-        $ServerObject,
+        [string]
+        $SQLServer,
 
-        [Parameter(Mandatry = $false)]
+        [Parameter(Mandatory = $false)]
+        [String]
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Parameter(Mandatory = $false)]
         [int]
         $Timeout = 120
     )
+
+    if (!$ServerObject)
+    {
+        $ServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    }
 
     if ($ServerObject.IsClustered)
     {
