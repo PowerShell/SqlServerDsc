@@ -280,11 +280,11 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **RetryCount**: Maximum number of retries to check availability group creation
 
 ###xSQLServerConfiguration
-* **SQLServer**: (Key) The SQL Server for the configuration option.
-* **SQLInstanceName**: (Write) The SQL instance for the configuration option.
-* **OptionName**: (Key) SQL Server option name. For all possible values reference [MSDN](https://msdn.microsoft.com/en-us/library/ms189631.aspx) or run sp_configure.
-* **OptionValue**: (Required) SQL Server option value to be set.
-* **RestartService**: Default false. If true will restart SQL Service instance service after update.
+* **SQLServer**: (Key) The hostname of the SQL Server to be configured
+* **SQLInstanceName**: (Write) Name of the SQL instance to be configured. Default is 'MSSQLServer'
+* **OptionName**: (Key) The name of the SQL configuration option to be checked. For all possible values reference [MSDN](https://msdn.microsoft.com/en-us/library/ms189631.aspx) or run sp_configure.
+* **OptionValue**: (Required) The desired value of the SQL configuration option
+* **RestartService**: Determines whether the instance should be restarted after updating the configuration option
 
 ### xSQLServerPermission
 * **InstanceName** The SQL Server instance name.
