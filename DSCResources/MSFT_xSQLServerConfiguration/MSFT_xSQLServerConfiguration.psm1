@@ -260,11 +260,10 @@ function Restart-SqlService
         New-VerboseMessage -Message 'SQL Server service restarting'
         $sqlService | Restart-Service -Force
 
-        ## Start the SQL Server Agent service
-        if ($agentService)
-        {
-            New-VerboseMessage -Message 'Starting SQL Server Agent'
-            $agentService | Start-Service 
+        ## Start dependent services
+        $agentService | ForEach-Object {
+            New-VerboseMessage -Message "Starting $($_.DisplayName)"
+            $_ | Start-Service
         }
     }
 #>
