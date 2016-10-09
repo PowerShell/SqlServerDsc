@@ -31,4 +31,7 @@ EndpointErrorVerifyExist = Unexpected result when trying to verify existence of 
 PermissionGetError = Unexpected result when trying to get permissions for {0}.
 PrincipalNotFound = Principal {0} does not exist.
 PermissionMissingEnsure = Ensure is not set. No change can be made.
+
+# Configuration
+ConfigurationOptionNotFound = Specified option {0} could not be found.
 '@
