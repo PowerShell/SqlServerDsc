@@ -355,7 +355,7 @@ function Test-SQLDscParameterState
 
 function Grant-ServerPerms
 {
-[CmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [ValidateNotNull()]         
