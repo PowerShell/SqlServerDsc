@@ -1,6 +1,8 @@
-#
-# xSQLAlias: DSC resource to configure Client Aliases part of xSQLServer
-#
+$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Write-Debug -Message "CurrentPath: $currentPath"
+
+# Load Common Code
+Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
 function Get-TargetResource
 {
@@ -12,43 +14,60 @@ function Get-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Name,
-        
+
+        [ValidateSet("TCP","NP")]
+        [System.String]
+        $Protocol = 'TCP',
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName
+        $ServerName,
+
+        [Parameter(Mandatory = $false)]
+        [System.UInt16]
+        $TcpPort = 1433,
+
+        [Parameter(Mandatory = $false)]
+        [System.Boolean]
+        $UseDynamicTcpPort = $false,
+
+        [ValidateSet("Present","Absent")]
+        [System.String]
+        $Ensure = 'Present'
     )
 
     $returnValue = @{
         Name = [System.String] $Name
-        Protocol = [System.String] ''
-        ServerName = [System.String] ''
-        TcpPort = [System.String] ''
+        Protocol = [System.String] $Protocol
+        ServerName = [System.String] $ServerName
+        TcpPort = [System.UInt16] $TcpPort
+        UseDynamicTcpPort = [System.Boolean] $UseDynamicTcpPort
         PipeName = [System.String] ''
-        Ensure = [System.String] 'Absent'
+        Ensure = [System.String] $Ensure
     }
 
     $protocolTcp = 'DBMSSOCN'
     $protocolNamedPipes = 'DBNMPNTW'
 
-    Write-Verbose "Get the client alias $Name"
-
-    <#
-        Get-ItemProperty will either return $null if no value is set, or if value is set, it will always
-        return a value in the format 'DBNMPNTW,\\ServerName\PIPE\sql\query' or 'DBMSSOCN,ServerName.company.local,1433'
-    #>
-    $itemValue = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' -Name $Name -ErrorAction SilentlyContinue
-    if ((Get-WmiOSArchitecture) -eq '64-bit')
+    Write-Verbose -Message "Getting the SQL Server Client Alias $Name"
+    $itemValue = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo' `
+                                  -Name $Name `
+                                  -ErrorAction SilentlyContinue
+    
+    if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit')
     {
-        Write-Verbose "64-bit Operating System. Also get the client alias $Name from Wow6432Node"
+        Write-Verbose -Message "64-bit Operating System. Also get the client alias $Name from Wow6432Node"
         
         $isWow6432Node = $true
-        $itemValueWow6432Node = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' -Name $Name -ErrorAction SilentlyContinue
+        $itemValueWow6432Node = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\MSSQLServer\Client\ConnectTo' `
+                                                 -Name $Name `
+                                                 -ErrorAction SilentlyContinue
     }
     
-    if ((-not $isWow6432Node -and $null -ne $itemValue ) -or
-            ( ($null -ne $itemValue -and $null -ne $itemValueWow6432Node) -and
-            ($isWow6432Node -and $itemValueWow6432Node."$Name" -eq $itemValue."$Name") ))
+    if ((-not $isWow6432Node -and $null -ne $itemValue ) -or `
+       (($null -ne $itemValue -and $null -ne $itemValueWow6432Node) -and `
+       ($isWow6432Node -and $itemValueWow6432Node."$Name" -eq $itemValue."$Name")))
     {
         $itemConfig = $itemValue."$Name" | ConvertFrom-Csv -Header 'Protocol','ServerName','TcpPort'
         if ($itemConfig)
@@ -58,7 +77,16 @@ function Get-TargetResource
                 $returnValue.Ensure = 'Present'
                 $returnValue.Protocol = 'TCP'
                 $returnValue.ServerName = $itemConfig.ServerName
-                $returnValue.TcpPort = $itemConfig.TcpPort
+                if ($itemConfig.TcpPort)
+                {
+                    $returnValue.TcpPort = $itemConfig.TcpPort
+                    $returnValue.UseDynamicTcpPort = $false
+                }
+                else
+                {
+                    $returnValue.UseDynamicTcpPort = $true
+                    $returnValue.TcpPort = $null
+                }
             }
             elseif ($itemConfig.Protocol -eq $protocolNamedPipes)
             {
@@ -67,6 +95,14 @@ function Get-TargetResource
                 $returnValue.PipeName = $itemConfig.ServerName
             }
         }
+        else 
+        {
+            $returnValue.Ensure = 'Absent'
+        }
+    }
+    else
+    {
+        $returnValue.Ensure = 'Absent'
     }
 
     $returnValue
@@ -91,8 +127,13 @@ function Set-TargetResource
         [System.String]
         $ServerName,
 
-        [System.String]
-        $TcpPort,
+        [Parameter(Mandatory = $false)]
+        [System.UInt16]
+        $TcpPort = 1433,
+
+        [Parameter(Mandatory = $false)]
+        [System.Boolean]
+        $UseDynamicTcpPort = $false,
 
         [ValidateSet("Present","Absent")]
         [System.String]
@@ -107,7 +148,7 @@ function Set-TargetResource
     if ($Protocol -eq 'TCP')
     {
         $itemValue = "DBMSSOCN,$ServerName"
-        if (![System.String]::IsNullOrEmpty($TcpPort))
+        if (!$UseDynamicTcpPort)
         {
             $itemValue += ",$TcpPort"
         }
@@ -129,7 +170,7 @@ function Set-TargetResource
         }
 
         # If this is a 64-bit OS then also update Wow6432Node
-        if ((Get-WmiOSArchitecture) -eq '64-bit')
+        if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit')
         {
             if ($PSCmdlet.ShouldProcess($Name, 'Setting the client alias (32-bit)'))
             {
@@ -154,7 +195,7 @@ function Set-TargetResource
         }
             
         # If this is a 64-bit OS then also remove from Wow6432Node
-        if ((Get-WmiOSArchitecture) -eq '64-bit' -and (Test-Path -Path $registryPathWow6432Node))
+        if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit' `                                                                          -and (Test-Path -Path $registryPathWow6432Node))
         {
             if ($PSCmdlet.ShouldProcess($Name, 'Remove the client alias (32-bit)'))
             {
@@ -184,66 +225,31 @@ function Test-TargetResource
         [System.String]
         $ServerName,
 
-        [System.String]
-        $TcpPort,
+        [Parameter(Mandatory = $false)]
+        [System.UInt16]
+        $TcpPort = 1433,
+
+        [Parameter(Mandatory = $false)]
+        [System.Boolean]
+        $UseDynamicTcpPort = $false,
 
         [ValidateSet("Present","Absent")]
         [System.String]
         $Ensure = 'Present'
     )
 
-    $result = $false
-
-    $currentValues = Get-TargetResource -Name $Name -ServerName $ServerName
-    if ($Ensure -eq $currentValues.Ensure)
-    {
-        if( $Ensure -eq 'Absent' )
-        {
-            $result = $true
-        }
-        else {
-            Write-Verbose "Ensure is in the desired state. Verifying values."
-
-            if ($Protocol -eq $currentValues.Protocol)
-            {
-                switch ($Protocol)
-                {
-                    'NP'
-                    {
-                        if ($currentValues.PipeName -eq "\\$ServerName\PIPE\sql\query")
-                        {
-                            $result = $true
-                        }
-                    }
-
-                    'TCP'
-                    {
-                        if ($currentValues.ServerName -eq $ServerName -and
-                            $currentValues.TcpPort -eq $TcpPort)
-                        {
-                            $result = $true
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    if ($result) 
-    {
-        Write-Verbose -Message 'In the desired state'
-    }
-    else
-    {
-        Write-Verbose -Message 'Not in the desired state'
-    }
-
-    return $result
-}
-
-function Get-WmiOSArchitecture
-{
-    return (Get-WmiObject -Class win32_OperatingSystem).OSArchitecture
+    Write-Verbose -Message "Testing the SQL Server Client Alias $Name"
+     
+    $currentValues = Get-TargetResource @PSBoundParameters
+    $PSBoundParameters.Ensure = $Ensure
+    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+                                     -DesiredValues $PSBoundParameters `
+                                     -ValuesToCheck @("Name", 
+                                                      "Protocol",
+                                                      "ServerName",
+                                                      "TcpPort",
+                                                      "UseDynamicTcpPort",
+                                                      "Ensure")
 }
 
 Export-ModuleMember -Function *-TargetResource
