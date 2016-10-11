@@ -21,7 +21,8 @@ Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAct
     The desired value of the SQL configuration option
 
     .PARAMETER RestartService
-    Determines whether the instance should be restarted after updating the configuration option
+    *** Not used in this function ***
+    Determines whether the instance should be restarted after updating the configuration option.
 #>
 function Get-TargetResource
 {
