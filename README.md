@@ -344,6 +344,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
  * **ServerName**: (Key) The SQL Server you are aliasing (the netbios name or FQDN).
  * **Protocol**: Protocol to use when connecting. Valid values are 'TCP' or 'NP' (Named Pipes). Default value is 'TCP'.
  * **TCPPort**: The TCP port SQL is listening on. Only used when protocol is set to 'TCP'.
+ * **UseDynamicTcpPort**: The UseDynamicTcpPort specify that the Net-Library will determine the port dynamically. The port specified in Port number will not be used.
  * **PipeName**: (Read) Named Pipes path from the Get-TargetResource method.
 
 ## Versions
@@ -357,6 +358,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
 * Fix in xSQLAlias
   - BREAKING CHANGE: The type of the parameter TCPPort has changed. It is now String Type.
+* Changes to xSQLAlias
+  - Add UseDynamicTcpPort parameter for option "Dynamically determine port"
 
 ### 3.0.0.0
 * xSQLServerHelper
