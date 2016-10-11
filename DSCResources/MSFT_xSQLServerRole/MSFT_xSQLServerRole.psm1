@@ -19,7 +19,7 @@ function Get-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure,
+        $Ensure = "Present",
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("bulkadmin","dbcreator","diskadmin","processadmin","public","securityadmin","serveradmin","setupadmin","sysadmin")]
@@ -76,7 +76,7 @@ function Set-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure,
+        $Ensure = "Present",
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("bulkadmin","dbcreator","diskadmin","processadmin","public","securityadmin","serveradmin","setupadmin","sysadmin")]
@@ -121,7 +121,7 @@ function Test-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure,
+        $Ensure = "Present",
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("bulkadmin","dbcreator","diskadmin","processadmin","public","securityadmin","serveradmin","setupadmin","sysadmin")]
@@ -138,10 +138,14 @@ function Test-TargetResource
     )
 
     Write-Verbose -Message "Testing SQL roles for login $Name"
+     
     $currentValues = Get-TargetResource @PSBoundParameters
-    
-    $result = ($currentValues.Ensure -eq $Ensure) -and ($currentValues.ServerRole -eq $ServerRole) -and ($currentValues.Name -eq $Name)
-    $result    
+    $PSBoundParameters.Ensure = $Ensure
+    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+                                     -DesiredValues $PSBoundParameters `
+                                     -ValuesToCheck @("Name", 
+                                                      "ServerRole",
+                                                      "Ensure")
 }
 
 Export-ModuleMember -Function *-TargetResource
