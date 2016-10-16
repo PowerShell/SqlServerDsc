@@ -107,7 +107,7 @@ try
                 $result.RestartService | Should Be $desiredState.RestartService
             }
 
-            It 'Test method returns false' {
+            It 'Should cause Test-TargetResource to return false' {
                 Test-TargetResource @desiredState | Should be $false
             }
 
@@ -148,7 +148,7 @@ try
         } -ModuleName $script:DSCResourceName -Verifiable
 
         ## Test-TargetResource should return true when in the desired state
-        It 'Test method returns true' {
+        It 'Should cause Test-TargetResource method to return true' {
             Test-TargetResource @desiredState | Should be $true
         }
     }

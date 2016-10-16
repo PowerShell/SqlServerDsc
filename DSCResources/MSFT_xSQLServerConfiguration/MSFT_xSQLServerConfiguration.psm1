@@ -221,8 +221,11 @@ function Test-TargetResource
     .SYNOPSIS
     Restarts a SQL Server instance and associated services
 
-    .PARAMETER ServerObject
-    SMO Server object for the SQL Server instance to be restarted
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLServer'
 
     .PARAMETER Timeout
     Timeout value for restarting the SQL services
@@ -254,35 +257,33 @@ function Restart-SqlService
         $Timeout = 120
     )
 
-    if (!$ServerObject)
-    {
-        $ServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    ## Connect to the instance
+    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if ($ServerObject.IsClustered)
+    if ($serverObject.IsClustered)
     {
         ## Get the cluster resources
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
-        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server'" | Where-Object { $_.PrivateProperties.InstanceName -eq $ServerObject.ServiceName }
+        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server'" | Where-Object { $_.PrivateProperties.InstanceName -eq $serverObject.ServiceName }
 
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server Agent'
         $agentService = Get-WmiObject -Namespace root/MSCluster -Query "ASSOCIATORS OF {$sqlService} WHERE ResultClass = MSCluster_Resource" | Where-Object { $_.Type -eq "SQL Server Agent" }
 
         ## Stop the SQL Server resource
-        New-VerboseMessage -Message 'SQL Server resource --> Offline'
+        New-VerboseMessage -Message 'Bringing the SQL Server resources offline.'
         $sqlService.TakeOffline($Timeout)
 
         ## Start the SQL Agent resource
-        New-VerboseMessage -Message 'SQL Server Agent --> Online'
+        New-VerboseMessage -Message 'Bringing the SQL Server resources online.'
         $agentService.BringOnline($Timeout)
     }
     else
     {
         New-VerboseMessage -Message 'Getting SQL Service information'
-        $sqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
+        $sqlService = Get-Service -DisplayName "SQL Server ($($serverObject.ServiceName))"
 
         ## Get all dependent services that are running.
-        ## There are scenarios where  
+        ## There are scenarios where an automatic service is stopped and should not be restarted automatically.
         $agentService = $sqlService.DependentServices | Where-Object { $_.Status -eq "Running" }
 
         ## Restart the SQL Server service
