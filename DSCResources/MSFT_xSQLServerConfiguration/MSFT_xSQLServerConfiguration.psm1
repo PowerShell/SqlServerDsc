@@ -155,7 +155,7 @@ function Set-TargetResource
     }
     else
     {
-        New-WarningMessage -ErrorType 'ConfigurationRestartRequred' -FormatArgs $OptionName
+        New-WarningMessage -WarningType 'ConfigurationRestartRequired' -FormatArgs $OptionName
     }
 }
 
