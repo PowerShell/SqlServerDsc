@@ -228,8 +228,13 @@ function Test-TargetResource
     Timeout value for restarting the SQL services
 
     .EXAMPLE
-    $server = Connect-SQL -SQLServer $env:ComputerName
-    Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    Restart-SqlService -SQLServer localhost
+
+    .EXAMPLE
+    Restart-SqlService -SQLServer localhost -SQLInstanceName 'NamedInstance'
+
+    .EXAMPLE
+    Restart-SqlService -SQLServer CLU01 -Timeout 300
 #>
 function Restart-SqlService
 {
