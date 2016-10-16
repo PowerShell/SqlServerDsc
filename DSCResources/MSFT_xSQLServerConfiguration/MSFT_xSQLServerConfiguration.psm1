@@ -155,7 +155,7 @@ function Set-TargetResource
     }
     else
     {
-        Write-Warning 'Configuration option has been updated, but a manual restart of SQL Server is required for it to take effect.'
+        New-WarningMessage -ErrorType 'ConfigurationRestartRequred' -FormatArgs $OptionName
     }
 }
 

@@ -33,5 +33,6 @@ PrincipalNotFound = Principal {0} does not exist.
 PermissionMissingEnsure = Ensure is not set. No change can be made.
 
 # Configuration
-ConfigurationOptionNotFound = Specified option {0} could not be found.
+ConfigurationOptionNotFound = Specified option '{0}' could not be found.
+ConfigurationRestartRequired = Configuration option '{0}' has been updated, but a manual restart of SQL Server is required for it to take effect.
 '@
