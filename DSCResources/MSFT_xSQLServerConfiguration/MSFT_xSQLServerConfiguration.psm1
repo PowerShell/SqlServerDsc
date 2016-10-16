@@ -12,7 +12,7 @@ Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAct
     Hostname of the SQL Server to be configured
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
     The name of the SQL configuration option to be checked
@@ -56,7 +56,7 @@ function Get-TargetResource
         $RestartTimeout = 120
     )
 
-    if (! $sql)
+    if (!$sql)
     {
         $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
@@ -87,7 +87,7 @@ function Get-TargetResource
     Hostname of the SQL Server to be configured
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
     The name of the SQL configuration option to be set
@@ -128,7 +128,7 @@ function Set-TargetResource
         $RestartTimeout = 120
     )
 
-    if (! $sql)
+    if (!$sql)
     {
         $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
@@ -167,7 +167,7 @@ function Set-TargetResource
     Hostname of the SQL Server to be configured
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
     The name of the SQL configuration option to be tested
@@ -225,7 +225,7 @@ function Test-TargetResource
     Hostname of the SQL Server to be configured
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLServer'
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER Timeout
     Timeout value for restarting the SQL services

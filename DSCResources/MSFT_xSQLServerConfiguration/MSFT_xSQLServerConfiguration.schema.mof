@@ -2,7 +2,7 @@
 class MSFT_xSQLServerConfiguration : OMI_BaseResource
 {
     [Key, Description("The hostname of the SQL Server to be configured")] String SQLServer;
-    [Write, Description("Name of the SQL instance to be configured. Default is 'MSSQLServer'")] String SQLInstanceName;
+    [Write, Description("Name of the SQL instance to be configured. Default is 'MSSQLSERVER'")] String SQLInstanceName;
     [Key, Description("The name of the SQL configuration option to be checked")] String OptionName;
     [Required, Description("The desired value of the SQL configuration option")] Sint32 OptionValue;
     [Write, Description("Determines whether the instance should be restarted after updating the configuration option")] Boolean RestartService;
