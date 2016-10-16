@@ -23,6 +23,10 @@ Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAct
     .PARAMETER RestartService
     *** Not used in this function ***
     Determines whether the instance should be restarted after updating the configuration option.
+
+    .PARAMETER RestartTimeout
+    *** Not used in this function ***
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
 #>
 function Get-TargetResource
 {
@@ -46,7 +50,10 @@ function Get-TargetResource
         $OptionValue,
 
         [System.Boolean]
-        $RestartService = $false
+        $RestartService = $false,
+
+        [int]
+        $RestartTimeout = 120
     )
 
     if (! $sql)
@@ -55,7 +62,7 @@ function Get-TargetResource
     }
 
     ## get the configuration option
-    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $optionName }
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
     
     if(!$option)
     {
@@ -68,6 +75,7 @@ function Get-TargetResource
         OptionName = $option.DisplayName
         OptionValue = $option.ConfigValue
         RestartService = $RestartService
+        RestartTimeout = $RestartTimeout
     }
 }
 
@@ -89,6 +97,9 @@ function Get-TargetResource
 
     .PARAMETER RestartService
     Determines whether the instance should be restarted after updating the configuration option
+
+    .PARAMETER RestartTimeout
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
 #>
 function Set-TargetResource
 {
@@ -111,7 +122,10 @@ function Set-TargetResource
         $OptionValue,
 
         [System.Boolean]
-        $RestartService = $false
+        $RestartService = $false,
+
+        [int]
+        $RestartTimeout = 120
     )
 
     if (! $sql)
@@ -137,7 +151,7 @@ function Set-TargetResource
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
         New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
-        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
     }
     else
     {
@@ -163,6 +177,9 @@ function Set-TargetResource
 
     .PARAMETER RestartService
     Determines whether the instance should be restarted after updating the configuration option
+
+    .PARAMETER RestartTimeout
+    The length of time, in seconds, to wait for the service to restart.
 #>
 function Test-TargetResource
 {
@@ -186,7 +203,10 @@ function Test-TargetResource
         $OptionValue,
 
         [System.Boolean]
-        $RestartService = $false
+        $RestartService = $false,
+
+        [int]
+        $RestartTimeout = 120
     )
 
     ## Get the current state of the configuration item
@@ -255,6 +275,9 @@ function Restart-SqlService
     {
         New-VerboseMessage -Message 'Getting SQL Service information'
         $sqlService = Get-Service -DisplayName "SQL Server ($($ServerObject.ServiceName))"
+
+        ## Get all dependent services that are running.
+        ## There are scenarios where  
         $agentService = $sqlService.DependentServices | Where-Object { $_.Status -eq "Running" }
 
         ## Restart the SQL Server service

@@ -6,4 +6,5 @@ class MSFT_xSQLServerConfiguration : OMI_BaseResource
     [Key, Description("The name of the SQL configuration option to be checked")] String OptionName;
     [Required, Description("The desired value of the SQL configuration option")] Sint32 OptionValue;
     [Write, Description("Determines whether the instance should be restarted after updating the configuration option")] Boolean RestartService;
+    [Write, Description("The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.")] Sint32 RestartTimeout;
 };
