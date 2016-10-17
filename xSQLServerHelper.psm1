@@ -142,20 +142,39 @@ function New-VerboseMessage
 
 }
 
+<#
+.SYNOPSIS
+
+This method is used to compare current and desired values for any DSC resource
+
+.PARAMETER CurrentValues
+
+This is hashtable of the current values that are applied to the resource
+
+.PARAMETER DesiredValues 
+
+This is a PSBoundParametersDictionary of the desired values for the resource
+
+.PARAMETER ValuesToCheck
+
+This is a list of which properties in the desired values list should be checkked.
+If this is empty then all values in DesiredValues are checked.
+
+#>
 function Test-SQLDscParameterState 
 {
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true, Position=1)]  
+        [parameter(Mandatory = $true)]  
         [HashTable]
         $CurrentValues,
         
-        [parameter(Mandatory = $true, Position=2)]  
+        [parameter(Mandatory = $true)]  
         [Object]
         $DesiredValues,
 
-        [parameter(Mandatory = $false, Position=3)] 
+        [parameter(Mandatory = $false)] 
         [Array]
         $ValuesToCheck
     )
