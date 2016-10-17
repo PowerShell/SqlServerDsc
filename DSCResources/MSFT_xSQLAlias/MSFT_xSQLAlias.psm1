@@ -24,11 +24,9 @@ function Get-TargetResource
         [System.String]
         $ServerName,
 
-        [Parameter(Mandatory = $false)]
         [System.UInt16]
         $TcpPort = 1433,
 
-        [Parameter(Mandatory = $false)]
         [System.Boolean]
         $UseDynamicTcpPort = $false,
 
@@ -85,7 +83,7 @@ function Get-TargetResource
                 else
                 {
                     $returnValue.UseDynamicTcpPort = $true
-                    $returnValue.TcpPort = $null
+                    $returnValue.TcpPort = 0
                 }
             }
             elseif ($itemConfig.Protocol -eq $protocolNamedPipes)
@@ -127,11 +125,9 @@ function Set-TargetResource
         [System.String]
         $ServerName,
 
-        [Parameter(Mandatory = $false)]
         [System.UInt16]
         $TcpPort = 1433,
 
-        [Parameter(Mandatory = $false)]
         [System.Boolean]
         $UseDynamicTcpPort = $false,
 
@@ -195,7 +191,8 @@ function Set-TargetResource
         }
             
         # If this is a 64-bit OS then also remove from Wow6432Node
-        if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit' `                                                                          -and (Test-Path -Path $registryPathWow6432Node))
+        if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit' `
+                                                                          -and (Test-Path -Path $registryPathWow6432Node))
         {
             if ($PSCmdlet.ShouldProcess($Name, 'Remove the client alias (32-bit)'))
             {
@@ -225,11 +222,9 @@ function Test-TargetResource
         [System.String]
         $ServerName,
 
-        [Parameter(Mandatory = $false)]
         [System.UInt16]
         $TcpPort = 1433,
 
-        [Parameter(Mandatory = $false)]
         [System.Boolean]
         $UseDynamicTcpPort = $false,
 
@@ -248,7 +243,6 @@ function Test-TargetResource
                                                       "Protocol",
                                                       "ServerName",
                                                       "TcpPort",
-                                                      "UseDynamicTcpPort",
                                                       "Ensure")
 }
 

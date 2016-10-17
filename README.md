@@ -343,8 +343,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
  * **Name**: (Key) The name of Alias (e.g. svr01\inst01).
  * **ServerName**: (Key) The SQL Server you are aliasing (the netbios name or FQDN).
  * **Protocol**: Protocol to use when connecting. Valid values are 'TCP' or 'NP' (Named Pipes). Default value is 'TCP'.
- * **TCPPort**: The TCP port SQL is listening on. Only used when protocol is set to 'TCP'.
- * **UseDynamicTcpPort**: The UseDynamicTcpPort specify that the Net-Library will determine the port dynamically. The port specified in Port number will not be used.
+ * **TCPPort**: The TCP port SQL is listening on. Only used when protocol is set to 'TCP'. Default value is port 1433.
+ * **UseDynamicTcpPort**: The UseDynamicTcpPort specify that the Net-Library will determine the port dynamically. The port specified in Port number will not be used. Default value is '$false'.
  * **PipeName**: (Read) Named Pipes path from the Get-TargetResource method.
 
 ## Versions

@@ -264,6 +264,71 @@ try
             }
         }
 
+        Context 'When the system is not in the desired present state for 64-bit OS using UseDynamicTcpPort' {
+            $testParameters = @{
+                Name = $name
+                ServerName = $serverNameTcp
+                UseDynamicTcpPort = $true
+            }
+            
+            # Testing protocol TCP "With Dynamically determine port"
+            Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPath -and $Name -eq $name } -MockWith {
+                return @{
+                    'MyAlias' = 'DBMSSOCN,sqlnode.company.local,1433'
+                }
+            } -ModuleName $script:DSCResourceName -Verifiable
+
+            Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node -and $Name -eq $name } -MockWith {
+                return @{
+                    'MyAlias' = 'DBMSSOCN,sqlnode.company.local,1433'
+                }
+            } -ModuleName $script:DSCResourceName -Verifiable
+
+            # Mocking 64-bit OS
+            Mock -CommandName Get-WmiObject -MockWith {
+                return New-Object Object | 
+                    Add-Member -MemberType NoteProperty -Name OSArchitecture -Value '64-bit' -PassThru -Force
+            } -ParameterFilter { $Class -eq 'win32_OperatingSystem' } -ModuleName $script:DSCResourceName -Verifiable
+
+            $result = Get-TargetResource @testParameters
+
+            It 'Should return the state as present' {
+                $result.Ensure | Should Be 'Present'
+            }
+
+            It 'Should return the same values as passed as parameters' {
+                $result.Name | Should Be $testParameters.Name
+                $result.ServerName | Should Be $testParameters.ServerName
+            }
+
+            It 'Should return TCP as the protocol used' {
+                $result.Protocol | Should Be 'TCP'
+            }
+            
+            It 'Should return the UseDynamicTcpPort parameter as false' {
+                $result.UseDynamicTcpPort | Should Be $false
+            }
+            
+            It "Should not return any pipe name" {
+                $result.PipeName | Should Be ''
+            }
+
+            It 'Should not return any TCP Port' {
+                $result.TcpPort | Should Be 1433
+            }
+
+            It 'Should call the mocked functions exactly 1 time each' {
+                Assert-MockCalled Get-WmiObject -ParameterFilter { $Class -eq 'win32_OperatingSystem' } `
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+                
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
         # Mocking 32-bit OS
         Mock -CommandName Get-WmiObject -MockWith {
             return New-Object Object | 
@@ -301,6 +366,67 @@ try
                     -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
+            It 'Should not call the Get-ItemProperty for the Wow6432Node-path' {
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
+                    -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Context 'When the system is in the desired present state for 32-bit OS using UseDynamicTcpPort' {
+            $testParameters = @{
+                Name = $name
+                ServerName = $serverNameTcp
+                UseDynamicTcpPort = $true
+            }
+
+            # Testing protocol TCP "With Dynamically determine port"
+            Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPath -and $Name -eq $name } -MockWith {
+                return @{
+                    'MyAlias' = 'DBMSSOCN,sqlnode.company.local,1433'
+                }
+            } -ModuleName $script:DSCResourceName -Verifiable
+
+            Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node -and $Name -eq $name } -MockWith {
+                return @{
+                    'MyAlias' = 'DBMSSOCN,sqlnode.company.local,1433'
+                }
+            } -ModuleName $script:DSCResourceName -Verifiable
+
+            $result = Get-TargetResource @testParameters
+
+            It 'Should return the state as present' {
+                $result.Ensure | Should Be 'Present'
+            }
+
+            It 'Should return the same values as passed as parameters' {
+                $result.Name | Should Be $testParameters.Name
+                $result.ServerName | Should Be $testParameters.ServerName
+            }
+
+            It 'Should return TCP as the protocol used' {
+                $result.Protocol | Should Be 'TCP'
+            }
+            
+            It 'Should return the UseDynamicTcpPort parameter as false' {
+                $result.UseDynamicTcpPort | Should Be $false
+            }
+            
+            It "Should not return any pipe name" {
+                $result.PipeName | Should Be ''
+            }
+
+            It 'Should not return any TCP Port' {
+                $result.TcpPort | Should Be 1433
+            }
+
+            It 'Should call the mocked functions exactly 1 time each' {
+                Assert-MockCalled Get-WmiObject -ParameterFilter { $Class -eq 'win32_OperatingSystem' } `
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+                        
             It 'Should not call the Get-ItemProperty for the Wow6432Node-path' {
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
                     -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
@@ -566,6 +692,7 @@ try
                 ServerName = $serverNameTcp
                 UseDynamicTcpPort = $true
             }
+            
             # Testing protocol TCP "With Dynamically determine port"
             Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPath -and $Name -eq $name } -MockWith {
                 return @{
@@ -601,7 +728,7 @@ try
             }
             
             It 'Should return the UseDynamicTcpPort parameter as true' {
-                $result.UseDynamicTcpPort | Should Be $true
+                $result.UseDynamicTcpPort | Should Be $testParameters.UseDynamicTcpPort
             }
             
             It "Should not return any pipe name" {
@@ -609,7 +736,7 @@ try
             }
 
             It 'Should not return any TCP Port' {
-                $result.TcpPort | Should Be $null
+                $result.TcpPort | Should Be 0
             }
 
             It 'Should call the mocked functions exactly 1 time each' {
@@ -636,6 +763,7 @@ try
                 ServerName = $serverNameTcp
                 UseDynamicTcpPort = $true
             }
+
             # Testing protocol TCP "With Dynamically determine port"
             Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq $registryPath -and $Name -eq $name } -MockWith {
                 return @{
@@ -665,7 +793,7 @@ try
             }
             
             It 'Should return the UseDynamicTcpPort parameter as true' {
-                $result.UseDynamicTcpPort | Should Be $true
+                $result.UseDynamicTcpPort | Should Be $testParameters.UseDynamicTcpPort
             }
             
             It "Should not return any pipe name" {
@@ -673,7 +801,7 @@ try
             }
 
             It 'Should not return any TCP Port' {
-                $result.TcpPort | Should Be $null
+                $result.TcpPort | Should Be 0
             }
 
             It 'Should call the mocked functions exactly 1 time each' {
@@ -755,7 +883,54 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 2 -Scope It
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-ItemProperty -Exactly 2 -Scope It
             }
+        }
 
+        Context 'When the system is not in the desired state for 64-bit OS using UseDynamicTcpPort' {
+            It 'Should call mocked functions Test-Path, New-Item and Set-ItemProperty twice each when desired state should be present for protocol TCP' {
+                $testParameters = @{
+                    Name = $name
+                    Protocol = 'TCP'
+                    ServerName = $serverNameTcp
+                    UseDynamicTcpPort = $true
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 2 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Item -Exactly 2 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-ItemProperty -Exactly 2 -Scope It
+            }
+
+            It 'Should call mocked functions Test-Path, New-Item and Set-ItemProperty twice each when desired state should be present for protocol Named Pipes' {
+                $testParameters = @{
+                    Name = $name
+                    Protocol = 'NP'
+                    ServerName = $serverNameNamedPipes
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 2 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Item -Exactly 2 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-ItemProperty -Exactly 2 -Scope It
+            }
+
+            It 'Should call mocked functions Test-Path and Remove-ItemProperty twice each when desired state should be absent for 64-bit OS' {
+                Mock -CommandName Test-Path -MockWith {
+                    return $true
+                } -ModuleName $script:DSCResourceName -Verifiable
+
+                $testParameters = @{
+                    Ensure = 'Absent'
+                    Name = $name
+                    ServerName = $serverNameTcp
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 2 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-ItemProperty -Exactly 2 -Scope It
+            }
         }
 
         # Mocking 32-bit OS
@@ -771,6 +946,54 @@ try
                     Protocol = 'TCP'
                     ServerName = $serverNameTcp
                     TcpPort = $tcpPort
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 1 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Item -Exactly 1 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-ItemProperty -Exactly 1 -Scope It
+            }
+
+            It 'Should call mocked functions Test-Path, New-Item and Set-ItemProperty once each when desired state should be present for protocol Named Pipes' {
+                $testParameters = @{
+                    Name = $name
+                    Protocol = 'NP'
+                    ServerName = $serverNameNamedPipes
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 1 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Item -Exactly 1 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-ItemProperty -Exactly 1 -Scope It
+            }
+
+            It 'Should call mocked functions Test-Path and Remove-ItemProperty once each when desired state should be absent for 32-bit OS' {
+                Mock -CommandName Test-Path -MockWith {
+                    return $true
+                } -ModuleName $script:DSCResourceName -Verifiable
+
+                $testParameters = @{
+                    Ensure = 'Absent'
+                    Name = $name
+                    ServerName = $serverNameNamedPipes
+                }
+
+                Set-TargetResource @testParameters
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-Path -Exactly 1 -Scope It
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-ItemProperty -Exactly 1 -Scope It
+            }
+        }
+
+        Context 'When the system is not in the desired state for 32-bit OS using UseDynamicTcpPort' {
+            It 'Should call mocked functions Test-Path, New-Item and Set-ItemProperty once each when desired state should be present for protocol TCP' {
+                $testParameters = @{
+                    Name = $name
+                    Protocol = 'TCP'
+                    ServerName = $serverNameTcp
+                    UseDynamicTcpPort = $true
                 }
 
                 Set-TargetResource @testParameters
@@ -867,6 +1090,36 @@ try
                     -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
+        
+        Context 'When the system is in the desired state (when using UseDynamicTcpPort)' {
+            $testParameters = @{
+                Name = $name
+                Protocol = 'TCP'
+                ServerName = $serverNameTcp
+                UseDynamicTcpPort = $true
+            }
+    
+            $result = Get-TargetResource @testParameters
+
+            It 'Should return the state as present' {
+                $result.Ensure | Should Be 'Present'
+            }
+
+            It "Should return true from the test method" {
+                Test-TargetResource @testParameters | Should Be $true
+            }
+
+            It 'Should call the mocked functions exactly 2 time each' {
+                Assert-MockCalled Get-WmiObject -ParameterFilter { $Class -eq 'win32_OperatingSystem' } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
 
         Context 'When the system is not in the desired state (when using TCP)' {
             $testParameters = @{
@@ -874,6 +1127,36 @@ try
                 Protocol = 'TCP'
                 ServerName = $serverNameTcp
                 TcpPort = $tcpPort
+            }
+    
+            $result = Get-TargetResource @testParameters
+
+            It 'Should return the state as absent' {
+                $result.Ensure | Should Be 'Absent'
+            }
+
+            It "Should return false from the test method" {
+                Test-TargetResource @testParameters | Should Be $false
+            }
+
+            It 'Should call the mocked functions exactly 2 time each' {
+                Assert-MockCalled Get-WmiObject -ParameterFilter { $Class -eq 'win32_OperatingSystem' } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                
+                Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
+                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+                
+        Context 'When the system is not in the desired state (when using UseDynamicTcpPort)' {
+            $testParameters = @{
+                Name = $unknownName
+                Protocol = 'TCP'
+                ServerName = $serverNameTcp
+                UseDynamicTcpPort = $true
             }
     
             $result = Get-TargetResource @testParameters
