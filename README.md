@@ -352,15 +352,20 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * xSQLServerHelper
   - added functions
     - Test-SQLDscParameterState
+    - Get-SqlDatabaseOwner
+    - Set-SqlDatabaseOwner
     - Get-SqlDatabasePermission
     - Add-SqlDatabasePermission
     - Remove-SqlDatabasePermission
 * Examples
+  - xSQLServerDatabaseOwner
+   - 1-SetDatabaseOwner.ps1
   - xSQLServerDatabasePermissions
     - 1-AddDatabasePermissions.ps1
     - 2-RemoveDatabasePermissions.ps1
-* Added tests for resources
-  - MSFT_xSQLServerDatabasePermissions.Tests.ps1
+ * Added tests for resources
+   - MSFT_xSQLServerDatabaseOwner.Tests.ps1
+   - MSFT_xSQLServerDatabasePermissions.Tests.ps1
 
 ### 2.0.0.0
 * Added resources

@@ -142,20 +142,39 @@ function New-VerboseMessage
 
 }
 
+<#
+.SYNOPSIS
+
+This method is used to compare current and desired values for any DSC resource
+
+.PARAMETER CurrentValues
+
+This is hashtable of the current values that are applied to the resource
+
+.PARAMETER DesiredValues 
+
+This is a PSBoundParametersDictionary of the desired values for the resource
+
+.PARAMETER ValuesToCheck
+
+This is a list of which properties in the desired values list should be checked.
+If this is empty then all values in DesiredValues are checked.
+
+#>
+
 function Test-SQLDscParameterState 
 {
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true, Position=1)]  
+        [Parameter(Mandatory = $true)]  
         [HashTable]
         $CurrentValues,
         
-        [parameter(Mandatory = $true, Position=2)]  
+        [Parameter(Mandatory = $true)]  
         [Object]
         $DesiredValues,
 
-        [parameter(Mandatory = $false, Position=3)] 
         [Array]
         $ValuesToCheck
     )
@@ -172,7 +191,7 @@ function Test-SQLDscParameterState
 
     if (($DesiredValues.GetType().Name -eq "CimInstance") -and ($null -eq $ValuesToCheck)) 
     {
-        throw ("If 'DesiredValues' is a Hashtable then property 'ValuesToCheck' must contain " + `
+        throw ("If 'DesiredValues' is a CimInstance then property 'ValuesToCheck' must contain " + `
                "a value")
     }
 
@@ -241,47 +260,32 @@ function Test-SQLDscParameterState
                         switch ($desiredType.Name) 
                         {
                             "String" {
-                                if ([string]::IsNullOrEmpty($CurrentValues.$fieldName) `
-                                -and [string]::IsNullOrEmpty($DesiredValues.$fieldName)) 
-                                {} 
-                                else 
+                                if (-not [String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
+                                    -not [String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
-                                    Write-Verbose -Message ("String value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                    Write-Verbose -Message ("String value for property $fieldName does not match. " + `
+                                                            "Current state is '$($CurrentValues.$fieldName)' " + `
+                                                            "and Desired state is '$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
                             "Int32" {
-                                if (($DesiredValues.$fieldName -eq 0) `
-                                -and ($null -eq $CurrentValues.$fieldName)) 
-                                {} 
-                                else 
-                                {
-                                    Write-Verbose -Message ("Int32 value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                { 
+                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
                             "Int16" {
-                                if (($DesiredValues.$fieldName -eq 0) `
-                                -and ($null -eq $CurrentValues.$fieldName)) 
-                                {} 
-                                else 
-                                {
-                                    Write-Verbose -Message ("Int16 value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                { 
+                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -777,6 +781,151 @@ function Confirm-SqlServerRole
     return $confirmServerRole
 }
 
+<#
+.SYNOPSIS
+
+This cmdlet is used to return the owner of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Database
+
+This is the SQL database that will be checking
+
+#>
+function Get-SqlDatabaseOwner
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database
+    )
+    
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $SQL.Databases
+    if ($sqlDatabase)
+    {
+        if ($sqlDatabase[$Database])
+        {
+            $Name = $sqlDatabase[$Database].Owner
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType FailedToGetOwnerDatabase `
+                                       -FormatArgs @($Database) `
+                                       -ErrorCategory InvalidOperation
+        }
+    }
+    else
+    {
+        Write-Verbose -Message 'Failed getting SQL databases'
+    }
+
+    $Name
+}
+
+<#
+.SYNOPSIS
+
+This cmdlet is used to configure the owner of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Name 
+
+This is the name of the desired owner for the SQL database
+
+.PARAMETER Database
+
+This is the SQL database that will be setting
+
+#>
+function Set-SqlDatabaseOwner
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database
+    )
+    
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $SQL.Databases
+    $sqlLogins = $SQL.Logins
+
+    if ($sqlDatabase -and $sqlLogins)
+    {
+        if ($sqlDatabase[$Database])
+        {
+            if ($sqlLogins[$Name])
+            {
+                try
+                {
+                    $sqlDatabase[$Database].SetOwner($Name)
+                    New-VerboseMessage -Message "Owner of SQL Database name $Database is now $Name"
+                }
+                catch
+                {
+                    throw New-TerminatingError -ErrorType FailedToSetOwnerDatabase -ErrorCategory InvalidOperation -InnerException $_.Exception
+                }
+            }
+            else
+            {
+                Write-Error -Message "SQL Login name $Name does not exist" -Category InvalidData
+            }
+        }
+        else
+        {
+            Write-Error -Message "SQL Database name $Database does not exist" -Category InvalidData
+        }
+    }
+    else
+    {
+        Write-Verbose -Message 'Failed getting SQL databases and logins'
+    }
+}
+
+<#
+.SYNOPSIS
+
+This cmdlet is used to return the permissions of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Name 
+
+This is the name of the desired login for the SQL database
+
+.PARAMETER Database
+
+This is the SQL database that will be getting
+
+.PARAMETER PermissionState
+
+This is the state of permissions (Grant or Deny) that will be getting
+
+#>
 function Get-SqlDatabasePermission
 {
     [CmdletBinding()]    
@@ -805,7 +954,7 @@ function Get-SqlDatabasePermission
     $sqlInstanceName = $SQL.InstanceName
     $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
 
-    # Initialize variables
+    # Initialize variable permissions
     [System.String[]]$permissions = @()
 
     if ($sqlDatabase)
@@ -833,8 +982,7 @@ function Get-SqlDatabasePermission
         {
             throw New-TerminatingError -ErrorType LoginNotFound `
                                        -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
-                                       -ErrorCategory ObjectNotFound
-            $null = $permissions   
+                                       -ErrorCategory ObjectNotFound 
         }
     }
     else
@@ -842,12 +990,37 @@ function Get-SqlDatabasePermission
         throw New-TerminatingError -ErrorType NoDatabase `
                                    -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
                                    -ErrorCategory InvalidResult
-        $null = $permissions
     }
 
     $permissions
 }
 
+<#
+.SYNOPSIS
+
+This cmdlet is used to add the permissions of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Name 
+
+This is the name of the desired login for the SQL database
+
+.PARAMETER Database
+
+This is the SQL database that will be setting
+
+.PARAMETER PermissionState
+
+This is the state of permissions (Grant or Deny) that will be setting
+
+.PARAMETER Permissions
+
+This is the type of permissions (Connect, Update, etc...) that will be setting
+
+#>
 function Add-SqlDatabasePermission
 {
     [CmdletBinding()]    
@@ -941,6 +1114,32 @@ function Add-SqlDatabasePermission
     }
 }
 
+<#
+.SYNOPSIS
+
+This cmdlet is used to remove the permissions of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Name 
+
+This is the name of the desired login for the SQL database
+
+.PARAMETER Database
+
+This is the SQL database that will be setting
+
+.PARAMETER PermissionState
+
+This is the state of permissions (Grant or Deny) that will be setting
+
+.PARAMETER Permissions
+
+This is the type of permissions (Connect, Update, etc...) that will be setting
+
+#>
 function Remove-SqlDatabasePermission
 {
     [CmdletBinding()]    

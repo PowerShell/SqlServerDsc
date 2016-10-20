@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
     This example shows how to ensure that the user account CONTOSO\SQLAdmin
-    hasn't "Select" and "Create Table" SQL Permissions for database "AdventureWorks". 
+    is "Owner" of SQL database "AdventureWorks". 
 #>
 
 Configuration Example 
@@ -13,10 +13,11 @@ Configuration Example
         [System.Management.Automation.Credential()]
         $SysAdminAccount
     )
-    
+
     Import-DscResource -ModuleName xSqlServer
 
-    node localhost {
+    node localhost 
+    {
         xSQLServerLogin Add_SqlServerLogin_SQLAdmin
         {
             DependsOn = '[xSqlServerSetup]SETUP_SqlMSSQLSERVER'
@@ -28,14 +29,11 @@ Configuration Example
             PsDscRunAsCredential = $SysAdminAccount
         }
 
-        xSQLServerDatabasePermissions Add_SqlDatabasePermissions_SQLAdmin
+        xSQLServerDatabaseOwner Set_SqlDatabaseOwner_SQLAdmin
         {
             DependsOn = '[xSQLServerLogin]Add_SqlServerLogin_SQLAdmin'
-            Ensure = 'Absent'
             Name = 'CONTOSO\SQLAdmin'
             Database = 'AdventureWorks'
-            PermissionState = 'Deny'
-            Permissions = "Select","Create Table"
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
