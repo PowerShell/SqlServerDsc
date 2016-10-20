@@ -347,6 +347,18 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+* xSQLServerHelper
+  - added functions
+    - Test-SQLDscParameterState
+    - Get-SqlDatabaseOwner
+    - Set-SqlDatabaseOwner
+* Examples
+  - xSQLServerDatabaseOwner
+   - 1-SetDatabaseOwner.ps1
+* Added tests for resources
+  - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
+* Fix in xSQLServer
+  - Parameter Ensure equal Present
 
 ### 2.0.0.0
 * Added resources
