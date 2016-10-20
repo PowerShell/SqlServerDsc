@@ -5,7 +5,6 @@ Write-Verbose -Message "CurrentPath: $currentPath"
 Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
 # DSC resource to manage SQL database roles
-
 # NOTE: This resource requires WMF5 and PsDscRunAsCredential
 
 function Get-TargetResource
@@ -29,29 +28,26 @@ function Get-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if($SQL)
+    if ($sql)
     {
-        # Check database exists
-        if(!($SQLDatabase = $SQL.Databases[$Database]))
+        # Getting Owner of Database        
+        $getSqlDatabaseOwner = Get-SqlDatabaseOwner -SQL $sql -Database $Database
+
+        if ($getSqlDatabaseOwner)
         {
-            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database,$SQLServer,$SQLInstanceName) -ErrorCategory InvalidResult
+            Write-Verbose "Owner for SQL Database name $Database is $getSqlDatabaseOwner"
         }
-
-        $Name = $SQLDatabase.Owner
-    }
-    else
-    {
-        $Name = $null
+        else
+        {
+            $null = $getSqlDatabaseOwner
+        }
     }
 
     $returnValue = @{
         Database = $Database
-        Name = $Name
+        Name = $getSqlDatabaseOwner
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
@@ -80,20 +76,19 @@ function Set-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if($SQL)
+    if($sql)
     {
-        $SQLDatabase = $SQL.Databases[$Database]
-        $SQLDatabase.SetOwner($Name)
-    }
-
-    if(!(Test-TargetResource @PSBoundParameters))
-    {
-        throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
+        # Setting Owner of Database
+        try 
+        {
+            Set-SqlDatabaseOwner -SQL $sql -Name $Name -Database $Database
+        }       
+        catch
+        {
+            throw [Exception] ("Failed to setting the owner of database $Database")
+        }
     }
 }
 
@@ -119,10 +114,12 @@ function Test-TargetResource
         $SQLInstanceName = "MSSQLSERVER"
     )
 
-    $result = ((Get-TargetResource @PSBoundParameters).Name -eq $Name)
-    
-    $result
+    Write-Verbose -Message "Testing owner $Name of database $Database"
+     
+    $currentValues = Get-TargetResource @PSBoundParameters
+    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+                                     -DesiredValues $PSBoundParameters `
+                                     -ValuesToCheck @("Name", "Database")
 }
-
 
 Export-ModuleMember -Function *-TargetResource

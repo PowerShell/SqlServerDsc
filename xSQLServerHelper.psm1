@@ -157,7 +157,7 @@ This is a PSBoundParametersDictionary of the desired values for the resource
 
 .PARAMETER ValuesToCheck
 
-This is a list of which properties in the desired values list should be checkked.
+This is a list of which properties in the desired values list should be checked.
 If this is empty then all values in DesiredValues are checked.
 
 #>
@@ -174,7 +174,6 @@ function Test-SQLDscParameterState
         [Object]
         $DesiredValues,
 
-        [parameter(Mandatory = $false)] 
         [Array]
         $ValuesToCheck
     )
@@ -260,47 +259,32 @@ function Test-SQLDscParameterState
                         switch ($desiredType.Name) 
                         {
                             "String" {
-                                if ([string]::IsNullOrEmpty($CurrentValues.$fieldName) `
-                                -and [string]::IsNullOrEmpty($DesiredValues.$fieldName)) 
-                                {} 
-                                else 
+                                if (-not [String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
+                                    -not [String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
-                                    Write-Verbose -Message ("String value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                    Write-Verbose -Message ("String value for property $fieldName does not match. " + `
+                                                            "Current state is '$($CurrentValues.$fieldName)' " + `
+                                                            "and Desired state is '$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
                             "Int32" {
-                                if (($DesiredValues.$fieldName -eq 0) `
-                                -and ($null -eq $CurrentValues.$fieldName)) 
-                                {} 
-                                else 
-                                {
-                                    Write-Verbose -Message ("Int32 value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                { 
+                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
                             "Int16" {
-                                if (($DesiredValues.$fieldName -eq 0) `
-                                -and ($null -eq $CurrentValues.$fieldName)) 
-                                {} 
-                                else 
-                                {
-                                    Write-Verbose -Message ("Int16 value for property " + `
-                                                            "$fieldName does not match. " + `
-                                                            "Current state is " + `
-                                                            "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + `
-                                                            "'$($DesiredValues.$fieldName)'")
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                { 
+                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -794,4 +778,127 @@ function Confirm-SqlServerRole
     }
 
     return $confirmServerRole
+}
+
+<#
+.SYNOPSIS
+
+This cmdlet is used to return the owner of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Database
+
+This is the SQL database that will be checking
+
+#>
+function Get-SqlDatabaseOwner
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database
+    )
+    
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $SQL.Databases
+    if ($sqlDatabase)
+    {
+        if ($sqlDatabase[$Database])
+        {
+            $Name = $sqlDatabase[$Database].Owner
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType FailedToGetOwnerDatabase `
+                                       -FormatArgs @($Database) `
+                                       -ErrorCategory InvalidOperation
+        }
+    }
+    else
+    {
+        Write-Verbose -Message 'Failed getting SQL databases'
+    }
+
+    $Name
+}
+
+<#
+.SYNOPSIS
+
+This cmdlet is used to configure the owner of a SQL database
+
+.PARAMETER SQL
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER Name 
+
+This is the name of the desired owner for the SQL database
+
+.PARAMETER Database
+
+This is the SQL database that will be setting
+
+#>
+function Set-SqlDatabaseOwner
+{
+    [CmdletBinding()]    
+    param
+    (   
+        [ValidateNotNull()] 
+        [System.Object]
+        $SQL,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $Name,
+
+        [ValidateNotNull()] 
+        [System.String]
+        $Database
+    )
+    
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $SQL.Databases
+    $sqlLogins = $SQL.Logins
+
+    if ($sqlDatabase -and $sqlLogins)
+    {
+        if ($sqlDatabase[$Database])
+        {
+            if ($sqlLogins[$Name])
+            {
+                try
+                {
+                    $sqlDatabase[$Database].SetOwner($Name)
+                    New-VerboseMessage -Message "Owner of SQL Database name $Database is now $Name"
+                }
+                catch
+                {
+                    throw New-TerminatingError -ErrorType FailedToSetOwnerDatabase -ErrorCategory InvalidOperation -InnerException $_.Exception
+                }
+            }
+            else
+            {
+                Write-Error -Message "SQL Login name $Name does not exist" -Category InvalidData
+            }
+        }
+        else
+        {
+            Write-Error -Message "SQL Database name $Database does not exist" -Category InvalidData
+        }
+    }
+    else
+    {
+        Write-Verbose -Message 'Failed getting SQL databases and logins'
+    }
 }

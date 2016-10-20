@@ -192,7 +192,7 @@ function Set-TargetResource
             
         # If this is a 64-bit OS then also remove from Wow6432Node
         if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit' `
-                                                                          -and (Test-Path -Path $registryPathWow6432Node))
+              -and (Test-Path -Path $registryPathWow6432Node))
         {
             if ($PSCmdlet.ShouldProcess($Name, 'Remove the client alias (32-bit)'))
             {
