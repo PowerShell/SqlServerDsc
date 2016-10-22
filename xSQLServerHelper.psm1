@@ -291,12 +291,12 @@ function Test-SQLDscParameterState
                                                            -DifferenceObject $DesiredValues.$fieldName
                             if ($null -ne $arrayCompare) 
                             {
-                                New-VerboseMessag -Message ("Found an array for property $fieldName " + `
-                                                            "in the current values, but this array " + `
-                                                            "does not match the desired state. " + `
-                                                            "Details of the changes are below.")
+                                New-VerboseMessage -Message ("Found an array for property $fieldName " + `
+                                                             "in the current values, but this array " + `
+                                                             "does not match the desired state. " + `
+                                                             "Details of the changes are below.")
                                 $arrayCompare | ForEach-Object -Process {
-                                    New-VerboseMessag -Message "$($_.InputObject) - $($_.SideIndicator)"
+                                    New-VerboseMessage -Message "$($_.InputObject) - $($_.SideIndicator)"
                                 }
                                 
                                 $returnValue = $false
@@ -311,9 +311,9 @@ function Test-SQLDscParameterState
                                 if (-not [String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
                                     -not [String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
-                                    New-VerboseMessag -Message ("String value for property $fieldName does not match. " + `
-                                                                "Current state is '$($CurrentValues.$fieldName)' " + `
-                                                                "and Desired state is '$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessage -Message ("String value for property $fieldName does not match. " + `
+                                                                 "Current state is '$($CurrentValues.$fieldName)' " + `
+                                                                 "and Desired state is '$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -321,9 +321,9 @@ function Test-SQLDscParameterState
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 { 
-                                    New-VerboseMessag -Message ("Int32 value for property " + "$fieldName does not match. " + `
-                                                                "Current state is " + "'$($CurrentValues.$fieldName)' " + `
-                                                                "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessage -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                                 "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                                 "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -331,9 +331,9 @@ function Test-SQLDscParameterState
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 { 
-                                    New-VerboseMessag -Message ("Int32 value for property " + "$fieldName does not match. " + `
-                                                                "Current state is " + "'$($CurrentValues.$fieldName)' " + `
-                                                                "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessage -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                                 "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                                 "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
