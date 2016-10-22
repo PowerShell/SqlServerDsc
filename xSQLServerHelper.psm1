@@ -233,26 +233,25 @@ function Test-SQLDscParameterState
         -and ($DesiredValues.GetType().Name -ne "CimInstance") `
         -and ($DesiredValues.GetType().Name -ne "PSBoundParametersDictionary")) 
     {
-        throw ("Property 'DesiredValues' in Test-SQLDscParameterState must be either a " + `
-               "Hashtable or CimInstance. Type detected was $($DesiredValues.GetType().Name)")
+        throw "Property 'DesiredValues' in Test-SQLDscParameterState must be either a " + `
+              "Hashtable or CimInstance. Type detected was $($DesiredValues.GetType().Name)"
     }
 
     if (($DesiredValues.GetType().Name -eq "CimInstance") -and ($null -eq $ValuesToCheck)) 
     {
-        throw ("If 'DesiredValues' is a CimInstance then property 'ValuesToCheck' must contain " + `
-               "a value")
+        throw "If 'DesiredValues' is a CimInstance then property 'ValuesToCheck' must contain a value"
     }
 
     if (($null -eq $ValuesToCheck) -or ($ValuesToCheck.Count -lt 1)) 
     {
-        $KeyList = $DesiredValues.Keys
+        $keyList = $DesiredValues.Keys
     } 
     else 
     {
-        $KeyList = $ValuesToCheck
+        $keyList = $ValuesToCheck
     }
 
-    $KeyList | ForEach-Object -Process {
+    $keyList | ForEach-Object -Process {
         if (($_ -ne "Verbose")) 
         {
             if (($CurrentValues.ContainsKey($_) -eq $false) `
@@ -263,14 +262,14 @@ function Test-SQLDscParameterState
                     $DesiredValues.GetType().Name -eq "PSBoundParametersDictionary") 
                 {
                     
-                    $CheckDesiredValue = $DesiredValues.ContainsKey($_)
+                    $checkDesiredValue = $DesiredValues.ContainsKey($_)
                 } 
                 else 
                 {
-                    $CheckDesiredValue = Test-SPDSCObjectHasProperty $DesiredValues $_
+                    $checkDesiredValue = Test-SPDSCObjectHasProperty $DesiredValues $_
                 }
 
-                if ($CheckDesiredValue) 
+                if ($checkDesiredValue) 
                 {
                     $desiredType = $DesiredValues.$_.GetType()
                     $fieldName = $_
@@ -279,11 +278,11 @@ function Test-SQLDscParameterState
                         if (($CurrentValues.ContainsKey($fieldName) -eq $false) `
                         -or ($null -eq $CurrentValues.$fieldName)) 
                         {
-                            Write-Verbose -Message ("Expected to find an array value for " + `
-                                                    "property $fieldName in the current " + `
-                                                    "values, but it was either not present or " + `
-                                                    "was null. This has caused the test method " + `
-                                                    "to return false.")
+                            New-VerboseMessage -Message ("Expected to find an array value for " + `
+                                                         "property $fieldName in the current " + `
+                                                         "values, but it was either not present or " + `
+                                                         "was null. This has caused the test method " + `
+                                                         "to return false.")
                             $returnValue = $false
                         } 
                         else 
@@ -292,13 +291,14 @@ function Test-SQLDscParameterState
                                                            -DifferenceObject $DesiredValues.$fieldName
                             if ($null -ne $arrayCompare) 
                             {
-                                Write-Verbose -Message ("Found an array for property $fieldName " + `
-                                                        "in the current values, but this array " + `
-                                                        "does not match the desired state. " + `
-                                                        "Details of the changes are below.")
+                                New-VerboseMessag -Message ("Found an array for property $fieldName " + `
+                                                            "in the current values, but this array " + `
+                                                            "does not match the desired state. " + `
+                                                            "Details of the changes are below.")
                                 $arrayCompare | ForEach-Object -Process {
-                                    Write-Verbose -Message "$($_.InputObject) - $($_.SideIndicator)"
+                                    New-VerboseMessag -Message "$($_.InputObject) - $($_.SideIndicator)"
                                 }
+                                
                                 $returnValue = $false
                             }
                         }
@@ -311,9 +311,9 @@ function Test-SQLDscParameterState
                                 if (-not [String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
                                     -not [String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
-                                    Write-Verbose -Message ("String value for property $fieldName does not match. " + `
-                                                            "Current state is '$($CurrentValues.$fieldName)' " + `
-                                                            "and Desired state is '$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessag -Message ("String value for property $fieldName does not match. " + `
+                                                                "Current state is '$($CurrentValues.$fieldName)' " + `
+                                                                "and Desired state is '$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -321,9 +321,9 @@ function Test-SQLDscParameterState
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 { 
-                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
-                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessag -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                                "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                                "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -331,9 +331,9 @@ function Test-SQLDscParameterState
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 { 
-                                    Write-Verbose -Message ("Int32 value for property " + "$fieldName does not match. " + `
-                                                            "Current state is " + "'$($CurrentValues.$fieldName)' " + `
-                                                            "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    New-VerboseMessag -Message ("Int32 value for property " + "$fieldName does not match. " + `
+                                                                "Current state is " + "'$($CurrentValues.$fieldName)' " + `
+                                                                "and desired state is " + "'$($DesiredValues.$fieldName)'")
                                     $returnValue = $false
                                 }
                             }
@@ -350,6 +350,7 @@ function Test-SQLDscParameterState
             }
         } 
     }
+    
     return $returnValue
 }
 
