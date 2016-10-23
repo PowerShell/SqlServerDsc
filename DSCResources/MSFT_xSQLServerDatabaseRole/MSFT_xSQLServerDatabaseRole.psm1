@@ -77,7 +77,7 @@ function Get-TargetResource
                 }
             }
 
-            if ( !(Compare-Object -ReferenceObject $role -DifferenceObject $grantedRole) )
+            if ( !(Compare-Object -ReferenceObject $Role -DifferenceObject $grantedRole) )
             {
                 $Ensure = 'Present'
             }
@@ -144,6 +144,7 @@ function Set-TargetResource
         {
             'Present'
             {
+                # Adding database user if it does not exist.
                 if ( !($sqlDatabase.Users[$Name]) )
                 {
                     try
@@ -163,6 +164,7 @@ function Set-TargetResource
                     }
                 }
 
+                # Adding database user to the role.
                 if ($sqlDatabase.Users[$Name])
                 {
                     foreach ($currentRole in $Role) 
