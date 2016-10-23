@@ -50,6 +50,10 @@ try
         $sqlCollation = 'Finnish_Swedish_CI_AS'
         $sqlLoginMode = 'Integrated'
 
+        $sqlSharedDirectory = 'C:\Program Files\Microsoft SQL Server'
+        $sqlSharedWowDirectory = 'C:\Program Files (x86)\Microsoft SQL Server'
+        $sqlProgramDirectory = 'C:\Program Files\Microsoft SQL Server'
+        
         $defaultInstance_InstanceName = 'MSSQLSERVER'
         $defaultInstance_DatabaseServiceName = $defaultInstance_InstanceName
         $defaultInstance_AgentServiceName = 'SQLSERVERAGENT'
@@ -180,11 +184,29 @@ try
             )
         }
 
+        $mockGetItemProperty_SharedDirectory = {
+            return @(
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name '28A1158CDF9ED6B41B2B7358982D4BA8' -Value $sqlSharedDirectory -PassThru -Force                
+                )
+            )
+        }
+
+        $mockGetItemProperty_SharedWowDirectory = {
+            return @(
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name '28A1158CDF9ED6B41B2B7358982D4BA8' -Value $sqlSharedWowDirectory -PassThru -Force                
+                )
+            )
+        }
+
         $mockGetItemProperty_Setup = {
             return @(
                 (
                     New-Object Object | 
-                        Add-Member -MemberType NoteProperty -Name 'SqlProgramDir' -Value 'C:\Program Files\Microsoft SQL Server\' -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'SqlProgramDir' -Value $sqlProgramDirectory -PassThru -Force
                 )
             )
         }
@@ -235,6 +257,18 @@ try
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' -and 
                     ($Name -eq $defaultInstance_InstanceName -or $Name -eq $namedInstance_InstanceName) 
                 } -MockWith $mockGetItemProperty_SQL -Verifiable 
+
+                # Mocking SharedDirectory
+                Mock -CommandName Get-ItemProperty -ParameterFilter { 
+                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
+                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
+                } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable 
+
+                # Mocking SharedWowDirectory
+                Mock -CommandName Get-ItemProperty -ParameterFilter { 
+                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
+                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
+                } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable 
             }
 
             $testProductVersion | ForEach-Object -Process {
@@ -369,7 +403,7 @@ try
                         
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 9 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
                             -Exactly -Times 2 -Scope It
@@ -393,8 +427,8 @@ try
                         $result.SourceFolder | Should Be $sourceFolder
                         $result.InstanceName | Should Be $defaultInstance_InstanceName
                         $result.InstanceID | Should Be $defaultInstance_InstanceName
-                        $result.InstallSharedDir | Should Be $null
-                        $result.InstallSharedWOWDir | Should Be $null
+                        $result.InstallSharedDir | Should Be $sqlSharedDirectory
+                        $result.InstallSharedWOWDir | Should Be $sqlSharedWowDirectory
                         $result.SQLSvcAccountUsername | Should Be $null
                         $result.AgtSvcAccountUsername | Should Be $null
                         $result.SQLCollation | Should Be $sqlCollation
@@ -547,7 +581,7 @@ try
                         
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 9 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
                             -Exactly -Times 2 -Scope It
@@ -571,8 +605,8 @@ try
                         $result.SourceFolder | Should Be $sourceFolder
                         $result.InstanceName | Should Be $namedInstance_InstanceName
                         $result.InstanceID | Should Be $namedInstance_InstanceName
-                        $result.InstallSharedDir | Should Be $null
-                        $result.InstallSharedWOWDir | Should Be $null
+                        $result.InstallSharedDir | Should Be $sqlSharedDirectory
+                        $result.InstallSharedWOWDir | Should Be $sqlSharedWowDirectory
                         $result.SQLSvcAccountUsername | Should Be $null
                         $result.AgtSvcAccountUsername | Should Be $null
                         $result.SQLCollation | Should Be $sqlCollation
