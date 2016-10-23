@@ -2,12 +2,6 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param()
 
-    # TODO: Need to test when SourceCredential is set. Must mock NetUse (Get-/Set-method) and Robocopy (Set-method)
-    # TODO: Need to test when replication state is installed, see $mockGetItemProperty_ConfigurationState
-    # TODO: Need to test other products than just DBENGINE.
-    # TODO: Need to test all parameters
-    # TODO: Can't test Set-method when state is present because the Set-method is not currently built that way.
-
 $script:DSCModuleName      = 'xSQLServer'
 $script:DSCResourceName    = 'MSFT_xSQLServerSetup'
 
