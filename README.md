@@ -360,7 +360,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
    - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
   - xSQLServerDatabaseRole
 * Changes and enhancements in xSQLServerDatabaseRole
-  - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer` and `SQLInstanceName` are mandatory. 
+  - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer`, `SQLInstanceName` and `Database` are mandatory. 
   - Enhanced so the same user can now be added to more than one role
 
 ### 2.0.0.0
