@@ -67,12 +67,12 @@ function Get-TargetResource
     
     $integrationServiceName = "MsDtsServer$($sqlVersion)0"
     
-    $features = ""
+    $features = ''
 
     $services = Get-Service
     if ($services | Where-Object {$_.Name -eq $databaseServiceName})
     {
-        $features += "SQLENGINE,"
+        $features += 'SQLENGINE,'
 
         $sqlServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $databaseServiceName}).StartName
         $agentServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $agentServiceName}).StartName
@@ -84,15 +84,15 @@ function Get-TargetResource
         $isReplicationInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState").SQL_Replication_Core_Inst
         if ($isReplicationInstalled -eq 1)
         {
-            Write-Verbose "Replication feature detected"
-            $Features += "REPLICATION,"
+            Write-Verbose 'Replication feature detected'
+            $Features += 'REPLICATION,'
         } 
         else
         {
-            Write-Verbose "Replication feature not detected"
+            Write-Verbose 'Replication feature not detected'
         }
 
-        $instanceId = $fullInstanceId.Split(".")[1]
+        $instanceId = $fullInstanceId.Split('.')[1]
         $instanceDirectory = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\Setup" -Name 'SqlProgramDir').SqlProgramDir.Trim("\")
 
         $databaseServer = Connect-SQL -SQLServer 'localhost' -SQLInstanceName $InstanceName
@@ -104,20 +104,20 @@ function Get-TargetResource
         {
             foreach ($sqlRole in $sqlUser.ListMembers())
             {
-                if ($sqlRole -like "sysadmin")
+                if ($sqlRole -like 'sysadmin')
                 {
                     $sqlSystemAdminAccounts += $sqlUser.Name
                 }
             }
         }
         
-        if ($databaseServer.LoginMode -eq "Mixed")
+        if ($databaseServer.LoginMode -eq 'Mixed')
         {
-            $securityMode = "SQL"
+            $securityMode = 'SQL'
         }
         else
         { 
-            $securityMode = "Windows"
+            $securityMode = 'Windows'
         }
 
         $installSQLDataDirectory = $databaseServer.InstallDataDirectory
@@ -128,24 +128,24 @@ function Get-TargetResource
 
     if ($services | Where-Object {$_.Name -eq $fullTextServiceName})
     {
-        $features += "FULLTEXT,"
+        $features += 'FULLTEXT,'
         $fulltextServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $fullTextServiceName}).StartName
     }
 
     if ($services | Where-Object {$_.Name -eq $reportServiceName})
     {
-        $features += "RS,"
+        $features += 'RS,'
         $reportingServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $reportServiceName}).StartName
     }
 
     if ($services | Where-Object {$_.Name -eq $analysisServiceName})
     {
-        $features += "AS,"
+        $features += 'AS,'
         $analysisServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $analysisServiceName}).StartName
         
-        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.AnalysisServices")
+        [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.AnalysisServices')
         $analysisServer = New-Object Microsoft.AnalysisServices.Server
-        if ($InstanceName -eq "MSSQLSERVER")
+        if ($InstanceName -eq 'MSSQLSERVER')
         {
             $analysisServer.Connect('localhost')
         }
@@ -166,7 +166,7 @@ function Get-TargetResource
 
     if ($services | Where-Object {$_.Name -eq $integrationServiceName})
     {
-        $features += "IS,"
+        $features += 'IS,'
         $integrationServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $integrationServiceName}).StartName
     }
 
@@ -174,82 +174,94 @@ function Get-TargetResource
 
     switch ($sqlVersion)
     {
-        "10"
+        '10'
         {
-            $identifyingNumber = "{72AB7E6F-BC24-481E-8C45-1AB5B3DD795D}"
+            $identifyingNumber = '{72AB7E6F-BC24-481E-8C45-1AB5B3DD795D}'
         }
 
-        "11"
+        '11'
         {
-            $identifyingNumber = "{A7037EB2-F953-4B12-B843-195F4D988DA1}"
+            $identifyingNumber = '{A7037EB2-F953-4B12-B843-195F4D988DA1}'
         }
 
-        "12"
+        '12'
         {
-            $identifyingNumber = "{75A54138-3B98-4705-92E4-F619825B121F}"
+            $identifyingNumber = '{75A54138-3B98-4705-92E4-F619825B121F}'
         }
     }
 
     if ($products | Where-Object {$_.IdentifyingNumber -eq $identifyingNumber})
     {
-        $features += "SSMS,"
+        $features += 'SSMS,'
     }
 
     switch ($sqlVersion)
     {
-        "10"
+        '10'
         {
-            $identifyingNumber = "{B5FE23CC-0151-4595-84C3-F1DE6F44FE9B}"
+            $identifyingNumber = '{B5FE23CC-0151-4595-84C3-F1DE6F44FE9B}'
         }
 
-        "11"
+        '11'
         {
-            $identifyingNumber = "{7842C220-6E9A-4D5A-AE70-0E138271F883}"
+            $identifyingNumber = '{7842C220-6E9A-4D5A-AE70-0E138271F883}'
         }
 
-        "12"
+        '12'
         {
-            $identifyingNumber = "{B5ECFA5C-AC4F-45A4-A12E-A76ABDD9CCBA}"
+            $identifyingNumber = '{B5ECFA5C-AC4F-45A4-A12E-A76ABDD9CCBA}'
         }
     }
 
     if ($Products | Where-Object {$_.IdentifyingNumber -eq $identifyingNumber})
     {
-        $features += "ADV_SSMS,"
+        $features += 'ADV_SSMS,'
     }
 
-    $features = $features.Trim(",")
+    $features = $features.Trim(',')
     if ($features -ne '')
     {
+        $registryInstallerComponentsPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components'
+
         switch ($sqlVersion)
         {
-            "10"
+            '10'
             {
-                $installSharedDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "0D1F366D0FE0E404F8C15EE4F1C15094")
-                $installSharedWOWDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "C90BFAC020D87EA46811C836AD3C507F")
+                $registryKeySharedDir = '0D1F366D0FE0E404F8C15EE4F1C15094'
+                $registryKeySharedWOWDir = 'C90BFAC020D87EA46811C836AD3C507F'
             }
 
-            "11"
+            '11'
             {
-                $installSharedDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "FEE2E540D20152D4597229B6CFBC0A69")
-                $installSharedWOWDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "A79497A344129F64CA7D69C56F5DD8B4")
+                $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
+                $registryKeySharedWOWDir = 'A79497A344129F64CA7D69C56F5DD8B4'
             }
 
-            "12"
+            '12'
             {
-                $installSharedDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "FEE2E540D20152D4597229B6CFBC0A69")
-                $installSharedWOWDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "C90BFAC020D87EA46811C836AD3C507F")
+                $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
+                $registryKeySharedWOWDir = 'C90BFAC020D87EA46811C836AD3C507F'
             }
 
-            "13"
+            '13'
             {
-                $installSharedDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "FEE2E540D20152D4597229B6CFBC0A69")
-                $installSharedWOWDir = (GetFirstItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components" -Name "A79497A344129F64CA7D69C56F5DD8B4")
+                $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
+                $registryKeySharedWOWDir = 'A79497A344129F64CA7D69C56F5DD8B4'
             }
+        }
+
+        if ($registryKeySharedDir)
+        {
+            $installSharedDir = Get-FirstItemPropertyValue -Path (Join-Path -Path $registryInstallerComponentsPath -ChildPath $registryKeySharedDir)
+        }
+
+        if ($registryKeySharedWOWDir)
+        {
+            $installSharedWOWDir = Get-FirstItemPropertyValue -Path (Join-Path -Path $registryInstallerComponentsPath -ChildPath $registryKeySharedWOWDir)
         }
     }
 
-    $returnValue = @{
+    return @{
         SourcePath = $SourcePath
         SourceFolder = $SourceFolder
         Features = $features
@@ -281,8 +293,6 @@ function Get-TargetResource
         ASConfigDir = $analysisConfigDirectory
         ISSvcAccountUsername = $integrationServiceAccountUsername
     }
-
-    $returnValue
 }
 
 function Set-TargetResource
@@ -433,9 +443,11 @@ function Set-TargetResource
     if ($SourceCredential)
     {
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Present'
-        $TempFolder = [IO.Path]::GetTempPath()
-        & robocopy.exe (Join-Path -Path $SourcePath -ChildPath $SourceFolder) (Join-Path -Path $TempFolder -ChildPath $SourceFolder) /e
-        $SourcePath = $TempFolder
+
+        $tempFolder = Get-TemporaryFolder
+        Copy-ItemWithRoboCopy -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -DestinationPath (Join-Path -Path $tempFolder -ChildPath $SourceFolder)
+        $SourcePath = $tempFolder
+
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Absent'
     }
 
@@ -937,7 +949,30 @@ function GetSQLVersion
     (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
 }
 
-function GetFirstItemPropertyValue
+function Get-FirstItemPropertyValue
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [String]
+        $Path
+    )
+
+    $registryProperty = Get-Item -Path $Path -ErrorAction SilentlyContinue 
+    if ($registryProperty)
+    {
+        $registryProperty = $registryProperty | Select-Object -ExpandProperty Property | Select-Object -First 1
+        if ($registryProperty)
+        {
+            $registryPropertyValue = (Get-ItemProperty -Path $Path -Name $registryProperty).$registryProperty.TrimEnd('\')
+        }
+    } 
+    
+    return $registryPropertyValue
+}
+
+function Copy-ItemWithRoboCopy
 {
     [CmdletBinding()]
     param
@@ -948,14 +983,18 @@ function GetFirstItemPropertyValue
 
         [Parameter(Mandatory=$true)]
         [String]
-        $Name
+        $DestinationPath
     )
 
-    if (Get-ItemProperty -Path "$Path\$Name" -ErrorAction SilentlyContinue)
-    {
-        $FirstName = @(((Get-ItemProperty -Path "$Path\$Name") | Get-Member -MemberType NoteProperty | Where-Object {$_.Name.Substring(0,2) -ne 'PS'}).Name)[0]
-        (Get-ItemProperty -Path "$Path\$Name" -Name $FirstName).$FirstName.TrimEnd('\')
-    }
+    & robocopy.exe $Path $DestinationPath /e
+}
+
+function Get-TemporaryFolder
+{
+    [CmdletBinding()]
+    param()
+
+    return [IO.Path]::GetTempPath()
 }
 
 Export-ModuleMember -Function *-TargetResource
