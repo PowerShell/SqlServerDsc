@@ -140,25 +140,17 @@ function Get-TargetResource
         $features += 'AS,'
         $analysisServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $analysisServiceName}).StartName
         
-        [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.AnalysisServices')
-        $analysisServer = New-Object Microsoft.AnalysisServices.Server
-        if ($InstanceName -eq 'MSSQLSERVER')
-        {
-            $analysisServer.Connect('localhost')
-        }
-        else
-        {
-            $analysisServer.Connect("localhost\$InstanceName")
-        }
+        $analysisServer = Connect-SQLAnalysis -SQLServer localhost -SQLInstanceName $InstanceName
 
-        $analysisCollation = ($analysisServer.ServerProperties | Where-Object {$_.Name -eq 'CollationName'}).Value
-        $analysisSystemAdminAccounts = @(($analysisServer.Roles | Where-Object {$_.Name -eq 'Administrators'}).Members.Name)
-        $analysisDataDirectory = ($analysisServer.ServerProperties | Where-Object {$_.Name -eq 'DataDir'}).Value
-        $analysisTempDirectory = ($analysisServer.ServerProperties | Where-Object {$_.Name -eq 'TempDir'}).Value
-        $analysisLogDirectory = ($analysisServer.ServerProperties | Where-Object {$_.Name -eq 'LogDir'}).Value
-        $analysisBackupDirectory = ($analysisServer.ServerProperties | Where-Object {$_.Name -eq 'BackupDir'}).Value
+        $analysisCollation = $analysisServer.ServerProperties['CollationName'].Value
+        $analysisDataDirectory = $analysisServer.ServerProperties['DataDir'].Value
+        $analysisTempDirectory = $analysisServer.ServerProperties['TempDir'].Value
+        $analysisLogDirectory = $analysisServer.ServerProperties['LogDir'].Value
+        $analysisBackupDirectory = $analysisServer.ServerProperties['BackupDir'].Value
 
-        $analysisConfigDirectory = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$analysisServiceName" -Name 'ImagePath').ImagePath.Replace(" -s ",",").Split(",")[1].Trim("`"")
+        $analysisSystemAdminAccounts = $analysisServer.Roles['Administrators'].Members.Name
+
+        $analysisConfigDirectory = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$analysisServiceName" -Name 'ImagePath').ImagePath.Replace(' -s ',',').Split(',')[1].Trim('"')
     }
 
     if ($services | Where-Object {$_.Name -eq $integrationServiceName})
