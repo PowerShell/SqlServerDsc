@@ -7,9 +7,10 @@ Import-LocalizedData USLocalizedData -filename xSQLServer.strings.psd1 -UICultur
 
 function Connect-SQL
 {
-[CmdletBinding()]
+    [CmdletBinding()]
     param
-    (   [ValidateNotNull()] 
+    (
+        [ValidateNotNull()] 
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
         
@@ -24,37 +25,90 @@ function Connect-SQL
     
     $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
     
-    if($SQLInstanceName -eq "MSSQLSERVER")
+    if ($SQLInstanceName -eq "MSSQLSERVER")
     {
-        $ConnectSQL = $SQLServer
+        $connectSql = $SQLServer
     }
     else
     {
-        $ConnectSQL = "$SQLServer\$SQLInstanceName"
+        $connectSql = "$SQLServer\$SQLInstanceName"
     }
+    
     if ($SetupCredential)
     {
-        $SQL = New-Object Microsoft.SqlServer.Management.Smo.Server
-        $SQL.ConnectionContext.ConnectAsUser = $true
-        $SQL.ConnectionContext.ConnectAsUserPassword = $SetupCredential.GetNetworkCredential().Password
-        $SQL.ConnectionContext.ConnectAsUserName = $SetupCredential.GetNetworkCredential().UserName 
-        $SQL.ConnectionContext.ServerInstance = $ConnectSQL
-        $SQL.ConnectionContext.connect()
+        $sql = New-Object Microsoft.SqlServer.Management.Smo.Server
+        $sql.ConnectionContext.ConnectAsUser = $true
+        $sql.ConnectionContext.ConnectAsUserPassword = $SetupCredential.GetNetworkCredential().Password
+        $sql.ConnectionContext.ConnectAsUserName = $SetupCredential.GetNetworkCredential().UserName 
+        $sql.ConnectionContext.ServerInstance = $connectSQL
+        $sql.ConnectionContext.connect()
     }
     else
     {
-        $SQL = New-Object Microsoft.SqlServer.Management.Smo.Server $ConnectSQL
+        $sql = New-Object Microsoft.SqlServer.Management.Smo.Server $connectSql
     }
-    if($SQL)
+
+    if (!$sql)
     {
-        New-VerboseMessage -Message "Connected to SQL $ConnectSQL"
-        $SQL
+        Throw -Message "Failed connecting to SQL $connectSql"
+    }
+
+    New-VerboseMessage -Message "Connected to SQL $connectSql"
+
+    return $sql
+}
+
+function Connect-SQLAnalysis
+{
+    [CmdletBinding()]
+    param
+    (
+        [ValidateNotNull()] 
+        [System.String]
+        $SQLServer = $env:COMPUTERNAME,
+        
+        [ValidateNotNull()] 
+        [System.String]
+        $SQLInstanceName = "MSSQLSERVER",
+
+        [ValidateNotNull()] 
+        [System.Management.Automation.PSCredential]
+        $SetupCredential
+    )
+    
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.AnalysisServices')
+    
+    if ($SQLInstanceName -eq "MSSQLSERVER")
+    {
+        $connectSql = $SQLServer
     }
     else
     {
-        Throw -Message "Failed connecting to SQL $ConnectSQL"
-        Exit
+        $connectSql = "$SQLServer\$SQLInstanceName"
     }
+    
+    $sql = New-Object Microsoft.AnalysisServices.Server
+
+    if ($SetupCredential)
+    {
+        $userName = $SetupCredential.GetNetworkCredential().UserName 
+        $password = $SetupCredential.GetNetworkCredential().Password
+
+        $sql.Connect("Data Source=$connectSql;User ID=$userName;Password=$password")
+    }
+    else
+    {
+        $sql.Connect("Data Source=$connectSql")
+    }
+
+    if (!$sql)
+    {
+        Throw -Message "Failed connecting to Analysis Services $connectSql"
+    }
+
+    New-VerboseMessage -Message "Connected to Analysis Services $connectSql"
+
+    return $sql
 }
 
 function New-TerminatingError 
