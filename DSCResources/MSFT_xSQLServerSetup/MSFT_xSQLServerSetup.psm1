@@ -21,9 +21,6 @@ function Get-TargetResource
         [System.Management.Automation.PSCredential]
         $SourceCredential,
 
-        [System.String]
-        $Features,
-
         [parameter(Mandatory = $true)]
         [System.String]
         $InstanceName
@@ -432,7 +429,6 @@ function Set-TargetResource
         SourceFolde = $SourceFolder
         SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
-        Feature = $Features
         InstanceName = $InstanceName
     }
 
@@ -908,7 +904,6 @@ function Test-TargetResource
         SourceFolde = $SourceFolder
         SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
-        Feature = $Features
         InstanceName = $InstanceName
     }
 
