@@ -47,6 +47,9 @@ try
 
         $mockSqlDatabaseEngineName = 'MSSQL'
         $mockSqlAgentName = 'SQLAgent'
+        $mockSqlFullTextName = 'MSSQLFDLauncher'
+        $mockSqlReportingName = 'ReportServer'
+
         $mockSqlCollation = 'Finnish_Swedish_CI_AS'
         $mockSqlLoginMode = 'Integrated'
 
@@ -57,10 +60,14 @@ try
         $mockDefaultInstance_InstanceName = 'MSSQLSERVER'
         $mockDefaultInstance_DatabaseServiceName = $mockDefaultInstance_InstanceName
         $mockDefaultInstance_AgentServiceName = 'SQLSERVERAGENT'
+        $mockDefaultInstance_FullTextServiceName = $mockSqlFullTextName
+        $mockDefaultInstance_ReportingServiceName = $mockSqlReportingName
 
         $mockNamedInstance_InstanceName = 'TEST'
         $mockNamedInstance_DatabaseServiceName = "$($mockSqlDatabaseEngineName)`$$($mockNamedInstance_InstanceName)"
         $mockNamedInstance_AgentServiceName = "$($mockSqlAgentName)`$$($mockNamedInstance_InstanceName)"
+        $mockNamedInstance_FullTextServiceName = "$($mockSqlFullTextName)`$$($mockNamedInstance_InstanceName)"
+        $mockNamedInstance_ReportingServiceName = "$($mockSqlReportingName)`$$($mockNamedInstance_InstanceName)"
 
         $mockmockSetupCredentialUserName = "COMPANY\sqladmin" 
         $mockmockSetupCredentialPassword = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
@@ -71,6 +78,7 @@ try
 
         $mockSourceFolder = 'Source' #  The parameter SourceFolder has a default value of 'Source', so lets mock that as well.
 
+        #region Function mocks
         $mockGetSQLVersion = {
             return $mockSqlMajorVersion
         }
@@ -125,6 +133,16 @@ try
                     New-Object Object | 
                         Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_AgentServiceName -PassThru |
                         Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockAgentServiceAccount -PassThru -Force
+                ),
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_FullTextServiceName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
+                ),
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_ReportingServiceName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
                 )
             )
         }
@@ -140,6 +158,16 @@ try
                     New-Object Object | 
                         Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_AgentServiceName -PassThru |
                         Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockAgentServiceAccount -PassThru -Force
+                ),
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_FullTextServiceName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
+                ),
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_ReportingServiceName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
                 )
             )
         }
@@ -256,10 +284,29 @@ try
         $mockGetTemporaryFolder = {
             return $mockSourcePathUNC
         }
-        
+
+        <#
+        Needed a way to see into the Set-method for the arguments the Set-method is building and sending to 'setup.exe', and fail 
+        the test if the arguments is diffentent from the expected arguments.
+        Solved this by dynamically set the expected arguments before each It-block. If the arguments differs the mock of
+        StartWin32Process throws an error message, similiar to what Pester would have reported (expected -> but was).
+        #> 
+        $mockStartWin32ProcessExpectedArgument = ''
+        $mockStartWin32Process = {
+            if ( $Arguments -ne $mockStartWin32ProcessExpectedArgument )
+            {
+                throw "Expected arguments was not the same as the arguments in the function call.`nExpected: '$mockStartWin32ProcessExpectedArgument' `n But was: '$Arguments'"
+            }
+
+            return 'Process started'
+        }
+        #endregion Function mocks
+       
+        # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
             SetupCredential = $mockSetupCredential
-            Features = 'SQLEngine' 
+            # These are written with both lower-case and upper-case to make sure we support that.
+            Features = 'SQLEngine,FullText,Rs'
         }
 
         Describe "$($script:DSCResourceName)\Get-TargetResource" -Tag 'Get' {
@@ -326,15 +373,14 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $null
                             SourcePath = $mockSourcePath
                         }
                         
-                        $testParameters.Features = 'SQLEngine,SSMS,ADV_SSMS'
-
                         if ($mockSqlMajorVersion -eq 13) {
                             # Mock all SSMS products here to make sure we don't return any when testing SQL Server 2016
                             Mock -CommandName Get-WmiObject -ParameterFilter { 
@@ -411,15 +457,14 @@ try
 
                 Context "When using SourceCredential parameter and SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $mockSetupCredential
                             SourcePath = $mockSourcePathUNC
                         }
                         
-                        $testParameters.Features = 'SQLEngine,SSMS,ADV_SSMS'
-
                         if ($mockSqlMajorVersion -eq 13) {
                             # Mock all SSMS products here to make sure we don't return any when testing SQL Server 2016
                             Mock -CommandName Get-WmiObject -ParameterFilter { 
@@ -496,7 +541,8 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is in the desired state for default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $null
@@ -532,7 +578,7 @@ try
                         Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                            -Exactly -Times 2 -Scope It
+                            -Exactly -Times 4 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                             -Exactly -Times 1 -Scope It
@@ -541,9 +587,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -580,7 +626,8 @@ try
 
                 Context "When using SourceCredential parameter and SQL Server version is $mockSqlMajorVersion and the system is in the desired state for default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $mockSetupCredential
@@ -616,7 +663,7 @@ try
                         Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                            -Exactly -Times 2 -Scope It
+                            -Exactly -Times 4 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                             -Exactly -Times 1 -Scope It
@@ -625,9 +672,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -673,7 +720,8 @@ try
                 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for named instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockNamedInstance_InstanceName
                             SourceCredential = $null
@@ -756,7 +804,8 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is in the desired state for named instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
                         $testParameters += @{
                             InstanceName = $mockNamedInstance_InstanceName
                             SourceCredential = $null
@@ -792,7 +841,7 @@ try
                         Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                            -Exactly -Times 2 -Scope It
+                            -Exactly -Times 4 -Scope It
 
                         Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                             -Exactly -Times 1 -Scope It
@@ -801,9 +850,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -968,7 +1017,7 @@ try
                     Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                        -Exactly -Times 2 -Scope It
+                        -Exactly -Times 4 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                         -Exactly -Times 1 -Scope It
@@ -992,7 +1041,7 @@ try
                     Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                        -Exactly -Times 2 -Scope It
+                        -Exactly -Times 4 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                         -Exactly -Times 1 -Scope It
@@ -1036,7 +1085,7 @@ try
                     Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 5 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                        -Exactly -Times 2 -Scope It
+                        -Exactly -Times 4 -Scope It
 
                     Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
                         -Exactly -Times 1 -Scope It
@@ -1097,9 +1146,7 @@ try
                     ($Name -eq $mockDefaultInstance_InstanceName) 
                 } -MockWith $mockGetItemProperty_SQL -Verifiable 
 
-                Mock -CommandName StartWin32Process -MockWith {
-                    return 'Process started'
-                } -Verifiable
+                Mock -CommandName StartWin32Process -MockWith $mockStartWin32Process -Verifiable
                 Mock -CommandName WaitForWin32ProcessEnd -Verifiable
                 Mock -CommandName Test-TargetResource -MockWith {
                     return $true
@@ -1150,6 +1197,15 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
+                        $mockStartWin32ProcessExpectedArgument = 
+                            '/Quiet="True"',
+                            '/IAcceptSQLServerLicenseTerms="True"',
+                            '/Action="Install"',
+                            '/AGTSVCSTARTUPTYPE=Automatic',
+                            '/InstanceName="MSSQLSERVER"',
+                            '/Features="SQLENGINE,FULLTEXT,RS"',
+                            '/SQLSysAdminAccounts="COMPANY\sqladmin"' -join ' '
+
                         { Set-TargetResource @testParameters } | Should Not Throw
                         
                         Assert-MockCalled -CommandName NetUse -Exactly -Times 0 -Scope It
@@ -1175,17 +1231,29 @@ try
 
                     if( $mockSqlMajorVersion -eq 13 ) {
                         It 'Should throw when feature parameter contains ''SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = 'SSMS'
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
 
                         It 'Should throw when feature parameter contains ''ADV_SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,ADV_SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = 'ADV_SSMS'
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'ADV_SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
                     } else {
                         It 'Should set the system in the desired state when feature is SSMS' {
                             $testParameters.Features = 'SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="MSSQLSERVER"',
+                                '/Features="SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1208,6 +1276,14 @@ try
 
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="MSSQLSERVER"',
+                                '/Features="ADV_SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1262,6 +1338,15 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
+                        $mockStartWin32ProcessExpectedArgument = 
+                            '/Quiet="True"',
+                            '/IAcceptSQLServerLicenseTerms="True"',
+                            '/Action="Install"',
+                            '/AGTSVCSTARTUPTYPE=Automatic',
+                            '/InstanceName="MSSQLSERVER"',
+                            '/Features="SQLENGINE,FULLTEXT,RS"',
+                            '/SQLSysAdminAccounts="COMPANY\sqladmin"' -join ' '
+
                         { Set-TargetResource @testParameters } | Should Not Throw
                         
                         Assert-MockCalled -CommandName NetUse -Exactly -Times 4 -Scope It
@@ -1287,17 +1372,29 @@ try
 
                     if( $mockSqlMajorVersion -eq 13 ) {
                         It 'Should throw when feature parameter contains ''SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = 'SSMS'
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
 
                         It 'Should throw when feature parameter contains ''ADV_SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,ADV_SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = 'ADV_SSMS'
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'ADV_SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
                     } else {
                         It 'Should set the system in the desired state when feature is SSMS' {
                             $testParameters.Features = 'SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="MSSQLSERVER"',
+                                '/Features="SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1320,6 +1417,14 @@ try
 
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="MSSQLSERVER"',
+                                '/Features="ADV_SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1380,6 +1485,15 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
+                        $mockStartWin32ProcessExpectedArgument = 
+                            '/Quiet="True"',
+                            '/IAcceptSQLServerLicenseTerms="True"',
+                            '/Action="Install"',
+                            '/AGTSVCSTARTUPTYPE=Automatic',
+                            '/InstanceName="TEST"',
+                            '/Features="SQLENGINE,FULLTEXT,RS"',
+                            '/SQLSysAdminAccounts="COMPANY\sqladmin"' -join ' '
+
                         { Set-TargetResource @testParameters } | Should Not Throw
                         
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1402,17 +1516,29 @@ try
 
                     if( $mockSqlMajorVersion -eq 13 ) {
                         It 'Should throw when feature parameter contains ''SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = $($testParameters.Features), 'SSMS' -join ','
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
 
                         It 'Should throw when feature parameter contains ''ADV_SSMS'' when installing SQL Server 2016' {
-                            $testParameters.Features = 'SQLEngine,ADV_SSMS'
-                            { Set-TargetResource @testParameters } | Should Throw
+                            $testParameters.Features = $($testParameters.Features), 'ADV_SSMS' -join ','
+                            $mockStartWin32ProcessExpectedArgument = ''
+
+                            { Set-TargetResource @testParameters } | Should Throw "'ADV_SSMS' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information."
                         }
                     } else {
                         It 'Should set the system in the desired state when feature is SSMS' {
                             $testParameters.Features = 'SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="TEST"',
+                                '/Features="SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
@@ -1435,6 +1561,14 @@ try
 
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
+
+                            $mockStartWin32ProcessExpectedArgument = 
+                                '/Quiet="True"',
+                                '/IAcceptSQLServerLicenseTerms="True"',
+                                '/Action="Install"',
+                                '/InstanceName="TEST"',
+                                '/Features="ADV_SSMS"' -join ' '
+
                             { Set-TargetResource @testParameters } | Should Not Throw
                             
                             Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
