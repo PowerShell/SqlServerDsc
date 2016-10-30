@@ -58,6 +58,7 @@ try
         $mockSqlSharedDirectory = 'C:\Program Files\Microsoft SQL Server'
         $mockSqlSharedWowDirectory = 'C:\Program Files (x86)\Microsoft SQL Server'
         $mockSqlProgramDirectory = 'C:\Program Files\Microsoft SQL Server'
+        $mockSqlSystemAdministrator = 'COMPANY\Stacy'
 
         $mockSqlAnalysisCollation = 'Finnish_Swedish_CI_AS'
         $mockSqlAnalysisAdmins = @('COMPANY\Stacy','COMPANY\SSAS Administrators')
@@ -210,7 +211,7 @@ try
             return @(
                 (
                     New-Object Object | 
-                        Add-Member -MemberType NoteProperty -Name 'SQL_Replication_Core_Inst' -Value $null -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'SQL_Replication_Core_Inst' -Value 1 -PassThru -Force
                 )
             )
         }
@@ -295,10 +296,9 @@ try
                         Add-Member -MemberType NoteProperty -Name 'DefaultFile' -Value $mockSqlDefaultDatabaseFilePath -PassThru |
                         Add-Member -MemberType NoteProperty -Name 'DefaultLog' -Value $mockSqlDefaultDatabaseLogPath -PassThru |
                         Add-Member ScriptProperty Logins {
-                            return 
-                                @( ( New-Object Object |
-                                    Add-Member -MemberType NoteProperty -Name 'Name' -Value 'COMPANY\Stacy' -PassThru | 
-                                    Add-Member ScriptProperty ListMembers {
+                            return @( ( New-Object Object |
+                                    Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockSqlSystemAdministrator -PassThru | 
+                                    Add-Member ScriptMethod ListMembers {
                                         return @('sysadmin')
                                     } -PassThru -Force
                                 ) )
@@ -360,7 +360,7 @@ try
         $mockDefaultParameters = @{
             SetupCredential = $mockSetupCredential
             # These are written with both lower-case and upper-case to make sure we support that.
-            Features = 'SQLEngine,FullText,Rs,Is,As'
+            Features = 'SQLEngine,Replication,FullText,Rs,Is,As'
         }
 
         Describe "$($script:DSCResourceName)\Get-TargetResource" -Tag 'Get' {
@@ -653,9 +653,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -670,7 +670,7 @@ try
                         $result.SQLSvcAccountUsername | Should Be $mockSqlServiceAccount
                         $result.AgtSvcAccountUsername | Should Be $mockAgentServiceAccount
                         $result.SqlCollation | Should Be $mockSqlCollation
-                        $result.SQLSysAdminAccounts | Should BeNullOrEmpty
+                        $result.SQLSysAdminAccounts | Should Be $mockSqlSystemAdministrator
                         $result.SecurityMode | Should Be 'Windows'
                         $result.InstallSQLDataDir | Should Be $mockSqlInstallPath
                         $result.SQLUserDBDir | Should Be $mockSqlDefaultDatabaseFilePath
@@ -739,9 +739,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -756,7 +756,7 @@ try
                         $result.SQLSvcAccountUsername | Should Be $mockSqlServiceAccount
                         $result.AgtSvcAccountUsername | Should Be $mockAgentServiceAccount
                         $result.SqlCollation | Should Be $mockSqlCollation
-                        $result.SQLSysAdminAccounts | Should BeNullOrEmpty
+                        $result.SQLSysAdminAccounts | Should Be $mockSqlSystemAdministrator
                         $result.SecurityMode | Should Be 'Windows'
                         $result.InstallSQLDataDir | Should Be $mockSqlInstallPath
                         $result.SQLUserDBDir | Should Be $mockSqlDefaultDatabaseFilePath
@@ -919,9 +919,9 @@ try
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
                         }
                     }
 
@@ -936,7 +936,7 @@ try
                         $result.SQLSvcAccountUsername | Should Be $mockSqlServiceAccount
                         $result.AgtSvcAccountUsername | Should Be $mockAgentServiceAccount
                         $result.SqlCollation | Should Be $mockSqlCollation
-                        $result.SQLSysAdminAccounts | Should BeNullOrEmpty
+                        $result.SQLSysAdminAccounts | Should Be $mockSqlSystemAdministrator
                         $result.SecurityMode | Should Be 'Windows'
                         $result.InstallSQLDataDir | Should Be $mockSqlInstallPath
                         $result.SQLUserDBDir | Should Be $mockSqlDefaultDatabaseFilePath
@@ -1290,7 +1290,7 @@ try
                             '/Action="Install"',
                             '/AGTSVCSTARTUPTYPE=Automatic',
                             '/InstanceName="MSSQLSERVER"',
-                            '/Features="SQLENGINE,FULLTEXT,RS,IS,AS"',
+                            '/Features="SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS"',
                             '/SQLSysAdminAccounts="COMPANY\sqladmin"',
                             '/ASSysAdminAccounts="COMPANY\sqladmin"' -join ' '
 
@@ -1435,7 +1435,7 @@ try
                             '/Action="Install"',
                             '/AGTSVCSTARTUPTYPE=Automatic',
                             '/InstanceName="MSSQLSERVER"',
-                            '/Features="SQLENGINE,FULLTEXT,RS,IS,AS"',
+                            '/Features="SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS"',
                             '/SQLSysAdminAccounts="COMPANY\sqladmin"',
                             '/ASSysAdminAccounts="COMPANY\sqladmin"' -join ' '
 
@@ -1585,7 +1585,7 @@ try
                             '/Action="Install"',
                             '/AGTSVCSTARTUPTYPE=Automatic',
                             '/InstanceName="TEST"',
-                            '/Features="SQLENGINE,FULLTEXT,RS,IS,AS"',
+                            '/Features="SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS"',
                             '/SQLSysAdminAccounts="COMPANY\sqladmin"',
                             '/ASSysAdminAccounts="COMPANY\sqladmin"' -join ' '
 
