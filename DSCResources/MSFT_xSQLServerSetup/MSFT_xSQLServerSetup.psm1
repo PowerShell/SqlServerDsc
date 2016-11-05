@@ -36,7 +36,7 @@ function Get-TargetResource
     $path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath 'setup.exe'
     $path = ResolvePath -Path $path
     
-    Write-Verbose -Message "Path: $path"
+    Write-Verbose -Message "Using path: $path"
 
     $sqlVersion = GetSQLVersion -Path $path
 
@@ -428,21 +428,26 @@ function Set-TargetResource
 
     $InstanceName = $InstanceName.ToUpper()
 
+    $mediaSourcePath = (Join-Path -Path $SourcePath -ChildPath $SourceFolder) 
+
     if ($SourceCredential)
     {
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Present'
 
-        $tempFolder = Get-TemporaryFolder
-        Copy-ItemWithRoboCopy -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -DestinationPath (Join-Path -Path $tempFolder -ChildPath $SourceFolder)
-        $SourcePath = $tempFolder
+        $tempPath = Get-TemporaryFolder
+        $mediaDestinationPath = (Join-Path -Path $tempPath -ChildPath $SourceFolder)
 
+        Write-Verbose "Robocopy is copying media from source '$mediaSourcePath' to destination '$mediaDestinationPath'"
+        Copy-ItemWithRoboCopy -Path $mediaSourcePath -DestinationPath $mediaDestinationPath
+        
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Absent'
+
+        $mediaSourcePath = $mediaDestinationPath
     }
 
-    $path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath 'setup.exe'
-    $path = ResolvePath $path
+    $path = ResolvePath (Join-Path -Path $mediaSourcePath -ChildPath 'setup.exe')
     
-    Write-Verbose "Path: $path"
+    Write-Verbose "Using path: $path"
     
     $sqlVersion = GetSQLVersion -Path $path
 
@@ -734,7 +739,7 @@ function Set-TargetResource
         }
     }
 
-    Write-Verbose -Message "Arguments: $log"
+    Write-Verbose -Message "Starting setup using arguments: $log"
 
     $process = StartWin32Process -Path $path -Arguments $arguments
     Write-Verbose -Message $process
