@@ -36,4 +36,7 @@ PermissionMissingEnsure = Ensure is not set. No change can be made.
 # Configuration
 ConfigurationOptionNotFound = Specified option '{0}' could not be found.
 ConfigurationRestartRequired = Configuration option '{0}' has been updated, but a manual restart of SQL Server is required for it to take effect.
+
+# AlwaysOnService
+AlterAlwaysOnServiceFailed = Failed to {0} Always On on the instance {1}.
 '@
