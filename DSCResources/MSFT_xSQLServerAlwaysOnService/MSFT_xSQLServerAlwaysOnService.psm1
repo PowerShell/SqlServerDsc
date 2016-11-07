@@ -1,36 +1,33 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Verbose -Message "CurrentPath: $currentPath"
-
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
 
 function Get-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([System.Collections.Hashtable])]
     param
     (
         [parameter(Mandatory = $true)]
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
-        
+
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
         [System.String]
-        $SQLInstanceName= "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Int32]
+        $RestartTimeout = 120
     )
-    $vConfigured = Test-TargetResource -Ensure $Ensure -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName 
-    
-    $returnValue = @{
-    Ensure = $vConfigured
-    SQLServer = $SQLServer
-    SQLInstanceName = $SQLInstanceName
+
+    if( -not $sql )
+    {
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
 
-    $returnValue
-    
+    return @{ IsHadrEnabled = $sql.IsHadrEnabled }
 }
 
 
@@ -40,7 +37,7 @@ function Set-TargetResource
     param
     (
         [parameter(Mandatory = $true)]
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -48,81 +45,65 @@ function Set-TargetResource
         $SQLServer = $env:COMPUTERNAME,
 
         [System.String]
-        $SQLInstanceName= "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Int32]
+        $RestartTimeout = 120
     )
 
-    if ($Ensure ="Present")
+    # Build the instance name to allow the Enable/Disable-AlwaysOn to connect to the instance
+    if($SQLInstanceName -eq "MSSQLSERVER")
     {
-        
-        if($SQLInstanceName -eq "MSSQLSERVER")
-        {
-            Try
-                {
-                 Enable-SqlAlwaysOn -ServerInstance $SQLServer -Force
-                 New-VerboseMessage -Message "Enabled AlwaysOn on $SQLServer"
-                }
-            Catch 
-                {
-                 Throw "Unable to enable AlwaysOn on $SQLServer"
-                 Exit
-                }
-        }
-        else
-        {
-            Try
-                {
-                 Enable-SqlAlwaysOn -ServerInstance $SQLServer\$SQLInstanceName -Force
-                 New-VerboseMessage -Message "Enabled AlwaysOn on $SQLServer\$SQLInstanceName"
-                }
-            Catch 
-                {
-                 Throw "Unable to disable AlwaysOn on $SQLServer\$SQLInstanceName"
-                 Exit
-                }
-        }
-
-
+        $serverInstance = $SQLServer
     }
     else
     {
-        if($SQLInstanceName -eq "MSSQLSERVER")
+        $serverInstance = "$SQLServer\$SQLInstanceName"
+    }
+
+    switch ($Ensure)
+    {
+        'Absent'
         {
-            Try
-                {
-                 Disable-SqlAlwaysOn -ServerInstance $SQLServer -Force
-                 New-VerboseMessage -Message "Disabled AlwaysOn on $SQLServer"
-                }
-            Catch 
-                {
-                 Throw "Unable to disable AlwaysOn on $SQLServer"
-                 Exit
-                }
+            try
+            {
+                # Disable Always On without restarting the services.
+                New-VerboseMessage -Message "Disabling Always On for the instance $serverInstance"
+                Disable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart -ErrorAction Stop
+            }
+            catch 
+            {
+                throw New-TerminatingError -ErrorType "AlterAlwaysOnServiceFailed" -FormatArgs 'disable',$serverInstance -ErrorCategory OperationStopped
+            }
+            
         }
-        else
+        'Present'
         {
-            Try
-                {
-                 Disable-SqlAlwaysOn -ServerInstance $SQLServer\$SQLInstanceName -Force
-                 New-VerboseMessage -Message "Disabled AlwaysOn on $SQLServer\$SQLInstanceName"
-                }
-            Catch 
-                {
-                 Throw "Unable to disable AlwaysOn on $SQLServer\$SQLInstanceName"
-                 Exit
-                }
+            try 
+            {
+                # Enable Always On without restarting the services.
+                New-VerboseMessage -Message "Enabling Always On for the instance $serverInstance"
+                Enable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart -ErrorAction Stop
+            }
+            catch 
+            {
+                throw New-TerminatingError -ErrorType "AlterAlwaysOnServiceFailed" -FormatArgs 'enable',$serverInstance -ErrorCategory OperationStopped
+            }
         }
     }
+
+    # Now restart the SQL service so that all dependent services are also returned to their previous state
+    Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
 }
 
 
 function Test-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([System.Boolean])]
     param
     (
         [parameter(Mandatory = $true)]
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -130,21 +111,20 @@ function Test-TargetResource
         $SQLServer = $env:COMPUTERNAME,
 
         [System.String]
-        $SQLInstanceName= "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Int32]
+        $RestartTimeout = 120
     )
-
     
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    # Determine the current state of Alway On
+    $state = Get-TargetResource @PSBoundParameters
+    
+    # Determine what the desired state of Always On is
+    $hadrDesiredState = @{ 'Present' = $true; 'Absent' = $false }[$Ensure]
 
-    $result = $sql.IsHadrEnabled
-    New-VerboseMessage -Message "AlwaysOn status of $SQLServer\$SQLInstanceName is $result" 
-
-    $result
+    # return whether the value matches the desired state
+    return ( $state.IsHadrEnabled -eq $hadrDesiredState )
 }
 
-
 Export-ModuleMember -Function *-TargetResource
-
