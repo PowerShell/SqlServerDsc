@@ -11,7 +11,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -52,7 +52,7 @@ function Get-TargetResource
     HADR is Present (enabled) or Absent (disabled)
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -130,7 +130,7 @@ function Set-TargetResource
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
