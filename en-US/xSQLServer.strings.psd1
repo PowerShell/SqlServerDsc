@@ -38,5 +38,5 @@ ConfigurationOptionNotFound = Specified option '{0}' could not be found.
 ConfigurationRestartRequired = Configuration option '{0}' has been updated, but a manual restart of SQL Server is required for it to take effect.
 
 # AlwaysOnService
-AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '{1}'.
+AlterAlwaysOnServiceFailed = Failed to ensure Always On is '{0}' on the instance '{1}'.
 '@
