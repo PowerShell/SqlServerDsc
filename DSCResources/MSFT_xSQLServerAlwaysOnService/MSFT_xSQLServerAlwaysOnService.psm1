@@ -2,6 +2,20 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
 
+<#
+    .SYNOPSIS
+    Gets the current value of the SQL Server HADR property.
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER RestartTimeout
+    *** Not used in this function ***
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -30,7 +44,19 @@ function Get-TargetResource
     return @{ IsHadrEnabled = $sql.IsHadrEnabled }
 }
 
+<#
+    .SYNOPSIS
+    Sets the current value of the SQL Server HADR property.
 
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER RestartTimeout
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -96,7 +122,20 @@ function Set-TargetResource
     Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
 }
 
+<#
+    .SYNOPSIS
+    Determines whether the current value of the SQL Server HADR property is properly set
 
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER RestartTimeout
+    *** Not used in this function ***
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
