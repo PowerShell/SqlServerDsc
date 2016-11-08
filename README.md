@@ -413,6 +413,9 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
 * Created unit tests for xSQLServerConfiguration resource
+* Changes and enhancements in xSQLServerDatabaseRole
+  - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer`, `SQLInstanceName` and `Database` are mandatory. 
+  - Enhanced so the same user can now be added to more than one role
 
 ### 3.0.0.0
 * xSQLServerHelper
@@ -426,9 +429,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
  * Added tests for resources
    - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
   - xSQLServerDatabaseRole
-* Changes and enhancements in xSQLServerDatabaseRole
-  - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer`, `SQLInstanceName` and `Database` are mandatory. 
-  - Enhanced so the same user can now be added to more than one role
 
 ### 2.0.0.0
 * Added resources
