@@ -355,6 +355,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Created unit tests for xSQLServerConfiguration resource
 * Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
+* Changes to xSQLServerSetup
+  - Now `Features` parameter is case-insensitive.
+* Added tests for resources
+  - xSQLServerSetup
 
 ### 3.0.0.0
 * xSQLServerHelper
@@ -366,10 +370,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - xSQLServerDatabaseOwner
    - 1-SetDatabaseOwner.ps1
  * Added tests for resources
-   - xSQLServerDatabaseOwner
-   - xSQLServerSetup
-* Changes to xSQLServerSetup
-  - Now `Features` parameter is case-insensitive. 
+   - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
 
 ### 2.0.0.0
 * Added resources
