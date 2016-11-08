@@ -68,12 +68,13 @@ function Get-TargetResource
             {
                 if ($sqlDatabaseUser.IsMember($currentRole))
                 {
-                    Write-Verbose "The login '$Name' is a member of the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                    New-VerboseMessage -Message "The login '$Name' is a member of the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                    
                     $grantedRole += $currentRole
                 }
                 else
                 {
-                    Write-Verbose "The login '$Name' is not a member of the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                    New-VerboseMessage -Message "The login '$Name' is not a member of the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
                 }
             }
 
@@ -84,7 +85,7 @@ function Get-TargetResource
         }
         else
         {
-            Write-Verbose "The login '$Name' is not a user of the database '$Database' on the instance $SQLServer\$SQLInstanceName"
+            New-VerboseMessage -Message "The login '$Name' is not a user of the database '$Database' on the instance $SQLServer\$SQLInstanceName"
         }
     }
     else
@@ -106,7 +107,7 @@ function Get-TargetResource
 
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param
     (
         [ValidateSet('Present','Absent')]
@@ -149,40 +150,35 @@ function Set-TargetResource
                 {
                     try
                     {
-                        if ( ($PSCmdlet.ShouldProcess($Name, "Adding the login as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName")) ) 
-                        {
-                            $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $SQLDatabase, $Name
-                            $sqlDatabaseUser.Login = $Name
-                            $sqlDatabaseUser.Create()
-                        }
+                        New-VerboseMessage -Message "Adding the login '$Name' as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                        $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $SQLDatabase, $Name
+                        $sqlDatabaseUser.Login = $Name
+                        $sqlDatabaseUser.Create()
                     }
                     catch
                     {
-                        Write-Verbose "Failed adding the login '$Name' as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                        "Failed adding the login '$Name' as a user of the database '$Database', on the instance $SQLServer\$SQLInstanceName"
 
                         throw $_
                     }
                 }
 
                 # Adding database user to the role.
-                if ($sqlDatabase.Users[$Name])
+                foreach ($currentRole in $Role) 
                 {
-                    foreach ($currentRole in $Role) 
+                    try
                     {
-                        try
-                        {
-                            if ( ($PSCmdlet.ShouldProcess($currentRole, "Adding the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName")) )
-                            { 
-                                $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
-                                $sqlDatabaseRole.AddMember($Name)
-                            }
-                        }
-                        catch
-                        {
-                            Write-Verbose "Failed adding the login '$Name' to the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                        New-VerboseMessage -Message "Adding the login '$Name' to the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
 
-                            throw $_
-                        }
+                        $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
+                        $sqlDatabaseRole.AddMember($Name)
+                    }
+                    catch
+                    {
+                        New-VerboseMessage -Message "Failed adding the login '$Name' to the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                        throw $_
                     }
                 }
             }
@@ -193,16 +189,15 @@ function Set-TargetResource
                 {
                     foreach ($currentRole in $Role) 
                     {
-                        if ( ($PSCmdlet.ShouldProcess($currentRole, "Removing the login '$Name' to the role on the database '$Database', on the instance $SQLServer\$SQLInstanceName")) )
-                        { 
-                            $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
-                            $sqlDatabaseRole.DropMember($Name)
-                        }
+                        New-VerboseMessage -Message "Removing the login '$Name' to the role '$currentRole' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+
+                        $sqlDatabaseRole = $sqlDatabase.Roles[$currentRole]
+                        $sqlDatabaseRole.DropMember($Name)
                     }
                 }
                 catch
                 {
-                    Write-Verbose "Failed removing the login '$Name' from the role '$Role' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
+                    New-VerboseMessage -Message "Failed removing the login '$Name' from the role '$Role' on the database '$Database', on the instance $SQLServer\$SQLInstanceName"
 
                     throw $_
                 }
