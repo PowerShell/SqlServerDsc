@@ -14,7 +14,7 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -27,7 +27,7 @@ function Get-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
-        [ValidateSet("Grant","Deny")]
+        [ValidateSet('Grant','Deny')]
         [System.String]
         $PermissionState,
 
@@ -41,7 +41,7 @@ function Get-TargetResource
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -59,22 +59,22 @@ function Get-TargetResource
                                                  -DifferenceObject $getSqlDatabasePermission
             if ($null -eq $comparePermissions)
             {
-                $Ensure = "Present"
+                $Ensure = 'Present'
             }
             else
             {
-                $Ensure = "Absent"
+                $Ensure = 'Absent'
             }
         }
         else 
         {
-            $Ensure = "Absent"
+            $Ensure = 'Absent'
         }
     }
     else
     {
         $null = $getSqlDatabasePermission
-        $Ensure = "Absent"
+        $Ensure = 'Absent'
     }
     
     $returnValue = @{
@@ -96,7 +96,7 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -109,7 +109,7 @@ function Set-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
-        [ValidateSet("Grant","Deny")]
+        [ValidateSet('Grant','Deny')]
         [System.String]
         $PermissionState,
 
@@ -123,14 +123,14 @@ function Set-TargetResource
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     
     if ($sql)
     {
-        if ($Ensure -eq "Present")
+        if ($Ensure -eq 'Present')
         {
             Add-SqlDatabasePermission -SQL $sql `
                                       -Name $Name `
@@ -158,7 +158,7 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -171,7 +171,7 @@ function Test-TargetResource
         $Name,
 
         [parameter(Mandatory = $true)]
-        [ValidateSet("Grant","Deny")]
+        [ValidateSet('Grant','Deny')]
         [System.String]
         $PermissionState,
 
@@ -185,7 +185,7 @@ function Test-TargetResource
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER"
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
     Write-Verbose -Message "Testing permissions of database '$Database' for login '$Name'"
@@ -194,7 +194,7 @@ function Test-TargetResource
 
     return Test-SQLDscParameterState -CurrentValues $CurrentValues `
                                      -DesiredValues $PSBoundParameters `
-                                     -ValuesToCheck @("Name", "Ensure", "PermissionState", "Permissions")
+                                     -ValuesToCheck @('Name', 'Ensure', 'PermissionState', 'Permissions')
 }
 
 Export-ModuleMember -Function *-TargetResource

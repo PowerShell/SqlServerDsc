@@ -981,7 +981,7 @@ function Get-SqlDatabasePermission
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -995,15 +995,15 @@ function Get-SqlDatabasePermission
         [System.String]
         $PermissionState
     )
-    # Check if database and login exist
-    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
-    $sqlDatabase = $SQL.Databases[$Database]
-    $sqlLogin = $SQL.Logins[$Name]
-    $sqlInstanceName = $SQL.InstanceName
-    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
+
+    Write-Verbose -Message "Getting Sql Databases and SQL Logins"
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
 
     # Initialize variable permissions
-    [System.String[]]$permissions = @()
+    [System.String[]] $permissions = @()
 
     if ($sqlDatabase)
     {        
@@ -1076,7 +1076,7 @@ function Add-SqlDatabasePermission
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -1095,12 +1095,11 @@ function Add-SqlDatabasePermission
         $Permissions
     )
 
-    # Check if database and login exist
     Write-Verbose -Message "Getting SQL Databases and SQL Logins"
-    $sqlDatabase = $SQL.Databases[$Database]
-    $sqlLogin = $SQL.Logins[$Name]
-    $sqlInstanceName = $SQL.InstanceName
-    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
 
     if ($sqlDatabase)
     {        
@@ -1195,7 +1194,7 @@ function Remove-SqlDatabasePermission
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -1214,12 +1213,11 @@ function Remove-SqlDatabasePermission
         $Permissions
     )
 
-    # Check if database and login exist
     Write-Verbose -Message "Getting SQL Databases and SQL Logins"
-    $sqlDatabase = $SQL.Databases[$Database]
-    $sqlLogin = $SQL.Logins[$Name]
-    $sqlInstanceName = $SQL.InstanceName
-    $sqlServer = $SQL.ComputerNamePhysicalNetBIOS
+    $sqlDatabase = $Sql.Databases[$Database]
+    $sqlLogin = $Sql.Logins[$Name]
+    $sqlInstanceName = $Sql.InstanceName
+    $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
 
     if ($sqlDatabase)
     {        
