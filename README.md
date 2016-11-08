@@ -353,6 +353,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
 * Created unit tests for xSQLServerConfiguration resource
+* Changes to xSQLServerSetup
+  - Now `Features` parameter is case-insensitive.
+* Added tests for resources
+  - xSQLServerSetup
 
 ### 3.0.0.0
 * xSQLServerHelper
@@ -364,10 +368,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - xSQLServerDatabaseOwner
    - 1-SetDatabaseOwner.ps1
  * Added tests for resources
-   - xSQLServerDatabaseOwner
-   - xSQLServerSetup
-* Changes to xSQLServerSetup
-  - Now `Features` parameter is case-insensitive. 
+   - MSFT_xSQLServerDatabaseOwner.Tests.Tests.ps1
 
 ### 2.0.0.0
 * Added resources
