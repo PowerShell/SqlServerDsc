@@ -128,6 +128,54 @@ function New-TerminatingError
     return $errorRecord
 }
 
+<#
+    .SYNOPSIS
+    Displays a localized warning message
+
+    .PARAMETER WarningType
+    String containing the key of the localized warning message
+    
+    .PARAMETER FormatArgs
+    Collection of strings to replace format objects in warning message.
+#>
+function New-WarningMessage
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $WarningType,
+
+        [String[]]
+        $FormatArgs
+    )
+
+    ## Attempt to get the string from the localized data
+    $warningMessage = $LocalizedData.$WarningType
+
+    ## Ensure there is a message present in the localization file
+    if (!$warningMessage)
+    {
+        $errorParams = @{
+            ErrorType = 'NoKeyFound'
+            FormatArgs = $WarningType
+            ErrorCategory = 'InvalidArgument'
+            TargetObject = 'New-WarningMessage'
+        }
+
+        ## Raise an error indicating the localization data is not present
+        throw New-TerminatingError @errorParams 
+    }
+
+    ## Apply formatting
+    $warningMessage = $warningMessage -f $FormatArgs
+
+    ## Write the message as a warning
+    Write-Warning -Message $warningMessage
+}
+
 function New-VerboseMessage
 {
     [CmdletBinding()]

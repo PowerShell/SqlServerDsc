@@ -1,255 +1,309 @@
-﻿$dom = [System.AppDomain]::CreateDomain("xSQLServerConfiguration")
+﻿# Load Common Code
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
+<#
+    .SYNOPSIS
+    Gets the current value of a SQL configuration option
 
-Function Get-TargetResource
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be checked
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    *** Not used in this function ***
+    Determines whether the instance should be restarted after updating the configuration option.
+
+    .PARAMETER RestartTimeout
+    *** Not used in this function ***
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+#>
+function Get-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([System.Collections.Hashtable])]
+    [OutputType([Hashtable])]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
-        [parameter(Mandatory = $true)]
-        [System.String]
+        [String]
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Parameter(Mandatory = $true)]
+        [String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
-        [System.Int32]
+        [Parameter(Mandatory = $true)]
+        [Int32]
         $OptionValue,
 
-        [System.Boolean]
-        $RestartService = $false
+        [Boolean]
+        $RestartService = $false,
+
+        [Int32]
+        $RestartTimeout = 120
     )
 
-    $sqlServer = Get-SqlServerObject -InstanceName $InstanceName
-    $option = $sqlServer.Configuration.Properties | where {$_.DisplayName -eq $optionName}
+    if (!$sql)
+    {
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    }
+
+    ## get the configuration option
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
+    
     if(!$option)
     {
-        throw "Specified option '$OptionName' was not found!"
+        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
     }
 
-    $returnValue = @{
-        InstanceName   = $InstanceName
-        OptionName     = $option.DisplayName
-        OptionValue    = $option.ConfigValue
+     return @{
+        SqlServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        OptionName = $option.DisplayName
+        OptionValue = $option.ConfigValue
         RestartService = $RestartService
+        RestartTimeout = $RestartTimeout
     }
-
-    return $returnValue
 }
 
-Function Set-TargetResource
+<#
+    .SYNOPSIS
+    Sets the value of a SQL configuration option
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be set
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    Determines whether the instance should be restarted after updating the configuration option
+
+    .PARAMETER RestartTimeout
+    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+#>
+function Set-TargetResource
 {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
-        [parameter(Mandatory = $true)]
-        [System.String]
+        [String]
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Parameter(Mandatory = $true)]
+        [String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
-        [System.Int32]
+        [Parameter(Mandatory = $true)]
+        [Int32]
         $OptionValue,
 
-        [System.Boolean]
-        $RestartService = $false
+        [Boolean]
+        $RestartService = $false,
+
+        [Int32]
+        $RestartTimeout = 120
     )
 
-    $sqlServer = Get-SqlServerObject -InstanceName $InstanceName
+    if (!$sql)
+    {
+        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    }
 
-    $option = $sqlServer.Configuration.Properties | where {$_.DisplayName -eq $optionName}
+    ## get the configuration option
+    $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
 
     if(!$option)
     {
-        throw "Specified option '$OptionName' was not found!"
+        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
     }
 
     $option.ConfigValue = $OptionValue
-    $sqlServer.Configuration.Alter()
+    $sql.Configuration.Alter()
+    
     if ($option.IsDynamic -eq $true)
     {  
-        Write-Verbose "Configuration option has been updated."
+        New-VerboseMessage -Message 'Configuration option has been updated.'
     }
-    elseif ($option.IsDynamic -eq $false -and $RestartService -eq $true)
+    elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
-        Write-Verbose "Configuration option has been updated ..."
-
-        Restart-SqlServer -InstanceName $InstanceName
+        New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
+        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
     }
     else
     {
-        Write-Warning "Configuration option was set but SQL Server restart is required."
+        New-WarningMessage -WarningType 'ConfigurationRestartRequired' -FormatArgs $OptionName
     }
 }
 
-Function Test-TargetResource
+<#
+    .SYNOPSIS
+    Determines whether a SQL configuration option value is properly set
+
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER OptionName
+    The name of the SQL configuration option to be tested
+    
+    .PARAMETER OptionValue
+    The desired value of the SQL configuration option
+
+    .PARAMETER RestartService
+    *** Not used in this function ***
+    Determines whether the instance should be restarted after updating the configuration option
+
+    .PARAMETER RestartTimeout
+    *** Not used in this function ***
+    The length of time, in seconds, to wait for the service to restart.
+#>
+function Test-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([System.Boolean])]
+    [OutputType([Boolean])]
     param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
 
-        [parameter(Mandatory = $true)]
-        [System.String]
+        [String]
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Parameter(Mandatory = $true)]
+        [String]
         $OptionName,
 
-        [parameter(Mandatory = $true)]
-        [System.Int32]
+        [Parameter(Mandatory = $true)]
+        [Int32]
         $OptionValue,
 
-        [System.Boolean]
-        $RestartService = $false
+        [Boolean]
+        $RestartService = $false,
+
+        [Int32]
+        $RestartTimeout = 120
     )
 
-    $state = Get-TargetResource -InstanceName $InstanceName -OptionName $OptionName -OptionValue $OptionValue
+    ## Get the current state of the configuration item
+    $state = Get-TargetResource @PSBoundParameters
 
+    ## return whether the value matches the desired state
     return ($state.OptionValue -eq $OptionValue)
 }
 
 #region helper functions
-Function Get-SqlServerMajorVersion
-{
-    [CmdletBinding()]
-    [OutputType([System.String])]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
-    )
+<#
+    .SYNOPSIS
+    Restarts a SQL Server instance and associated services
 
-    $instanceId = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL").$InstanceName
-    $sqlVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceId\Setup").Version
-    $sqlMajorVersion = $sqlVersion.Split(".")[0]
-    if (!$sqlMajorVersion)
-    {
-        throw "Unable to detect version for sql server instance: $InstanceName!"
-    }
-    return $sqlMajorVersion
-}
-
-Function Get-SqlServerObject
-{
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
-    )
-
-    if($InstanceName -eq "MSSQLSERVER")
-    {
-        $connectSQL = $env:COMPUTERNAME
-    }
-    else
-    {
-        $connectSQL = "$($env:COMPUTERNAME)\$InstanceName"
-    }
-
-    $sqlMajorVersion = Get-SqlServerMajorVersion -InstanceName $InstanceName
-    $smo = $dom.Load("Microsoft.SqlServer.Smo, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
-    Write-Verbose "Loaded assembly: $($smo.FullName)"
-
-    $sqlServer = new-object $smo.GetType("Microsoft.SqlServer.Management.Smo.Server") $connectSQL
-
-    if(!$sqlServer)
-    {
-        throw "Unable to connect to sql instance: $InstanceName"
-    }
-
-    return $sqlServer
-}
-
-Function Restart-SqlServer
-{
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $InstanceName
-    )
-
-    $sqlMajorVersion = Get-SqlServerMajorVersion -InstanceName $InstanceName
-    $sqlWmiManagement = $dom.Load("Microsoft.SqlServer.SqlWmiManagement, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
-    Write-Verbose "Loaded assembly: $($sqlWmiManagement.FullName)"
-    $wmi = new-object $sqlWmiManagement.GetType("Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer")
-
-    if(!$wmi)
-    {
-        throw "Unable to create wmi ManagedComputer object for sql instance: $InstanceName"
-    }
-
-    Write-Verbose "SQL Service will be restarted ..."
-    if($InstanceName -eq "MSSQLSERVER")
-    {
-        $dbServiceName = "MSSQLSERVER"
-        $agtServiceName = "SQLSERVERAGENT"
-    }
-    else
-    {
-        $dbServiceName = "MSSQL`$$InstanceName"
-        $agtServiceName = "SQLAgent`$$InstanceName"
-    }
-
-    $sqlService = $wmi.Services[$dbServiceName]
-    $agentService = $wmi.Services[$agtServiceName]
-    $startAgent = ($agentService.ServiceState -eq "Running")
-
-    if ($sqlService -eq $null)
-    {
-        throw "$dbServiceName service was not found, restart service failed"
-    }
-
-    Write-Verbose "Stopping [$dbServiceName] service ..."
-    $sqlService.Stop()
-    Wait-SqlServiceState -Service $sqlService -State "Stopped" 
-
-    Write-Verbose "Starting [$dbServiceName] service ..."
-    $sqlService.Start()
-    Wait-SqlServiceState -Service $sqlService -State "Running"
-
-    if ($startAgent)
-    {
-        Write-Verbose "Starting [$agtServiceName] service ..."
-        $agentService.Start()
-        Wait-SqlServiceState -Service $agentService -State "Running"
-    }
-}
-
-function Wait-SqlServiceState
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.Object]
-        $Service,
-        
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $State,
-        
-        [System.Int32]
-        $TimeOut = 60
-    )
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to be configured
     
-    $startTime = Get-Date
-    
-    while($Service.ServiceState -ne $State)
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+
+    .PARAMETER Timeout
+    Timeout value for restarting the SQL services
+
+    .EXAMPLE
+    Restart-SqlService -SQLServer localhost
+
+    .EXAMPLE
+    Restart-SqlService -SQLServer localhost -SQLInstanceName 'NamedInstance'
+
+    .EXAMPLE
+    Restart-SqlService -SQLServer CLU01 -Timeout 300
+#>
+function Restart-SqlService
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLServer,
+
+        [String]
+        $SQLInstanceName = 'MSSQLSERVER',
+
+        [Int32]
+        $Timeout = 120
+    )
+
+    ## Connect to the instance
+    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+
+    if ($serverObject.IsClustered)
     {
-        if((New-TimeSpan -Start $startTime -End (Get-Date)).TotalSeconds -gt $TimeOut)
+        ## Get the cluster resources
+        New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
+        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server'" | 
+                        Where-Object { $_.PrivateProperties.InstanceName -eq $serverObject.ServiceName }
+
+        New-VerboseMessage -Message 'Getting active cluster resource SQL Server Agent'
+        $agentService = Get-WmiObject -Namespace root/MSCluster -Query "ASSOCIATORS OF {$sqlService} WHERE ResultClass = MSCluster_Resource" | 
+                            Where-Object { ($_.Type -eq "SQL Server Agent") -and ($_.State -eq 2) }
+
+        ## Build a listing of resources being acted upon
+        $resourceNames = @($sqlService.Name, ($agentService | Select -ExpandProperty Name)) -join ","
+
+        ## Stop the SQL Server and dependent resources
+        New-VerboseMessage -Message 'Bringing the SQL Server resources $resourceNames offline.'
+        $sqlService.TakeOffline($Timeout)
+
+        ## Start the SQL server resource
+        New-VerboseMessage -Message 'Bringing the SQL Server resource back online.'
+        $sqlService.BringOnline($Timeout)
+
+        ## Start the SQL Agent resource
+        if ($agentService)
         {
-            throw "Time out of $TimeOut seconds exceeded while waiting for service [$($Service.DisplayName)] to enter '$State' state!"
+            New-VerboseMessage -Message 'Bringing the SQL Server Agent resource online.'
+            $agentService.BringOnline($Timeout)
         }
-        
-        Start-Sleep -Milliseconds 500
-        $Service.Refresh()
     }
-    
-    Write-Verbose "[$($Service.DisplayName)] service is $State"
+    else
+    {
+        New-VerboseMessage -Message 'Getting SQL Service information'
+        $sqlService = Get-Service -DisplayName "SQL Server ($($serverObject.ServiceName))"
+
+        ## Get all dependent services that are running.
+        ## There are scenarios where an automatic service is stopped and should not be restarted automatically.
+        $agentService = $sqlService.DependentServices | Where-Object { $_.Status -eq "Running" }
+
+        ## Restart the SQL Server service
+        New-VerboseMessage -Message 'SQL Server service restarting'
+        $sqlService | Restart-Service -Force
+
+        ## Start dependent services
+        $agentService | ForEach-Object {
+            New-VerboseMessage -Message "Starting $($_.DisplayName)"
+            $_ | Start-Service
+        }
+    }
+#>
 }
 #endregion
 
