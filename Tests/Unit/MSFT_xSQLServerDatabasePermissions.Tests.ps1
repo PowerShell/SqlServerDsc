@@ -11,7 +11,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
     & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 
 $TestEnvironment = Initialize-TestEnvironment -DSCModuleName $script:DSCModuleName `
                                               -DSCResourceName $script:DSCResourceName `
@@ -27,9 +27,9 @@ try
 
     $defaultParameters = @{
         SQLInstanceName = 'MSSQLSERVER'
-        SQLServer = 'localhost'
-        Database = 'AdventureWorks'
-        Name = 'CONTOSO\SqlServiceAcct'
+        SQLServer       = 'localhost'
+        Database        = 'AdventureWorks'
+        Name            = 'CONTOSO\SqlServiceAcct'
     }
 
     #endregion Pester Test Initialization
@@ -80,8 +80,8 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 PermissionState = 'Grant'
-                Permissions = @( 'Connect','Update' )
-                Ensure = 'Present'
+                Permissions     = @( 'Connect','Update' )
+                Ensure          = 'Present'
             }
 
             Mock -CommandName Get-SqlDatabasePermission -MockWith { return @( 'Connect','Update' ) } -ModuleName $script:DSCResourceName -Verifiable
@@ -110,8 +110,8 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 PermissionState = 'Deny'
-                Permissions = @( 'Connect','Update' )
-                Ensure = 'Present'
+                Permissions     = @( 'Connect','Update' )
+                Ensure          = 'Present'
             }
 
             Mock -CommandName Get-SqlDatabasePermission -MockWith { return @( 'Connect','Update' ) } -ModuleName $script:DSCResourceName -Verifiable
@@ -155,8 +155,8 @@ try
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     PermissionState = 'Grant'
-                    Permissions = @( 'Connect','Update' )
-                    Ensure = 'Present'
+                    Permissions     = @( 'Connect','Update' )
+                    Ensure          = 'Present'
                 }              
 
                 Mock -CommandName Get-SqlDatabasePermission -MockWith { 
@@ -176,8 +176,8 @@ try
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     PermissionState = 'Grant'
-                    Permissions = @( 'Connect','Update' )
-                    Ensure = 'Present'
+                    Permissions     = @( 'Connect','Update' )
+                    Ensure          = 'Present'
                 }
 
                 Mock -CommandName Get-SqlDatabasePermission -MockWith { 
@@ -195,8 +195,8 @@ try
                 $testParameters = $defaultParameters
                 $testParameters += @{
                     PermissionState = 'Deny'
-                    Permissions = @( 'Connect','Update' )
-                    Ensure = 'Present'
+                    Permissions     = @( 'Connect','Update' )
+                    Ensure          = 'Present'
                 }
 
                 Mock -CommandName Get-SqlDatabasePermission -MockWith { 
@@ -228,8 +228,8 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 PermissionState = 'Grant'
-                Ensure = 'Present'
-                Permissions = @( 'Connect','Update' )
+                Ensure          = 'Present'
+                Permissions     = @( 'Connect','Update' )
             }
 
             It 'Should throw an error when desired database does not exist' {
@@ -301,8 +301,8 @@ try
             $testParameters = $defaultParameters
             $testParameters += @{
                 PermissionState = 'Grant'
-                Ensure = 'Present'
-                Permissions = @( 'Connect','Update' )
+                Ensure          = 'Present'
+                Permissions     = @( 'Connect','Update' )
             }
 
             It 'Should throw an error when desired database does not exist' {
