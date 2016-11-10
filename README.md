@@ -183,12 +183,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **SQLInstance**: SQL Instance for the login
 
 ### xSQLServerDatabaseRole
-* **Ensure**: If 'Present' (the default value) then the login will be added to the role(s). If 'Absent' then the login will be removed from the role(s).
+* **Ensure**: If 'Present' (the default value) then the login (user) will be added to the role(s). If 'Absent' then the login (user) will be removed from the role(s).
 * **Name**: (Key) The name of the login that will become a member, or removed as a member, of the role(s).
 * **SQLServer**: (Key) The SQL server on which the instance exist.
 * **SQLInstanceName**: (Key) The SQL instance in which the database exist.
-* **Database**: (Key) The database in which the users login and role exist.
-* **Role**: One or more role to which the login (user) will be added or removed.
+* **Database**: (Key) The database in which the login (user) and role(s) exist.
+* **Role**: One or more roles to which the login (user) will be added or removed.
 
 ###xSQLServerDatabasePermissions
 * **Database**: (Key) The SQL Database
