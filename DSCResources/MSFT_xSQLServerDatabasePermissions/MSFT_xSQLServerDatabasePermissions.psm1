@@ -1,13 +1,42 @@
 $currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Debug -Message "CurrentPath: $currentPath"
 
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module -Name $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
-# DSC resource to manage SQL database permissions
+<#
+.SYNOPSIS
 
-# NOTE: This resource requires WMF5 and PsDscRunAsCredential
+This function gets all Key properties defined in the resource schema file
 
+.PARAMETER Ensure
+
+This is The Ensure Set to 'present' to specificy that the permission should be configured.
+
+.PARAMETER Database
+
+This is the SQL database
+
+.PARAMETER Name
+
+This is the name of the SQL login for the permission set
+
+.PARAMETER PermissionState
+
+This is the state of permission set. Valid values are 'Grant' or 'Deny'
+
+.PARAMETER Permissions
+
+This is a list boolean that set of permissions for the SQL database
+
+.PARAMETER SQLServer
+
+This is a the SQL Server for the database
+
+.PARAMETER SQLInstanceName
+
+This is a the SQL instance for the database
+
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -78,19 +107,52 @@ function Get-TargetResource
     }
     
     $returnValue = @{
-        Ensure = $Ensure
-        Database = $Database
-        Name = $Name
+        Ensure          = $Ensure
+        Database        = $Database
+        Name            = $Name
         PermissionState = $PermissionState
-        Permissions = $getSqlDatabasePermission
-        SQLServer = $SQLServer
+        Permissions     = $getSqlDatabasePermission
+        SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
 
     $returnValue
 }
 
+<#
+.SYNOPSIS
 
+This function sets all Key properties defined in the resource schema file
+
+.PARAMETER Ensure
+
+This is The Ensure Set to 'present' to specificy that the permission should be configured.
+
+.PARAMETER Database
+
+This is the SQL database
+
+.PARAMETER Name
+
+This is the name of the SQL login for the permission set
+
+.PARAMETER PermissionState
+
+This is the state of permission set. Valid values are 'Grant' or 'Deny'
+
+.PARAMETER Permissions
+
+This is a list boolean that set of permissions for the SQL database
+
+.PARAMETER SQLServer
+
+This is a the SQL Server for the database
+
+.PARAMETER SQLInstanceName
+
+This is a the SQL instance for the database
+
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -151,7 +213,40 @@ function Set-TargetResource
     }
 }
 
+<#
+.SYNOPSIS
 
+This function tests all Key properties defined in the resource schema file
+
+.PARAMETER Ensure
+
+This is The Ensure Set to 'present' to specificy that the permission should be configured.
+
+.PARAMETER Database
+
+This is the SQL database
+
+.PARAMETER Name
+
+This is the name of the SQL login for the permission set
+
+.PARAMETER PermissionState
+
+This is the state of permission set. Valid values are 'Grant' or 'Deny'
+
+.PARAMETER Permissions
+
+This is a list boolean that set of permissions for the SQL database
+
+.PARAMETER SQLServer
+
+This is a the SQL Server for the database
+
+.PARAMETER SQLInstanceName
+
+This is a the SQL instance for the database
+
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
