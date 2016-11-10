@@ -8,13 +8,13 @@ RemoteConnectionFailed = Remote PowerShell connection to Server '{0}' failed.
 TODO = ToDo. Work not implemented at this time. 
 UnexpectedErrorFromGet = Got unexpected result from Get-TargetResource. No change is made.
 FailedToImportSQLPSModule = Failed to import SQLPS module. 
-NotConnectedToInstance = Was unable to connect to the instance '{0}/{1}'
+NotConnectedToInstance = Was unable to connect to the instance '{0}\\{1}'
 
 # SQLServer
-NoDatabase = Database '{0}' does not exist on SQL server '{1}\{2}'.
+NoDatabase = Database '{0}' does not exist on SQL server '{1}\\{2}'.
 SSRSNotFound = SQL Reporting Services instance '{0}' does not exist!
-RoleNotFound = Role '{0}' does not exist on database '{1}' on SQL server '{2}\{3}'."
-LoginNotFound = Login '{0}' does not exist on SQL server '{1}\{2}'."
+RoleNotFound = Role '{0}' does not exist on database '{1}' on SQL server '{2}\\{3}'."
+LoginNotFound = Login '{0}' does not exist on SQL server '{1}\\{2}'."
 FailedLogin = Creating a login of type 'SqlLogin' requires LoginCredential
 FeatureNotSupported = '{0}' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information.
 
