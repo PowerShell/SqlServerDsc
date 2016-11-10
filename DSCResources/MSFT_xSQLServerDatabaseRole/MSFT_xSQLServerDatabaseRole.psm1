@@ -1,8 +1,30 @@
 $script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Debug -Message "CurrentPath: $($script:currentPath)"
 
-Import-Module $script:currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
 
+<#
+    .SYNOPSIS
+    Returns the current state of the user memberships in the role(s).
+
+    .PARAMETER Ensure
+    Specifies the desired state of the membership of the role(s).
+    
+    .PARAMETER Name
+    Specifies the name of the login that evaluated if it is member of the role(s).
+    
+    .PARAMETER SQLServer
+    Specifies the SQL server on which the instance exist.
+    
+    .PARAMETER SQLInstanceName
+    Specifies the SQL instance in which the database exist.
+    
+    .PARAMETER Database
+    Specifies the database in which the login (user) and role(s) exist.
+    
+    .PARAMETER Role
+    Specifies one or more roles to which the login (user) will be evaluated if it should be added or removed.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -105,6 +127,31 @@ function Get-TargetResource
     $returnValue
 }
 
+<#
+    .SYNOPSIS
+    Adds the login (user) to each of the provided roles when Ensure is set to 'Present'.
+    When Ensure is set to 'Absent' the login (user) will be removed from each of the provided roles.
+    If the login does not exist as a user in the database, then the user will be created in the database using the login.
+
+    .PARAMETER Ensure
+    Specifies the desired state of the membership of the role(s).
+    
+    .PARAMETER Name
+    Specifies the name of the login that evaluated if it is member of the role(s), if it is not it will be added.
+    If the login does not exist as a user, a user will be created using the login. 
+    
+    .PARAMETER SQLServer
+    Specifies the SQL server on which the instance exist.
+    
+    .PARAMETER SQLInstanceName
+    Specifies the SQL instance in which the database exist.
+    
+    .PARAMETER Database
+    Specifies the database in which the login (user) and role(s) exist.
+    
+    .PARAMETER Role
+    Specifies one or more roles to which the login (user) will be added or removed.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -139,7 +186,7 @@ function Set-TargetResource
 
     if ($sql)
     {
-        $sqlDatabase = $sql.Databases[ $Database ]
+        $sqlDatabase = $sql.Databases[$Database]
         
         switch ($Ensure)
         {
@@ -211,6 +258,28 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+    Tests if the login (user) has the desired state in each of the provided roles.
+
+    .PARAMETER Ensure
+    Specifies the desired state of the membership of the role(s).
+    
+    .PARAMETER Name
+    Specifies the name of the login that evaluated if it is member of the role(s).
+    
+    .PARAMETER SQLServer
+    Specifies the SQL server on which the instance exist.
+    
+    .PARAMETER SQLInstanceName
+    Specifies the SQL instance in which the database exist.
+    
+    .PARAMETER Database
+    Specifies the database in which the login (user) and role(s) exist.
+    
+    .PARAMETER Role
+    Specifies one or more roles to which the login (user) will be tested if it should added or removed.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
