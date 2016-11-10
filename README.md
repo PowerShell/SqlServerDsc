@@ -355,25 +355,26 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
 * Created unit tests for xSQLServerConfiguration resource
-
-### 3.0.0.0
 * xSQLServerHelper
   - added functions
-    - Test-SQLDscParameterState
-    - Get-SqlDatabaseOwner
-    - Set-SqlDatabaseOwner
-    - Get-SqlDatabasePermission
-    - Add-SqlDatabasePermission
-    - Remove-SqlDatabasePermission
+   - Get-SqlDatabaseOwner
+   - Set-SqlDatabaseOwner
+   - Get-SqlDatabasePermission
+   - Add-SqlDatabasePermission
+   - Remove-SqlDatabasePermission
 * Examples
   - xSQLServerDatabaseOwner
-   - 1-SetDatabaseOwner.ps1
+   - 1-SetDatabaseOwner
   - xSQLServerDatabasePermissions
-    - 1-AddDatabasePermissions.ps1
-    - 2-RemoveDatabasePermissions.ps1
+   - 1-AddDatabasePermissions
+   - 2-RemoveDatabasePermissions
  * Added tests for resources
-   - MSFT_xSQLServerDatabaseOwner.Tests.ps1
-   - MSFT_xSQLServerDatabasePermissions.Tests.ps1
+  - MSFT_xSQLServerDatabaseOwner
+  - MSFT_xSQLServerDatabasePermissions
+   
+### 3.0.0.0
+* xSQLServerHelper
+  - added function Test-SQLDscParameterState
 
 ### 2.0.0.0
 * Added resources

@@ -209,7 +209,6 @@ This is a list of which properties in the desired values list should be checked.
 If this is empty then all values in DesiredValues are checked.
 
 #>
-
 function Test-SQLDscParameterState 
 {
     [CmdletBinding()]
@@ -1229,7 +1228,8 @@ function Remove-SqlDatabasePermission
                 {
                     Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
                                            "$Database on $sqlServer\$sqlInstanceName"
-                    $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
+                    $sqlDatabaseUser = New-Object -TypeName Microsoft.SqlServer.Management.Smo.User `
+                                                  -ArgumentList $sqlDatabase,$Name
                     $sqlDatabaseUser.Login = $Name
                     $sqlDatabaseUser.Create()
                 }
