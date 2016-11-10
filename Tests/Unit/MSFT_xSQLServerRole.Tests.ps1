@@ -11,7 +11,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
     & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
@@ -33,8 +33,8 @@ try
 
     $defaultParameters = @{
         SQLInstanceName = $instanceName
-        SQLServer = $nodeName
-        ServerRole = 'dbcreator'
+        SQLServer       = $nodeName
+        ServerRole      = 'dbcreator'
     }
 
     #endregion Pester Test Initialization
@@ -55,7 +55,7 @@ try
                 Name = 'UnknownUser'
             }
             
-            Mock -CommandName Confirm-SqlServerRole -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
+            Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
 
             $result = Get-TargetResource @testParameters
 
@@ -69,9 +69,9 @@ try
                 $result.Name | Should Be $testParameters.Name
             }
 
-            It 'Should call the mock function Connect-SQL and Confirm-SqlServerRole' {
+            It 'Should call the mock function Connect-SQL and Confirm-SqlServerRoleMember' {
                  Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
-                 Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+                 Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
     
@@ -82,7 +82,7 @@ try
                 Ensure = 'Present'
             }
             
-            Mock -CommandName Confirm-SqlServerRole -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
+            Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
 
             $result = Get-TargetResource @testParameters
 
@@ -96,9 +96,9 @@ try
                 $result.Name | Should Be $testParameters.Name
             }
 
-            It 'Should call the mock function Connect-SQL and Confirm-SqlServerRole' {
+            It 'Should call the mock function Connect-SQL and Confirm-SqlServerRoleMember' {
                  Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
-                 Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+                 Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -118,7 +118,7 @@ try
         Context 'When the system is not in the desired state' {            
             It 'Should return the test as false when desired loginName does not exist' {
 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
 
                 $testParameters = $defaultParameters
                 $testParameters += @{
@@ -130,12 +130,12 @@ try
                 $result | Should Be $false
 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
+                Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It 
             }
 
             It 'Should return the test as false when non-desired loginName exist' {
 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
 
                 $testParameters = $defaultParameters
                 $testParameters += @{
@@ -147,14 +147,14 @@ try
                 $result | Should Be $false
 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
         }
 
         Context 'When the system is in the desired state' {
             It 'Should return the test as true when desired loginName exist' {
 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
 
                 $testParameters = $defaultParameters
                 $testParameters += @{
@@ -166,12 +166,12 @@ try
                 $result | Should Be $true
 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
                         
             It 'Should return the test as true when non-desired loginName does not exist' {
 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
 
                 $testParameters = $defaultParameters
                 $testParameters += @{
@@ -183,7 +183,7 @@ try
                 $result | Should Be $true
 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Confirm-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Confirm-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
         }
 
@@ -207,19 +207,19 @@ try
                 Ensure = 'Present'
             }
 
-            It 'Should call the mock function Connect-SQL and Add-SqlServerRole' {
+            It 'Should call the mock function Connect-SQL and Add-SqlServerRoleMember' {
                 
-                Mock -CommandName Add-SqlServerRole -MockWith { } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Add-SqlServerRoleMember -MockWith { } -ModuleName $script:DSCResourceName -Verifiable
                 
                 Set-TargetResource @testParameters
 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Add-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Add-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
 
             It 'Should return the state as present when desired loginName in server role successfully added' {
                 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $true } -ModuleName $script:DSCResourceName -Verifiable
 
                 $result = Get-TargetResource @testParameters
                 $result.Ensure | Should Be 'Present'
@@ -233,19 +233,19 @@ try
                 Ensure = 'Absent'
             }
 
-            It 'Should call the mock function Connect-SQL and Remove-SqlServerRole' {
+            It 'Should call the mock function Connect-SQL and Remove-SqlServerRoleMember' {
 
-                Mock -CommandName Remove-SqlServerRole -MockWith { } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Remove-SqlServerRoleMember -MockWith { } -ModuleName $script:DSCResourceName -Verifiable
 
                 Set-TargetResource @testParameters
                 
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
-                Assert-MockCalled Remove-SqlServerRole -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
+                Assert-MockCalled Remove-SqlServerRoleMember -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
             }
 
             It 'Should return the state as absent when desired loginName in server role successfully dropped' {
                 
-                Mock -CommandName Confirm-SqlServerRole -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Confirm-SqlServerRoleMember -MockWith { return $false } -ModuleName $script:DSCResourceName -Verifiable
 
                 $result = Get-TargetResource @testParameters
                 $result.Ensure | Should Be 'absent'

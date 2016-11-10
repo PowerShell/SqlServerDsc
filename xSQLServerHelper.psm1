@@ -674,14 +674,14 @@ function Remove-SqlDatabase
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
         $Name
     )
     
-    $getDatabase = $SQL.Databases[$Name]
+    $getDatabase = $Sql.Databases[$Name]
     if ($getDatabase)
     {
         New-VerboseMessage -Message "Deleting to SQL the database $Name"
@@ -693,14 +693,32 @@ function Remove-SqlDatabase
     }    
 }
 
-function Add-SqlServerRole
+<#
+.SYNOPSIS
+
+This cmdlet is used to add a loginName with a specified server role
+
+.PARAMETER Sql
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER LoginName 
+
+This is the name of the SQL login
+
+.PARAMETER ServerRole
+
+This is the type of SQL role to add
+
+#>
+function Add-SqlServerRoleMember
 {
     [CmdletBinding()]    
     param
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -712,7 +730,7 @@ function Add-SqlServerRole
 
     )
     
-    $sqlRole = $SQL.Roles
+    $sqlRole = $Sql.Roles
     if ($sqlRole)
     {
         try
@@ -734,14 +752,32 @@ function Add-SqlServerRole
     }
 }
 
-function Remove-SqlServerRole
+<#
+.SYNOPSIS
+
+This cmdlet is used to remove a specified server role of a loginName 
+
+.PARAMETER Sql
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER LoginName 
+
+This is the name of the SQL login
+
+.PARAMETER ServerRole
+
+This is the type of SQL role to remove
+
+#>
+function Remove-SqlServerRoleMember
 {
     [CmdletBinding()]    
     param
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -753,7 +789,7 @@ function Remove-SqlServerRole
 
     )
     
-    $sqlRole = $SQL.Roles
+    $sqlRole = $Sql.Roles
     if ($sqlRole)
     {
         try
@@ -775,14 +811,32 @@ function Remove-SqlServerRole
     }
 }
 
-function Confirm-SqlServerRole
+<#
+.SYNOPSIS
+
+This cmdlet is used to confirm a loginName with a specified server role
+
+.PARAMETER Sql
+
+This is an object of the SQL server that contains the result of Connect-SQL
+
+.PARAMETER LoginName 
+
+This is the name of the SQL login
+
+.PARAMETER ServerRole
+
+This is the type of SQL role to confirm
+
+#>
+function Confirm-SqlServerRoleMember
 {
     [CmdletBinding()]    
     param
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -794,7 +848,7 @@ function Confirm-SqlServerRole
 
     )
     
-    $sqlRole = $SQL.Roles
+    $sqlRole = $Sql.Roles
     if ($sqlRole)
     {
         foreach ($currentServerRole in $ServerRole)
