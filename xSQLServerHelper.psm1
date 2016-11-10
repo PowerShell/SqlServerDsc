@@ -956,7 +956,7 @@ function Set-SqlDatabaseOwner
 
 This cmdlet is used to return the permissions of a SQL database
 
-.PARAMETER SQL
+.PARAMETER Sql
 
 This is an object of the SQL server that contains the result of Connect-SQL
 
@@ -1047,7 +1047,7 @@ function Get-SqlDatabasePermission
 
 This cmdlet is used to add the permissions of a SQL database
 
-.PARAMETER SQL
+.PARAMETER Sql
 
 This is an object of the SQL server that contains the result of Connect-SQL
 
@@ -1165,7 +1165,7 @@ function Add-SqlDatabasePermission
 
 This cmdlet is used to remove the permissions of a SQL database
 
-.PARAMETER SQL
+.PARAMETER Sql
 
 This is an object of the SQL server that contains the result of Connect-SQL
 
