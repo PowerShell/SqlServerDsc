@@ -222,7 +222,7 @@ function Test-SQLDscParameterState
         [Object]
         $DesiredValues,
 
-        [Parameter(Mandatory = $false)] 
+        [Parameter()] 
         [Array]
         $ValuesToCheck
     )
@@ -283,6 +283,7 @@ function Test-SQLDscParameterState
                                                          "values, but it was either not present or " + `
                                                          "was null. This has caused the test method " + `
                                                          "to return false.")
+                            
                             $returnValue = $false
                         } 
                         else 
@@ -314,6 +315,7 @@ function Test-SQLDscParameterState
                                     New-VerboseMessage -Message ("String value for property $fieldName does not match. " + `
                                                                  "Current state is '$($CurrentValues.$fieldName)' " + `
                                                                  "and Desired state is '$($DesiredValues.$fieldName)'")
+                                    
                                     $returnValue = $false
                                 }
                             }
@@ -324,6 +326,7 @@ function Test-SQLDscParameterState
                                     New-VerboseMessage -Message ("Int32 value for property " + "$fieldName does not match. " + `
                                                                  "Current state is " + "'$($CurrentValues.$fieldName)' " + `
                                                                  "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    
                                     $returnValue = $false
                                 }
                             }
@@ -334,14 +337,15 @@ function Test-SQLDscParameterState
                                     New-VerboseMessage -Message ("Int32 value for property " + "$fieldName does not match. " + `
                                                                  "Current state is " + "'$($CurrentValues.$fieldName)' " + `
                                                                  "and desired state is " + "'$($DesiredValues.$fieldName)'")
+                                    
                                     $returnValue = $false
                                 }
                             }
                             default {
-                                Write-Verbose -Message ("Unable to compare property $fieldName " + `
-                                                        "as the type ($($desiredType.Name)) is " + `
-                                                        "not handled by the " + `
-                                                        "Test-SQLDscParameterState cmdlet")
+                                New-VerboseMessage -Message ("Unable to compare property $fieldName " + `
+                                                             "as the type ($($desiredType.Name)) is " + `
+                                                             "not handled by the Test-SQLDscParameterState cmdlet")                                
+                                
                                 $returnValue = $false
                             }
                         }

@@ -356,8 +356,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Created unit tests for xSQLServerConfiguration resource
 * Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
-* Fix in xSQLAlias
-  - BREAKING CHANGE: The type of the parameter TCPPort has changed. It is now String Type.
 * Changes to xSQLAlias
   - Add UseDynamicTcpPort parameter for option "Dynamically determine port"
 
