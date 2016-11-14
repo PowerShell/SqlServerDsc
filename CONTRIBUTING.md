@@ -79,6 +79,6 @@ one resource, then the functions can also be placed in the common [xSQLServerHel
 To import the helper function, add this code block to the beginning of your resource module.
 
 ```PowerShell
-$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
+$currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
 ```
