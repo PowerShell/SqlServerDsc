@@ -69,31 +69,31 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ### xSQLServerSetup
 
-* **SourcePath**: (Required) UNC path to the root of the source files for installation.
-* **SourceFolder**: Folder within the source path containing the source files for installation.
+* **SourcePath**: (Required) The path to the root of the source files for installation. I.e and UNC path to a shared resource.
+* **SourceFolder**: Folder within the source path containing the source files for installation. Default value is 'Source'.
 * **SetupCredential**: (Required) Credential to be used to perform the installation.
-* **SourceCredential**: Credential used to access SourcePath
-* **SuppressReboot**: Suppresses reboot
-* **ForceReboot**: Forces Reboot
+* **SourceCredential**: Credential used to access SourcePath.
+* **SuppressReboot**: Suppresses reboot.
+* **ForceReboot**: Forces reboot.
 * **Features**: (Key) SQL features to be installed.
 * **InstanceName**: (Key) SQL instance to be installed.
 * **InstanceID**: SQL instance ID, if different from InstanceName.
 * **PID**: Product key for licensed installations.
 * **UpdateEnabled**: Enabled updates during installation.
-* **UpdateSource**: Source of updates to be applied during installation.
+* **UpdateSource**: Path to the source of updates to be applied during installation.
 * **SQMReporting**: Enable customer experience reporting.
 * **ErrorReporting**: Enable error reporting.
 * **InstallSharedDir**: Installation path for shared SQL files.
 * **InstallSharedWOWDir**: Installation path for x86 shared SQL files.
 * **InstanceDir**: Installation path for SQL instance files.
 * **SQLSvcAccount**: Service account for the SQL service.
-* **SQLSvcAccountUsername**: Output user name for the SQL service.
+* **SQLSvcAccountUsername**: (Read) Output user name for the SQL service.
 * **AgtSvcAccount**: Service account for the SQL Agent service.
-* **AgtSvcAccountUsername**: Output user name for the SQL Agent service.
+* **AgtSvcAccountUsername**: (Read) Output user name for the SQL Agent service.
 * **SQLCollation**: Collation for SQL.
 * **SQLSysAdminAccounts**: Array of accounts to be made SQL administrators.
-* **SecurityMode**: SQL security mode.
-* **SAPwd**: SA password, if SecurityMode=SQL.
+* **SecurityMode**: Security mode to apply to the SQL Server instance.
+* **SAPwd**: SA password, if SecurityMode is set to 'SQL'.
 * **InstallSQLDataDir**: Root path for SQL database files.
 * **SQLUserDBDir**: Path for SQL database files.
 * **SQLUserDBLogDir**: Path for SQL log files.
@@ -101,11 +101,11 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **SQLTempDBLogDir**: Path for SQL TempDB log files.
 * **SQLBackupDir**: Path for SQL backup files.
 * **FTSvcAccount**: Service account for the Full Text service.
-* **FTSvcAccountUsername**: Output username for the Full Text service.
+* **FTSvcAccountUsername**: (Read) Output username for the Full Text service.
 * **RSSvcAccount**: Service account for Reporting Services service.
-* **RSSvcAccountUsername**: Output username for the Reporting Services service.
+* **RSSvcAccountUsername**: (Read) Output username for the Reporting Services service.
 * **ASSvcAccount**: Service account for Analysis Services service.
-* **ASSvcAccountUsername**: Output username for the Analysis Services service.
+* **ASSvcAccountUsername**: (Read) Output username for the Analysis Services service.
 * **ASCollation**: Collation for Analysis Services.
 * **ASSysAdminAccounts**: Array of accounts to be made Analysis Services admins.
 * **ASDataDir**: Path for Analysis Services data files.
@@ -114,7 +114,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **ASTempDir**: Path for Analysis Services temp files.
 * **ASConfigDir**: Path for Analysis Services config.
 * **ISSvcAccount**: Service account for Integration Services service.
-* **ISSvcAccountUsername**: Output user name for the Integration Services service.
+* **ISSvcAccountUsername**: (Read) Output user name for the Integration Services service.
+* **BrowserSvcStartupType**: Specifies the startup mode for SQL Server Browser service. Valid values are 'Automatic', 'Disabled' or 'Manual'.
 
 ### xSQLServerFirewall
 

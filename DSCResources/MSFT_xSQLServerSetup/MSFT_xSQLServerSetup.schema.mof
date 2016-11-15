@@ -1,18 +1,18 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerSetup")]
 class MSFT_xSQLServerSetup : OMI_BaseResource
 {
-    [Write, Description("UNC path to the root of the source files for installation.")] String SourcePath;
-    [Write, Description("Folder within the source path containing the source files for installation.")] String SourceFolder;
+    [Write, Description("The path to the root of the source files for installation. I.e and UNC path to a shared resource.")] String SourcePath;
+    [Write, Description("Folder within the source path containing the source files for installation. Default value is 'Source'.")] String SourceFolder;
     [Required, EmbeddedInstance("MSFT_Credential"), Description("Credential to be used to perform the installation.")] String SetupCredential;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Credential to be used to access SourcePath.")] String SourceCredential;
-    [Write, Description("Suppress reboot.")] Boolean SuppressReboot;
-    [Write, Description("Force reboot.")] Boolean ForceReboot;
+    [Write, Description("Suppresses reboot.")] Boolean SuppressReboot;
+    [Write, Description("Forces reboot.")] Boolean ForceReboot;
     [Write, Description("SQL features to be installed.")] String Features;
-    [Key, Description("SQL instance to be installed.")] String InstanceName;
+    [Key, Description("Name of the SQL instance to be installed.")] String InstanceName;
     [Write, Description("SQL instance ID, if different from InstanceName.")] String InstanceID;
     [Write, Description("Product key for licensed installations.")] String PID;
     [Write, Description("Enabled updates during installation.")] String UpdateEnabled;
-    [Write, Description("Source of updates to be applied during installation.")] String UpdateSource;
+    [Write, Description("Path to the source of updates to be applied during installation.")] String UpdateSource;
     [Write, Description("Enable customer experience reporting.")] String SQMReporting;
     [Write, Description("Enable error reporting.")] String ErrorReporting;
     [Write, Description("Installation path for shared SQL files.")] String InstallSharedDir;
@@ -24,8 +24,8 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Read, Description("Output username for the SQL Agent service.")] String AgtSvcAccountUsername;
     [Write, Description("Collation for SQL.")] String SQLCollation;
     [Write, Description("Array of accounts to be made SQL administrators.")] String SQLSysAdminAccounts[];
-    [Write, Description("Security mode.")] String SecurityMode;
-    [Write, EmbeddedInstance("MSFT_Credential"), Description("SA password, if SecurityMode=SQL")] String SAPwd;
+    [Write, Description("Security mode to apply to the SQL Server instance.")] String SecurityMode;
+    [Write, EmbeddedInstance("MSFT_Credential"), Description("SA password, if SecurityMode is set to 'SQL'.")] String SAPwd;
     [Write, Description("Root path for SQL database files.")] String InstallSQLDataDir;
     [Write, Description("Path for SQL database files.")] String SQLUserDBDir;
     [Write, Description("Path for SQL log files.")] String SQLUserDBLogDir;
@@ -36,7 +36,7 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Read, Description("Output username for the Full Text service.")] String FTSvcAccountUsername;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Reporting Services service.")] String RSSvcAccount;
     [Read, Description("Output username for the Reporting Services service.")] String RSSvcAccountUsername;
-    [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Analysus Services service.")] String ASSvcAccount;
+    [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Analysis Services service.")] String ASSvcAccount;
     [Read, Description("Output username for the Analysis Services service.")] String ASSvcAccountUsername;
     [Write, Description("Collation for Analysis Services.")] String ASCollation;
     [Write, Description("Array of accounts to be made Analysis Services admins.")] String ASSysAdminAccounts[];
@@ -47,5 +47,5 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Write, Description("Path for Analysis Services config.")] String ASConfigDir;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Integration Services service.")] String ISSvcAccount;
     [Read, Description("Output username for the Integration Services service.")] String ISSvcAccountUsername;
-    [Write, Description("Specifies the startup mode for SQL Server Browser service"), ValueMap{"Automatic", "Disabled", "Manual"}, Values{"Automatic", "Disabled", "Manual"}] String BrowserSvcStartupType;
+    [Write, Description("Specifies the startup mode for SQL Server Browser service."), ValueMap{"Automatic", "Disabled", "Manual"}, Values{"Automatic", "Disabled", "Manual"}] String BrowserSvcStartupType;
 };
