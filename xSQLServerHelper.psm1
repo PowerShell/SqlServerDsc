@@ -5,6 +5,20 @@ $VerbosePreference = 'Continue'
 Import-LocalizedData LocalizedData -filename xSQLServer.strings.psd1 -ErrorAction SilentlyContinue 
 Import-LocalizedData USLocalizedData -filename xSQLServer.strings.psd1 -UICulture en-US -ErrorAction SilentlyContinue
 
+<#
+    .SYNOPSIS
+        Connect to a SQL Server Database Engine and return the server object.
+
+    .PARAMETER SQLServer
+        String containing the host name of the SQL Server to connect to.
+
+    .PARAMETER SQLInstanceName 
+        String containing the SQL Server Database Engine instance to connect to. 
+
+    .PARAMETER SetupCredential
+        PSCredential object with the credentials to use to impersonate a user when connecting. 
+        If this is not provided then the current user will be used to connect to the SQL Server Database Engine instance.
+#>
 function Connect-SQL
 {
     [CmdletBinding()]
@@ -58,6 +72,20 @@ function Connect-SQL
     return $sql
 }
 
+<#
+    .SYNOPSIS
+        Connect to a SQL Server Analysis Service and return the server object.
+
+    .PARAMETER SQLServer
+        String containing the host name of the SQL Server to connect to.
+
+    .PARAMETER SQLInstanceName 
+        String containing the SQL Server Analysis Service instance to connect to. 
+
+    .PARAMETER SetupCredential
+        PSCredential object with the credentials to use to impersonate a user when connecting. 
+        If this is not provided then the current user will be used to connect to the SQL Server Analysis Service instance.
+#>
 function Connect-SQLAnalysis
 {
     [CmdletBinding()]
@@ -111,6 +139,26 @@ function Connect-SQLAnalysis
     return $sql
 }
 
+<#
+    .SYNOPSIS
+        Returns a localized error message.
+
+    .PARAMETER ErrorType
+        String containing the key of the localized error message.
+
+    .PARAMETER FormatArgs
+        Collection of strings to replace format objects in the error message.
+
+    .PARAMETER ErrorCategory
+        The category to use for the error message. Default value is 'OperationStopped'.
+        Valid values are a value from the enumeration System.Management.Automation.ErrorCategory. 
+
+    .PARAMETER TargetObject
+        The object that was being operated on when the error occurred. 
+
+    .PARAMETER InnerException
+        Exception object that was thorwn when the error occured, which will be added to the final error message.  
+#>
 function New-TerminatingError 
 {
     [CmdletBinding()]
@@ -129,7 +177,7 @@ function New-TerminatingError
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.ErrorCategory]
         $ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped,
-
+        
         [Parameter(Mandatory = $false)]
         [Object]
         $TargetObject = $null,
@@ -138,7 +186,7 @@ function New-TerminatingError
         [System.Exception]
         $InnerException = $null
     )
-
+    
     $errorMessage = $LocalizedData.$ErrorType
     
     if(!$errorMessage)
@@ -184,13 +232,13 @@ function New-TerminatingError
 
 <#
     .SYNOPSIS
-    Displays a localized warning message
+        Displays a localized warning message.
 
     .PARAMETER WarningType
-    String containing the key of the localized warning message
+        String containing the key of the localized warning message.
     
     .PARAMETER FormatArgs
-    Collection of strings to replace format objects in warning message.
+        Collection of strings to replace format objects in warning message.
 #>
 function New-WarningMessage
 {
@@ -230,6 +278,13 @@ function New-WarningMessage
     Write-Warning -Message $warningMessage
 }
 
+<#
+    .SYNOPSIS
+    Displays a standardized verbose message.
+
+    .PARAMETER Message
+    String containing the key of the localized warning message.
+#>
 function New-VerboseMessage
 {
     [CmdletBinding()]
@@ -241,27 +296,21 @@ function New-VerboseMessage
         $Message
     )
     Write-Verbose -Message ((Get-Date -format yyyy-MM-dd_HH-mm-ss) + ": $Message");
-
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        This method is used to compare current and desired values for any DSC resource.
 
-This method is used to compare current and desired values for any DSC resource
+    .PARAMETER CurrentValues
+        This is hashtable of the current values that are applied to the resource.
 
-.PARAMETER CurrentValues
+    .PARAMETER DesiredValues 
+        This is a PSBoundParametersDictionary of the desired values for the resource.
 
-This is hashtable of the current values that are applied to the resource
-
-.PARAMETER DesiredValues 
-
-This is a PSBoundParametersDictionary of the desired values for the resource
-
-.PARAMETER ValuesToCheck
-
-This is a list of which properties in the desired values list should be checked.
-If this is empty then all values in DesiredValues are checked.
-
+    .PARAMETER ValuesToCheck
+        This is a list of which properties in the desired values list should be checked.
+        If this is empty then all values in DesiredValues are checked.
 #>
 function Test-SQLDscParameterState 
 {
@@ -412,6 +461,23 @@ function Test-SQLDscParameterState
     return $returnValue
 }
 
+<#
+    .SYNOPSIS
+        Connect to a SQL Server Database Engine and give the server permissions 'AlterAnyAvailabilityGroup' and 'ViewServerState' to the provided user.
+
+    .PARAMETER SQLServer
+        String containing the host name of the SQL Server to connect to.
+
+    .PARAMETER SQLInstanceName 
+        String containing the SQL Server Database Engine instance to connect to. 
+
+    .PARAMETER SetupCredential
+        PSCredential object with the credentials to use to impersonate a user when connecting. 
+        If this is not provided then the current user will be used to connect to the SQL Server Database Engine instance.
+
+    .PARAMETER AuthorizedUser
+        String containing the user to give the server permissions 'AlterAnyAvailabilityGroup' and 'ViewServerState'.
+#>
 function Grant-ServerPerms
 {
     [CmdletBinding()]
@@ -451,6 +517,16 @@ function Grant-ServerPerms
         }
 }
 
+<#
+    .SYNOPSIS
+        Connect to a Active Directory and give the Cluster Name Object all rights on the cluster Virtual Computer Object (VCO).
+
+    .PARAMETER AvailabilityGroupNameListener
+        String containing the name of the Availabilty Group's Virtual Computer Object (VCO).
+
+    .PARAMETER CNO 
+        String containing the name of the Cluster Name Object (CNO) for the failover cluster. 
+#>
 function Grant-CNOPerms
 {
 [CmdletBinding()]
@@ -497,6 +573,23 @@ function Grant-CNOPerms
         } 
 }
 
+<#
+    .SYNOPSIS
+        Create a new computer object for a Availabilty Group's Virtual Computer Object (VCO).
+
+    .PARAMETER AvailabilityGroupNameListener
+        String containing the name of the Availabilty Group's Virtual Computer Object (VCO).
+
+    .PARAMETER SQLServer
+        String containing the host name of the SQL Server to connect to.
+
+    .PARAMETER SQLInstanceName 
+        String containing the SQL Server Database Engine instance to connect to. 
+
+    .PARAMETER SetupCredential
+        PSCredential object with the credentials to use to impersonate a user when connecting. 
+        If this is not provided then the current user will be used to connect to the SQL Server Database Engine instance.
+#>
 function New-ListenerADObject
 {
 [CmdletBinding()]
@@ -591,6 +684,10 @@ function New-ListenerADObject
 
 }
 
+<#
+    .SYNOPSIS
+        Imports the module SQLPS in a standardized way.
+#>
 function Import-SQLPSModule {
     [CmdletBinding()]
     param()
@@ -621,6 +718,17 @@ function Import-SQLPSModule {
 
 }
 
+<#
+    .SYNOPSIS
+        Returns the SQL Server instance name in the way SQLPS Provider expect it.
+
+    .DESCRIPTION
+        The SQLPS Provider doesn't use the default instance name of MSSQLSERVER, instead it uses DEFAULT.
+        This function make sure the correct default instance name is returned.
+
+    .PARAMETER InstanceName 
+        String containing the SQL Server Database Engine instance to validate. 
+#>
 function Get-SQLPSInstanceName
 {
     [CmdletBinding()]
@@ -639,6 +747,16 @@ function Get-SQLPSInstanceName
     return $InstanceName
 }
 
+<#
+    .SYNOPSIS
+        Returns the SQL Server SQLPS provider server object.
+
+    .PARAMETER InstanceName 
+        String containing the SQL Server Database Engine instance to connect to. 
+
+    .PARAMETER NodeName 
+        String containing the host name of the SQL Server to connect to. 
+#>
 function Get-SQLPSInstance
 {
     [CmdletBinding()]
@@ -665,6 +783,19 @@ function Get-SQLPSInstance
     return $instance
 }
 
+<#
+    .SYNOPSIS
+        Returns the SQL Server SQLPS provider endpoint object.
+
+    .PARAMETER Name 
+        String containing the name of the endpoint to return. 
+
+    .PARAMETER InstanceName 
+        String containing the SQL Server Database Engine instance to connect to. 
+
+    .PARAMETER NodeName 
+        String containing the host name of the SQL Server to connect to. 
+#>
 function Get-SQLAlwaysOnEndpoint
 {
     [CmdletBinding()]
@@ -700,6 +831,16 @@ function Get-SQLAlwaysOnEndpoint
     return $endpoint
 }
 
+<#
+    .SYNOPSIS
+        Create a new database in the SQL Server instance provided.
+
+    .PARAMETER SQL 
+        An object returned from Connect-SQL function in which the database will be created. 
+
+    .PARAMETER Name 
+        String containing the database name to be created. 
+#>
 function New-SqlDatabase
 {
     [CmdletBinding()]    
@@ -726,6 +867,16 @@ function New-SqlDatabase
     }    
 }
 
+<#
+    .SYNOPSIS
+        Remove a database in the SQL Server instance provided.
+
+    .PARAMETER SQL 
+        An object returned from Connect-SQL function in which a database will be removed. 
+
+    .PARAMETER Name 
+        String containing the database name to be removed. 
+#>
 function Remove-SqlDatabase
 {
     [CmdletBinding()]    
@@ -753,22 +904,17 @@ function Remove-SqlDatabase
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        Add a user to a server role in the SQL Server instance provided.
 
-This cmdlet is used to add a loginName with a specified server role
+    .PARAMETER Sql
+        An object returned from Connect-SQL function. 
 
-.PARAMETER Sql
+    .PARAMETER LoginName 
+        String containing the login (user) which should be added as a member to the server role. 
 
-This is an object of the SQL server that contains the result of Connect-SQL
-
-.PARAMETER LoginName 
-
-This is the name of the SQL login
-
-.PARAMETER ServerRole
-
-This is the type of SQL role to add
-
+    .PARAMETER ServerRole 
+        String containing the name of the server role which the user will be added as a member to. 
 #>
 function Add-SqlServerRoleMember
 {
@@ -812,22 +958,17 @@ function Add-SqlServerRoleMember
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        Remove a user in a server role in the SQL Server instance provided.
 
-This cmdlet is used to remove a specified server role of a loginName 
+    .PARAMETER Sql 
+        An object returned from Connect-SQL function. 
 
-.PARAMETER Sql
+    .PARAMETER LoginName 
+        String containing the login (user) which should be removed as a member in the server role. 
 
-This is an object of the SQL server that contains the result of Connect-SQL
-
-.PARAMETER LoginName 
-
-This is the name of the SQL login
-
-.PARAMETER ServerRole
-
-This is the type of SQL role to remove
-
+    .PARAMETER ServerRole 
+        String containing the name of the server role for which the user will be removed as a member. 
 #>
 function Remove-SqlServerRoleMember
 {
@@ -871,22 +1012,19 @@ function Remove-SqlServerRoleMember
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        This validates if a user is a member of a server role.
+        The function returns $true is the login (user) is a member in the provided server role.
+        It will return $false if the user is not member of the provided server role.
 
-This cmdlet is used to confirm a loginName with a specified server role
+    .PARAMETER SQL 
+        An object returned from Connect-SQL function. 
 
-.PARAMETER Sql
+    .PARAMETER LoginName 
+        String containing the login (user) which should be verified as a member in the server role. 
 
-This is an object of the SQL server that contains the result of Connect-SQL
-
-.PARAMETER LoginName 
-
-This is the name of the SQL login
-
-.PARAMETER ServerRole
-
-This is the type of SQL role to confirm
-
+    .PARAMETER ServerRole 
+        String containing the name of the server role which the user will be verified if a member of. 
 #>
 function Confirm-SqlServerRoleMember
 {
@@ -943,18 +1081,14 @@ function Confirm-SqlServerRoleMember
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        This cmdlet is used to return the owner of a SQL database.
 
-This cmdlet is used to return the owner of a SQL database
+    .PARAMETER SQL
+        This is an object of the SQL server that contains the result of Connect-SQL.
 
-.PARAMETER SQL
-
-This is an object of the SQL server that contains the result of Connect-SQL
-
-.PARAMETER Database
-
-This is the SQL database that will be checking
-
+    .PARAMETER Database
+        This is the SQL database that will be checking.
 #>
 function Get-SqlDatabaseOwner
 {
@@ -994,22 +1128,17 @@ function Get-SqlDatabaseOwner
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+        This cmdlet is used to configure the owner of a SQL database.
 
-This cmdlet is used to configure the owner of a SQL database
+    .PARAMETER SQL
+        This is an object of the SQL server that contains the result of Connect-SQL.
 
-.PARAMETER SQL
+    .PARAMETER Name 
+        This is the name of the desired owner for the SQL database.
 
-This is an object of the SQL server that contains the result of Connect-SQL
-
-.PARAMETER Name 
-
-This is the name of the desired owner for the SQL database
-
-.PARAMETER Database
-
-This is the SQL database that will be setting
-
+    .PARAMETER Database
+        This is the SQL database that will be setting.
 #>
 function Set-SqlDatabaseOwner
 {
