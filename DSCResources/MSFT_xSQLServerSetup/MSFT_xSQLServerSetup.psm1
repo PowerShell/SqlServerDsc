@@ -1,27 +1,49 @@
-$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Import-Module $script:currentPath\..\..\xSQLServerHelper.psm1 -ErrorAction Stop
-Import-Module $script:currentPath\..\..\xPDT.psm1
+$script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xPDT.psm1')
 
+<#
+    .SYNOPSIS
+        Returns the current state of the SQL Server features.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.
+    
+    .PARAMETER SourceFolder
+        Folder within the source path containing the source files for installation. Default value is 'Source'.
+
+    .PARAMETER SetupCredential
+        Credential to be used to perform the installation.
+
+    .PARAMETER SourceCredential
+        Credential to be used to access SourcePath.
+
+    .PARAMETER InstanceName
+        Name of the SQL instance to be installed.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [Parameter()]
         [System.String]
         $SourcePath = "$PSScriptRoot\..\..\",
 
+        [Parameter()]
         [System.String]
         $SourceFolder = 'Source',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $SetupCredential,
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $SourceCredential,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $InstanceName
     )
@@ -36,7 +58,7 @@ function Get-TargetResource
     $path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath 'setup.exe'
     $path = ResolvePath -Path $path
     
-    Write-Verbose -Message "Using path: $path"
+    New-VerboseMessage -Message "Using path: $path"
 
     $sqlVersion = GetSQLVersion -Path $path
 
@@ -77,16 +99,16 @@ function Get-TargetResource
         $fullInstanceId = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' -Name $InstanceName).$InstanceName
 
         # Check if Replication sub component is configured for this instance
-        Write-Verbose -Message "Detecting replication feature (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState)"
+        New-VerboseMessage -Message "Detecting replication feature (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState)"
         $isReplicationInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState").SQL_Replication_Core_Inst
         if ($isReplicationInstalled -eq 1)
         {
-            Write-Verbose 'Replication feature detected'
+            New-VerboseMessage -Message 'Replication feature detected'
             $Features += 'REPLICATION,'
         } 
         else
         {
-            Write-Verbose 'Replication feature not detected'
+            New-VerboseMessage -Message 'Replication feature not detected'
         }
 
         $instanceId = $fullInstanceId.Split('.')[1]
@@ -284,6 +306,133 @@ function Get-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Installs the SQL Server features to the node.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.
+    
+    .PARAMETER SourceFolder
+        Folder within the source path containing the source files for installation. Default value is 'Source'.
+
+    .PARAMETER SetupCredential
+        Credential to be used to perform the installation.
+
+    .PARAMETER SourceCredential
+        Credential to be used to access SourcePath.
+
+    .PARAMETER SuppressReboot
+        Suppressed reboot.
+
+    .PARAMETER ForceReboot
+        Forces reboot.
+
+    .PARAMETER Features
+        SQL features to be installed.
+
+    .PARAMETER InstanceName
+        Name of the SQL instance to be installed.
+
+    .PARAMETER InstanceID
+        SQL instance ID, if different from InstanceName.
+
+    .PARAMETER PID
+        Product key for licensed installations.
+
+    .PARAMETER UpdateEnabled
+        Enabled updates during installation.
+
+    .PARAMETER UpdateSource
+        Path to the source of updates to be applied during installation.
+
+    .PARAMETER SQMReporting
+        Enable customer experience reporting.
+
+    .PARAMETER ErrorReporting
+        Enable error reporting.
+
+    .PARAMETER InstallSharedDir
+        Installation path for shared SQL files.
+
+    .PARAMETER InstallSharedWOWDir
+        Installation path for x86 shared SQL files.
+
+    .PARAMETER InstanceDir
+        Installation path for SQL instance files.
+
+    .PARAMETER SQLSvcAccount
+        Service account for the SQL service.
+
+    .PARAMETER AgtSvcAccount
+        Service account for the SQL Agent service.
+
+    .PARAMETER SQLCollation
+        Collation for SQL.
+
+    .PARAMETER SQLSysAdminAccounts
+        Array of accounts to be made SQL administrators.
+
+    .PARAMETER SecurityMode
+        Security mode to apply to the SQL Server instance.
+
+    .PARAMETER SAPwd
+        SA password, if SecurityMode is set to 'SQL'.
+
+    .PARAMETER InstallSQLDataDir
+        Root path for SQL database files.
+
+    .PARAMETER SQLUserDBDir
+        Path for SQL database files.
+
+    .PARAMETER SQLUserDBLogDir
+        Path for SQL log files.
+
+    .PARAMETER SQLTempDBDir
+        Path for SQL TempDB files.
+
+    .PARAMETER SQLTempDBLogDir
+        Path for SQL TempDB log files.
+
+    .PARAMETER SQLBackupDir
+        Path for SQL backup files.
+
+    .PARAMETER FTSvcAccount
+        Service account for the Full Text service.
+
+    .PARAMETER RSSvcAccount
+        Service account for Reporting Services service.
+
+    .PARAMETER ASSvcAccount
+       Service account for Analysis Services service.
+
+    .PARAMETER ASCollation
+        Collation for Analysis Services.
+
+    .PARAMETER ASSysAdminAccounts
+        Array of accounts to be made Analysis Services admins.
+
+    .PARAMETER ASDataDir
+        Path for Analysis Services data files.
+
+    .PARAMETER ASLogDir
+        Path for Analysis Services log files.
+
+    .PARAMETER ASBackupDir
+        Path for Analysis Services backup files.
+
+    .PARAMETER ASTempDir
+        Path for Analysis Services temp files.
+
+    .PARAMETER ASConfigDir
+        Path for Analysis Services config.
+
+    .PARAMETER ISSvcAccount
+       Service account for Integration Services service.
+
+    .PARAMETER BrowserSvcStartupType
+       Specifies the startup mode for SQL Server Browser service
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -418,7 +567,7 @@ function Set-TargetResource
 
     $parameters = @{
         SourcePath = $SourcePath
-        SourceFolde = $SourceFolder
+        SourceFolder = $SourceFolder
         SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
         InstanceName = $InstanceName
@@ -437,7 +586,7 @@ function Set-TargetResource
         $tempPath = Get-TemporaryFolder
         $mediaDestinationPath = (Join-Path -Path $tempPath -ChildPath $SourceFolder)
 
-        Write-Verbose "Robocopy is copying media from source '$mediaSourcePath' to destination '$mediaDestinationPath'"
+        New-VerboseMessage -Message "Robocopy is copying media from source '$mediaSourcePath' to destination '$mediaDestinationPath'"
         Copy-ItemWithRoboCopy -Path $mediaSourcePath -DestinationPath $mediaDestinationPath
         
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Absent'
@@ -447,7 +596,7 @@ function Set-TargetResource
 
     $path = ResolvePath (Join-Path -Path $mediaSourcePath -ChildPath 'setup.exe')
     
-    Write-Verbose "Using path: $path"
+    New-VerboseMessage -Message "Using path: $path"
     
     $sqlVersion = GetSQLVersion -Path $path
 
@@ -739,10 +888,10 @@ function Set-TargetResource
         }
     }
 
-    Write-Verbose -Message "Starting setup using arguments: $log"
+    New-VerboseMessage -Message "Starting setup using arguments: $log"
 
     $process = StartWin32Process -Path $path -Arguments $arguments
-    Write-Verbose -Message $process
+    New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $path -Arguments $arguments
 
     if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
@@ -753,7 +902,7 @@ function Set-TargetResource
         }
         else
         {
-            Write-Verbose -Message 'Suppressing reboot'
+            New-VerboseMessage -Message 'Suppressing reboot'
         }
     }
 
@@ -763,6 +912,133 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Installs the SQL Server features to the node.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.
+    
+    .PARAMETER SourceFolder
+        Folder within the source path containing the source files for installation. Default value is 'Source'.
+
+    .PARAMETER SetupCredential
+        Credential to be used to perform the installation.
+
+    .PARAMETER SourceCredential
+        Credential to be used to access SourcePath.
+
+    .PARAMETER SuppressReboot
+        Suppresses reboot.
+
+    .PARAMETER ForceReboot
+        Forces reboot.
+
+    .PARAMETER Features
+        SQL features to be installed.
+
+    .PARAMETER InstanceName
+        Name of the SQL instance to be installed.
+
+    .PARAMETER InstanceID
+        SQL instance ID, if different from InstanceName.
+
+    .PARAMETER PID
+        Product key for licensed installations.
+
+    .PARAMETER UpdateEnabled
+        Enabled updates during installation.
+
+    .PARAMETER UpdateSource
+        Path to the source of updates to be applied during installation.
+
+    .PARAMETER SQMReporting
+        Enable customer experience reporting.
+
+    .PARAMETER ErrorReporting
+        Enable error reporting.
+
+    .PARAMETER InstallSharedDir
+        Installation path for shared SQL files.
+
+    .PARAMETER InstallSharedWOWDir
+        Installation path for x86 shared SQL files.
+
+    .PARAMETER InstanceDir
+        Installation path for SQL instance files.
+
+    .PARAMETER SQLSvcAccount
+        Service account for the SQL service.
+
+    .PARAMETER AgtSvcAccount
+        Service account for the SQL Agent service.
+
+    .PARAMETER SQLCollation
+        Collation for SQL.
+
+    .PARAMETER SQLSysAdminAccounts
+        Array of accounts to be made SQL administrators.
+
+    .PARAMETER SecurityMode
+        Security mode to apply to the SQL Server instance.
+
+    .PARAMETER SAPwd
+        SA password, if SecurityMode is set to 'SQL'.
+
+    .PARAMETER InstallSQLDataDir
+        Root path for SQL database files.
+
+    .PARAMETER SQLUserDBDir
+        Path for SQL database files.
+
+    .PARAMETER SQLUserDBLogDir
+        Path for SQL log files.
+
+    .PARAMETER SQLTempDBDir
+        Path for SQL TempDB files.
+
+    .PARAMETER SQLTempDBLogDir
+        Path for SQL TempDB log files.
+
+    .PARAMETER SQLBackupDir
+        Path for SQL backup files.
+
+    .PARAMETER FTSvcAccount
+        Service account for the Full Text service.
+
+    .PARAMETER RSSvcAccount
+        Service account for Reporting Services service.
+
+    .PARAMETER ASSvcAccount
+       Service account for Analysis Services service.
+
+    .PARAMETER ASCollation
+        Collation for Analysis Services.
+
+    .PARAMETER ASSysAdminAccounts
+        Array of accounts to be made Analysis Services admins.
+
+    .PARAMETER ASDataDir
+        Path for Analysis Services data files.
+
+    .PARAMETER ASLogDir
+        Path for Analysis Services log files.
+
+    .PARAMETER ASBackupDir
+        Path for Analysis Services backup files.
+
+    .PARAMETER ASTempDir
+        Path for Analysis Services temp files.
+
+    .PARAMETER ASConfigDir
+        Path for Analysis Services config.
+
+    .PARAMETER ISSvcAccount
+       Service account for Integration Services service.
+
+    .PARAMETER BrowserSvcStartupType
+       Specifies the startup mode for SQL Server Browser service
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -892,20 +1168,20 @@ function Test-TargetResource
         $ISSvcAccount,
 
         [System.String]
-        [ValidateSet("Automatic", "Disabled", "Manual")]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
         $BrowserSvcStartupType
     )
 
     $parameters = @{
         SourcePath = $SourcePath
-        SourceFolde = $SourceFolder
+        SourceFolder = $SourceFolder
         SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
         InstanceName = $InstanceName
     }
 
     $sqlData = Get-TargetResource @parameters
-    Write-Verbose "Features found: '$($SQLData.Features)'"
+    New-VerboseMessage -Message "Features found: '$($SQLData.Features)'"
 
     $result = $false
     if ($sqlData.Features )
@@ -919,7 +1195,7 @@ function Test-TargetResource
 
             if(!($sqlData.Features.Contains($feature)))
             {
-                Write-Verbose "Unable to find feature '$feature' among the installed features: '$($sqlData.Features)'"
+                New-VerboseMessage -Message "Unable to find feature '$feature' among the installed features: '$($sqlData.Features)'"
                 $result = $false
             }
         }
@@ -928,6 +1204,13 @@ function Test-TargetResource
     $result
 }
 
+<#
+    .SYNOPSIS
+        Returns the SQL Server major version from the setup.exe executable provided in the Path parameter.
+
+    .PARAMETER Path
+        String containing the path to the SQL Server setup.exe executable.
+#>
 function GetSQLVersion
 {
     [CmdletBinding()]
@@ -941,6 +1224,13 @@ function GetSQLVersion
     (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
 }
 
+<#
+    .SYNOPSIS
+        Returns the first item value in the registry location provided in the Path parameter. 
+
+    .PARAMETER Path
+        String containing the path to the registry.    
+#>
 function Get-FirstItemPropertyValue
 {
     [CmdletBinding()]
@@ -964,6 +1254,16 @@ function Get-FirstItemPropertyValue
     return $registryPropertyValue
 }
 
+<#
+    .SYNOPSIS
+        Copy folder structure using RoboCopy. Every file and folder, including empty ones are copied.
+
+    .PARAMETER Path
+        Source path to be copied.
+    
+    .PARAMETER DestinationPath
+        The path to the destination.
+#>
 function Copy-ItemWithRoboCopy
 {
     [CmdletBinding()]
@@ -981,6 +1281,10 @@ function Copy-ItemWithRoboCopy
     & robocopy.exe $Path $DestinationPath /e
 }
 
+<#
+    .SYNOPSIS
+        Returns the path of the current user's temporary folder. 
+#>
 function Get-TemporaryFolder
 {
     [CmdletBinding()]
