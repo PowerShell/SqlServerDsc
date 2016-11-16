@@ -14,35 +14,21 @@ function Get-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Name,
-
-        [ValidateSet("TCP","NP")]
-        [System.String]
-        $Protocol = 'TCP',
-
+  
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
-
-        [System.UInt16]
-        $TcpPort = 1433,
-
-        [System.Boolean]
-        $UseDynamicTcpPort = $false,
-
-        [ValidateSet("Present","Absent")]
-        [System.String]
-        $Ensure = 'Present'
+        $ServerName
     )
 
     $returnValue = @{
         Name = [System.String] $Name
-        Protocol = [System.String] $Protocol
+        Protocol = [System.String] ''
         ServerName = [System.String] $ServerName
-        TcpPort = [System.UInt16] $TcpPort
-        UseDynamicTcpPort = [System.Boolean] $UseDynamicTcpPort
+        TcpPort = [System.UInt16] 0
+        UseDynamicTcpPort = [System.Boolean] $false
         PipeName = [System.String] ''
-        Ensure = [System.String] $Ensure
+        Ensure = [System.String] 'Absent'
     }
 
     $protocolTcp = 'DBMSSOCN'
@@ -116,6 +102,7 @@ function Set-TargetResource
         [System.String]
         $Name,
 
+        [Parameter()]
         [ValidateSet("TCP","NP")]
         [System.String]
         $Protocol = 'TCP',
@@ -125,12 +112,15 @@ function Set-TargetResource
         [System.String]
         $ServerName,
 
+        [Parameter()]
         [System.UInt16]
         $TcpPort = 1433,
 
+        [Parameter()]
         [System.Boolean]
         $UseDynamicTcpPort = $false,
 
+        [Parameter()]
         [ValidateSet("Present","Absent")]
         [System.String]
         $Ensure = 'Present'
@@ -192,7 +182,7 @@ function Set-TargetResource
             
         # If this is a 64-bit OS then also remove from Wow6432Node
         if (((Get-WmiObject -Class win32_OperatingSystem).OSArchitecture) -eq '64-bit' `
-                                                                          -and (Test-Path -Path $registryPathWow6432Node))
+              -and (Test-Path -Path $registryPathWow6432Node))
         {
             if ($PSCmdlet.ShouldProcess($Name, 'Remove the client alias (32-bit)'))
             {
@@ -213,6 +203,7 @@ function Test-TargetResource
         [System.String]
         $Name,
 
+        [Parameter()]
         [ValidateSet("TCP","NP")]
         [System.String]
         $Protocol = 'TCP',
@@ -222,12 +213,15 @@ function Test-TargetResource
         [System.String]
         $ServerName,
 
+        [Parameter()]
         [System.UInt16]
         $TcpPort = 1433,
 
+        [Parameter()]
         [System.Boolean]
         $UseDynamicTcpPort = $false,
 
+        [Parameter()]
         [ValidateSet("Present","Absent")]
         [System.String]
         $Ensure = 'Present'
@@ -235,15 +229,59 @@ function Test-TargetResource
 
     Write-Verbose -Message "Testing the SQL Server Client Alias $Name"
      
-    $currentValues = Get-TargetResource @PSBoundParameters
-    $PSBoundParameters.Ensure = $Ensure
-    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
-                                     -DesiredValues $PSBoundParameters `
-                                     -ValuesToCheck @("Name", 
-                                                      "Protocol",
-                                                      "ServerName",
-                                                      "TcpPort",
-                                                      "Ensure")
+    $result = $false
+
+    $parameters = @{
+        Name = $PSBoundParameters.Name
+        ServerName = $PSBoundParameters.ServerName
+    }
+
+    $currentValues = Get-TargetResource @parameters
+
+    if ($Ensure -eq $currentValues.Ensure)
+    {
+        if( $Ensure -eq 'Absent' )
+        {
+            $result = $true
+        }
+        else
+        {
+            Write-Verbose "Ensure is in the desired state. Verifying values."
+
+            if ($Protocol -eq $currentValues.Protocol)
+            {
+                if ($Protocol -eq 'NP' -and 
+                    $currentValues.PipeName -eq "\\$ServerName\PIPE\sql\query")
+                {
+                    $result = $true
+                }
+                elseif ($Protocol -eq 'TCP' -and
+                    $UseDynamicTcpPort -and
+                    $currentValues.ServerName -eq $ServerName)
+                {
+                    $result = $true
+                }
+                elseif ($Protocol -eq 'TCP' -and
+                    -not $UseDynamicTcpPort -and
+                    $currentValues.ServerName -eq $ServerName -and
+                    $currentValues.TcpPort -eq $TcpPort)
+                {
+                    $result = $true
+                }
+            }
+        }
+    }
+    
+    if ($result) 
+    {
+        Write-Verbose -Message 'In the desired state'
+    }
+    else
+    {
+        Write-Verbose -Message 'Not in the desired state'
+    }
+
+    return $result
 }
 
 Export-ModuleMember -Function *-TargetResource

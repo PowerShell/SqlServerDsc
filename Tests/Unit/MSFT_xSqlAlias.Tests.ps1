@@ -147,7 +147,6 @@ try
             $testParameters = @{
                 Name = $unknownName
                 ServerName = $unknownServerName
-                Ensure = 'Absent'
             }
 
             $result = Get-TargetResource @testParameters
@@ -159,8 +158,14 @@ try
             It 'Should return the same values as passed as parameters' {
                 $result.Name | Should Be $testParameters.Name
                 $result.ServerName | Should Be $testParameters.ServerName
-                $result.Protocol | Should Be $defaultParameters.Protocol
-                $result.TcpPort | Should Be $defaultParameters.TcpPort
+            }
+
+            It 'Should not return any protocol' {
+                $result.Protocol | Should Be ''
+            }
+            
+            It 'Should not return a port number' {
+                $result.TcpPort | Should Be 0
             }
 
             It 'Should not return any pipe name' {
@@ -268,7 +273,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
             
             # Testing protocol TCP "With Dynamically determine port"
@@ -376,7 +380,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
 
             # Testing protocol TCP "With Dynamically determine port"
@@ -437,7 +440,6 @@ try
             $testParameters = @{
                 Name = $unknownName
                 ServerName = $unknownServerName
-                Ensure = 'Absent'
             }
 
             $result = Get-TargetResource @testParameters
@@ -449,8 +451,14 @@ try
             It 'Should return the same values as passed as parameters' {
                 $result.Name | Should Be $testParameters.Name
                 $result.ServerName | Should Be $testParameters.ServerName
-                $result.Protocol | Should Be $defaultParameters.Protocol
-                $result.TcpPort | Should Be $defaultParameters.TcpPort
+            }
+
+            It 'Should not return any protocol' {
+                $result.Protocol | Should Be ''
+            }
+            
+            It 'Should not return a port number' {
+                $result.TcpPort | Should Be 0
             }
 
             It 'Should not return any pipe name' {
@@ -518,7 +526,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameNamedPipes
-                TcpPort = 0
             }
 
             $result = Get-TargetResource @testParameters
@@ -560,7 +567,6 @@ try
             $testParameters = @{
                 Name = $nameDifferentPipeName
                 ServerName = $serverNameNamedPipes
-                TcpPort = 0
             }
 
             $result = Get-TargetResource @testParameters
@@ -602,9 +608,6 @@ try
             $testParameters = @{
                 Name = $nameWow6432NodeDifferFrom64BitOS
                 ServerName = $serverNameNamedPipes
-                Protocol = 'NP'
-                TcpPort = 0
-                Ensure = 'Absent'
             }
 
             $result = Get-TargetResource @testParameters
@@ -616,8 +619,14 @@ try
             It 'Should return the same values as passed as parameters' {
                 $result.Name | Should Be $testParameters.Name
                 $result.ServerName | Should Be $testParameters.ServerName
-                $result.Protocol | Should Be $testParameters.Protocol
-                $result.TcpPort | Should Be $testParameters.TcpPort
+            }
+
+            It 'Should not return any protocol' {
+                $result.Protocol | Should Be ''
+            }
+            
+            It 'Should not return a port number' {
+                $result.TcpPort | Should Be 0
             }
 
             It 'Should not return any pipe name' {
@@ -646,7 +655,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameNamedPipes
-                TcpPort = 0
             }
 
             $result = Get-TargetResource @testParameters
@@ -690,7 +698,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
             
             # Testing protocol TCP "With Dynamically determine port"
@@ -728,7 +735,7 @@ try
             }
             
             It 'Should return the UseDynamicTcpPort parameter as true' {
-                $result.UseDynamicTcpPort | Should Be $testParameters.UseDynamicTcpPort
+                $result.UseDynamicTcpPort | Should Be $true
             }
             
             It "Should not return any pipe name" {
@@ -761,7 +768,6 @@ try
             $testParameters = @{
                 Name = $name
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
 
             # Testing protocol TCP "With Dynamically determine port"
@@ -793,7 +799,7 @@ try
             }
             
             It 'Should return the UseDynamicTcpPort parameter as true' {
-                $result.UseDynamicTcpPort | Should Be $testParameters.UseDynamicTcpPort
+                $result.UseDynamicTcpPort | Should Be $true
             }
             
             It "Should not return any pipe name" {
@@ -1064,9 +1070,7 @@ try
         Context 'When the system is in the desired state (when using TCP)' {
             $testParameters = @{
                 Name = $name
-                Protocol = 'TCP'
                 ServerName = $serverNameTcp
-                TcpPort = $tcpPort
             }
     
             $result = Get-TargetResource @testParameters
@@ -1094,9 +1098,7 @@ try
         Context 'When the system is in the desired state (when using UseDynamicTcpPort)' {
             $testParameters = @{
                 Name = $name
-                Protocol = 'TCP'
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
     
             $result = Get-TargetResource @testParameters
@@ -1124,9 +1126,7 @@ try
         Context 'When the system is not in the desired state (when using TCP)' {
             $testParameters = @{
                 Name = $unknownName
-                Protocol = 'TCP'
                 ServerName = $serverNameTcp
-                TcpPort = $tcpPort
             }
     
             $result = Get-TargetResource @testParameters
@@ -1154,9 +1154,7 @@ try
         Context 'When the system is not in the desired state (when using UseDynamicTcpPort)' {
             $testParameters = @{
                 Name = $unknownName
-                Protocol = 'TCP'
                 ServerName = $serverNameTcp
-                UseDynamicTcpPort = $true
             }
     
             $result = Get-TargetResource @testParameters
@@ -1199,9 +1197,8 @@ try
 
         Context 'When the system is in the desired state (when using Named Pipes)' {
             $testParameters = @{
-                    Name = $name
-                    Protocol = 'NP'
-                    ServerName = $serverNameNamedPipes
+                Name = $name
+                ServerName = $serverNameNamedPipes
             }
     
             $result = Get-TargetResource @testParameters
@@ -1211,6 +1208,7 @@ try
             }
 
             It "Should return true from the test method" {
+                $testParameters.Add('Protocol','NP')
                 Test-TargetResource @testParameters | Should Be $true
             }
 
