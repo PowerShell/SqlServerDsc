@@ -178,9 +178,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### xSQLServerRole
 * **Name**: (Key) Name of the SQL Login to create
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'.
 * **ServerRole**: Type of SQL role to add.(bulkadmin, dbcreator, diskadmin, processadmin , public, securityadmin, serveradmin , setupadmin, sysadmin)
 * **SQLServer**: SQL Server where login should be created
-* **SQLInstance**: SQL Instance for the login
+* **SQLInstance**: (Key) SQL Instance for the login
 
 ### xSQLServerDatabaseRole
 * **Name**: (Key) Name of the SQL Login or the role on the database
