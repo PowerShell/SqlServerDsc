@@ -24,14 +24,7 @@ All mof-based resource (with Get/Set/Test-TargetResource) should be prefixed wit
 
 Please note that not all places should contain the prefix 'MSFT_'.
 
-##### Folder structure
-
-```Text
-DSCResources/MSFT_xSQLServerConfiguration
-Examples/Resources/xSQLServerConfiguration
-```
-
-##### File structure
+##### Folder and file structure
 
 Please note that for the examples folder we don't use the 'MSFT_' prefix on the resource folders.
 This is to make those folders more user friendly, to resemble the name the user would use in the configuration file.
@@ -39,7 +32,9 @@ This is to make those folders more user friendly, to resemble the name the user 
 ```Text
 DSCResources/MSFT_xSQLServerConfiguration/MSFT_xSQLServerConfiguration.psm1
 DSCResources/MSFT_xSQLServerConfiguration/MSFT_xSQLServerConfiguration.schema.mof
+
 Tests/Unit/MSFT_xSQLServerConfiguration.Tests.ps1
+
 Examples/Resources/xSQLServerConfiguration/1-AddConfigurationOption.ps1
 Examples/Resources/xSQLServerConfiguration/2-RemoveConfigurationOption.ps1
 ```
