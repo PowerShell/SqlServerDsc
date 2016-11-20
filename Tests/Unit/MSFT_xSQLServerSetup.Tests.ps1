@@ -363,7 +363,7 @@ try
             Features = 'SQLEngine,Replication,FullText,Rs,Is,As'
         }
 
-        Describe "$($script:DSCResourceName)\Get-TargetResource" -Tag 'Get' {
+        Describe "xSQLServerSetup\Get-TargetResource" -Tag 'Get' {
             #region Setting up TestDrive:\
 
             # Local path to TestDrive:\
@@ -960,7 +960,7 @@ try
             Assert-VerifiableMocks
         }
         
-        Describe "$($script:DSCResourceName)\Test-TargetResource" -Tag 'Test' {
+        Describe "xSQLServerSetup\Test-TargetResource" -Tag 'Test' {
             #region Setting up TestDrive:\
 
             # Local path to TestDrive:\
@@ -1175,7 +1175,7 @@ try
             Assert-VerifiableMocks
         }
 
-        Describe "$($script:DSCResourceName)\Set-TargetResource" -Tag 'Set' {
+        Describe "xSQLServerSetup\Set-TargetResource" -Tag 'Set' {
             #region Setting up TestDrive:\
 
             # Local path to TestDrive:\

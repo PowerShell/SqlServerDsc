@@ -914,7 +914,7 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-        Installs the SQL Server features to the node.
+        Tests if the SQL Server features are installed on the node.
 
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource.
