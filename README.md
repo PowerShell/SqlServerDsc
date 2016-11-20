@@ -27,6 +27,11 @@ To confirm installation, run the below command and ensure you see the Office Onl
 The minimum PowerShell version required is 4.0, which ships in Windows 8.1 or Windows Server 2012R2 (or higher versions).
 The preferred version is PowerShell 5.0 or higher, which ships with Windows 10 or Windows Server 2016.
 
+## Examples
+
+You can review the "examples" directory in the xSQLServer module for
+some general use scenarios for all of the resources that are in the module.
+
 ## Changelog
 
 A full list of changes in each version can be found in the [change log](CHANGELOG.md)
@@ -366,7 +371,3 @@ A full list of changes in each version can be found in the [change log](CHANGELO
  * **Protocol**: Protocol to use when connecting. Valid values are 'TCP' or 'NP' (Named Pipes). Default value is 'TCP'.
  * **TCPPort**: The TCP port SQL is listening on. Only used when protocol is set to 'TCP'. Default value is port 1433.
  * **PipeName**: (Read) Named Pipes path from the Get-TargetResource method.
-
-## Examples
-
-Examples for use of this resource can be found with the System Center resources, such as **xSCVMM**, **xSCSMA**, and **xSCOM**.
