@@ -75,10 +75,3 @@ The localized strings are placed in a file named 'xSQLServer.strings.psd1' which
 
 Helper functions or wrapper functions that are used by the resource can preferably be placed in the resource module file. If the functions are of a type that could be used by more than
 one resource, then the functions can also be placed in the common [xSQLServerHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/xSQLServerHelper.psm1) module file.
-
-To import the helper function, add this code block to the beginning of your resource module.
-
-```PowerShell
-$currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
-Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
-```
