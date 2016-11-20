@@ -296,11 +296,11 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ### xSQLServerAOJoin
 
-* **Ensure**: (key) An enumerated value that describes if Replica is to be present or absent from availability group
-* **AvailabilityGroupName** (key) Name for availability group
-* **SQLServer**: The SQL Server for the database
-* **SQLInstance**: The SQL instance for the database
-* **SetupCredential**: (Required) Credential to be used to Grant Permissions on SQL Server
+* **Ensure**: (key) If the replica should be joined ('Present') to the Availability Group or not joined ('Absent') to the Availability Group.
+* **AvailabilityGroupName** (key) The name Availability Group to join.
+* **SQLServer**: Name of the SQL server to be configured.
+* **SQLInstanceName**: Name of the SQL instance to be configured.
+* **SetupCredential**: (Required) Credential to be used to Grant Permissions in SQL.
 
 ### xSQLServerAlwaysOnService
 
