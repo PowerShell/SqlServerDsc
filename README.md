@@ -254,12 +254,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **SQLInstance**: The SQL instance for the database.
 * **SetupCredential**: (Required) Credential to be used to Grant Permissions on SQL Server, set this to $null to use Windows Authentication. 
 
-###xSQLServerAOJoin
-* **Ensure**: (key) An enumerated value that describes if Replica is to be present or absent from availability group
-* **AvailabilityGroupName** (key) Name for availability group
-* **SQLServer**: The SQL Server for the database
-* **SQLInstance**: The SQL instance for the database
-* **SetupCredential**: (Required) Credential to be used to Grant Permissions on SQL Server
+###xSQLAOGroupJoin
+* **Ensure**: (key) If the replica should be joined ('Present') to the Availability Group or not joined ('Absent') to the Availability Group.
+* **AvailabilityGroupName** (key) The name Availability Group to join.
+* **SQLServer**: Name of the SQL server to be configured.
+* **SQLInstanceName**: Name of the SQL instance to be configured.
+* **SetupCredential**: (Required) Credential to be used to Grant Permissions in SQL.
 
 ###xSQLServerAlwaysOnService
 * **Ensure**: (key) An enumerated value that describes if SQL server should have AlwaysOn property present or absent.
@@ -352,9 +352,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Fixes in xSQLServerConfiguration
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
-* Created unit tests for xSQLServerConfiguration resource
 * Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
+  - Get-TargetResource now works with Get-DscConfiguration
+* Added tests for resource
+  - xSQLServerConfiguration
+  - xSQLAOGroupJoin
 
 ### 3.0.0.0
 * xSQLServerHelper
