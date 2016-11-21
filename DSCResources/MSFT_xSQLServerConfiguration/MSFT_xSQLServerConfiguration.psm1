@@ -265,17 +265,17 @@ function Restart-SqlService
 
         ## Stop the SQL Server and dependent resources
         New-VerboseMessage -Message 'Bringing the SQL Server resources $resourceNames offline.'
-        $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{ Timeout = $Timeout }
+        $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{ Timeout = $Timeout } | Out-Null
 
         ## Start the SQL server resource
         New-VerboseMessage -Message 'Bringing the SQL Server resource back online.'
-        $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
+        $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout } | Out-Null
 
         ## Start the SQL Agent resource
         if ($agentService)
         {
             New-VerboseMessage -Message 'Bringing the SQL Server Agent resource online.'
-            $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
+            $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout } | Out-Null
         }
     }
     else
