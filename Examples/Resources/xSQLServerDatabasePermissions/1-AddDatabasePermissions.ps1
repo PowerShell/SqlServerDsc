@@ -33,7 +33,7 @@ Configuration Example
             Name = 'CONTOSO\SQLAdmin'
             Database = 'AdventureWorks'
             PermissionState = 'Grant'
-            Permissions = "Connect","Update"
+            Permissions = 'Connect','Update'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
