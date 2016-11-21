@@ -29,8 +29,7 @@ The preferred version is PowerShell 5.0 or higher, which ships with Windows 10 o
 
 ## Examples
 
-You can review the "examples" directory in the xSQLServer module for
-some general use scenarios for all of the resources that are in the module.
+You can review the "examples" directory in the xSQLServer module for some general use scenarios for all of the resources that are in the module.
 
 ## Changelog
 
