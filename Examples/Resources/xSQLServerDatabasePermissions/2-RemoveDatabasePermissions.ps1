@@ -1,5 +1,5 @@
 <#
-.EXAMPLE
+.DESCRIPTION
     This example shows how to ensure that the user account CONTOSO\SQLAdmin
     hasn't "Select" and "Create Table" SQL Permissions for database "AdventureWorks". 
 #>

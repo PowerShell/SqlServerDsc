@@ -1,5 +1,5 @@
 <#
-.EXAMPLE
+.DESCRIPTION
     This example shows how to ensure that the user account CONTOSO\SQLAdmin
     has "Connect" and "Update" SQL Permissions for database "AdventureWorks". 
 #>
