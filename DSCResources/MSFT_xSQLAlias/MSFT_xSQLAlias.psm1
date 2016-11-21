@@ -121,7 +121,9 @@ function Set-TargetResource
         [System.String]
         $Ensure = 'Present'
     )
-
+    
+    Write-Verbose -Message "Setting the SQL Server Client Alias $Name"
+    
     if ($Protocol -eq 'NP')
     {
         $itemValue = "DBNMPNTW,\\$ServerName\PIPE\sql\query"
@@ -141,6 +143,8 @@ function Set-TargetResource
 
     if ($Ensure -eq 'Present')
     {
+        Write-Verbose -Message "Adding the SQL Server Client Alias $Name"
+
         if ($PSCmdlet.ShouldProcess($Name, 'Setting the client alias'))
         {
             if (!(Test-Path -Path $registryPath))
@@ -168,6 +172,8 @@ function Set-TargetResource
 
     if ($Ensure -eq 'Absent')
     {
+        Write-Verbose -Message "Removing the SQL Server Client Alias $Name"
+        
         if ($PSCmdlet.ShouldProcess($Name, 'Remove the client alias'))
         {
             if (Test-Path -Path $registryPath)
