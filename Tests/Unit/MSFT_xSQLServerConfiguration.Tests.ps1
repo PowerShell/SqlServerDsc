@@ -418,70 +418,60 @@ $testJob = Start-Job -ArgumentList $PSScriptRoot -ScriptBlock {
                         }
                     } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { ($SQLServer -eq 'CLU01') -and ($SQLInstanceName -eq 'STOPPEDAGENT') }
 
-                    ## Mock Get-WmiObject for SQL Instance
-                    Mock -CommandName Get-WmiObject {
-                        return @('MSSQLSERVER','NAMEDINSTANCE','STOPPEDAGENT') | ForEach-Object {
-                            $mock = New-Object PSObject -Property @{
-                                Name = "SQL Server ($($_))"
-                                PrivateProperties = @{
-                                    InstanceName = $_
-                                }
-                            }
-
-                            $mock | Add-Member -MemberType ScriptMethod -Name TakeOffline -Value { param ( [int] $Timeout ) }
-                            $mock | Add-Member -MemberType ScriptMethod -Name BringOnline -Value { param ( [int] $Timeout ) }
+                    Mock -CommandName Get-CimInstance -MockWith {
+                        @('MSSQLSERVER','NAMEDINSTANCE','STOPPEDAGENT') | ForEach-Object {
+                            $mock = New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_Resource','root/MSCluster'
+                            
+                            $mock | Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($($_))" -TypeName 'String'
+                            $mock | Add-Member -MemberType NoteProperty -Name 'Type' -Value 'SQL Server' -TypeName 'String'
+                            $mock | Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{ InstanceName = $_ }
 
                             return $mock
                         }
-                    } -Verifiable -ParameterFilter { $Filter -imatch "Type = 'SQL Server'" }
+                    } -Verifiable -ParameterFilter { ($ClassName -eq 'MSCluster_Resource') -and ($Filter -eq "Type = 'SQL Server'") }
 
-                    ## Mock Get-WmiObject for SQL Agent
-                    Mock -CommandName Get-WmiObject {
-                        if ($Query -imatch 'SQL Server \((\w+)\)')
-                        {
-                            $serviceName = $Matches[1]
+                    Mock -CommandName Get-CimAssociatedInstance -MockWith {
+                        $mock = New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_Resource','root/MSCluster'
+                            
+                        $mock | Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server Agent ($($InputObject.PrivateProperties.InstanceName))" -TypeName 'String'
+                        $mock | Add-Member -MemberType NoteProperty -Name 'Type' -Value 'SQL Server Agent' -TypeName 'String'
+                        $mock | Add-Member -MemberType NoteProperty -Name 'State' -Value (@{ $true = 3; $false = 2 }[($InputObject.PrivateProperties.InstanceName -eq 'STOPPEDAGENT')]) -TypeName 'Int32'
+                        
+                        return $mock
+                    } -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
 
-                            $mock = New-Object PSObject -Property @{
-                                Name = "SQL Server Agent ($serviceName)"
-                                Type = 'SQL Server Agent'
-                                State = (@{ $true = 3; $false = 2 }[($serviceName -eq 'STOPPEDAGENT')])
-                            }
+                    Mock -CommandName Invoke-CimMethod -MockWith {} -Verifiable -ParameterFilter { $MethodName -eq 'TakeOffline' }
 
-                            $mock | Add-Member -MemberType ScriptMethod -Name TakeOffline -Value { param ( [int] $Timeout ) }
-                            $mock | Add-Member -MemberType ScriptMethod -Name BringOnline -Value { param ( [int] $Timeout ) }
-
-                            return $mock 
-                        }
-                    } -Verifiable -ParameterFilter { $Query -match '^ASSOCIATORS OF' }
+                    Mock -CommandName Invoke-CimMethod -MockWith {} -Verifiable -ParameterFilter { $MethodName -eq 'BringOnline' } 
 
                     It 'Should restart SQL Server and SQL Agent resources for a clustered default instance' {
-                        { Restart-SqlService -SQLServer 'CLU01' -SQLInstanceName 'MSSQLSERVER' } | Should Not Throw
+                        { Restart-SqlService -SQLServer 'CLU01' } | Should Not Throw
                         
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -Exactly -Times 1
-                        Assert-MockCalled -CommandName Get-WmiObject -Scope It -Exactly -Times 2
-
-                        ## 5 Verbose Messages equates to Get SQL, Get Agent, Stop SQL, Start SQL, Start Agent
-                        Assert-MockCalled -CommandName New-VerboseMessage -Scope It -Exactly -Times 5
+                        Assert-MockCalled -CommandName Get-CimInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'TakeOffline' } -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'BringOnline' } -Scope It -Exactly -Times 2 
                     }
 
                     It 'Should restart SQL Server and SQL Agent resources for a clustered named instance' {
                         { Restart-SqlService -SQLServer 'CLU01' -SQLInstanceName 'NAMEDINSTANCE' } | Should Not Throw
 
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -Exactly -Times 1
-                        Assert-MockCalled -CommandName Get-WmiObject -Scope It -Exactly -Times 2
-
-                        ## 5 Verbose Messages equates to Get SQL, Get Agent, Stop SQL, Start SQL, Start Agent
-                        Assert-MockCalled -CommandName New-VerboseMessage -Scope It -Exactly -Times 5
+                        Assert-MockCalled -CommandName Get-CimInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'TakeOffline' } -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'BringOnline' } -Scope It -Exactly -Times 2 
                     }
 
                     It 'Should not try to restart a SQL Agent resource that is not online' {
                         { Restart-SqlService -SQLServer 'CLU01' -SQLInstanceName 'STOPPEDAGENT' } | Should Not Throw
 
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -Exactly -Times 1
-                        Assert-MockCalled -CommandName Get-WmiObject -Scope It -Exactly -Times 2
-
-                        ## 4 Verbose Messages equates to Get SQL, Get Agent, Stop SQL, Start SQL
-                        Assert-MockCalled -CommandName New-VerboseMessage -Scope It -Exactly -Times 4
+                        Assert-MockCalled -CommandName Get-CimInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'TakeOffline' } -Scope It -Exactly -Times 1
+                        Assert-MockCalled -CommandName Invoke-CimMethod -ParameterFilter { $MethodName -eq 'BringOnline' } -Scope It -Exactly -Times 1
                     }
                 }
             }
