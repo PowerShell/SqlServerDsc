@@ -33,7 +33,7 @@ Configuration Example
             Name = 'CONTOSO\SQLAdmin'
             Database = 'AdventureWorks'
             PermissionState = 'Deny'
-            Permissions = "Select","Create Table"
+            Permissions = 'Select','Create Table'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
