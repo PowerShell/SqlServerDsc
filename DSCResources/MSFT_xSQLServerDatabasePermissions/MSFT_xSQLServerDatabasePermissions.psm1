@@ -1,7 +1,4 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
-
-Import-Module -Name $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
 
 <#
 .SYNOPSIS
