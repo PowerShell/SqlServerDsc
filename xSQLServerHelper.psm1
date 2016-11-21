@@ -1081,13 +1081,13 @@ function Confirm-SqlServerRoleMember
 
 <#
     .SYNOPSIS
-        This cmdlet is used to return the owner of a SQL database.
+    This cmdlet is used to return the owner of a SQL database
 
-    .PARAMETER SQL
-        This is an object of the SQL server that contains the result of Connect-SQL.
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
     .PARAMETER Database
-        This is the SQL database that will be checking.
+    This is the SQL database that will be checking
 #>
 function Get-SqlDatabaseOwner
 {
@@ -1096,7 +1096,7 @@ function Get-SqlDatabaseOwner
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
 
         [ValidateNotNull()] 
         [System.String]
@@ -1104,7 +1104,7 @@ function Get-SqlDatabaseOwner
     )
     
     Write-Verbose -Message 'Getting SQL Databases'
-    $sqlDatabase = $SQL.Databases
+    $sqlDatabase = $Sql.Databases
     if ($sqlDatabase)
     {
         if ($sqlDatabase[$Database])
@@ -1128,16 +1128,16 @@ function Get-SqlDatabaseOwner
 
 <#
     .SYNOPSIS
-        This cmdlet is used to configure the owner of a SQL database.
+    This cmdlet is used to configure the owner of a SQL database
 
-    .PARAMETER SQL
-        This is an object of the SQL server that contains the result of Connect-SQL.
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-    .PARAMETER Name 
-        This is the name of the desired owner for the SQL database.
+    .PARAMETER Name
+    This is the name of the desired owner for the SQL database
 
     .PARAMETER Database
-        This is the SQL database that will be setting.
+    This is the SQL database that will be setting
 #>
 function Set-SqlDatabaseOwner
 {
@@ -1146,7 +1146,7 @@ function Set-SqlDatabaseOwner
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -1158,8 +1158,8 @@ function Set-SqlDatabaseOwner
     )
     
     Write-Verbose -Message 'Getting SQL Databases'
-    $sqlDatabase = $SQL.Databases
-    $sqlLogins = $SQL.Logins
+    $sqlDatabase = $Sql.Databases
+    $sqlLogins = $Sql.Logins
 
     if ($sqlDatabase -and $sqlLogins)
     {
