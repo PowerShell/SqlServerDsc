@@ -354,8 +354,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Fixes in xSQLServerConfiguration
   - Added support for clustered SQL instances
   - BREAKING CHANGE: Updated parameters to align with other resources (SQLServer / SQLInstanceName)
-* Added tests for resources
-  - xSQLServerConfiguration
+  - Added pester tests
+  - Change Get-WmiObject to Get-CimInstance and Get-CimAssociatedInstance in Resource and associated pester file.
 * Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
 * Fixes in xSQLServerRole
