@@ -53,10 +53,7 @@ function Get-TargetResource
         $RestartTimeout = 120
     )
 
-    if (!$sql)
-    {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
@@ -124,10 +121,7 @@ function Set-TargetResource
         $RestartTimeout = 120
     )
 
-    if (!$sql)
-    {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
@@ -259,11 +253,11 @@ function Restart-SqlService
     {
         ## Get the cluster resources
         New-VerboseMessage -Message 'Getting cluster resource for SQL Server' 
-        $sqlService = Get-WmiObject -Namespace root/MSCluster -Class MSCluster_Resource -Filter "Type = 'SQL Server'" | 
+        $sqlService = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" | 
                         Where-Object { $_.PrivateProperties.InstanceName -eq $serverObject.ServiceName }
 
         New-VerboseMessage -Message 'Getting active cluster resource SQL Server Agent'
-        $agentService = Get-WmiObject -Namespace root/MSCluster -Query "ASSOCIATORS OF {$sqlService} WHERE ResultClass = MSCluster_Resource" | 
+        $agentService = $sqlService | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
                             Where-Object { ($_.Type -eq "SQL Server Agent") -and ($_.State -eq 2) }
 
         ## Build a listing of resources being acted upon
@@ -271,17 +265,17 @@ function Restart-SqlService
 
         ## Stop the SQL Server and dependent resources
         New-VerboseMessage -Message 'Bringing the SQL Server resources $resourceNames offline.'
-        $sqlService.TakeOffline($Timeout)
+        $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{ Timeout = $Timeout }
 
         ## Start the SQL server resource
         New-VerboseMessage -Message 'Bringing the SQL Server resource back online.'
-        $sqlService.BringOnline($Timeout)
+        $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
 
         ## Start the SQL Agent resource
         if ($agentService)
         {
             New-VerboseMessage -Message 'Bringing the SQL Server Agent resource online.'
-            $agentService.BringOnline($Timeout)
+            $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
         }
     }
     else
