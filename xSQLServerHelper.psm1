@@ -1081,13 +1081,13 @@ function Confirm-SqlServerRoleMember
 
 <#
     .SYNOPSIS
-        This cmdlet is used to return the owner of a SQL database.
+    This cmdlet is used to return the owner of a SQL database
 
-    .PARAMETER SQL
-        This is an object of the SQL server that contains the result of Connect-SQL.
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
     .PARAMETER Database
-        This is the SQL database that will be checking.
+    This is the SQL database that will be checking
 #>
 function Get-SqlDatabaseOwner
 {
@@ -1096,7 +1096,7 @@ function Get-SqlDatabaseOwner
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
 
         [ValidateNotNull()] 
         [System.String]
@@ -1104,7 +1104,7 @@ function Get-SqlDatabaseOwner
     )
     
     Write-Verbose -Message 'Getting SQL Databases'
-    $sqlDatabase = $SQL.Databases
+    $sqlDatabase = $Sql.Databases
     if ($sqlDatabase)
     {
         if ($sqlDatabase[$Database])
@@ -1128,16 +1128,16 @@ function Get-SqlDatabaseOwner
 
 <#
     .SYNOPSIS
-        This cmdlet is used to configure the owner of a SQL database.
+    This cmdlet is used to configure the owner of a SQL database
 
-    .PARAMETER SQL
-        This is an object of the SQL server that contains the result of Connect-SQL.
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-    .PARAMETER Name 
-        This is the name of the desired owner for the SQL database.
+    .PARAMETER Name
+    This is the name of the desired owner for the SQL database
 
     .PARAMETER Database
-        This is the SQL database that will be setting.
+    This is the SQL database that will be setting
 #>
 function Set-SqlDatabaseOwner
 {
@@ -1146,7 +1146,7 @@ function Set-SqlDatabaseOwner
     (   
         [ValidateNotNull()] 
         [System.Object]
-        $SQL,
+        $Sql,
         
         [ValidateNotNull()] 
         [System.String]
@@ -1158,8 +1158,8 @@ function Set-SqlDatabaseOwner
     )
     
     Write-Verbose -Message 'Getting SQL Databases'
-    $sqlDatabase = $SQL.Databases
-    $sqlLogins = $SQL.Logins
+    $sqlDatabase = $Sql.Databases
+    $sqlLogins = $Sql.Logins
 
     if ($sqlDatabase -and $sqlLogins)
     {
@@ -1194,26 +1194,20 @@ function Set-SqlDatabaseOwner
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This cmdlet is used to return the permissions of a SQL database
 
-This cmdlet is used to return the permissions of a SQL database
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-.PARAMETER Sql
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
 
-This is an object of the SQL server that contains the result of Connect-SQL
+    .PARAMETER Database
+    This is the SQL database that will be getting
 
-.PARAMETER Name 
-
-This is the name of the desired login for the SQL database
-
-.PARAMETER Database
-
-This is the SQL database that will be getting
-
-.PARAMETER PermissionState
-
-This is the state of permissions (Grant or Deny) that will be getting
-
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be getting
 #>
 function Get-SqlDatabasePermission
 {
@@ -1285,30 +1279,23 @@ function Get-SqlDatabasePermission
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This cmdlet is used to add the permissions of a SQL database
 
-This cmdlet is used to add the permissions of a SQL database
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-.PARAMETER Sql
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
 
-This is an object of the SQL server that contains the result of Connect-SQL
+    .PARAMETER Database
+    This is the SQL database that will be setting
 
-.PARAMETER Name 
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be setting
 
-This is the name of the desired login for the SQL database
-
-.PARAMETER Database
-
-This is the SQL database that will be setting
-
-.PARAMETER PermissionState
-
-This is the state of permissions (Grant or Deny) that will be setting
-
-.PARAMETER Permissions
-
-This is the type of permissions (Connect, Update, etc...) that will be setting
-
+    .PARAMETER Permissions
+    This is the type of permissions (Connect, Update, etc...) that will be setting
 #>
 function Add-SqlDatabasePermission
 {
@@ -1403,30 +1390,23 @@ function Add-SqlDatabasePermission
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This cmdlet is used to remove the permissions of a SQL database
 
-This cmdlet is used to remove the permissions of a SQL database
+    .PARAMETER Sql
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-.PARAMETER Sql
+    .PARAMETER Name
+    This is the name of the desired login for the SQL database
 
-This is an object of the SQL server that contains the result of Connect-SQL
+    .PARAMETER Database
+    This is the SQL database that will be setting
 
-.PARAMETER Name 
+    .PARAMETER PermissionState
+    This is the state of permissions (Grant or Deny) that will be setting
 
-This is the name of the desired login for the SQL database
-
-.PARAMETER Database
-
-This is the SQL database that will be setting
-
-.PARAMETER PermissionState
-
-This is the state of permissions (Grant or Deny) that will be setting
-
-.PARAMETER Permissions
-
-This is the type of permissions (Connect, Update, etc...) that will be setting
-
+    .PARAMETER Permissions
+    This is the type of permissions (Connect, Update, etc...) that will be setting
 #>
 function Remove-SqlDatabasePermission
 {
