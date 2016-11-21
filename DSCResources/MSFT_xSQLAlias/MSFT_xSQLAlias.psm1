@@ -1,8 +1,4 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
-
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
 
 function Get-TargetResource
 {
@@ -103,7 +99,7 @@ function Set-TargetResource
         $Name,
 
         [Parameter()]
-        [ValidateSet("TCP","NP")]
+        [ValidateSet('TCP','NP')]
         [System.String]
         $Protocol = 'TCP',
 
@@ -121,7 +117,7 @@ function Set-TargetResource
         $UseDynamicTcpPort = $false,
 
         [Parameter()]
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present'
     )
@@ -204,7 +200,7 @@ function Test-TargetResource
         $Name,
 
         [Parameter()]
-        [ValidateSet("TCP","NP")]
+        [ValidateSet('TCP','NP')]
         [System.String]
         $Protocol = 'TCP',
 
@@ -222,7 +218,7 @@ function Test-TargetResource
         $UseDynamicTcpPort = $false,
 
         [Parameter()]
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present'
     )
