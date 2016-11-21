@@ -1,38 +1,29 @@
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This function gets all Key properties defined in the resource schema file
 
-This function gets all Key properties defined in the resource schema file
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the permission should be configured.
 
-.PARAMETER Ensure
+    .PARAMETER Database
+    This is the SQL database
 
-This is The Ensure Set to 'present' to specificy that the permission should be configured.
+    .PARAMETER Name
+    This is the name of the SQL login for the permission set
 
-.PARAMETER Database
+    .PARAMETER PermissionState
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'
 
-This is the SQL database
+    .PARAMETER Permissions
+    This is a list boolean that set of permissions for the SQL database
 
-.PARAMETER Name
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
 
-This is the name of the SQL login for the permission set
-
-.PARAMETER PermissionState
-
-This is the state of permission set. Valid values are 'Grant' or 'Deny'
-
-.PARAMETER Permissions
-
-This is a list boolean that set of permissions for the SQL database
-
-.PARAMETER SQLServer
-
-This is a the SQL Server for the database
-
-.PARAMETER SQLInstanceName
-
-This is a the SQL instance for the database
-
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
 #>
 function Get-TargetResource
 {
@@ -118,38 +109,29 @@ function Get-TargetResource
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This function sets all Key properties defined in the resource schema file
 
-This function sets all Key properties defined in the resource schema file
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the permission should be configured.
 
-.PARAMETER Ensure
+    .PARAMETER Database
+    This is the SQL database
 
-This is The Ensure Set to 'present' to specificy that the permission should be configured.
+    .PARAMETER Name
+    This is the name of the SQL login for the permission set
 
-.PARAMETER Database
+    .PARAMETER PermissionState
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'
 
-This is the SQL database
+    .PARAMETER Permissions
+    This is a list boolean that set of permissions for the SQL database
 
-.PARAMETER Name
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
 
-This is the name of the SQL login for the permission set
-
-.PARAMETER PermissionState
-
-This is the state of permission set. Valid values are 'Grant' or 'Deny'
-
-.PARAMETER Permissions
-
-This is a list boolean that set of permissions for the SQL database
-
-.PARAMETER SQLServer
-
-This is a the SQL Server for the database
-
-.PARAMETER SQLInstanceName
-
-This is a the SQL instance for the database
-
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
 #>
 function Set-TargetResource
 {
@@ -213,38 +195,29 @@ function Set-TargetResource
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
+    This function tests all Key properties defined in the resource schema file
 
-This function tests all Key properties defined in the resource schema file
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the permission should be configured.
 
-.PARAMETER Ensure
+    .PARAMETER Database
+    This is the SQL database
 
-This is The Ensure Set to 'present' to specificy that the permission should be configured.
+    .PARAMETER Name
+    This is the name of the SQL login for the permission set
 
-.PARAMETER Database
+    .PARAMETER PermissionState
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'
 
-This is the SQL database
+    .PARAMETER Permissions
+    This is a list boolean that set of permissions for the SQL database
 
-.PARAMETER Name
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
 
-This is the name of the SQL login for the permission set
-
-.PARAMETER PermissionState
-
-This is the state of permission set. Valid values are 'Grant' or 'Deny'
-
-.PARAMETER Permissions
-
-This is a list boolean that set of permissions for the SQL database
-
-.PARAMETER SQLServer
-
-This is a the SQL Server for the database
-
-.PARAMETER SQLInstanceName
-
-This is a the SQL instance for the database
-
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
 #>
 function Test-TargetResource
 {
