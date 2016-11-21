@@ -74,6 +74,7 @@ function Get-TargetResource
 
     if ($sql)
     {
+        Write-Verbose -Message "Getting permissions of database '$Database' for login '$Name'"
         $getSqlDatabasePermission = Get-SqlDatabasePermission -SQL $sql `
                                                               -Name $Name `
                                                               -Database $Database `
@@ -189,6 +190,7 @@ function Set-TargetResource
     
     if ($sql)
     {
+        Write-Verbose -Message "Setting permissions of database '$Database' for login '$Name'"
         if ($Ensure -eq 'Present')
         {
             Add-SqlDatabasePermission -SQL $sql `
