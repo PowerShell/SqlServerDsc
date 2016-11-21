@@ -358,6 +358,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
 * Changes to xSQLAlias
   - Add UseDynamicTcpPort parameter for option "Dynamically determine port"
+  - Change Get-WmiObject to Get-CimInstance in Resource and associated pester file
 
 ### 3.0.0.0
 * xSQLServerHelper
