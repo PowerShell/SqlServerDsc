@@ -694,6 +694,12 @@ try
             }
         }
 
+        # Mocking 64-bit OS
+        Mock -CommandName Get-CimInstance -MockWith {
+            return New-Object Object | 
+                Add-Member -MemberType NoteProperty -Name OSArchitecture -Value '64-bit' -PassThru -Force
+        } -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } -ModuleName $script:DSCResourceName -Verifiable
+
         Context 'When the system is in the desired present state for 64-bit OS using UseDynamicTcpPort' {
             $testParameters = @{
                 Name = $name
@@ -712,12 +718,6 @@ try
                     'MyAlias' = 'DBMSSOCN,sqlnode.company.local'
                 }
             } -ModuleName $script:DSCResourceName -Verifiable
-
-            # Mocking 64-bit OS
-            Mock -CommandName Get-CimInstance -MockWith {
-                return New-Object Object | 
-                    Add-Member -MemberType NoteProperty -Name OSArchitecture -Value '64-bit' -PassThru -Force
-            } -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } -ModuleName $script:DSCResourceName -Verifiable
 
             $result = Get-TargetResource @testParameters
 
@@ -1073,25 +1073,19 @@ try
                 ServerName = $serverNameTcp
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as present' {
-                $result.Ensure | Should Be 'Present'
-            }
-
             It "Should return true from the test method" {
                 Test-TargetResource @testParameters | Should Be $true
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
         
@@ -1101,25 +1095,19 @@ try
                 ServerName = $serverNameTcp
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as present' {
-                $result.Ensure | Should Be 'Present'
-            }
-
             It "Should return true from the test method" {
                 Test-TargetResource @testParameters | Should Be $true
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -1129,25 +1117,19 @@ try
                 ServerName = $serverNameTcp
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as absent' {
-                $result.Ensure | Should Be 'Absent'
-            }
-
             It "Should return false from the test method" {
                 Test-TargetResource @testParameters | Should Be $false
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
                 
@@ -1157,25 +1139,19 @@ try
                 ServerName = $serverNameTcp
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as absent' {
-                $result.Ensure | Should Be 'Absent'
-            }
-
             It "Should return false from the test method" {
                 Test-TargetResource @testParameters | Should Be $false
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -1201,26 +1177,20 @@ try
                 ServerName = $serverNameNamedPipes
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as present' {
-                $result.Ensure | Should Be 'Present'
-            }
-
             It "Should return true from the test method" {
                 $testParameters.Add('Protocol','NP')
                 Test-TargetResource @testParameters | Should Be $true
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
         
@@ -1230,25 +1200,19 @@ try
                 ServerName = $unknownServerName
             }
     
-            $result = Get-TargetResource @testParameters
-
-            It 'Should return the state as absent' {
-                $result.Ensure | Should Be 'Absent'
-            }
-
             It "Should return false from the test method" {
                 Test-TargetResource @testParameters | Should Be $false
             }
 
-            It 'Should call the mocked functions exactly 2 time each' {
+            It 'Should call the mocked functions exactly 1 time each' {
                 Assert-MockCalled Get-CimInstance -ParameterFilter { $ClassName -eq 'win32_OperatingSystem' } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPath } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
                 
                 Assert-MockCalled Get-ItemProperty -ParameterFilter { $Path -eq $registryPathWow6432Node } `
-                    -Exactly -Times 2 -ModuleName $script:DSCResourceName -Scope Context
+                    -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
     }
