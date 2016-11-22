@@ -16,6 +16,10 @@
   - Add UseDynamicTcpPort parameter for option "Dynamically determine port"
   - Change Get-WmiObject to Get-CimInstance in Resource and associated pester file
 * Add CHANGELOG file
+* Changes to xSQLServerSetup
+  - Now `Features` parameter is case-insensitive.
+* Added tests for resources
+  - xSQLServerSetup
 
 ### 3.0.0.0
 * xSQLServerHelper
