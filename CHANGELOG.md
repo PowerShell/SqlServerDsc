@@ -9,8 +9,10 @@
 - Added tests for resources
   - xSQLServerConfiguration
   - xSQLServerSetup
+  - xSQLAOGroupJoin
 - Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
+  - Get-TargetResource now works with Get-DscConfiguration
 - Fixes in xSQLServerRole
   - Updated Ensure parameter to 'Present' default value
   - Renamed helper functions *-SqlServerRole to *-SqlServerRoleMember
