@@ -123,7 +123,7 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Determines whether the current value of the SQL Server HADR property is properly set
+    Determines whether the current value of the SQL Server HADR property is properly set.
 
     .PARAMETER Ensure
     *** Not used in this function ***
