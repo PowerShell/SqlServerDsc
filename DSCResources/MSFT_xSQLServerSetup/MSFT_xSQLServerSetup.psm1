@@ -749,7 +749,7 @@ function Set-TargetResource
         $clusterIPAddresses = @()
 
         ## Get a required lising of drives based on user parameters
-        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value) }
+        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\') } | Select -Unique
 
         ## Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_ResourceGroup -Filter "Name = 'Available Storage'" |
@@ -771,6 +771,15 @@ function Set-TargetResource
 
         ## Ensure we have a unique listing of disks
         $failoverClusterDisks = $failoverClusterDisks | Select -Unique
+
+        ## Ensure we mapped all required drives
+        $requiredDriveCount = $requiredDrives | Measure-Object | Select -ExpandProperty Count
+        $mappedDriveCount = $failoverClusterDisks | Measure-Object | Select -ExpandProperty Count
+
+        if ($mappedDriveCount -ne $requiredDriveCount)
+        {
+            throw New-TerminatingError -ErrorType FailoverClusterDiskMappingError -FormatArgs ($failoverClusterDisks -join ';') -ErrorCategory InvalidResult
+        }
 
         ## Get the available cluster networks
         $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
