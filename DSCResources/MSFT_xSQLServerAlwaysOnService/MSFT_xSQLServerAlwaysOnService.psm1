@@ -91,30 +91,15 @@ function Set-TargetResource
     {
         'Absent'
         {
-            try
-            {
-                # Disable Always On without restarting the services.
-                New-VerboseMessage -Message "Disabling Always On for the instance $serverInstance"
-                Disable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart -ErrorAction Stop
-            }
-            catch 
-            {
-                throw New-TerminatingError -ErrorType "AlterAlwaysOnServiceFailed" -FormatArgs 'disable',$serverInstance -ErrorCategory OperationStopped
-            }
-            
+            # Disable Always On without restarting the services.
+            New-VerboseMessage -Message "Disabling Always On for the instance $serverInstance"
+            Disable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart
         }
         'Present'
         {
-            try 
-            {
-                # Enable Always On without restarting the services.
-                New-VerboseMessage -Message "Enabling Always On for the instance $serverInstance"
-                Enable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart -ErrorAction Stop
-            }
-            catch 
-            {
-                throw New-TerminatingError -ErrorType "AlterAlwaysOnServiceFailed" -FormatArgs 'enable',$serverInstance -ErrorCategory OperationStopped
-            }
+            # Enable Always On without restarting the services.
+            New-VerboseMessage -Message "Enabling Always On for the instance $serverInstance"
+            Enable-SqlAlwaysOn -ServerInstance $serverInstance -NoServiceRestart
         }
     }
 
