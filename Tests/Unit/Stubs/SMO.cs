@@ -407,6 +407,10 @@ namespace Microsoft.SqlServer.Management.Smo
 		public void Drop()
         {
         }
+		
+        public void EnumDatabasePermissions(string Login)
+        {
+        }
 	}
 
     // TypeName: Microsoft.SqlServer.Management.Smo.User
