@@ -87,7 +87,6 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
 
-        # Loading stub cmdlets
         Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
         
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
