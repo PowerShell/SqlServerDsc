@@ -1,7 +1,9 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerSetup")]
 class MSFT_xSQLServerSetup : OMI_BaseResource
 {
+    [Write, Description("The action to be performed. Default value is 'Install'."), ValueMap{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}, Values{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}] String Action;
     [Write, Description("The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.")] String SourcePath;
+    [Write, Description("Folder within the source path containing the source files for installation. Default value is 'Source'.")] String SourceFolder;
     [Required, EmbeddedInstance("MSFT_Credential"), Description("Credential to be used to perform the installation.")] String SetupCredential;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Credentials used to access the path set in the parameter 'SourcePath'.")] String SourceCredential;
     [Write, Description("Suppresses reboot.")] Boolean SuppressReboot;

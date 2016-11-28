@@ -317,6 +317,10 @@ function Get-TargetResource
     .SYNOPSIS
         Installs the SQL Server features to the node.
 
+    .PARAMETER Action
+        The action to be performed. Default value is 'Install'.
+        Possible values are 'Install', 'InstallFailoverCluster', 'AddNode', 'PrepareFailoverCluster', and 'CompleteFailoverCluster'
+
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.
 
@@ -442,6 +446,15 @@ function Get-TargetResource
 
     .PARAMETER BrowserSvcStartupType
        Specifies the startup mode for SQL Server Browser service
+
+    .PARAMETER FailoverClusterGroup
+        The name of the resource group to create for the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterIPAddress
+        Array of IP Addresses to be assigned to the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterNetworkName
+        Host name to be assigned to the clustered SQL Server instance
 #>
 function Set-TargetResource
 {
@@ -450,6 +463,10 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
+        [System.String]
+        $Action = 'Install', 
+
         [System.String]
         $SourcePath,
 
@@ -571,7 +588,19 @@ function Set-TargetResource
 
         [System.String]
         [ValidateSet('Automatic', 'Disabled', 'Manual')]
-        $BrowserSvcStartupType
+        $BrowserSvcStartupType,
+
+        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [System.String]
+        $FailoverClusterGroup = "SQL Server ($InstanceName)",
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.Net.IPAddress[]]
+        $FailoverClusterIPAddress,
+
+        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [System.String]
+        $FailoverClusterNetworkName
     )
 
     $parameters = @{
@@ -711,6 +740,77 @@ function Set-TargetResource
         {
             Set-Variable -Name $var -Value (Get-Variable -Name $var).Value.TrimEnd('\')
         }
+    }
+
+    ## Build caches for clustered installations
+    if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
+    {
+        $failoverClusterDisks = @()
+        $clusterIPAddresses = @()
+
+        ## Get a required lising of drives based on user parameters
+        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value) }
+
+        ## Get the disk resources that are available (not assigned to a cluster role)
+        $availableStorage = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_ResourceGroup -Filter "Name = 'Available Storage'" |
+                                Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource
+
+        foreach ($diskResource in $availableStorage)
+        {
+            ## Determine whether the current node is a possible owner of the disk resource
+            $possibleOwners = $diskResource | Get-CimAssociatedInstance -Association 'MSCluster_ResourceToPossibleOwner' -KeyOnly | Select -ExpandProperty Name
+            if ($possibleOwners -icontains $env:COMPUTERNAME)
+            {
+                ## Determine whether this disk contains one of our required partitions
+                if ($requiredDrives -icontains ($diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select -ExpandProperty Path))
+                {
+                    $failoverClusterDisks += $diskResource.Name
+                }
+            }
+        }
+
+        ## Ensure we have a unique listing of disks
+        $failoverClusterDisks = $failoverClusterDisks | Select -Unique
+
+        ## Get the available cluster networks
+        $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
+
+        if (($FailoverClusterIPAddress | Measure-Object).Count -eq 0)
+        {
+            $clusterIPAddresses += "IPv4; DHCP; $($ClusterNetwork[0].Name)"
+        }
+        else
+        {
+            ## Add supplied IP Addresses that are valid for available cluster networks
+            foreach ($address in $FailoverClusterIPAddress)
+            {
+                foreach ($network in $availableNetworks)
+                {
+                    ## Determine whether the IP address is valid for this network
+                    if (Test-IPAddress -IPAddress $address -NetworkID $network.Address -SubnetMask $network.AddressMask)
+                    {
+                        ## Add the formatted string to our array
+                        $clusterIPAddresses += "IPv4; $address; $(network.Name); $($network.AddressMask)"
+                    }
+                }
+            }
+        }
+
+        ## Ensure we mapped all required networks
+        $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select -ExpandProperty Count
+        $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select -ExpandProperty Count
+        
+        if ($suppliedNetworkCount -ne $mappedNetworkCount)
+        {
+            ## Nothing is supplied, but we got one mapping is expected (DHCP)
+            if (($suppliedNetworkCount -eq 0) -and ($mappedNetworkCount -ne 1))
+            {
+                throw New-TerminatingError -ErrorType FailoverClusterIPAddressNotValid -ErrorCategory InvalidArgument
+            }
+        }
+
+        ## Multiple IP addresses must be encapsulated in quotes and delimited by spaces
+        $FailoverClusterIPAddresses = ($clusterIPAddresses | ForEach-Object { "`"$_`"" }) -join " "
     }
 
     # Create install arguments
@@ -887,6 +987,10 @@ function Set-TargetResource
     .SYNOPSIS
         Tests if the SQL Server features are installed on the node.
 
+    .PARAMETER Action
+        The action to be performed. Default value is 'Install'.
+        Possible values are 'Install', 'InstallFailoverCluster', 'AddNode', 'PrepareFailoverCluster', and 'CompleteFailoverCluster'
+
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.
 
@@ -1012,6 +1116,15 @@ function Set-TargetResource
 
     .PARAMETER BrowserSvcStartupType
        Specifies the startup mode for SQL Server Browser service
+
+    .PARAMETER FailoverClusterGroup
+        The name of the resource group to create for the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterIPAddress
+        Array of IP Addresses to be assigned to the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterNetworkName
+        Host name to be assigned to the clustered SQL Server instance
 #>
 function Test-TargetResource
 {
@@ -1019,6 +1132,10 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
+        [System.String]
+        $Action = 'Install', 
+
         [System.String]
         $SourcePath,
 
@@ -1140,7 +1257,19 @@ function Test-TargetResource
 
         [System.String]
         [ValidateSet('Automatic', 'Disabled', 'Manual')]
-        $BrowserSvcStartupType
+        $BrowserSvcStartupType,
+
+        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [System.String]
+        $FailoverClusterGroup = "SQL Server ($InstanceName)",
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.Net.IPAddress[]]
+        $FailoverClusterIPAddress,
+
+        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [System.String]
+        $FailoverClusterNetworkName
     )
 
     $parameters = @{
@@ -1328,6 +1457,71 @@ function Get-TemporaryFolder
     return [IO.Path]::GetTempPath()
 }
 
+<#
+    .SYNOPSIS
+        Returns the decimal representation of an IP Addresses
+
+    .PARAMETER IPAddress
+        The IP Address to be converted
+#>
+function ConvertTo-Decimal
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Net.IPAddress]
+        $IPAddress
+    )
+ 
+    $i = 3
+    $DecimalIP = 0
+    $IPAddress.GetAddressBytes() | ForEach-Object {
+        $DecimalIP += $_ * [Math]::Pow(256,$i)
+        $i--
+    }
+ 
+    return [UInt32]$DecimalIP
+}
+
+<#
+    .SYNOPSIS
+        Determines whether an IP Address is valid for a given network / subnet
+
+    .PARAMETER IPAddress
+        IP Address to be checked
+
+    .PARAMETER NetworkID
+        IP Address of the network identifier
+
+    .PARAMETER SubnetMask
+        Subnet mask of the network to be checked
+#>
+fucntion Test-IPAddress
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Net.IPAddress]
+        $IPAddress,
+
+        [Parameter(Mandatory = $true)]
+        [System.Net.IPAddress]
+        $NetworkID,
+
+        [Parameter(Mandatory = $true)]
+        [System.Net.IPAddress]
+        $SubnetMask
+    )
+    
+    ## Convert all values to decimal
+    $IPAddressDecimal = ConvertTo-Decimal -IPAddress $IPAddress
+    $NetworkDecimal = ConvertTo-Decimal -IPAddress $NetworkID
+    $SubnetDecimal = ConvertTo-Decimal -IPAddress $SubnetMask
+
+    ## Determine whether the IP Address is valid for this network / subnet
+    return (($IPAddressDecimal -band $SubnetDecimal) -eq ($NetworkDecimal -band $SubnetDecimal))
+}
 <#
     .SYNOPSIS
         Returns the argument string appeneded with the account information as is given in UserAlias and User parameters
