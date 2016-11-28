@@ -1283,5 +1283,4 @@ function Restart-SqlService
             $_ | Start-Service
         }
     }
-#>
 }
