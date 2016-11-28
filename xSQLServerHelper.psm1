@@ -1263,16 +1263,16 @@ function Get-SqlDatabasePermission
         }
         else
         {
-            throw New-TerminatingError -ErrorType LoginNotFound `
-                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
-                                       -ErrorCategory ObjectNotFound 
+            New-TerminatingError -ErrorType LoginNotFound `
+                                 -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                 -ErrorCategory ObjectNotFound 
         }
     }
     else
     {
-        throw New-TerminatingError -ErrorType NoDatabase `
-                                   -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
-                                   -ErrorCategory InvalidResult
+        New-TerminatingError -ErrorType NoDatabase `
+                             -FormatArgs @($Database,$sqlServer,$sqlInstanceName) `
+                             -ErrorCategory InvalidResult
     }
 
     $permissions
