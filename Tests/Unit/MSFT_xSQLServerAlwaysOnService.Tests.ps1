@@ -54,7 +54,6 @@ try
                 }
             } -ModuleName $script:DSCResourceName -Verifiable
 
-            # Get the current state
             $result = Get-TargetResource @presentState
 
             It 'Should return the state as $false' {
@@ -74,7 +73,6 @@ try
                 }
             } -ModuleName $script:DSCResourceName -Verifiable
 
-            # Get the current state
             $result = Get-TargetResource @presentState
 
             It 'Should return the state as $true' {
