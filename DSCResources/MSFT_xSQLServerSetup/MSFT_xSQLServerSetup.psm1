@@ -510,10 +510,9 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
-        $Action = 'Install', 
+        $Action = 'Install',
 
         [System.String]
         $SourcePath,
@@ -1309,7 +1308,6 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install', 
@@ -1735,6 +1733,7 @@ function Test-IPAddress
     return (($IPAddressDecimal -band $SubnetDecimal) -eq ($NetworkDecimal -band $SubnetDecimal))
 }
 
+<<<<<<< 5fc129f536806a599d9c949fadae68c8909ede33
 <#
     .SYNOPSIS
         Builds service account parameters for setup
