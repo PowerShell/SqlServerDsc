@@ -823,7 +823,12 @@ function Set-TargetResource
     }
 
     # Create install arguments
-    $arguments = "/Quiet=`"True`" /IAcceptSQLServerLicenseTerms=`"True`" /Action=`"Install`""
+    $arguments = @{
+        Quient = 'True'
+        IAcceptSQLServerLicenseTerms = 'True'
+        Action = $Action
+    }
+
     $argumentVars = @(
         'InstanceName',
         'InstanceID',
@@ -858,22 +863,74 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'SQLSVCACCOUNT' -PasswordArgumentName 'SQLSVCPASSWORD' -User $SQLSvcAccount
+
+            if ($SQLSvcAccount.UserName -eq "SYSTEM")
+            {
+                #$arguments += " /SQLSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
+                $arguments.Add('SQLSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
+            }
+            else
+            {
+                #$arguments += " /SQLSVCACCOUNT=`"" + $SQLSvcAccount.UserName + "`""
+                #$arguments += " /SQLSVCPASSWORD=`"" + $SQLSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('SQLSVCACCOUNT', $SQLSvcAccount.UserName)
+                $arguments.Add('SQLSVCPASSWORD', $SQLSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -AccountType 'SQL')
         }
 
         if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'AGTSVCACCOUNT' -PasswordArgumentName 'AGTSVCPASSWORD' -User $AgtSvcAccount
+
+            if($AgtSvcAccount.UserName -eq 'SYSTEM')
+            {
+                #$arguments += " /AGTSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
+                $arguments.Add('AGTSVCACCOUNT','NT AUTHORITY\SYSTEM')
+            }
+            else
+            {
+                #$arguments += " /AGTSVCACCOUNT=`"" + $AgtSvcAccount.UserName + "`""
+                #$arguments += " /AGTSVCPASSWORD=`"" + $AgtSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('AGTSVCACCOUNT', $AgtSvcAccount.UserName)
+                $arguments.Add('AGTSVCPASSWORD', $AgtSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
         }
 
-        $arguments += ' /AGTSVCSTARTUPTYPE=Automatic'
+        #$arguments += ' /AGTSVCSTARTUPTYPE=Automatic'
+        $arguments.Add('AGTSVCSTARTUPTYPE','Automatic')
     }
 
     if ($Features.Contains('FULLTEXT'))
     {
         if ($PSBoundParameters.ContainsKey('FTSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'FTSVCACCOUNT' -PasswordArgumentName 'FTSVCPASSWORD' -User $FTSvcAccount
+
+            if ($FTSvcAccount.UserName -eq 'SYSTEM')
+            {
+                #$arguments += " /FTSVCACCOUNT=`"NT AUTHORITY\LOCAL SERVICE`""
+                $arguments.Add('FTSVCACCOUNT','NT AUTHORITY\LOCAL SERVICE')
+            }
+            else
+            {
+                #$arguments += " /FTSVCACCOUNT=`"" + $FTSvcAccount.UserName + "`""
+                #$arguments += " /FTSVCPASSWORD=`"" + $FTSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('FTSVCACCOUNT', $FTSvcAccount.UserName)
+                $arguments.Add('FTSVCPASSWORD', $FTSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -AccountType 'FT')
         }
     }
 
@@ -881,7 +938,24 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('RSSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'RSSVCACCOUNT' -PasswordArgumentName 'RSSVCPASSWORD' -User $RSSvcAccount
+
+            if ($RSSvcAccount.UserName -eq "SYSTEM")
+            {
+                #$arguments += " /RSSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
+                $arguments.Add('RSSVCACCOUNT','NT AUTHORITY\SYSTEM')
+            }
+            else
+            {
+                #$arguments += " /RSSVCACCOUNT=`"" + $RSSvcAccount.UserName + "`""
+                #$arguments += " /RSSVCPASSWORD=`"" + $RSSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('RSSVCACCOUNT', $RSSvcAccount.UserName)
+                $arguments.Add('RSSVCPASSWORD', $RSSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -AccountType 'RS')
         }
     }
 
@@ -898,7 +972,24 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('ASSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ASSVCACCOUNT' -PasswordArgumentName 'ASSVCPASSWORD' -User $ASSvcAccount
+
+            if($ASSvcAccount.UserName -eq 'SYSTEM')
+            {
+                #$arguments += " /ASSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
+                $arguments.Add('ASSVCACCOUNT','NT AUTHORITY\SYSTEM')
+            }
+            else
+            {
+                #$arguments += " /ASSVCACCOUNT=`"" + $ASSvcAccount.UserName + "`""
+                #$arguments += " /ASSVCPASSWORD=`"" + $ASSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('ASSVCACCOUNT', $ASSvcAccount.UserName)
+                $arguments.Add('ASSVCPASSWORD', $ASSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
         }
     }
 
@@ -906,7 +997,24 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('ISSvcAccount'))
         {
+            <#
             $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ISSVCACCOUNT' -PasswordArgumentName 'ISSVCPASSWORD' -User $ISSvcAccount
+
+            if ($ISSvcAccount.UserName -eq 'SYSTEM')
+            {
+                #$arguments += " /ISSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
+                $arguments.Add('ISSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
+            }
+            else
+            {
+                #$arguments += " /ISSVCACCOUNT=`"" + $ISSvcAccount.UserName + "`""
+                #$arguments += " /ISSVCPASSWORD=`"" + $ISSvcAccount.GetNetworkCredential().Password + "`""
+                $arguments.Add('ISSVCACCOUNT', $ISSvcAccount.UserName)
+                $arguments.Add('ISSVCPASSWORD', $ISSvcAccount.GetNetworkCredential().Password)
+            }
+            #>
+
+            $arguments += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -AccountType 'IS')
         }
     }
 
@@ -1531,6 +1639,64 @@ fucntion Test-IPAddress
     ## Determine whether the IP Address is valid for this network / subnet
     return (($IPAddressDecimal -band $SubnetDecimal) -eq ($NetworkDecimal -band $SubnetDecimal))
 }
+
+<#
+    .SYNOPSIS
+        Builds service account parameters for setup
+
+    .PARAMETER ServiceAccount
+        Credential for the service account
+
+    .PARAMETER AccountType
+        Type of service account 
+#>
+function Get-ServiceAccountParameters {
+    [CmdletBinding()]
+    [OutputType([Hashtable])]
+    param
+    (
+        [PSCredential]
+        $ServiceAccount,
+
+        [ValidateSet('SQL','AGT','IS','RS','AS','FT')]
+        [String]
+        $AccountType
+    )
+
+    switch -Regex ($ServiceAccount.UserName.ToUpper())
+    {
+        '^(?:NT ?AUTHORITY\\)?(SYSTEM|LOCALSERVICE|LOCAL SERVICE|NETWORKSERVICE|NETWORK SERVICE)$'
+        {
+            $user = "NT AUTHORITY\$($Matches[1])"
+            $passwd = ''
+        }
+
+        '^(?:NT SERVICE\\)(.*)$'
+        {
+            $user = "NT SERVICE\$($Matches[1])"
+            $passwd = ''
+        }
+
+        '.*\$'
+        {
+            $user = $ServiceAccount.UserName
+            $passwd = '' 
+        }
+
+        default
+        {
+            $user = $ServiceAccount.UserName
+            $passwd = $ServiceAccount.GetNetworkCredential().Password
+        }
+    }
+
+    return @{
+        "$($AccountType)SVCACCOUNT" = $user
+        "$($AccountType)SVCPASSWORD" = $passwd
+    }
+
+}
+
 <#
     .SYNOPSIS
         Returns the argument string appeneded with the account information as is given in UserAlias and User parameters
