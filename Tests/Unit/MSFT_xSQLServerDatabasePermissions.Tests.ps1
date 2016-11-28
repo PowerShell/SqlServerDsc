@@ -352,6 +352,83 @@ try
 
         Assert-VerifiableMocks
     }
+
+    Describe "$($script:DSCResourceName) - Test Helper Function Get-SqlDatabasePermission" {
+        Mock -CommandName Connect-SQL -MockWith {
+            $sqlConnect = [pscustomobject]@{
+                InstanceName = 'MSSQLSERVER'
+                ComputerNamePhysicalNetBIOS = 'SQL01'
+            }
+            $sqlConnect = $sqlConnect | Add-Member -MemberType ScriptProperty -Name Databases -Value { 
+                return @{
+                    'AdventureWorks' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Database -ArgumentList @( $null, 'AdventureWorks') ) )
+                } | Add-Member -MemberType ScriptMethod -Name EnumDatabasePermissions -Value {
+                    return @{
+                        'CONTOSO\SqlAdmin' = @( 'Connect','Update' )
+                    }
+                } -PassThru -Force
+            } -PassThru -Force
+            $sqlConnect = $sqlConnect | Add-Member -MemberType ScriptProperty -Name Logins -Value { 
+                return @{
+                    'CONTOSO\SqlAdmin' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'CONTOSO\SqlAdmin') -Property @{ LoginType = 'WindowsUser'} ) )
+                }
+            } -PassThru -Force
+            return $sqlConnect
+        } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context 'When the specified database does not exist' {
+            $testParameters = @{
+                SQLInstanceName = 'MSSQLSERVER'
+                SQLServer       = 'SQL01'
+                Database        = 'AdventureWorks'
+                Name            = 'CONTOSO\SqlAdmin'
+                PermissionState = 'Grant'
+                Permissions     = @( 'Connect','Update' )
+            }
+             
+            Get-TargetResource @testParameters
+
+            It 'Get-SqlDatabasePermission should throw an error when desired database does not exist' {
+                { Get-SqlDatabasePermission } | Should Throw
+            }
+        }
+
+        Context 'When the specified database does not exist' {
+            $testParameters = @{
+                SQLInstanceName = 'MSSQLSERVER'
+                SQLServer       = 'SQL01'
+                Database        = 'UnknownDatabase'
+                Name            = 'CONTOSO\SqlAdmin'
+                PermissionState = 'Grant'
+                Permissions     = @( 'Connect','Update' )
+            }
+             
+            Get-TargetResource @testParameters
+
+            It 'Get-SqlDatabasePermission should throw an error when desired database does not exist' {
+                { Get-SqlDatabasePermission } | Should Throw
+            }
+        }
+
+        Context 'When the specified login does not exist' {
+            $testParameters = @{
+                SQLInstanceName = 'MSSQLSERVER'
+                SQLServer       = 'SQL01'
+                Database        = 'AdventureWorks'
+                Name            = 'CONTOSO\SqlUnknown'
+                PermissionState = 'Grant'
+                Permissions     = @( 'Connect','Update' )
+            }
+            
+            Get-TargetResource @testParameters
+
+            It 'Get-SqlDatabasePermission should throw an error when desired login does not exist' {
+                { Get-SqlDatabasePermission } | Should Throw
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
 }
 finally
 {
