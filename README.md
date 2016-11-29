@@ -306,8 +306,9 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 ### xSQLServerAlwaysOnService
 
 * **Ensure**: (key) An enumerated value that describes if SQL server should have AlwaysOn property present or absent.
-* **SQLServer**: The SQL Server for the database
-* **SQLInstance**: The SQL instance for the database
+* **SQLServer**: The hostname of the SQL Server to be configured
+* **SQLInstance**: Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
+* **RestartTimeout**: The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
 
 ### xSQLServerEndpoint
 
