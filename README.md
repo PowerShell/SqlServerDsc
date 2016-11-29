@@ -304,7 +304,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **SetupCredential**: (Required) Credential to be used to Grant Permissions in SQL.
 
 ### xSQLServerAlwaysOnService
-
 * **Ensure**: (Required) An enumerated value that describes if SQL server should have AlwaysOn property present or absent.
 * **SQLServer**: (Key) The hostname of the SQL Server to be configured
 * **SQLInstance**: (Key) Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
