@@ -30,6 +30,12 @@
   - BREAKING CHANGE: Fixed so the same user can now be added to a role in one or more databases, and/or one or more instances. Now the parameters `SQLServer` and `SQLInstanceName` are mandatory.
   - Enhanced so the same user can now be added to more than one role
 - BREAKING CHANGE: Renamed xSQLAlias to xSQLServerAlias to align wíth naming convention.
+- Changes to xSQLServerAlwaysOnService
+  - Added RestartTimeout parameter
+  - Fixed bug where the SQL Agent service did not get restarted after the IsHadrEnabled property was set.
+- Moved Restart-SqlService from MSFT_xSQLServerConfiguration.psm1 to xSQLServerHelper.psm1.
+- Created unit tests for xSQLServerHelper.psm1 and moved the existing tests for Restart-SqlService to it.
+- Created unit tests for xSQLServerAlwaysOnService
 
 ## 3.0.0.0
 
