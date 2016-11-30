@@ -6,8 +6,12 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .SYNOPSIS
     Gets the current value of the SQL Server HADR property.
 
+    .PARAMETER Ensure
+    *** Not used in this function ***
+    HADR is Present (enabled) or Absent (disabled)
+    
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured
+    Hostname of the SQL Server to be configured. Default is the current computer.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -21,17 +25,20 @@ function Get-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
+        [Parameter()]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter()]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
+        [Parameter()]
         [Int32]
         $RestartTimeout = 120
     )
