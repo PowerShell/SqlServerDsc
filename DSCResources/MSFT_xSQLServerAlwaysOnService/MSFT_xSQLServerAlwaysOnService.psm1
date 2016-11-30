@@ -36,11 +36,7 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER',
-
-        [Parameter()]
-        [Int32]
-        $RestartTimeout = 120
+        $SQLInstanceName = 'MSSQLSERVER'
     )
 
     if( -not $sql )
@@ -155,7 +151,13 @@ function Test-TargetResource
     )
     
     # Determine the current state of Alway On
-    $state = Get-TargetResource @PSBoundParameters
+    $params = @{
+        Ensure = $Ensure
+        SQLServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+    }
+
+    $state = Get-TargetResource @params
     
     # Determine what the desired state of Always On is
     $hadrDesiredState = @{ 'Present' = $true; 'Absent' = $false }[$Ensure]
