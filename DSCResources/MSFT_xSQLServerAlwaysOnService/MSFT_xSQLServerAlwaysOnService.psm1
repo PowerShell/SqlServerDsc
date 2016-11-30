@@ -65,17 +65,20 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
+        [Parameter()]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter()]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
+        [Parameter()]
         [Int32]
         $RestartTimeout = 120
     )
