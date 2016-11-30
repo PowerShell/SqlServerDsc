@@ -93,6 +93,8 @@ function Set-TargetResource
         $serverInstance = "$SQLServer\$SQLInstanceName"
     }
 
+    Import-SQLPSModule
+
     switch ($Ensure)
     {
         'Absent'
