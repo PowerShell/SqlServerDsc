@@ -39,10 +39,7 @@ function Get-TargetResource
         $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    if( -not $sql )
-    {
-        $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
+    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
     return @{ IsHadrEnabled = $sql.IsHadrEnabled }
 }
