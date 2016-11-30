@@ -43,7 +43,7 @@ try
 
         Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
-        Context 'The system is not in the desired state' {
+        Context 'When the system is not in the desired state' {
 
             Mock -CommandName Connect-SQL -MockWith {
                 $mock = New-Object PSObject -Property @{ 
@@ -65,7 +65,7 @@ try
             }
         }
 
-        Context 'The system is in the desired state' {
+        Context 'When the system is in the desired state' {
 
             Mock -CommandName Connect-SQL -MockWith {
                 $mock = New-Object PSObject -Property @{ 
