@@ -1205,7 +1205,7 @@ function Set-SqlDatabaseOwner
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER Timeout
-    Timeout value for restarting the SQL services
+    Timeout value for restarting the SQL services. The default value is 120 seconds.
 
     .EXAMPLE
     Restart-SqlService -SQLServer localhost
@@ -1225,9 +1225,11 @@ function Restart-SqlService
         [String]
         $SQLServer,
 
+        [Parameter()]
         [String]
         $SQLInstanceName = 'MSSQLSERVER',
 
+        [Parameter()]
         [Int32]
         $Timeout = 120
     )
