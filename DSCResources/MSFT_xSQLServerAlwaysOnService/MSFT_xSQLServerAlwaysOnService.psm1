@@ -48,8 +48,11 @@ function Get-TargetResource
     .SYNOPSIS
     Sets the current value of the SQL Server HADR property.
 
+    .PARAMETER Ensure
+    HADR is Present (enabled) or Absent (disabled)
+
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured
+    Hostname of the SQL Server to be configured. Default is the current computer.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
