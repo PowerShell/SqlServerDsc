@@ -15,21 +15,21 @@ $TestEnvironment = Initialize-TestEnvironment `
     -DSCResourceName $script:DSCResourceName `
     -TestType Unit 
 
-$defaultState = @{
+$absentState = @{
     Ensure = 'Absent'
     SQLServer = 'Server01'
     SQLInstanceName = 'MSSQLSERVER'
     RestartTimeout = 120
 }
 
-$desiredState = @{
+$presentState = @{
     Ensure = 'Present'
     SQLServer = 'Server01'
     SQLInstanceName = 'MSSQLSERVER'
     RestartTimeout = 120
 }
 
-$desiredStateNamedInstance = @{
+$presentStateNamedInstance = @{
     Ensure = 'Present'
     SQLServer = 'Server01'
     SQLInstanceName = 'NamedInstance'
@@ -54,10 +54,10 @@ try
             } -ModuleName $script:DSCResourceName -Verifiable
 
             # Get the current state
-            $result = Get-TargetResource @desiredState
+            $result = Get-TargetResource @presentState
 
             It 'Should return the same values as passed' {
-                $result.IsHadrEnabled | Should Not Be @{ 'Present' = $true; 'Absent' = $false }[$desiredState.Ensure]
+                $result.IsHadrEnabled | Should Not Be @{ 'Present' = $true; 'Absent' = $false }[$presentState.Ensure]
             }
 
             It 'Should call Connect-SQL mock when getting the current state' {
@@ -76,10 +76,10 @@ try
             } -ModuleName $script:DSCResourceName -Verifiable
 
             # Get the current state
-            $result = Get-TargetResource @desiredState
+            $result = Get-TargetResource @presentState
 
             It 'Should return the same values as passed' {
-                $result.IsHadrEnabled | Should Be ( @{ 'Present' = $true; 'Absent' = $false }[$desiredState.Ensure] )
+                $result.IsHadrEnabled | Should Be ( @{ 'Present' = $true; 'Absent' = $false }[$presentState.Ensure] )
             }
 
             It 'Should call Connect-SQL mock when getting the current state' {
@@ -113,7 +113,7 @@ try
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
-                Set-TargetResource @desiredState
+                Set-TargetResource @presentState
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
@@ -129,7 +129,7 @@ try
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
-                Set-TargetResource @defaultState
+                Set-TargetResource @absentState
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Disable-SqlAlwaysOn -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
@@ -145,7 +145,7 @@ try
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
-                Set-TargetResource @desiredStateNamedInstance
+                Set-TargetResource @presentStateNamedInstance
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
@@ -161,7 +161,7 @@ try
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
-                { Set-TargetResource @desiredState } | Should Throw 'AlterAlwaysOnServiceFailed'
+                { Set-TargetResource @presentState } | Should Throw 'AlterAlwaysOnServiceFailed'
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
@@ -183,11 +183,11 @@ try
         } -ModuleName $script:DSCResourceName -Verifiable
         
         It 'Should cause Test-TargetResource to return false when not in the desired state' {
-            Test-TargetResource @defaultState | Should be $false
+            Test-TargetResource @absentState | Should be $false
         }
 
         It 'Should cause Test-TargetResource method to return true' {
-            Test-TargetResource @desiredState | Should be $true
+            Test-TargetResource @presentState | Should be $true
         }
     }
 }
