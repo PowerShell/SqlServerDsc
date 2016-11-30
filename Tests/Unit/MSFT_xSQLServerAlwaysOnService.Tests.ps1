@@ -46,11 +46,9 @@ try
         Context 'When the system is not in the desired state' {
 
             Mock -CommandName Connect-SQL -MockWith {
-                $mock = New-Object PSObject -Property @{ 
+                return New-Object PSObject -Property @{ 
                     IsHadrEnabled = $false
                 }
-
-                return $mock
             } -ModuleName $script:DSCResourceName -Verifiable
 
             # Get the current state
@@ -68,11 +66,9 @@ try
         Context 'When the system is in the desired state' {
 
             Mock -CommandName Connect-SQL -MockWith {
-                $mock = New-Object PSObject -Property @{ 
+                return New-Object PSObject -Property @{ 
                     IsHadrEnabled = $true
                 }
-
-                return $mock
             } -ModuleName $script:DSCResourceName -Verifiable
 
             # Get the current state
@@ -106,11 +102,9 @@ try
             It 'Should enable SQL Always On when Ensure is Present' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
-                    $mock = New-Object PSObject -Property @{ 
+                    return New-Object PSObject -Property @{ 
                         IsHadrEnabled = $true
                     }
-
-                    return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
                 Set-TargetResource @presentState
@@ -122,11 +116,9 @@ try
             It 'Should disable SQL Always On when Ensure is Absent' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
-                $mock = New-Object PSObject -Property @{ 
+                return New-Object PSObject -Property @{ 
                         IsHadrEnabled = $false
                     }
-
-                    return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
                 Set-TargetResource @absentState
@@ -138,11 +130,9 @@ try
             It 'Should enable SQL Always On on a named instance when Ensure is Present' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
-                    $mock = New-Object PSObject -Property @{ 
+                    return New-Object PSObject -Property @{ 
                         IsHadrEnabled = $true
                     }
-
-                    return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
                 Set-TargetResource @presentStateNamedInstance
@@ -154,11 +144,9 @@ try
             It 'Should call New-TerminatingError when the resource fails to apply the desired state' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
-                    $mock = New-Object PSObject -Property @{ 
+                    return New-Object PSObject -Property @{ 
                         IsHadrEnabled = $false
                     }
-
-                    return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable
                 
                 { Set-TargetResource @presentState } | Should Throw 'AlterAlwaysOnServiceFailed'
@@ -175,11 +163,9 @@ try
         Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
         
         Mock -CommandName Connect-SQL -MockWith {
-            $mock = New-Object PSObject -Property @{ 
+            return New-Object PSObject -Property @{ 
                 IsHadrEnabled = $true
             }
-
-            return $mock
         } -ModuleName $script:DSCResourceName -Verifiable
         
         It 'Should cause Test-TargetResource to return false when not in the desired state' {
