@@ -36,8 +36,6 @@
   - Added RestartTimeout parameter
   - Fixed bug where the SQL Agent service did not get restarted after the IsHadrEnabled property was set.
 - Moved Restart-SqlService from MSFT_xSQLServerConfiguration.psm1 to xSQLServerHelper.psm1.
-- Created unit tests for xSQLServerHelper.psm1 and moved the existing tests for Restart-SqlService to it.
-- Created unit tests for xSQLServerAlwaysOnService
 
 ## 3.0.0.0
 
