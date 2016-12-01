@@ -44,8 +44,6 @@ try
 {
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
 
-        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
-
         Context 'When the system is not in the desired state' {
 
             Mock -CommandName Connect-SQL -MockWith {
@@ -97,8 +95,6 @@ try
         Mock -CommandName Enable-SqlAlwaysOn -MockWith {} -ModuleName $script:DSCResourceName
         
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
-
-        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
         Mock -CommandName Restart-SqlService -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
 
@@ -198,8 +194,6 @@ try
     }
 
     Describe "$($script:DSCResourceName)\Test-TargetResource" {
-        
-        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
         
         Mock -CommandName Connect-SQL -MockWith {
             return New-Object PSObject -Property @{ 
