@@ -207,7 +207,7 @@ try
             Test-TargetResource @absentState | Should be $false
         }
 
-        It 'Should cause Test-TargetResource method to return true' {
+        It 'Should cause Test-TargetResource to return true when in the desired state' {
             Test-TargetResource @presentState | Should be $true
         }
     }
