@@ -87,20 +87,8 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
 
-<<<<<<< 3523ae9e4e46cddbe2b47f6d11096000a057ca8e
-        Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
-        
-        Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
-
-        Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
-
-        Mock -CommandName Restart-SqlService -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
-
-        Mock -CommandName Enable-SqlAlwaysOn -MockWith {} -ModuleName $script:DSCResourceName
-=======
         # Loading stub cmdlets
         Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
->>>>>>> Load the SQLPS stub file
         
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
