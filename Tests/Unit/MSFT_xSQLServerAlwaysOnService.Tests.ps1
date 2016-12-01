@@ -159,7 +159,7 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
             }
 
-            It 'Should call New-TerminatingError when the resource fails to apply the desired state' {
+            It 'Should throw the correct error message when Ensure is Present, but IsHadrEnabled is $false' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
                     return New-Object PSObject -Property @{ 
@@ -169,7 +169,24 @@ try
                 
                 { Set-TargetResource @presentState } | Should Throw 'AlterAlwaysOnServiceFailed'
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Disable-SqlAlwaysOn -Scope It -Times 0
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
+            }
+
+            It 'Should throw the correct error message when Ensure is Absent, but IsHadrEnabled is $true' {
+                
+                Mock -CommandName Connect-SQL -MockWith {
+                    return New-Object PSObject -Property @{ 
+                        IsHadrEnabled = $true
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable
+                
+                { Set-TargetResource @absentState } | Should Throw 'AlterAlwaysOnServiceFailed'
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Disable-SqlAlwaysOn -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 0
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
             }
