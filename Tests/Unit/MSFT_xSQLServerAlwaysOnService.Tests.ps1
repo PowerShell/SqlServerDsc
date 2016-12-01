@@ -27,6 +27,12 @@ $presentState = @{
     SQLInstanceName = 'MSSQLSERVER'
 }
 
+$absentStateNamedInstance = @{
+    Ensure = 'Absent'
+    SQLServer = 'Server01'
+    SQLInstanceName = 'NamedInstance'
+}
+
 $presentStateNamedInstance = @{
     Ensure = 'Present'
     SQLServer = 'Server01'
@@ -133,7 +139,23 @@ try
                 
                 Set-TargetResource @presentStateNamedInstance
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Disable-SqlAlwaysOn -Scope It -Times 0
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
+            }
+
+            It 'Should disable SQL Always On on a named instance when Ensure is Absent' {
+                
+                Mock -CommandName Connect-SQL -MockWith {
+                    return New-Object PSObject -Property @{ 
+                        IsHadrEnabled = $false
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable
+                
+                Set-TargetResource @absentStateNamedInstance
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Disable-SqlAlwaysOn -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Enable-SqlAlwaysOn -Scope It -Times 0
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 1
             }
 
