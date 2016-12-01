@@ -44,7 +44,7 @@ try
 {
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
 
-        Context 'When the system is not in the desired state' {
+        Context 'When HADR is disabled' {
 
             Mock -CommandName Connect-SQL -MockWith {
                 return New-Object PSObject -Property @{ 
@@ -52,19 +52,28 @@ try
                 }
             } -ModuleName $script:DSCResourceName -Verifiable
 
-            # Get the current state
-            $result = Get-TargetResource @enableHadr
+            It 'Should return that HADR is disabled' {
+                
+                # Get the current state
+                $result = Get-TargetResource @enableHadr
+                
+                $result.IsHadrEnabled | Should Be $false
 
-            It 'Should return the state as $false' {
-                $result.IsHadrEnabled | Should Not Be @{ 'Present' = $true; 'Absent' = $false }[$enableHadr.Ensure]
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should call Connect-SQL mock when getting the current state' {
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope Context -Times 1
+            It 'Should return that HADR is disabled' {
+                
+                # Get the current state
+                $result = Get-TargetResource @enableHadrNamedInstance
+                
+                $result.IsHadrEnabled | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
         }
 
-        Context 'When the system is in the desired state' {
+        Context 'When HADR is enabled' {
 
             Mock -CommandName Connect-SQL -MockWith {
                 return New-Object PSObject -Property @{ 
@@ -72,15 +81,24 @@ try
                 }
             } -ModuleName $script:DSCResourceName -Verifiable
 
-            # Get the current state
-            $result = Get-TargetResource @enableHadr
+            It 'Should return that HADR is enabled' {
+                
+                # Get the current state
+                $result = Get-TargetResource @enableHadr
+                
+                $result.IsHadrEnabled | Should Be $true
 
-            It 'Should return the state as $true' {
-                $result.IsHadrEnabled | Should Be ( @{ 'Present' = $true; 'Absent' = $false }[$enableHadr.Ensure] )
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should call Connect-SQL mock when getting the current state' {
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope Context -Times 1
+            It 'Should return that HADR is enabled' {
+                
+                # Get the current state
+                $result = Get-TargetResource @enableHadrNamedInstance
+                
+                $result.IsHadrEnabled | Should Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
         }
     }
