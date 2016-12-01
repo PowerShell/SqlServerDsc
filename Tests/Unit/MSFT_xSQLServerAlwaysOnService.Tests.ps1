@@ -54,7 +54,7 @@ try
             # Get the current state
             $result = Get-TargetResource @presentState
 
-            It 'Should return the same values as passed' {
+            It 'Should return the state as $false' {
                 $result.IsHadrEnabled | Should Not Be @{ 'Present' = $true; 'Absent' = $false }[$presentState.Ensure]
             }
 
@@ -74,7 +74,7 @@ try
             # Get the current state
             $result = Get-TargetResource @presentState
 
-            It 'Should return the same values as passed' {
+            It 'Should return the state as $true' {
                 $result.IsHadrEnabled | Should Be ( @{ 'Present' = $true; 'Absent' = $false }[$presentState.Ensure] )
             }
 
