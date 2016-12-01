@@ -11,7 +11,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -31,9 +31,9 @@ function Get-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [Parameter()]
         [System.String]
@@ -53,7 +53,7 @@ function Get-TargetResource
     HADR is Present (enabled) or Absent (disabled)
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -71,9 +71,9 @@ function Set-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [Parameter()]
         [System.String]
@@ -131,7 +131,7 @@ function Set-TargetResource
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current computer.
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
@@ -151,9 +151,9 @@ function Test-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [Parameter()]
         [System.String]
