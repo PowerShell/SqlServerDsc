@@ -91,6 +91,10 @@ try
 
         # Loading stub cmdlets
         Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
+
+        Mock -CommandName Disable-SqlAlwaysOn -MockWith {} -ModuleName $script:DSCResourceName
+
+        Mock -CommandName Enable-SqlAlwaysOn -MockWith {} -ModuleName $script:DSCResourceName
         
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
