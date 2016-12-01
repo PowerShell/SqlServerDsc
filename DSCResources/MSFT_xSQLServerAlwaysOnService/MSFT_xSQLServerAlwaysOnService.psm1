@@ -42,6 +42,8 @@ function Get-TargetResource
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
+    New-VerboseMessage -Message ( 'SQL Always On is {0} on "{1}\{2}".' -f @{$false='disabled'; $true='enabled'}[$sql.IsHadrEnabled],$SQLServer,$SQLInstanceName )
+
     return @{ IsHadrEnabled = $sql.IsHadrEnabled }
 }
 
@@ -112,6 +114,8 @@ function Set-TargetResource
         }
     }
 
+    New-VerboseMessage -Message ( 'SQL Always On has been {0} on "{1}\{2}". Restarting the service.' -f @{Absent='disabled'; Present='enabled'}[$Ensure],$SQLServer,$SQLInstanceName )
+
     # Now restart the SQL service so that all dependent services are also returned to their previous state
     Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
 
@@ -176,8 +180,12 @@ function Test-TargetResource
     # Determine what the desired state of Always On is
     $hadrDesiredState = @{ 'Present' = $true; 'Absent' = $false }[$Ensure]
 
-    # return whether the value matches the desired state
-    return ( $state.IsHadrEnabled -eq $hadrDesiredState )
+    # Determine whether the value matches the desired state
+    $desiredStateMet = $state.IsHadrEnabled -eq $hadrDesiredState
+
+    New-VerboseMessage -Message ( 'SQL Always On is in the desired state for "{0}\{1}": {2}.' -f $SQLServer,$SQLInstanceName,$desiredStateMet )
+
+    return $desiredStateMet
 }
 
 Export-ModuleMember -Function *-TargetResource
