@@ -18,8 +18,6 @@ try
     InModuleScope $script:moduleName {
         Describe 'Testing Restart-SqlService' {
 
-            Mock -CommandName New-VerboseMessage -MockWith {}
-
             Context 'Restart-SqlService standalone instance' {
 
                 Mock -CommandName Connect-SQL -MockWith {
