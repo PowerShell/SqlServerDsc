@@ -19,21 +19,18 @@ $absentState = @{
     Ensure = 'Absent'
     SQLServer = 'Server01'
     SQLInstanceName = 'MSSQLSERVER'
-    RestartTimeout = 120
 }
 
 $presentState = @{
     Ensure = 'Present'
     SQLServer = 'Server01'
     SQLInstanceName = 'MSSQLSERVER'
-    RestartTimeout = 120
 }
 
 $presentStateNamedInstance = @{
     Ensure = 'Present'
     SQLServer = 'Server01'
     SQLInstanceName = 'NamedInstance'
-    RestartTimeout = 120
 }
 
 # Begin Testing
