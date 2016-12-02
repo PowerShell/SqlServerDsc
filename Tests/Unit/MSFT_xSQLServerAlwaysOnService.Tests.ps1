@@ -117,10 +117,7 @@ try
         Mock -CommandName Restart-SqlService -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'Change the system to the desired state' {
-<<<<<<< HEAD
 
-=======
->>>>>>> 7f64b548486e13e8edccadba29f310233afe2d58
             It 'Should enable SQL Always On when Ensure is Present' {
                 
                 Mock -CommandName Connect-SQL -MockWith {
