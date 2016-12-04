@@ -884,10 +884,10 @@ function Set-TargetResource
         Action = $Action
     }
 
-    # Create install arguments
-    $arguments = @{
-        Quient = 'True'
-        IAcceptSQLServerLicenseTerms = 'True'
+    # Add standard install arguments
+    $setupArgs += @{
+        Quiet = $true
+        IAcceptSQLServerLicenseTerms = $true
         Action = $Action
     }
 
@@ -925,67 +925,14 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'SQLSVCACCOUNT' -PasswordArgumentName 'SQLSVCPASSWORD' -User $SQLSvcAccount
-
-            if ($SQLSvcAccount.UserName -eq "SYSTEM")
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('SQLSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                $setupArgs.Add('SQLSVCACCOUNT', $SQLSvcAccount.UserName)
-                $setupArgs.Add('SQLSVCPASSWORD', $SQLSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /SQLSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-                $arguments.Add('SQLSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                #$arguments += " /SQLSVCACCOUNT=`"" + $SQLSvcAccount.UserName + "`""
-                #$arguments += " /SQLSVCPASSWORD=`"" + $SQLSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('SQLSVCACCOUNT', $SQLSvcAccount.UserName)
-                $arguments.Add('SQLSVCPASSWORD', $SQLSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -AccountType 'SQL')
         }
 
         if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'AGTSVCACCOUNT' -PasswordArgumentName 'AGTSVCPASSWORD' -User $AgtSvcAccount
-
-            if($AgtSvcAccount.UserName -eq 'SYSTEM')
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('AGTSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                $setupArgs.Add('AGTSVCACCOUNT', $AgtSvcAccount.UserName)
-                $setupArgs.Add('AGTSVCPASSWORD', $AgtSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /AGTSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-                $arguments.Add('AGTSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                #$arguments += " /AGTSVCACCOUNT=`"" + $AgtSvcAccount.UserName + "`""
-                #$arguments += " /AGTSVCPASSWORD=`"" + $AgtSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('AGTSVCACCOUNT', $AgtSvcAccount.UserName)
-                $arguments.Add('AGTSVCPASSWORD', $AgtSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
         }
 
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
         $setupArgs.Add('SQLSysAdminAccounts', $($SetupCredential.UserName))
         if ($PSBoundParameters -icontains 'SQLSysAdminAccounts')
         {
@@ -998,42 +945,12 @@ function Set-TargetResource
         }
 
         $setupArgs.Add('AGTSVCSTARTUPTYPE','Automatic')
-=======
-        #$arguments += ' /AGTSVCSTARTUPTYPE=Automatic'
-        $arguments.Add('AGTSVCSTARTUPTYPE','Automatic')
->>>>>>> Converted argument array to hashtable
     }
 
     if ($Features.Contains('FULLTEXT'))
     {
         if ($PSBoundParameters.ContainsKey('FTSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'FTSVCACCOUNT' -PasswordArgumentName 'FTSVCPASSWORD' -User $FTSvcAccount
-
-            if ($FTSvcAccount.UserName -eq 'SYSTEM')
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('FTSVCACCOUNT','NT AUTHORITY\LOCAL SERVICE')
-            }
-            else
-            {
-                $setupArgs.Add('FTSVCACCOUNT', $FTSvcAccount.UserName)
-                $setupArgs.Add('FTSVCPASSWORD', $FTSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /FTSVCACCOUNT=`"NT AUTHORITY\LOCAL SERVICE`""
-                $arguments.Add('FTSVCACCOUNT','NT AUTHORITY\LOCAL SERVICE')
-            }
-            else
-            {
-                #$arguments += " /FTSVCACCOUNT=`"" + $FTSvcAccount.UserName + "`""
-                #$arguments += " /FTSVCPASSWORD=`"" + $FTSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('FTSVCACCOUNT', $FTSvcAccount.UserName)
-                $arguments.Add('FTSVCPASSWORD', $FTSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -AccountType 'FT')
         }
     }
@@ -1042,32 +959,6 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('RSSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'RSSVCACCOUNT' -PasswordArgumentName 'RSSVCPASSWORD' -User $RSSvcAccount
-
-            if ($RSSvcAccount.UserName -eq "SYSTEM")
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('RSSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                $setupArgs.Add('RSSVCACCOUNT', $RSSvcAccount.UserName)
-                $setupArgs.Add('RSSVCPASSWORD', $RSSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /RSSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-                $arguments.Add('RSSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                #$arguments += " /RSSVCACCOUNT=`"" + $RSSvcAccount.UserName + "`""
-                #$arguments += " /RSSVCPASSWORD=`"" + $RSSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('RSSVCACCOUNT', $RSSvcAccount.UserName)
-                $arguments.Add('RSSVCPASSWORD', $RSSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -AccountType 'RS')
         }
     }
@@ -1085,33 +976,14 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('ASSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ASSVCACCOUNT' -PasswordArgumentName 'ASSVCPASSWORD' -User $ASSvcAccount
-
-            if($ASSvcAccount.UserName -eq 'SYSTEM')
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('ASSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                $setupArgs.Add('ASSVCACCOUNT', $ASSvcAccount.UserName)
-                $setupArgs.Add('ASSVCPASSWORD', $ASSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /ASSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-                $arguments.Add('ASSVCACCOUNT','NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                #$arguments += " /ASSVCACCOUNT=`"" + $ASSvcAccount.UserName + "`""
-                #$arguments += " /ASSVCPASSWORD=`"" + $ASSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('ASSVCACCOUNT', $ASSvcAccount.UserName)
-                $arguments.Add('ASSVCPASSWORD', $ASSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
+        }
+
+        $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName))
+
+        if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
+        {
+            $setupArgs['ASSysAdminAccounts'] += $ASSysAdminAccounts
         }
 
         $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName))
@@ -1126,32 +998,6 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('ISSvcAccount'))
         {
-            <#
-            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ISSVCACCOUNT' -PasswordArgumentName 'ISSVCPASSWORD' -User $ISSvcAccount
-
-            if ($ISSvcAccount.UserName -eq 'SYSTEM')
-            {
-<<<<<<< ad77977c9cee7ac25d5808542513b205849f8675
-                $setupArgs.Add('ISSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                $setupArgs.Add('ISSVCACCOUNT', $ISSvcAccount.UserName)
-                $setupArgs.Add('ISSVCPASSWORD', $ISSvcAccount.GetNetworkCredential().Password)
-=======
-                #$arguments += " /ISSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-                $arguments.Add('ISSVCACCOUNT', 'NT AUTHORITY\SYSTEM')
-            }
-            else
-            {
-                #$arguments += " /ISSVCACCOUNT=`"" + $ISSvcAccount.UserName + "`""
-                #$arguments += " /ISSVCPASSWORD=`"" + $ISSvcAccount.GetNetworkCredential().Password + "`""
-                $arguments.Add('ISSVCACCOUNT', $ISSvcAccount.UserName)
-                $arguments.Add('ISSVCPASSWORD', $ISSvcAccount.GetNetworkCredential().Password)
->>>>>>> Converted argument array to hashtable
-            }
-            #>
-
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -AccountType 'IS')
         }
     }
@@ -1195,6 +1041,7 @@ function Set-TargetResource
 
             $arguments += "/$($setupArg.Key.ToUpper())=$($setupArgValue) "
         }
+
     }
 
     # Replace sensitive values for verbose output
@@ -1221,7 +1068,6 @@ function Set-TargetResource
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
     $process = StartWin32Process -Path $path -Arguments $arguments.Trim()
-
     New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
 
