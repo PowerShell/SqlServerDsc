@@ -15,10 +15,6 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     
     .PARAMETER SQLInstanceName
     Name of the SQL instance to be configued.
-
-    .PARAMETER RestartTimeout
-    *** Not used in this function ***
-    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
 #>
 function Get-TargetResource
 {
