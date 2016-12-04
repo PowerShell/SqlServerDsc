@@ -510,6 +510,7 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install',
@@ -1067,6 +1068,8 @@ function Set-TargetResource
 
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
+    Write-Host $arguments
+    <#
     $process = StartWin32Process -Path $path -Arguments $arguments.Trim()
     New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
@@ -1087,6 +1090,7 @@ function Set-TargetResource
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
+    #>
 }
 
 <#
@@ -1238,6 +1242,7 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install', 
