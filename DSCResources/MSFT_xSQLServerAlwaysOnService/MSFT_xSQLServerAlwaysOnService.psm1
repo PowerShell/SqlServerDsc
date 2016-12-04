@@ -11,10 +11,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+    Name of the SQL instance to be configued.
 
     .PARAMETER RestartTimeout
     *** Not used in this function ***
@@ -35,9 +35,9 @@ function Get-TargetResource
         [System.String]
         $SQLServer,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $SQLInstanceName
     )
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -55,10 +55,10 @@ function Get-TargetResource
     HADR is Present (enabled) or Absent (disabled)
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+    Name of the SQL instance to be configued.
 
     .PARAMETER RestartTimeout
     The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
@@ -77,9 +77,9 @@ function Set-TargetResource
         [System.String]
         $SQLServer,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER',
+        $SQLInstanceName,
 
         [Parameter()]
         [Int32]
@@ -135,10 +135,10 @@ function Set-TargetResource
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured. Default is the current $env:COMPUTERNAME
+    Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+    Name of the SQL instance to be configued.
 
     .PARAMETER RestartTimeout
     *** Not used in this function ***
@@ -159,9 +159,9 @@ function Test-TargetResource
         [System.String]
         $SQLServer,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER',
+        $SQLInstanceName,
 
         [Parameter()]
         [Int32]
