@@ -463,6 +463,7 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install', 
@@ -590,7 +591,7 @@ function Set-TargetResource
         [ValidateSet('Automatic', 'Disabled', 'Manual')]
         $BrowserSvcStartupType,
 
-        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
         $FailoverClusterGroup = "SQL Server ($InstanceName)",
 
@@ -598,7 +599,7 @@ function Set-TargetResource
         [System.Net.IPAddress[]]
         $FailoverClusterIPAddress,
 
-        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
         $FailoverClusterNetworkName
     )
@@ -825,6 +826,9 @@ function Set-TargetResource
 
         ## add the networks to the installation arguments
         $setupArgs.Add('FailoverClusterIPAddresses', $clusterIPAddresses)
+
+        ## brought over from old module. need to remove this...
+        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors')
     }
 
     # Add standard install arguments
@@ -1039,15 +1043,7 @@ function Set-TargetResource
             ## arrays are handled specially
             if ($setupArg.Value -is [array])
             {
-                ## features are comma-separated, no quotes
-                if ($setupArg.Key -eq 'Features')
-                {
-                    $setupArgValue = $setupArg.Value -join ','
-                }
-                else 
-                {
-                    $setupArgValue = ($setupArg.Value | ForEach-Object { "`"$_`"" }) -join ' '
-                }
+                $setupArgValue = ($setupArg.Value | ForEach-Object { "`"$_`"" }) -join ' '
             }
             elseif ($setupArg.Value -is [Boolean])
             {
@@ -1056,12 +1052,19 @@ function Set-TargetResource
             }
             else
             {
-                $setupArgValue = "`"$($setupArg.Value)`""
+                ## features are comma-separated, no quotes
+                if ($setupArg.Key -eq 'Features')
+                {
+                    $setupArgValue = $setupArg.Value
+                }
+                else 
+                {
+                    $setupArgValue = "`"$($setupArg.Value)`""
+                }
             }
 
-            $arguments += "/$($setupArgs.Key.ToUpper())=$($setupArgValue) "
+            $arguments += "/$($setupArg.Key.ToUpper())=$($setupArgValue) "
         }
-
     }
 
     # Replace sensitive values for verbose output
@@ -1087,9 +1090,10 @@ function Set-TargetResource
 
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
-    $process = StartWin32Process -Path $pathToSetupExecutable -Arguments $arguments
+    $process = StartWin32Process -Path $path -Arguments $arguments.Trim()
+
     New-VerboseMessage -Message $process
-    WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments
+    WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
 
     if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
     {
@@ -1258,6 +1262,7 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install', 
@@ -1385,7 +1390,7 @@ function Test-TargetResource
         [ValidateSet('Automatic', 'Disabled', 'Manual')]
         $BrowserSvcStartupType,
 
-        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
         $FailoverClusterGroup = "SQL Server ($InstanceName)",
 
@@ -1393,7 +1398,7 @@ function Test-TargetResource
         [System.Net.IPAddress[]]
         $FailoverClusterIPAddress,
 
-        [Parameter(ParameterSetName = 'ClusterInstall', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
         $FailoverClusterNetworkName
     )
@@ -1622,7 +1627,7 @@ function ConvertTo-Decimal
     .PARAMETER SubnetMask
         Subnet mask of the network to be checked
 #>
-fucntion Test-IPAddress
+function Test-IPAddress
 {
     [CmdletBinding()]
     param
