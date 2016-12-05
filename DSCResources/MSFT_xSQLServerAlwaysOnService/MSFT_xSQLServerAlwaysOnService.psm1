@@ -127,7 +127,6 @@ function Set-TargetResource
     Determines whether the current value of the SQL Server HADR property is properly set.
 
     .PARAMETER Ensure
-    *** Not used in this function ***
     HADR is Present (enabled) or Absent (disabled)
     
     .PARAMETER SQLServer
