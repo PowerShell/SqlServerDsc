@@ -1455,6 +1455,9 @@ function Test-TargetResource
         SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
         InstanceName = $InstanceName
+        FailoverClusterGroup = $FailoverClusterGroup
+        FailoverClusterIPAddress = $FailoverClusterIPAddress
+        FailoverClusterNetworkName = $FailoverClusterNetworkName
     }
 
     $getTargetResourceResult = Get-TargetResource @parameters
@@ -1475,6 +1478,37 @@ function Test-TargetResource
                 New-VerboseMessage -Message "Unable to find feature '$feature' among the installed features: '$($getTargetResourceResult.Features)'"
                 $result = $false
             }
+        }
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
+    {
+        New-VerboseMessage -Message "Clustered install, checking parameters."
+
+        if ($sqlData.FailoverClusterGroup -ne $FailoverClusterGroup)
+        {
+            if ($sqlData.FailoverClusterNetworkName -eq $FailoverClusterNetworkName)
+            {
+                if ($sqlData.FailoverClusterIPAddress -eq $FailoverClusterIPAddress)
+                {
+                    $result = $true
+                }
+                else
+                {
+                    New-VerboseMessage -Message "IP Address '$FailoverClusterIPAddress' not valid for cluster host name '$FailoverClusterNetworkName'"
+                    $result = $false
+                }
+            }
+            else
+            {
+                New-VerboseMessage -Message "Hostname '$FailoverClusterNetworkName' not valid for cluster group '$FailoverClusterGroup'."
+                $result = $false
+            }
+        }
+        else
+        {
+            New-VerboseMessage -Message "Unable to find cluster group '$FailoverClusterGroup'"
+            $result = $false
         }
     }
 
