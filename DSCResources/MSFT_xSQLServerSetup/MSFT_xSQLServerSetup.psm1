@@ -23,6 +23,15 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
 
     .PARAMETER InstanceName
         Name of the SQL instance to be installed.
+
+    .PARAMETER FailoverClusterGroup
+        The name of the resource group to create for the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterIPAddress
+        Array of IP Addresses to be assigned to the clustered SQL Server instance
+
+    .PARAMETER FailoverClusterNetworkName
+        Host name to be assigned to the clustered SQL Server instance
 #>
 function Get-TargetResource
 {
@@ -44,7 +53,19 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName
+        $InstanceName,
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.String]
+        $FailoverClusterGroup = "SQL Server ($InstanceName)",
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.Net.IPAddress[]]
+        $FailoverClusterIPAddress,
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.String]
+        $FailoverClusterNetworkName
     )
 
     $InstanceName = $InstanceName.ToUpper()
@@ -149,6 +170,29 @@ function Get-TargetResource
         $sqlUserDatabaseDirectory = $databaseServer.DefaultFile
         $sqlUserDatabaseLogDirectory = $databaseServer.DefaultLog
         $sqlBackupDirectory = $databaseServer.BackupDirectory
+
+        if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
+        {
+            if ($databaseServer.IsClustered)
+            {
+                $clusteredSqlInstance = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" |
+                    Where-Object { $_.PrivateProperties.InstanceName -eq $InstanceName }
+
+                if ($clusteredSqlInstance)
+                {
+                    $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
+                    $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource | 
+                        Where-Object { $_.Type -eq "Network Name" }
+
+                    $clusteredSqlIPAddress = ($clusteredSqlNetworkName | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
+                        Where-Object { $_.Type -eq "IP Address" }).PrivateProperties.Address
+
+                    ## extract the required values
+                    $clusteredSqlGroupName = $clusteredSqlGroup.Name
+                    $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
+                }
+            }
+        }
     }
 
     if ($services | Where-Object {$_.Name -eq $fullTextServiceName})
@@ -310,6 +354,9 @@ function Get-TargetResource
         ASTempDir = $analysisTempDirectory
         ASConfigDir = $analysisConfigDirectory
         ISSvcAccountUsername = $integrationServiceAccountUsername
+        FailoverClusterGroupName = $clusteredSqlGroupName
+        FailoverClusterNetworkName = $clusteredSqlNetworkName
+        FailoverClusterIPAddress = $clusteredSqlIPAddress
     }
 }
 
