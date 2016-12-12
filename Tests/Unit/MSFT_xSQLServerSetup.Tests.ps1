@@ -1496,6 +1496,33 @@ try
                         $result.ISSvcAccountUsername | Should Be $mockSqlServiceAccount
                     }
                 }
+
+                Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a clustered instance" {
+
+                    Mock -CommandName Get-CimInstance -MockWith {
+                        @('MSSQLSERVER', $mockNamedInstance_InstanceName) | ForEach-Object {
+                            $mock = New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_Resource','root/MSCluster'
+                            
+                            $mock | Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($($_))" -TypeName 'String'
+                            $mock | Add-Member -MemberType NoteProperty -Name 'Type' -Value 'SQL Server' -TypeName 'String'
+                            $mock | Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{ InstanceName = $_ }
+
+                            return $mock
+                        }
+                    } -Verifiable -ParameterFilter { ($ClassName -eq 'MSCluster_Resource') -and ($Filter -eq "Type = 'SQL Server'") }
+
+                    Mock -CommandName Get-CimAssociatedInstance -MockWith {
+                        @('MSSQLSERVER', $mockNamedInstance_InstanceName) | ForEach-Object {
+                        $mock = New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_ResourceGroup', 'root/MSCluster'
+                        
+                        $mock | Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($($_))"
+                    } -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
+
+                }
+
+                Context "When SQL Server version is $mockSqlMajorVersion and the system is in the desired state for a clustered instance" {
+                    throw "Not Implemented"
+                }
             }
 
             Assert-VerifiableMocks
