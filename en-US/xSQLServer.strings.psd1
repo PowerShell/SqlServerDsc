@@ -41,7 +41,7 @@ ConfigurationRestartRequired = Configuration option '{0}' has been updated, but 
 AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '{1}'.
 
 # Login
-PasswordValidationFailed = Creation of the login '{0}' failed due to the following error: {1}
+PasswordValidationFailed = Creation of the login '{0}' failed because the password validation failed.
 LoginCreationFailed = Creation of the login '{0}' failed.
 LoginTypeNotImplemented = The login type '{0}' is not implemented in this module.
 '@

@@ -607,7 +607,7 @@ finally
 {
     #region FOOTER
 
-    Restore-TestEnvironment -TestEnvironment $TestEnvironment 
+    Restore-TestEnvironment -TestEnvironment $TestEnvironment
 
     #endregion
 }
