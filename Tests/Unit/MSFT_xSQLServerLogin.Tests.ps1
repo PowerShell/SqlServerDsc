@@ -1,6 +1,5 @@
 # Suppressing this rule because PlainText is required for one of the functions used in this test
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
-param()
 
 $script:DSCModuleName      = 'xSQLServer'
 $script:DSCResourceName    = 'MSFT_xSQLServerLogin'
@@ -58,6 +57,8 @@ try
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
 
+        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
+
         Context 'When the system is not in the desired state' {
             $testParameters = $defaultParameters
             $testParameters += @{
@@ -68,7 +69,7 @@ try
 
             It 'Should not return the state as absent' {
                 $result.Ensure | Should Be 'Absent'
-                $result.LoginType | Should Be ''
+                $result.LoginType | Should Be $null
             }
 
             It 'Should return the same values as passed as parameters' {
@@ -158,6 +159,10 @@ try
     }
 
     Describe "$($script:DSCResourceName)\Test-TargetResource" {
+        
+        # Loading stub cmdlets
+        Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
+        
         Mock -CommandName Connect-SQL -MockWith {
             return New-Object Object | 
                 Add-Member ScriptProperty Logins {
@@ -168,6 +173,8 @@ try
                     }
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
+
+        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
 
         Context 'When the system is not in the desired state' {
             It 'Should return the state as absent when desired windows user does not exist' {
@@ -253,6 +260,10 @@ try
     }
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
+
+        # Loading stub cmdlets
+        Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
+
         Mock -CommandName Connect-SQL -MockWith {
             return New-Object Object | 
                 Add-Member ScriptProperty Logins {
@@ -263,6 +274,8 @@ try
                     }
                 } -PassThru -Force 
         } -ModuleName $script:DSCResourceName -Verifiable
+
+        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
 
         Context 'When the system is not in the desired state' {
             $testParameters = $defaultParameters
