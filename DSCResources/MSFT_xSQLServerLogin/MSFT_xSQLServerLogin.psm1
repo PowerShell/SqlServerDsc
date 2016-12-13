@@ -165,104 +165,55 @@ function Set-TargetResource
         {
             if ( $serverObject.Logins[$Name] )
             {
-                $login = $serverObject.Logins[$Name]
+                if ( $serverObject.Logins[$Name] )
+                {
+                    $login = $serverObject.Logins[$Name]
 
-                if ( $login.LoginType -eq 'SqlLogin' )
-                {                    
-                    if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
+                    if ( $login.LoginType -eq 'SqlLogin' )
                     {
-                        throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
+                        if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
+                        {
+                            New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                            $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
+                            $login.Alter()
+                        }
+
+                        if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
+                        {
+                            New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                            $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
+                            $login.Alter()
+                        }
                     }
-                    
-                    if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
-                    {
-                        New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
-                        $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
-                        $login.Alter()
+                }
+                else
+                {
+                    $createParams = @{
+                        Name = $Name
+                        SQLServer = $SQLServer
+                        SQLInstanceName = $SQLInstanceName
+                        LoginType = $LoginType
                     }
 
-                    if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
+                    if ( $LoginType -eq 'SqlLogin' )
                     {
-                        New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
-                        $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
-                        $login.Alter()
+                        $createParams.Add('LoginMustChangePassword',$LoginMustChangePassword)
+                        $createParams.Add('LoginPasswordExpirationEnabled',$LoginPasswordExpirationEnabled)
+                        $createParams.Add('LoginPasswordPolicyEnforced',$LoginPasswordPolicyEnforced)
                     }
+
+                    New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
+                    New-SqlLogin @createParams
                 }
             }
-            else
+
+            'Absent'
             {
-                # Some login types need additional work. These will need to be fleshed out more in the future
-                if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $LoginType )
+                if ( $serverObject.Logins[$Name] )
                 {
-                    throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
+                    New-VerboseMessage -Message "Dropping the login '$Name' from the '$SQLServer\$SQLInstanceName' instance."
+                    $serverObject.Logins[$Name].Drop()
                 }
-
-                if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
-                {
-                    throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
-                }
-                
-                New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
-                
-                $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
-                $login.LoginType = $LoginType
-
-                switch ($LoginType)
-                {
-                    SqlLogin
-                    {
-                        # Verify the instance is in Mixed authentication mode
-                        if ( $serverObject.LoginMode -notmatch 'Mixed|Integrated' )
-                        {
-                            throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $SQLServer,$SQLInstanceName,$serverObject.LoginMode -ErrorCategory NotImplemented
-                        }
-                        
-                        $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
-                        $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
-                        if ( $LoginMustChangePassword )
-                        {
-                            $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::MustChange
-                        }
-                        else
-                        {
-                            $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::None
-                        }
-                        
-                        try
-                        {
-                            $login.Create($LoginCredential.Password,$LoginCreateOptions)
-                        }
-                        catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
-                        {
-                            if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
-                            {
-                                throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
-                            }
-                            else
-                            {
-                                throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                            }
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                        }
-                    }
-
-                    default
-                    {
-                        $login.Create()
-                    }
-                }
-            }
-        }
-
-        'Absent'
-        {
-            if ( $serverObject.Logins[$Name] )
-            {
-                New-VerboseMessage -Message "Dropping the login '$Name' from the '$SQLServer\$SQLInstanceName' instance."
-                $serverObject.Logins[$Name].Drop()
             }
         }
     }
