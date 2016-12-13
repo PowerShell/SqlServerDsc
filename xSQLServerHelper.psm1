@@ -1307,18 +1307,22 @@ function Get-SqlDatabasePermission
     [CmdletBinding()]    
     param
     (   
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.Object]
         $Sql,
         
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Name,
 
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Database,
 
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $PermissionState
@@ -1330,8 +1334,8 @@ function Get-SqlDatabasePermission
     $sqlInstanceName = $Sql.InstanceName
     $sqlServer = $Sql.ComputerNamePhysicalNetBIOS
 
-    # Initialize variable permissions
-    [System.String[]] $permissions = @()
+    # Initialize variable permission
+    [System.String[]] $permission = @()
 
     if ($sqlDatabase)
     {        
@@ -1339,17 +1343,17 @@ function Get-SqlDatabasePermission
         {
             Write-Verbose -Message "Getting Permissions for SQL Login $Name in database $Database"
 
-            $enumDatabasePermissions = $sqlDatabase.EnumDatabasePermissions($Name)
-            $permissionSet = $enumDatabasePermissions | where { $_.PermissionState -eq $PermissionState }
+            $databasePermissionInfo = $sqlDatabase.EnumDatabasePermissions($Name)
+            $databasePermissionInfo = $databasePermissionInfo | where { $_.PermissionState -eq $PermissionState }
 
-            foreach ($permission in $permissionSet)
+            foreach ($currentDatabasePermissionInfo in $databasePermissionInfo)
             {
-                $properties = ($permission.PermissionType | Get-Member -MemberType Property).Name
-                foreach ($property in $properties)
+                $permissionProperty = ($currentDatabasePermissionInfo.PermissionType | Get-Member -MemberType Property).Name
+                foreach ($currentPermissionProperty in $permissionProperty)
                 {
-                    if ($permission.PermissionType."$property")
+                    if ($currentDatabasePermissionInfo.PermissionType."$currentPermissionProperty")
                     {
-                        $permissions += $property
+                        $permission += $currentPermissionProperty
                     }
                 }
             }
@@ -1368,7 +1372,7 @@ function Get-SqlDatabasePermission
                              -ErrorCategory InvalidResult
     }
 
-    $permissions
+    $permission
 }
 
 <#
@@ -1395,18 +1399,22 @@ function Add-SqlDatabasePermission
     [CmdletBinding()]    
     param
     (   
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.Object]
         $Sql,
         
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Name,
 
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Database,
 
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $PermissionState,
@@ -1506,18 +1514,22 @@ function Remove-SqlDatabasePermission
     [CmdletBinding()]    
     param
     (   
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.Object]
         $Sql,
         
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Name,
-
+        
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $Database,
 
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()] 
         [System.String]
         $PermissionState,
