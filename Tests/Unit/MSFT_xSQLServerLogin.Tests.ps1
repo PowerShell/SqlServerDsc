@@ -29,6 +29,7 @@ try
     #region Pester Test Initialization
 
     Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
+    Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
     # Create PSCredential object for SQL Logins
     $mockSqlLoginUser = "dba" 
@@ -135,16 +136,6 @@ try
 				}
 			} -PassThru -Force
 	}
-
-    $mockNewObjectSmoLogin = {       
-        return New-Object Object |
-            Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
-            Add-Member -MemberType ScriptMethod -Name Create -Value {} -PassThru -Force
-    }
-
-    $mockNewObjectSmoLoginParamFilter = { 'TypeName' -eq 'Microsoft.SqlServer.Management.Smo.Login' }
 
     #endregion Pester Test Initialization
 
@@ -383,7 +374,6 @@ try
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Verifiable
         Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
-        Mock -CommandName New-Object -MockWith $mockNewObjectSmoLogin -ModuleName $script:DSCResourceName -ParameterFilter $mockNewObjectSmoLoginParamFilter -Verifiable
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
         Context 'When the desired state is Absent' {
@@ -457,7 +447,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 1 -Exactly
             }
 
             It 'Should add the specified Windows Group when it is Absent' {
@@ -468,7 +457,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 1 -Exactly
             }
 
             It 'Should add the specified SQL Login when it is Absent' {
@@ -480,7 +468,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 1 -Exactly
             }
 
             It 'Should throw when adding an unsupported login type' {
@@ -491,7 +478,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should throw when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
@@ -502,7 +488,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 0 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 0 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should do nothing if the specified Windows User is Present' {
@@ -513,7 +498,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should do nothing if the specified Windows Group is Present' {
@@ -524,7 +508,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should do nothing if the specified SQL Login is Present and all parameters match' {
@@ -536,7 +519,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should set PasswordExpirationEnabled on the specified SQL Login if it does not match the LoginPasswordExpirationEnabled parameter' {
@@ -549,7 +531,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should set PasswordPolicyEnforced on the specified SQL Login if it does not match the LoginPasswordPolicyEnforced parameter' {
@@ -562,7 +543,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 0 -Exactly
             }
 
             It 'Should throw when password validation fails when creating a SQL Login' {
@@ -574,7 +554,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 1 -Exactly
             }
 
             It 'Should throw when creating a SQL Login fails' {
@@ -586,7 +565,6 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-Object -ParameterFilter $mockNewObjectSmoLoginParamFilter -Scope It -Times 1 -Exactly
             }
         }
     }
