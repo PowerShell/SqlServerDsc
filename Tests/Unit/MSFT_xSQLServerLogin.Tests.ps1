@@ -197,9 +197,7 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-            }
-
-            
+            }  
         }
 
         Context 'When the login is Present' {
