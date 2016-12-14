@@ -21,10 +21,7 @@ function Get-TargetResource
         $SQLInstanceName = 'MSSQLSERVER'
     )
 
-    $LoginCredential = $paramDictionary.LoginCredential.Value
-    $LoginMustChangePassword = $paramDictionary.LoginMustChangePassword.Value
-    $LoginPasswordExpirationEnabled = $paramDictionary.LoginPasswordExpirationEnabled.Value
-    $LoginPasswordPolicyEnforced = $paramDictionary.LoginPasswordPolicyEnforced.Value
+    Import-SQLPSModule
     
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
@@ -59,7 +56,7 @@ function Get-TargetResource
         $returnValue.Add('LoginPasswordPolicyEnforced',$login.PasswordPolicyEnforced)
     }
 
-    $returnValue
+    return $returnValue
 }
 
 function Set-TargetResource
@@ -255,9 +252,9 @@ function Test-TargetResource
 
             # Create the LoginPasswordPolicyEnforced parameter
             $loginPasswordPolicyEnforcedAttribute = New-Object System.Management.Automation.ParameterAttribute
-            $ac3 = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-            $ac3.Add($loginPasswordPolicyEnforcedAttribute)
-            $loginPasswordPolicyEnforcedParam = New-Object System.Management.Automation.RuntimeDefinedParameter('LoginPasswordPolicyEnforced', [bool], $ac3)
+            $ac4 = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+            $ac4.Add($loginPasswordPolicyEnforcedAttribute)
+            $loginPasswordPolicyEnforcedParam = New-Object System.Management.Automation.RuntimeDefinedParameter('LoginPasswordPolicyEnforced', [bool], $ac4)
             $loginPasswordPolicyEnforcedParam.Value = $true
             $paramDictionary.Add('LoginPasswordPolicyEnforced', $loginPasswordPolicyEnforcedParam)
         }
