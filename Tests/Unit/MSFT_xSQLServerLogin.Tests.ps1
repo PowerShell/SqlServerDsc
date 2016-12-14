@@ -177,6 +177,16 @@ try
             Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
 	}
 
+    $mockNewObjectSmoLogin = {       
+        return New-Object Object |
+            Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
+            Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
+            Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
+            Add-Member -MemberType ScriptMethod -Name Create -Value {} -PassThru -Force
+    }
+
+    $mockNewObjectSmoLoginParamFilter = { 'TypeName' -eq 'Microsoft.SqlServer.Management.Smo.Login' }
+
     #endregion Pester Test Initialization
 
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
@@ -197,7 +207,7 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-            }  
+            }
         }
 
         Context 'When the login is Present' {
@@ -701,7 +711,6 @@ try
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialBadpassword )
-
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'PasswordValidationFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
