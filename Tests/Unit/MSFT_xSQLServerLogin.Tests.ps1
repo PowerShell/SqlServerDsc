@@ -177,16 +177,6 @@ try
             Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
 	}
 
-    $mockNewObjectSmoLogin = {       
-        return New-Object Object |
-            Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
-            Add-Member -MemberType ScriptMethod -Name Create -Value {} -PassThru -Force
-    }
-
-    $mockNewObjectSmoLoginParamFilter = { 'TypeName' -eq 'Microsoft.SqlServer.Management.Smo.Login' }
-
     #endregion Pester Test Initialization
 
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
