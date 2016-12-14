@@ -169,16 +169,6 @@ try
             Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
 	}
 
-    $mockNewObjectSmoLogin = {       
-        return New-Object Object |
-            Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
-            Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
-            Add-Member -MemberType ScriptMethod -Name Create -Value {} -PassThru -Force
-    }
-
-    $mockNewObjectSmoLoginParamFilter = { 'TypeName' -eq 'Microsoft.SqlServer.Management.Smo.Login' }
-
     #endregion Pester Test Initialization
 
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
@@ -415,7 +405,6 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
-        Mock -CommandName New-Object -MockWith $mockNewObjectSmoLogin -ModuleName $script:DSCResourceName -ParameterFilter $mockNewObjectSmoLoginParamFilter -Verifiable
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
         Context 'When the desired state is Absent' {
@@ -542,6 +531,7 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should throw when adding an unsupported login type' {
