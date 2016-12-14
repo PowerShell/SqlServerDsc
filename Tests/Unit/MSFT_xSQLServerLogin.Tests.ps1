@@ -111,6 +111,26 @@ try
     $setTargetResource_WindowsUserPresent.Add( 'Name','Windows\User1' )
     $setTargetResource_WindowsUserPresent.Add( 'LoginType','WindowsUser' )
 
+    $setTargetResource_CertificateAbsent = $instanceParameters.Clone()
+    $setTargetResource_CertificateAbsent.Add( 'Name','Certificate' )
+    $setTargetResource_CertificateAbsent.Add( 'LoginType','Certificate' )
+    
+    $setTargetResource_WindowsUserAbsent = $instanceParameters.Clone()
+    $setTargetResource_WindowsUserAbsent.Add( 'Name','Windows\UserAbsent' )
+    $setTargetResource_WindowsUserAbsent.Add( 'LoginType','WindowsUser' )
+
+    $setTargetResource_WindowsGroupAbsent = $instanceParameters.Clone()
+    $setTargetResource_WindowsGroupAbsent.Add( 'Name','Windows\GroupAbsent' )
+    $setTargetResource_WindowsGroupAbsent.Add( 'LoginType','WindowsGroup' )
+
+    $setTargetResource_SqlLoginAbsent = $instanceParameters.Clone()
+    $setTargetResource_SqlLoginAbsent.Add( 'Name','SqlLoginAbsent' )
+    $setTargetResource_SqlLoginAbsent.Add( 'LoginType','SqlLogin' )
+    
+    $setTargetResource_WindowsUserPresent = $instanceParameters.Clone()
+    $setTargetResource_WindowsUserPresent.Add( 'Name','Windows\User1' )
+    $setTargetResource_WindowsUserPresent.Add( 'LoginType','WindowsUser' )
+
     $setTargetResource_WindowsGroupPresent = $instanceParameters.Clone()
     $setTargetResource_WindowsGroupPresent.Add( 'Name','Windows\Group1' )
     $setTargetResource_WindowsGroupPresent.Add( 'LoginType','WindowsGroup' )
@@ -148,6 +168,16 @@ try
 			} -PassThru |
             Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
 	}
+
+    $mockNewObjectSmoLogin = {       
+        return New-Object Object |
+            Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
+            Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
+            Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
+            Add-Member -MemberType ScriptMethod -Name Create -Value {} -PassThru -Force
+    }
+
+    $mockNewObjectSmoLoginParamFilter = { 'TypeName' -eq 'Microsoft.SqlServer.Management.Smo.Login' }
 
     #endregion Pester Test Initialization
 
@@ -385,6 +415,7 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
+        Mock -CommandName New-Object -MockWith $mockNewObjectSmoLogin -ModuleName $script:DSCResourceName -ParameterFilter $mockNewObjectSmoLoginParamFilter -Verifiable
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
         Context 'When the desired state is Absent' {

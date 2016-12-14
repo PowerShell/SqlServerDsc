@@ -196,7 +196,7 @@ function Set-TargetResource
 
                     New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
                     
-                    $login = New-Object Microsoft.SqlServer.Management.Smo.Login($serverObject,$Name)
+                    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
                     $login.LoginType = $LoginType
 
                     switch ($LoginType)
