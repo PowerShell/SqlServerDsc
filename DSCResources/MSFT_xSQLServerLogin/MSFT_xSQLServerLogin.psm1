@@ -74,8 +74,8 @@ function Set-TargetResource
         $Name,
 
         [Parameter()]
-        [ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
-        [System.String]
+        #[ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
+        [Microsoft.SqlServer.Management.Smo.LoginType]
         $LoginType = 'WindowsUser',
 
         [Parameter(Mandatory)]
@@ -91,7 +91,7 @@ function Set-TargetResource
     {
         $paramDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
         
-        if ( $LoginType -eq 'SqlLogin' )
+        if ( $LoginType -eq 'SqlLogin' -and $Ensure -eq 'Present' )
         {
             # Create the LoginCredential parameter 
             $loginCredAttribute = New-Object System.Management.Automation.ParameterAttribute
@@ -176,7 +176,7 @@ function Set-TargetResource
 
                     New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
                     
-                    $login = New-Object Microsoft.SqlServer.Management.Smo.Login($serverObject,$Name)
+                    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
                     $login.LoginType = $LoginType
 
                     switch ($LoginType)
@@ -247,8 +247,7 @@ function Test-TargetResource
         $Name,
 
         [Parameter()]
-        [ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
-        [System.String]
+        [Microsoft.SqlServer.Management.Smo.LoginType]
         $LoginType = 'WindowsUser',
 
         [Parameter(Mandatory)]
