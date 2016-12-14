@@ -43,7 +43,7 @@ try
         SQLInstanceName = 'MSSQLSERVER'
         SQLServer = 'Server1'
     }
-      
+
     $getTargetResource_UnknownSqlLogin = $instanceParameters.Clone()
     $getTargetResource_UnknownSqlLogin.Add( 'Name','UnknownSqlLogin' )
 
@@ -694,7 +694,23 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
+
+            It 'Should return $false when the specified SQL Login is Present and PasswordPolicyEnforced is $false' {
+                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
+                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent.Add( 'Ensure','Present' )
+                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent.Add( 'LoginPasswordPolicyEnforced',$false )
+
+                ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent ) | Should Be $false 
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Time 1 -Exactly
+            }
         }
+    }
+
+    Describe "$($script:DSCResourceName)\Set-TargetResource" {
+        Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
     }
 }
 finally
