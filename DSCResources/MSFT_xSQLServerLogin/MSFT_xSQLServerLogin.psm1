@@ -188,23 +188,54 @@ function Set-TargetResource
                 }
                 else
                 {
-
-                    $createParams = @{
-                        Name = $Name
-                        SQLServer = $SQLServer
-                        SQLInstanceName = $SQLInstanceName
-                        LoginType = $LoginType
-                    }
-
-                    if ( $LoginType -eq 'SqlLogin' )
+                    # Some login types need additional work. These will need to be fleshed out more in the future
+                    if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $LoginType )
                     {
-                        $createParams.Add('LoginMustChangePassword',$LoginMustChangePassword)
-                        $createParams.Add('LoginPasswordExpirationEnabled',$LoginPasswordExpirationEnabled)
-                        $createParams.Add('LoginPasswordPolicyEnforced',$LoginPasswordPolicyEnforced)
+                        throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
                     }
 
                     New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
-                    New-SqlLogin @createParams
+                    
+                    $login = New-Object Microsoft.SqlServer.Management.Smo.Login($serverObject,$Name)
+                    $login.LoginType = $LoginType
+
+                    switch ($LoginType)
+                    {
+                        SqlLogin
+                        {
+                            $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
+                            $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
+                            if ( $LoginMustChangePassword )
+                            {
+                                $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::MustChange
+                            }
+                            else
+                            {
+                                $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::None
+                            }
+                            
+                            try
+                            {
+                                $login.Create($LoginCredential.Password,$LoginCreateOptions)
+                            }
+                            catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
+                            {
+                                if ( $_.Exception.InnerException.InnerException.InnerException -match '^Password validation failed' )
+                                {
+                                    throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name -ErrorCategory SecurityError
+                                }
+                                else
+                                {
+                                    throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
+                                }
+                            }
+                        }
+
+                        default
+                        {
+                            $login.Create()
+                        }
+                    }
                 }
             }
 
