@@ -229,6 +229,10 @@ function Set-TargetResource
                                     throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
                                 }
                             }
+                            catch
+                            {
+                                throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
+                            }
                         }
 
                         default
