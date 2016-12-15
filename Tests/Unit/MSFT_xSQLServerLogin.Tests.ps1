@@ -36,6 +36,9 @@ try
     $mockSqlLoginPassword = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
     $mockSqlLoginCredential = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginPassword )
 
+    $mockSqlLoginBadPassword = "pw" | ConvertTo-SecureString -asPlainText -Force
+    $mockSqlLoginCredentialBadpassword = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginBadPassword )
+
     $instanceParameters = @{
         SQLInstanceName = 'MSSQLSERVER'
         SQLServer = 'Server1'
@@ -548,7 +551,7 @@ try
             It 'Should throw when password validation fails when creating a SQL Login' {
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
+                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialBadpassword )
 
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'PasswordValidationFailed'
 
