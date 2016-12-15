@@ -2,11 +2,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.SqlServer.Management.Smo
 {
     #region Public Enums
 
+    // TypeName: Microsoft.SqlServer.Management.Smo.LoginCreateOptions
+    // Used by:
+    //  MSFT_xSQLServerLogin.Tests.ps1
+    public enum LoginCreateOptions
+    {
+        None = 0,
+        IsHashed = 1,
+        MustChange = 2
+    }
+    
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginType
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by: 
@@ -194,6 +206,8 @@ namespace Microsoft.SqlServer.Management.Smo
             
         public string Name;
         public LoginType LoginType = LoginType.Unknown;
+        public bool PasswordPolicyEnforced = true;
+        public bool PasswordExpirationEnabled = true;
 
         public void Create()
         {
@@ -267,11 +281,13 @@ namespace Microsoft.SqlServer.Management.Smo
     //  xSQLServerDatabaseRole.Tests.ps1
     public class User 
     {
-       public User( Server server, string name ) {
+        public User( Server server, string name )
+        {
             this.Name = name;
         } 
 
-        public User( Object server, string name ) {
+        public User( Object server, string name )
+        {
             this.Name = name;
         } 
             
@@ -282,8 +298,69 @@ namespace Microsoft.SqlServer.Management.Smo
         {
         }
 
+        public void Create( SecureString password, LoginCreateOptions options  )
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(password);
+                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
+                {
+                    throw new FailedOperationException( "FailedOperationException", new Exception( "InnerException1", new Exception( "InnerException2", new Exception( "Password validation failed" ) ) ) );
+                }
+
+            } finally {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+
         public void Drop()
         {
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.SqlServerManagementException
+    // BaseType: System.Exception 
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class SqlServerManagementException : Exception
+    {
+        public SqlServerManagementException ()
+        {
+
+        }
+
+        public SqlServerManagementException ( string message, Exception innerException )
+        {
+            
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.SmoException
+    // BaseType: Microsoft.SqlServer.Management.Smo.SqlServerManagementException  
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class SmoException : SqlServerManagementException
+    {
+        public SmoException ()
+        {
+
+        }
+        
+        public SmoException ( string message, Exception innerException )
+        {
+
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.FailedOperationException
+    // BaseType: Microsoft.SqlServer.Management.Smo.SmoException
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class FailedOperationException : SmoException
+    {
+        public FailedOperationException ( string message, Exception innerException )
+        {
+
         }
     }
 
