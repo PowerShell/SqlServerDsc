@@ -5,6 +5,8 @@
 - Improvements how tests are initiated in AppVeyor
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
+- Added tests for resources
+  - xSQLServerDatabasePermissions
 
 ## 4.0.0.0
 
@@ -19,7 +21,6 @@
   - xSQLAOGroupJoin
   - xSQLServerHelper and moved the existing tests for Restart-SqlService to it.
   - xSQLServerAlwaysOnService
-  - xSQLServerDatabasePermissions
 - Fixes in xSQLAOGroupJoin
   - Availability Group name now appears in the error message for a failed Availability Group join attempt.
   - Get-TargetResource now works with Get-DscConfiguration
