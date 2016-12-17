@@ -227,6 +227,48 @@ namespace Microsoft.SqlServer.Management.Smo
             this.Create();
         }
 
+        public void Create( SecureString password, LoginCreateOptions options  )
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try
+            {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(password);
+                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
+                {                    
+                    throw new FailedOperationException (
+                        "FailedOperationException",
+                        new SmoException (
+                            "SmoException",
+                            new SqlServerManagementException (
+                                "SqlServerManagementException",
+                                new Exception (
+                                    "Password validation failed. The password does not meet Windows policy requirements because it is too short."
+                                )
+                            )
+                        )
+                    );
+                }
+                else if ( this.Name == "Existing" )
+                {
+                    throw new FailedOperationException ( "The login already exists" );
+                }
+                else if ( this.Name == "Unknown" )
+                {
+                    throw new Exception ();
+                }
+                else
+                {                    
+                    _mockPasswordPassed = true;
+                    
+                    this.Create();
+                }
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+
         public void Drop()
         {
         }
@@ -289,29 +331,10 @@ namespace Microsoft.SqlServer.Management.Smo
         public User( Object server, string name )
         {
             this.Name = name;
-        } 
-            
+        }
+
         public string Name;
         public string Login;
-
-        public void Create()
-        {
-        }
-
-        public void Create( SecureString password, LoginCreateOptions options  )
-        {
-            IntPtr valuePtr = IntPtr.Zero;
-            try {
-                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(password);
-                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
-                {
-                    throw new FailedOperationException( "FailedOperationException", new Exception( "InnerException1", new Exception( "InnerException2", new Exception( "Password validation failed" ) ) ) );
-                }
-
-            } finally {
-                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
-            }
-        }
 
         public void Drop()
         {
@@ -324,15 +347,11 @@ namespace Microsoft.SqlServer.Management.Smo
     //  xSqlServerLogin.Tests.ps1
     public class SqlServerManagementException : Exception
     {
-        public SqlServerManagementException ()
-        {
+        public SqlServerManagementException () : base () {}
 
-        }
+        public SqlServerManagementException (string message) : base (message) {}
 
-        public SqlServerManagementException ( string message, Exception innerException )
-        {
-            
-        }
+        public SqlServerManagementException (string message, Exception inner) : base (message, inner) {}
     }
 
     // TypeName: Microsoft.SqlServer.Management.Smo.SmoException
@@ -341,15 +360,11 @@ namespace Microsoft.SqlServer.Management.Smo
     //  xSqlServerLogin.Tests.ps1
     public class SmoException : SqlServerManagementException
     {
-        public SmoException ()
-        {
+        public SmoException () : base () {}
 
-        }
+        public SmoException (string message) : base (message) {}
         
-        public SmoException ( string message, Exception innerException )
-        {
-
-        }
+        public SmoException (string message, SqlServerManagementException inner) : base (message, inner) {}
     }
 
     // TypeName: Microsoft.SqlServer.Management.Smo.FailedOperationException
@@ -358,10 +373,11 @@ namespace Microsoft.SqlServer.Management.Smo
     //  xSqlServerLogin.Tests.ps1
     public class FailedOperationException : SmoException
     {
-        public FailedOperationException ( string message, Exception innerException )
-        {
-
-        }
+        public FailedOperationException () : base () {}
+        
+        public FailedOperationException (string message) : base (message) {}
+        
+        public FailedOperationException (string message, SmoException inner) : base (message, inner) {}
     }
 
     #endregion Public Classes
