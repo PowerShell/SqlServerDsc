@@ -106,7 +106,6 @@ try
     $setTargetResource_SqlLoginAbsentUnknown = $instanceParameters.Clone()
     $setTargetResource_SqlLoginAbsentUnknown.Add( 'Name','Unknown' )
     $setTargetResource_SqlLoginAbsentUnknown.Add( 'LoginType','SqlLogin' )
-
     
     $setTargetResource_WindowsUserPresent = $instanceParameters.Clone()
     $setTargetResource_WindowsUserPresent.Add( 'Name','Windows\User1' )
@@ -581,7 +580,18 @@ try
             }
 
             It 'Should throw when creating a SQL Login fails' {
-                $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
+                $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsentExisting.Clone()
+                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
+
+                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'LoginCreationFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should throw when creating a SQL Login fails with an unhandled exception' {
+                $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsentUnknown.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
 
