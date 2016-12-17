@@ -220,9 +220,9 @@ function Set-TargetResource
                             }
                             catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
                             {
-                                if ( $_.Exception.InnerException.InnerException.InnerException -match '^Password validation failed' )
+                                if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
                                 {
-                                    throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name -ErrorCategory SecurityError
+                                    throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
                                 }
                                 else
                                 {

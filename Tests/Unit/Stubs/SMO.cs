@@ -340,20 +340,8 @@ namespace Microsoft.SqlServer.Management.Smo
         {
         }
 
-        public void Create( SecureString password, LoginCreateOptions options  )
-        {
-            IntPtr valuePtr = IntPtr.Zero;
-            try {
-                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(password);
-                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
-                {
-                    throw new FailedOperationException( "FailedOperationException", new Exception( "InnerException1", new Exception( "InnerException2", new Exception( "Password validation failed" ) ) ) );
-                }
-
-            } finally {
-                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
-            }
-        }
+        public string Name;
+        public string Login;
 
         public void Drop()
         {
