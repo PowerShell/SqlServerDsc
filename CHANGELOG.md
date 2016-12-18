@@ -5,6 +5,9 @@
 - Improvements how tests are initiated in AppVeyor
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
+- Changes to xSSQLServerLogin
+  - Removed ShouldProcess statements
+  - Added the ability to enforce password policies on SQL logins
 
 ## 4.0.0.0
 
