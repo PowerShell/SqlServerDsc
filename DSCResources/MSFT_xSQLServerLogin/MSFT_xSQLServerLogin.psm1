@@ -69,7 +69,7 @@ function Set-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$true)]
         [System.String]
         $Name,
 
@@ -78,11 +78,11 @@ function Set-TargetResource
         [Microsoft.SqlServer.Management.Smo.LoginType]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$true)]
         [System.String]
         $SQLServer,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory$true)]
         [System.String]
         $SQLInstanceName
     )
@@ -246,7 +246,7 @@ function Test-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$true)]
         [System.String]
         $Name,
 
@@ -254,11 +254,11 @@ function Test-TargetResource
         [Microsoft.SqlServer.Management.Smo.LoginType]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$true)]
         [System.String]
         $SQLServer,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$true)]
         [System.String]
         $SQLInstanceName
     )
