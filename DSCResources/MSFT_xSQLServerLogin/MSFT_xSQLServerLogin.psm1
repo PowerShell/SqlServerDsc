@@ -130,7 +130,7 @@ function Set-TargetResource
         [System.String]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $SQLServer,
 
