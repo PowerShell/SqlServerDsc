@@ -226,6 +226,12 @@ function Set-TargetResource
                     {
                         SqlLogin
                         {
+                            # Verify the instance is in Mixed authentication mode
+                            if ( @( 'Mixed', 'Integrated' ) -notcontains $serverObject.LoginMode )
+                            {
+                                throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $SQLServer,$SQLInstanceName,$serverObject.LoginMode -ErrorCategory NotImplemented
+                            }
+                            
                             $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
                             $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
                             if ( $LoginMustChangePassword )
