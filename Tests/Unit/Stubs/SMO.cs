@@ -118,6 +118,48 @@ namespace Microsoft.SqlServer.Management.Smo
         public string PermissionState = "Grant";
     }
 
+    // TypeName: Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
+    // BaseType: Microsoft.SqlServer.Management.Smo.PermissionSetBase
+    // Used by: 
+    //  xSQLServerDatabasePermission.Tests.ps1
+    public class DatabasePermissionSet 
+    {
+        public DatabasePermissionSet(){}
+
+        public DatabasePermissionSet(
+            bool connect, 
+            bool update )
+        {
+            this.Connect = connect; 
+            this.Update = update;
+        } 
+    
+        public bool Connect = false;
+        public bool Update = false;
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo
+    // BaseType: Microsoft.SqlServer.Management.Smo.PermissionInfo
+    // Used by: 
+    //  xSQLServerDatabasePermission.Tests.ps1
+    public class DatabasePermissionInfo 
+    {
+        public DatabasePermissionInfo()
+        {
+            Microsoft.SqlServer.Management.Smo.DatabasePermissionSet[] permissionSet = { new Microsoft.SqlServer.Management.Smo.DatabasePermissionSet() };
+            this.PermissionType = permissionSet;
+        }
+
+        public DatabasePermissionInfo( 
+            Microsoft.SqlServer.Management.Smo.DatabasePermissionSet[] permissionSet )
+        {
+            this.PermissionType = permissionSet;
+        }
+        
+        public Microsoft.SqlServer.Management.Smo.DatabasePermissionSet[] PermissionType;
+        public string PermissionState = "Grant";
+    }
+
     // TypeName: Microsoft.SqlServer.Management.Smo.Server
     // BaseType: Microsoft.SqlServer.Management.Smo.SqlSmoObject
     // Used by: 
@@ -240,6 +282,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by: 
     //  MSFT_xSQLServerDatabase
+    //  MSFT_xSQLServerDatabasePermission
 	public class Database
 	{
         public Database( Server server, string name ) {
@@ -260,8 +303,24 @@ namespace Microsoft.SqlServer.Management.Smo
         {
         }
 		
-        public void EnumDatabasePermissions(string Login)
-        {
+        public Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo[] EnumDatabasePermissions( string granteeName ) 
+        { 
+            List<Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo> listOfDatabasePermissionInfo = new List<Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo>();
+            
+            if( Globals.GenerateMockData ) {
+                Microsoft.SqlServer.Management.Smo.DatabasePermissionSet[] permissionSet = { 
+                    new Microsoft.SqlServer.Management.Smo.DatabasePermissionSet( true, false ),
+                    new Microsoft.SqlServer.Management.Smo.DatabasePermissionSet( false, true )
+                };
+
+                listOfDatabasePermissionInfo.Add( new Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo( permissionSet ) );
+            } else {
+                listOfDatabasePermissionInfo.Add( new Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo() );
+            }
+
+            Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo[] permissionInfo = listOfDatabasePermissionInfo.ToArray();
+
+            return permissionInfo;
         }
 	}
 

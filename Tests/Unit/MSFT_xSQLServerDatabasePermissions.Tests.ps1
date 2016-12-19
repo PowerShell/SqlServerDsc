@@ -22,8 +22,6 @@ $TestEnvironment = Initialize-TestEnvironment -DSCModuleName $script:DSCModuleNa
 try
 {
     #region Pester Test Initialization
-    # Loading mocked classes
-    Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 
     $defaultParameters = @{
         SQLInstanceName = 'MSSQLSERVER'
@@ -347,83 +345,6 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
                 Assert-MockCalled Get-SqlDatabasePermission -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope It
                 Assert-MockCalled Remove-SqlDatabasePermission -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope It
-            }
-        }
-
-        Assert-VerifiableMocks
-    }
-
-    Describe "$($script:DSCResourceName) - Test Helper Function Get-SqlDatabasePermission" {
-        Mock -CommandName Connect-SQL -MockWith {
-            $sqlConnect = [pscustomobject]@{
-                InstanceName = 'MSSQLSERVER'
-                ComputerNamePhysicalNetBIOS = 'SQL01'
-            }
-            $sqlConnect = $sqlConnect | Add-Member -MemberType ScriptProperty -Name Databases -Value { 
-                return @{
-                    'AdventureWorks' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Database -ArgumentList @( $null, 'AdventureWorks') ) )
-                } | Add-Member -MemberType ScriptMethod -Name EnumDatabasePermissions -Value {
-                    return @{
-                        'CONTOSO\SqlAdmin' = @( 'Connect','Update' )
-                    }
-                } -PassThru -Force
-            } -PassThru -Force
-            $sqlConnect = $sqlConnect | Add-Member -MemberType ScriptProperty -Name Logins -Value { 
-                return @{
-                    'CONTOSO\SqlAdmin' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'CONTOSO\SqlAdmin') -Property @{ LoginType = 'WindowsUser'} ) )
-                }
-            } -PassThru -Force
-            return $sqlConnect
-        } -ModuleName $script:DSCResourceName -Verifiable
-
-        Context 'When the specified database does not exist' {
-            $testParameters = @{
-                SQLInstanceName = 'MSSQLSERVER'
-                SQLServer       = 'SQL01'
-                Database        = 'AdventureWorks'
-                Name            = 'CONTOSO\SqlAdmin'
-                PermissionState = 'Grant'
-                Permissions     = @( 'Connect','Update' )
-            }
-             
-            Get-TargetResource @testParameters
-
-            It 'Get-SqlDatabasePermission should throw an error when desired database does not exist' {
-                { Get-SqlDatabasePermission } | Should Throw
-            }
-        }
-
-        Context 'When the specified database does not exist' {
-            $testParameters = @{
-                SQLInstanceName = 'MSSQLSERVER'
-                SQLServer       = 'SQL01'
-                Database        = 'UnknownDatabase'
-                Name            = 'CONTOSO\SqlAdmin'
-                PermissionState = 'Grant'
-                Permissions     = @( 'Connect','Update' )
-            }
-             
-            Get-TargetResource @testParameters
-
-            It 'Get-SqlDatabasePermission should throw an error when desired database does not exist' {
-                { Get-SqlDatabasePermission } | Should Throw
-            }
-        }
-
-        Context 'When the specified login does not exist' {
-            $testParameters = @{
-                SQLInstanceName = 'MSSQLSERVER'
-                SQLServer       = 'SQL01'
-                Database        = 'AdventureWorks'
-                Name            = 'CONTOSO\SqlUnknown'
-                PermissionState = 'Grant'
-                Permissions     = @( 'Connect','Update' )
-            }
-            
-            Get-TargetResource @testParameters
-
-            It 'Get-SqlDatabasePermission should throw an error when desired login does not exist' {
-                { Get-SqlDatabasePermission } | Should Throw
             }
         }
 
