@@ -5,7 +5,19 @@
 - Improvements how tests are initiated in AppVeyor
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
-
+- xSQLServerHelper
+  - added functions
+    - Get-SqlDatabaseRecoveryModel
+    - Set-SqlDatabaseRecoveryModel
+- Examples
+  - xSQLServerDatabaseRecoveryModel
+    - 1-SetDatabaseRecoveryModel.ps1
+- Added tests for resources
+  - xSQLServerDatabaseRecoveryModel  
+- Changes to xSQLServerDatabaseRecoveryModel
+  - BREAKING CHANGE: Renamed xSQLDatabaseRecoveryModel to xSQLServerDatabaseRecoveryModel to align wíth naming convention.
+  - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
+  
 ## 4.0.0.0
 
 - Fixes in xSQLServerConfiguration
