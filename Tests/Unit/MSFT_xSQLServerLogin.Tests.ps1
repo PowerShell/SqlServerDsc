@@ -148,34 +148,34 @@ try
     $setTargetResource_SqlLoginPresent.Add( 'LoginType','SqlLogin' )
 
     $mockConnectSQL = {
-		return New-Object Object | 
-			Add-Member ScriptProperty Logins {
-				return @{
-					'Windows\User1' = ( New-Object Object | 
-						Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\User1' -PassThru |
-						Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsUser' -PassThru |
+  return New-Object Object | 
+   Add-Member ScriptProperty Logins {
+    return @{
+     'Windows\User1' = ( New-Object Object | 
+      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\User1' -PassThru |
+      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsUser' -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
                     )
-					'SqlLogin1' = ( New-Object Object | 
-						Add-Member -MemberType NoteProperty -Name 'Name' -Value 'SqlLogin1' -PassThru |
-						Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'SqlLogin' -PassThru | 
-						Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
-						Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
-						Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
+     'SqlLogin1' = ( New-Object Object | 
+      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'SqlLogin1' -PassThru |
+      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'SqlLogin' -PassThru | 
+      Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
+      Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
+      Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
                     )
-					'Windows\Group1' = ( New-Object Object | 
-						Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\Group1' -PassThru |
-						Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsGroup' -PassThru |
+     'Windows\Group1' = ( New-Object Object | 
+      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\Group1' -PassThru |
+      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsGroup' -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
                     )
-				}
-			} -PassThru |
+    }
+   } -PassThru |
             Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
-	}
+ }
 
     #endregion Pester Test Initialization
 
