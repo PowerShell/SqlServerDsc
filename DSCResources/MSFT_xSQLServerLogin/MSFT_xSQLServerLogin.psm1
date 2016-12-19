@@ -168,10 +168,10 @@ function Set-TargetResource
                 $login = $serverObject.Logins[$Name]
 
                 if ( $login.LoginType -eq 'SqlLogin' )
-                {
-                    if ( -not $LoginCredential )
+                {                    
+                    if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
                     {
-                        New-TerminatingError -ErrorType LoginCredentialNoFound -FormatArgs $Name -ErrorCategory ObjectNotFound
+                        throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
                     }
                     
                     if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
@@ -192,17 +192,22 @@ function Set-TargetResource
             else
             {
                 # Some login types need additional work. These will need to be fleshed out more in the future
-                if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $lt )
+                if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $LoginType )
                 {
-                    throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $lt -ErrorCategory NotImplemented
+                    throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
                 }
 
+                if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
+                {
+                    throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
+                }
+                
                 New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
                 
                 $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
-                $login.LoginType = $lt
+                $login.LoginType = $LoginType
 
-                switch ($lt)
+                switch ($LoginType)
                 {
                     SqlLogin
                     {
