@@ -212,7 +212,7 @@ function Set-TargetResource
                     SqlLogin
                     {
                         # Verify the instance is in Mixed authentication mode
-                        if ( @( 'Mixed', 'Integrated' ) -notcontains $serverObject.LoginMode )
+                        if ( $serverObject.LoginMode -notmatch 'Mixed|Integrated' )
                         {
                             throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $SQLServer,$SQLInstanceName,$serverObject.LoginMode -ErrorCategory NotImplemented
                         }
@@ -333,6 +333,10 @@ function Test-TargetResource
         [Parameter(Mandatory=$true)]
         [System.String]
         $SQLInstanceName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $LoginCredential,
 
         [Parameter()]
         [bool]
