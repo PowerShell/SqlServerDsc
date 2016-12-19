@@ -39,7 +39,19 @@
 - Changes to xSQLServerLogin
   - Removed ShouldProcess statements
   - Added the ability to enforce password policies on SQL logins
-
+- Changes to xSQLServerHelper
+  - added functions
+    - Get-SqlDatabaseRecoveryModel
+    - Set-SqlDatabaseRecoveryModel
+- Examples
+  - xSQLServerDatabaseRecoveryModel
+    - 1-SetDatabaseRecoveryModel.ps1
+- Added tests for resources
+  - xSQLServerDatabaseRecoveryModel  
+- Changes to xSQLServerDatabaseRecoveryModel
+  - BREAKING CHANGE: Renamed xSQLDatabaseRecoveryModel to xSQLServerDatabaseRecoveryModel to align wíth naming convention.
+  - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
+  
 ## 4.0.0.0
 
 - Fixes in xSQLServerConfiguration

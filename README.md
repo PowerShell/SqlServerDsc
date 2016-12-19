@@ -139,7 +139,7 @@ No description.
 
 None.
 
-### xSQLDatabaseRecoveryModel
+### xSQLServerDatabaseRecoveryModel
 
 No description.
 
@@ -150,8 +150,10 @@ No description.
 
 #### Parameters
 
-* **[String] DatabaseName** _(Key)_: The SQL database name
-* **[String] SQLServerInstance** _(Required)_: The SQL server and instance
+* **[String] Ensure** _(Write)_: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
+* **[String] Name** _(Key)_: The SQL database name
+* **[String] SQLServer** _(Key)_: The SQL Server for the database
+* **[String] SQLInstanceName** _(Key)_: The SQL server and instance
 * **[String] RecoveryModel** _(Required)_: Recovery Model (Full, Simple, BulkLogged). { *Full* | Simple | BulkLogged }.
 
 #### Examples
