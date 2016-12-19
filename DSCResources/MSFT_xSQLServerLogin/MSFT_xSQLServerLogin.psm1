@@ -2,6 +2,19 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
 
+<#
+    .SYNOPSIS
+    Gets the specified login by name.
+
+    .PARAMETER Name
+    The name of the login to retrieve.
+    
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to retrieve the login from.
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to retrieve the login from. 
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -59,6 +72,37 @@ function Get-TargetResource
     return $returnValue
 }
 
+<#
+    .SYNOPSIS
+    Creates a login.
+
+    .PARAMETER Ensure
+    Specifies if the login to exist. Default is 'Present'.
+    
+    .PARAMETER Name
+    The name of the login to retrieve.
+
+    .PARAMETER LoginType
+    The type of login to create. Default is 'WindowsUser'
+    
+    .PARAMETER SQLServer
+    Hostname of the SQL Server to create the login on.
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance to create the login on.
+
+    .PARAMETER LoginCredential
+    The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
+
+    .PARAMETER LoginMustChangePassword
+    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
+
+    .PARAMETER LoginPasswordExpirationEnabled
+    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
+
+    .PARAMETER LoginPasswordPolicyEnforced
+    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -74,7 +118,6 @@ function Set-TargetResource
         $Name,
 
         [Parameter()]
-        #[ValidateSet('SqlLogin', 'WindowsUser', 'WindowsGroup')]
         [Microsoft.SqlServer.Management.Smo.LoginType]
         $LoginType = 'WindowsUser',
 
@@ -235,6 +278,37 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+    Tests to verify the login exists and the properties are correctly set.
+
+    .PARAMETER Ensure
+    Specifies if the login is supposed to exist. Default is 'Present'.
+    
+    .PARAMETER Name
+    The name of the login.
+
+    .PARAMETER LoginType
+    The type of login. Default is 'WindowsUser'
+    
+    .PARAMETER SQLServer
+    Hostname of the SQL Server.
+    
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance.
+
+    .PARAMETER LoginCredential
+    The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
+
+    .PARAMETER LoginMustChangePassword
+    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
+
+    .PARAMETER LoginPasswordExpirationEnabled
+    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
+
+    .PARAMETER LoginPasswordPolicyEnforced
+    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
