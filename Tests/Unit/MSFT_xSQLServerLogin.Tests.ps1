@@ -515,6 +515,7 @@ try
             It 'Should add the specified SQL Login when it is Absent' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
 
+<<<<<<< 5dc97f5c092fd1d8fdd3ba52ee913dd858e618cf
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
@@ -528,6 +529,8 @@ try
             It 'Should add the specified SQL Login when it is Absent and MustChangePassword is $false' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
                 
+=======
+>>>>>>> Added a check for Login Mode before attempting to create a SQL Login
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
@@ -541,6 +544,8 @@ try
             }
 
             It 'Should add the specified SQL Login when it is Absent and MustChangePassword is $false' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
@@ -564,11 +569,19 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
+<<<<<<< 5dc97f5c092fd1d8fdd3ba52ee913dd858e618cf
             It 'Should throw LoginCredentialNotFound when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
                 
                 $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred.Add( 'Ensure','Present' )
+=======
+            It 'Should throw when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
+                $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'Ensure','Present' )
+>>>>>>> Added a check for Login Mode before attempting to create a SQL Login
 
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred } | Should Throw 'LoginCredentialNotFound'
 
@@ -687,7 +700,7 @@ try
                 
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialBadpassword )
+                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
 
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'IncorrectLoginMode'
 
@@ -709,6 +722,8 @@ try
             }
             
             It 'Should throw when creating a SQL Login fails' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsentExisting.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
@@ -720,6 +735,8 @@ try
             }
 
             It 'Should throw when creating a SQL Login fails with an unhandled exception' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
                 $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsentUnknown.Clone()
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
