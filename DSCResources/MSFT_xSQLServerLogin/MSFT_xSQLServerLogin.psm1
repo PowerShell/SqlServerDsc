@@ -134,7 +134,7 @@ function Set-TargetResource
         [System.String]
         $SQLServer,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $SQLInstanceName,
 
