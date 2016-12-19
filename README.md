@@ -287,6 +287,44 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **LoginPasswordExpirationEnabled**: Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
 * **LoginPasswordPolicyEnforced**: Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
 
+### xSQLServerRole
+
+* **Name**: (Key) Name of the SQL Login to create
+* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'.
+* **ServerRole**: Type of SQL role to add.(bulkadmin, dbcreator, diskadmin, processadmin , public, securityadmin, serveradmin , setupadmin, sysadmin)
+* **SQLServer**: SQL Server where login should be created
+* **SQLInstance**: (Key) SQL Instance for the login
+
+### xSQLServerDatabaseRole
+
+* **Ensure**: If 'Present' (the default value) then the login (user) will be added to the role(s). If 'Absent' then the login (user) will be removed from the role(s).
+* **Name**: (Key) The name of the login that will become a member, or removed as a member, of the role(s).
+* **SQLServer**: (Key) The SQL server on which the instance exist.
+* **SQLInstanceName**: (Key) The SQL instance in which the database exist.
+* **Database**: (Key) The database in which the login (user) and role(s) exist.
+* **Role**: One or more roles to which the login (user) will be added or removed.
+
+### xSQLServerDatabasePermissions
+
+* **Database**: (Key) The SQL Database
+* **Name**: (Required) The name of permissions for the SQL database
+* **Permissions**: (Required) The set of Permissions for the SQL database
+* **SQLServer**: The SQL Server for the database
+* **SQLInstanceName**: The SQL instance for the database
+
+### xSQLServerDatabaseOwner
+
+* **Database**: (Key) The SQL Database
+* **Name**: (Required) The name of the SQL login for the owner
+* **SQLServer**: The SQL Server for the database
+* **SQLInstance**: The SQL instance for the database
+
+### xSQLDatabaseRecoveryModel
+
+* **DatabaseName**: (key) The SQL database name
+* **SQLServerInstance**: (Required) The SQL server and instance
+* **RecoveryModel**: (Required) Recovery Model (Full, Simple, BulkLogged)
+
 ### xSQLServerMaxDop
 
 * **Ensure**: An enumerated value that describes if Min and Max memory is configured
