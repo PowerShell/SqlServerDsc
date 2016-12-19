@@ -14,7 +14,11 @@ Configuration Example
     param(
         [Parameter(Mandatory = $true)]
         [PSCredential]
-        $SysAdminAccount
+        $SysAdminAccount,
+
+        [Parameter(Mandatory = $true)]
+        [PSCredential]
+        $LoginCredential
     )
     
     Import-DscResource -ModuleName xSqlServer
@@ -27,6 +31,7 @@ Configuration Example
             LoginType = 'WindowsUser'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
+            PsDscRunAsCredential = $SysAdminAccount
         }
 
         xSQLServerLogin Add_WindowsGroup
@@ -36,6 +41,7 @@ Configuration Example
             LoginType = 'WindowsGroup'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
+            PsDscRunAsCredential = $SysAdminAccount
         }
 
         xSQLServerLogin Add_SqlLogin
@@ -45,10 +51,11 @@ Configuration Example
             LoginType = 'SqlLogin'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
-            LoginCredential = $SysAdminAccount
+            LoginCredential = $LoginCredential
             LoginMustChangePassword = $false
             LoginPasswordExpirationEnabled = $true
             LoginPasswordPolicyEnforced = $true
+            PsDscRunAsCredential = $SysAdminAccount
         }
     }
 }
