@@ -277,12 +277,15 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ### xSQLServerLogin
 
-* **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'.
-* **Name**: (Key) The name of the SQL login. If LoginType is 'WindowsUser' or 'WindowsGroup' then provide the name in the format DOMAIN\name.
+* **Ensure**: The specified login is Present or Absent.
+* **Name**: (Key) The name of the SQL login.
+* **LoginType**: The type of login to be created. If LoginType is 'WindowsUser' or 'WindowsGroup' then provide the name in the format DOMAIN\name.
+* **SQLServer**: (Key) The hostname of the SQL Server to be configured.
+* **SQLInstanceName**: (Key) Name of the SQL instance to be configured.
 * **LoginCredential**: If LoginType is 'SqlLogin' then a PSCredential is needed for the password to the login.
-* **LoginType**: The SQL login type. Valid values are 'SqlLogin', 'WindowsUser' or 'WindowsGroup'.
-* **SQLServer**: (Key) The SQL Server for the login.
-* **SQLInstanceName**: (Key) The SQL instance for the login.
+* **LoginMustChangePassword**: Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
+* **LoginPasswordExpirationEnabled**: Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
+* **LoginPasswordPolicyEnforced**: Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
 
 ### xSQLServerMaxDop
 
