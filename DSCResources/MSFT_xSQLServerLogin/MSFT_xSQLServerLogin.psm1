@@ -118,7 +118,15 @@ function Set-TargetResource
         $Name,
 
         [Parameter()]
-        [Microsoft.SqlServer.Management.Smo.LoginType]
+        [ValidateSet('WindowsUser',
+            'WindowsGroup',
+            'SqlLogin',
+            'Certificate',
+            'AsymmetricKey',
+            'ExternalUser',
+            'ExternalGroup'
+        )]
+        [System.String]
         $LoginType = 'WindowsUser',
 
         [Parameter(Mandatory=$true)]
@@ -182,8 +190,20 @@ function Set-TargetResource
         
         Import-SQLPSModule
 
+        try
+        {
+            if ( [Microsoft.SqlServer.Management.Smo.LoginType]$LoginType )
+            {
+                $lt = [Microsoft.SqlServer.Management.Smo.LoginType]$LoginType
+            }
+        }
+        catch
+        {
+            Throw New-TerminatingError -ErrorType InvalidLoginType -FormatArgs $LoginType -ErrorCategory InvalidType
+        }
+        
         $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-
+        
         switch ( $Ensure )
         {
             'Present'
@@ -212,17 +232,17 @@ function Set-TargetResource
                 else
                 {
                     # Some login types need additional work. These will need to be fleshed out more in the future
-                    if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $LoginType )
+                    if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $lt )
                     {
-                        throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
+                        throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $lt -ErrorCategory NotImplemented
                     }
 
                     New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
                     
                     $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
-                    $login.LoginType = $LoginType
+                    $login.LoginType = $lt
 
-                    switch ($LoginType)
+                    switch ($lt)
                     {
                         SqlLogin
                         {
@@ -331,7 +351,15 @@ function Test-TargetResource
         $Name,
 
         [Parameter()]
-        [Microsoft.SqlServer.Management.Smo.LoginType]
+        [ValidateSet('WindowsUser',
+            'WindowsGroup',
+            'SqlLogin',
+            'Certificate',
+            'AsymmetricKey',
+            'ExternalUser',
+            'ExternalGroup'
+        )]
+        [System.String]
         $LoginType = 'WindowsUser',
 
         [Parameter(Mandatory=$true)]
