@@ -189,17 +189,17 @@ function Set-TargetResource
                 else
                 {
                     # Some login types need additional work. These will need to be fleshed out more in the future
-                    if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $LoginType )
+                    if ( @('Certificate','AsymmetricKey','ExternalUser','ExternalGroup') -contains $lt )
                     {
-                        throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
+                        throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $lt -ErrorCategory NotImplemented
                     }
 
                     New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
                     
                     $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject,$Name
-                    $login.LoginType = $LoginType
+                    $login.LoginType = $lt
 
-                    switch ($LoginType)
+                    switch ($lt)
                     {
                         SqlLogin
                         {
@@ -316,7 +316,7 @@ function Test-TargetResource
             'ExternalUser',
             'ExternalGroup'
         )]
-       [System.String]
+        [System.String]
         $LoginType = 'WindowsUser',
 
         [Parameter(Mandatory=$true)]
