@@ -44,4 +44,5 @@ AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '
 PasswordValidationFailed = Creation of the login '{0}' failed due to the following error: {1}
 LoginCreationFailed = Creation of the login '{0}' failed.
 LoginTypeNotImplemented = The login type '{0}' is not implemented in this module.
+IncorrectLoginMode = The instance '{0}\{1}' is currently in '{2}' authentication mode. To create a SQL Login, it must be set to 'Mixed'.
 '@
