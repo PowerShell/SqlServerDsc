@@ -43,7 +43,7 @@ try
         SQLInstanceName = 'MSSQLSERVER'
         SQLServer = 'Server1'
     }
-    
+      
     $getTargetResource_UnknownSqlLogin = $instanceParameters.Clone()
     $getTargetResource_UnknownSqlLogin.Add( 'Name','UnknownSqlLogin' )
 
@@ -82,7 +82,7 @@ try
     $testTargetResource_SqlLoginPresentWithDefaultValues = $instanceParameters.Clone()
     $testTargetResource_SqlLoginPresentWithDefaultValues.Add( 'Name','SqlLogin1' )
     $testTargetResource_SqlLoginPresentWithDefaultValues.Add( 'LoginType','SqlLogin' )
-
+    
     $setTargetResource_CertificateAbsent = $instanceParameters.Clone()
     $setTargetResource_CertificateAbsent.Add( 'Name','Certificate' )
     $setTargetResource_CertificateAbsent.Add( 'LoginType','Certificate' )
@@ -525,16 +525,27 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
-            It 'Should throw when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
+            It 'Should throw LoginCredentialNotFound when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
                 
-                $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
-                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred = $setTargetResource_SqlLoginAbsent.Clone()
+                $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred.Add( 'Ensure','Present' )
 
-                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresen0t } | Should Throw
+                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred } | Should Throw 'LoginCredentialNotFound'
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 0 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+            }
+            It 'Should throw LoginCredentialNotFound when modifying the specified SQL Login when it is Present and is missing the LoginCredential parameter' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
+                $setTargetResource_SqlLoginPresent_EnsurePresent_NoCred = $setTargetResource_SqlLoginPresent.Clone()
+                $setTargetResource_SqlLoginPresent_EnsurePresent_NoCred.Add( 'Ensure','Present' )
+
+                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent_NoCred } | Should Throw 'LoginCredentialNotFound'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should do nothing if the specified Windows User is Present' {
@@ -657,7 +668,7 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
-
+            
             It 'Should throw when creating a SQL Login fails' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
                 
