@@ -45,4 +45,6 @@ PasswordValidationFailed = Creation of the login '{0}' failed due to the followi
 LoginCreationFailed = Creation of the login '{0}' failed.
 LoginTypeNotImplemented = The login type '{0}' is not implemented in this module.
 IncorrectLoginMode = The instance '{0}\{1}' is currently in '{2}' authentication mode. To create a SQL Login, it must be set to 'Mixed'.
+InvalidLoginType = The value '{0}' is not a valid login type.
+LoginCredentialNoFound = The credential for the SQL Login '{0}' was not found.
 '@
