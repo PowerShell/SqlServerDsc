@@ -6,7 +6,14 @@
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
 - Added tests for resources
-  - xSQLServerDatabasePermissions
+  - xSQLServerDatabasePermission
+- Examples
+  - xSQLServerDatabasePermission
+    - 1-AddDatabasePermissions.ps1
+    - 2-RemoveDatabasePermissions.ps1
+- Changes to xSQLServerDatabasePermission
+  - BREAKING CHANGE: Renamed xSQLServerDatabasePermissions to xSQLServerDatabasePermission to align wíth naming convention.
+  - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
 
 ## 4.0.0.0
 

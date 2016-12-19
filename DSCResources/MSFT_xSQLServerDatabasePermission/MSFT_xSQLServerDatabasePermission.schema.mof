@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerDatabasePermissions")]
-class MSFT_xSQLServerDatabasePermissions : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerDatabasePermission")]
+class MSFT_xSQLServerDatabasePermission : OMI_BaseResource
 {
     [Write, Description("If the values should be present or absent. Valid values are 'Present' or 'Absent'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Key, Description("The SQL database.")] String Database;

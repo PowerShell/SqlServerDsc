@@ -225,7 +225,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **Database**: (Key) The database in which the login (user) and role(s) exist.
 * **Role**: One or more roles to which the login (user) will be added or removed.
 
-### xSQLServerDatabasePermissions
+### xSQLServerDatabasePermission
 
 * **Ensure**: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
 * **Database**: (Key) The SQL Database
