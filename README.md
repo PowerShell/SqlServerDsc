@@ -67,7 +67,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
 * [**xSQLServerDatabase**](#xsqlserverdatabase) resource to manage ensure database is present or absent
 * [**xSQLServerDatabaseOwner**](#xsqlserverdatabaseowner) resource to manage SQL database owners
-* [**xSQLServerDatabasePermissions**](#xsqlserverdatabasepermissions) resource to manage SQL database permissions
+* [**xSQLServerDatabasePermission**](#xsqlserverdatabasepermission) resource to manage SQL database permissions
 * [**xSQLServerDatabaseRole**](#xsqlserverdatabaserole) resource to manage SQL database roles
 * [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint is present or absent
 * [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission) Grant or revoke permission on the endpoint.
@@ -295,7 +295,7 @@ No description.
 
 * [Set database owner](/Examples/Resources/xSQLServerDatabaseOwner/1-SetDatabaseOwner.ps1)
 
-### xSQLServerDatabasePermissions
+### xSQLServerDatabasePermission
 
 No description.
 
