@@ -290,4 +290,90 @@ InModuleScope $script:moduleName {
 
         Assert-VerifiableMocks
     }
+
+    Describe "Testing Add-SqlDatabasePermission" {
+        $mockSqlServerObject = [pscustomobject]@{
+            InstanceName = 'MSSQLSERVER'
+            ComputerNamePhysicalNetBIOS = 'SQL01'
+        }
+
+        $mockSqlServerObject = $mockSqlServerObject | Add-Member -MemberType ScriptProperty -Name Databases -Value { 
+            return @{
+                'AdventureWorks' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Database -ArgumentList @( $null, 'AdventureWorks') ) )
+            } | Add-Member -MemberType ScriptMethod -Name EnumDatabasePermissions -Value {
+                return @{
+                    'CONTOSO\SqlAdmin' = @( 'Connect','Update' )
+                }
+            } -PassThru -Force
+        } -PassThru -Force
+
+        $mockSqlServerObject = $mockSqlServerObject | Add-Member -MemberType ScriptProperty -Name Logins -Value { 
+            return @{
+                'CONTOSO\SqlAdmin' = @( ( New-Object Microsoft.SqlServer.Management.Smo.Login -ArgumentList @( $null, 'CONTOSO\SqlAdmin') -Property @{ LoginType = 'WindowsUser'} ) )
+            }
+        } -PassThru -Force
+            
+
+        Context 'When the specified database does not exist' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'CONTOSO\SqlAdmin'
+                Database = 'UnknownDatabase'
+                PermissionState = 'Grant'
+            }
+            
+            It 'Should throw the correct error' {
+                { Get-SqlDatabasePermission @testParameters } | Should Throw "Database 'UnknownDatabase' does not exist on SQL server 'SQL01\MSSQLSERVER'."
+            }
+        }
+
+        Context 'When the specified login does not exist' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'CONTOSO\UnknownUser'
+                Database = 'AdventureWorks'
+                PermissionState = 'Grant'
+            }
+            
+            It 'Should throw the correct error' {
+                { Get-SqlDatabasePermission @testParameters } | Should Throw "Login 'CONTOSO\UnknownUser' does not exist on SQL server 'SQL01\MSSQLSERVER'."
+            }
+        }
+
+        Context 'When the specified database and login exist and the system is not in desired state' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'CONTOSO\SqlAdmin'
+                Database = 'AdventureWorks'
+                PermissionState = 'Grant'
+            }
+
+            It 'Should not return any permissions' {
+                [Microsoft.SqlServer.Management.Smo.Globals]::GenerateMockData = $false
+
+                $permission = Get-SqlDatabasePermission @testParameters 
+                $permission | Should BeNullOrEmpty
+            }
+            
+        }
+
+        Context 'When the specified database and login exist and the system is in desired state' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'CONTOSO\SqlAdmin'
+                Database = 'AdventureWorks'
+                PermissionState = 'Grant'
+            }
+
+            It 'Should return the correct permissions' {
+                [Microsoft.SqlServer.Management.Smo.Globals]::GenerateMockData = $true
+
+                $permission = Get-SqlDatabasePermission @testParameters
+                $permission -contains 'Connect' | Should Be $true
+                $permission -contains 'Update' | Should Be $true 
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
 }

@@ -285,6 +285,8 @@ namespace Microsoft.SqlServer.Management.Smo
     //  MSFT_xSQLServerDatabasePermission
 	public class Database
 	{
+        public string MockGranteeName;
+
         public Database( Server server, string name ) {
             this.Name = name;
         } 
@@ -321,6 +323,24 @@ namespace Microsoft.SqlServer.Management.Smo
             Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo[] permissionInfo = listOfDatabasePermissionInfo.ToArray();
 
             return permissionInfo;
+        }
+
+        public void Grant( Microsoft.SqlServer.Management.Smo.DatabasePermissionSet permission, string granteeName )
+        {
+            if( granteeName != this.MockGranteeName ) 
+            {
+                string errorMessage = "Expected to get granteeName == '" + this.MockGranteeName + "'. But got '" + granteeName + "'";
+                throw new System.ArgumentException(errorMessage, "granteeName");
+            }
+        }
+
+        public void Deny( Microsoft.SqlServer.Management.Smo.DatabasePermissionSet permission, string granteeName )
+        {
+            if( granteeName != this.MockGranteeName ) 
+            {
+                string errorMessage = "Expected to get granteeName == '" + this.MockGranteeName + "'. But got '" + granteeName + "'";
+                throw new System.ArgumentException(errorMessage, "granteeName");
+            }
         }
 	}
 
