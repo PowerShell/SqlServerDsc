@@ -43,7 +43,8 @@ AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '
 # Login
 PasswordValidationFailed = Creation of the login '{0}' failed due to the following error: {1}
 LoginCreationFailed = Creation of the login '{0}' failed.
-LoginTypeNotImplemented = The login type '{0}' is not implemented in this module.
-IncorrectLoginMode = The instance '{0}\{1}' is currently in '{2}' authentication mode. To create a SQL Login, it must be set to 'Mixed'.
+LoginTypeNotImplemented = The login type '{0}' is not implemented in this resource.
+IncorrectLoginMode = The instance '{0}\{1}' is currently in '{2}' authentication mode. To create a SQL Login, it must be set to 'Mixed' authentication mode.
 LoginCredentialNotFound = The credential for the SQL Login '{0}' was not found.
+PasswordChangeFailed = Setting the password failed for the SQL Login '{0}'.
 '@

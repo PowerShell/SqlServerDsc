@@ -39,6 +39,12 @@ try
     $mockSqlLoginBadPassword = 'pw' | ConvertTo-SecureString -AsPlainText -Force
     $mockSqlLoginCredentialBadpassword = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginBadPassword )
 
+    $mockSqlLoginReusedPassword = 'reused' | ConvertTo-SecureString -AsPlainText -Force
+    $mockSqlLoginCredentialReusedpassword = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginReusedPassword )
+
+    $mockSqlLoginOtherPassword = 'other' | ConvertTo-SecureString -AsPlainText -Force
+    $mockSqlLoginCredentialOtherpassword = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginOtherPassword )
+
     $instanceParameters = @{
         SQLInstanceName = 'MSSQLSERVER'
         SQLServer = 'Server1'
@@ -147,41 +153,33 @@ try
     $setTargetResource_SqlLoginPresent.Add( 'Name','SqlLogin1' )
     $setTargetResource_SqlLoginPresent.Add( 'LoginType','SqlLogin' )
 
-    $mockConnectSQL = {
-  return New-Object Object | 
-   Add-Member ScriptProperty Logins {
-    return @{
-     'Windows\User1' = ( New-Object Object | 
-      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\User1' -PassThru |
-      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsUser' -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
-                    )
-     'SqlLogin1' = ( New-Object Object | 
-      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'SqlLogin1' -PassThru |
-      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'SqlLogin' -PassThru | 
-      Add-Member -MemberType NoteProperty -Name 'MustChangePassword' -Value $false -PassThru | 
-      Add-Member -MemberType NoteProperty -Name 'PasswordExpirationEnabled' -Value $true -PassThru | 
-      Add-Member -MemberType NoteProperty -Name 'PasswordPolicyEnforced' -Value $true -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
-                    )
-     'Windows\Group1' = ( New-Object Object | 
-      Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Windows\Group1' -PassThru |
-      Add-Member -MemberType NoteProperty -Name 'LoginType' -Value 'WindowsGroup' -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Drop -Value {} -PassThru -Force
-                    )
+    $mockConnectSql = {
+        $windowsUser = New-Object Microsoft.SqlServer.Management.Smo.Login( 'Server', 'Windows\User1' )
+        $windowsUser.LoginType = 'WindowsUser'
+        $windowsGroup = New-Object Microsoft.SqlServer.Management.Smo.Login( 'Server', 'Windows\Group1' )
+        $windowsGroup.LoginType = 'windowsGroup'
+        $sqlLogin = New-Object Microsoft.SqlServer.Management.Smo.Login( 'Server', 'SqlLogin1' )
+        $sqlLogin.LoginType = 'SqlLogin'
+        $sqlLogin.MustChangePassword = $false
+        $sqlLogin.PasswordPolicyEnforced = $true
+        $sqlLogin.PasswordExpirationEnabled = $true
+        
+        $mock = New-Object PSObject -Property @{
+            LoginMode = 'Mixed'
+            Logins = @{
+                $windowsUser.Name = $windowsUser
+                $windowsGroup.Name = $windowsGroup
+                $sqlLogin.Name = $sqlLogin
+            }
+        }
+
+        return $mock
     }
-   } -PassThru |
-            Add-Member -MemberType NoteProperty -Name LoginMode -Value 'Mixed' -PassThru -Force
- }
 
     #endregion Pester Test Initialization
 
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
         Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Verifiable -Scope Describe
-        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
 
         Context 'When the login is Absent' {
 
@@ -189,14 +187,12 @@ try
                 ( Get-TargetResource @getTargetResource_UnknownSqlLogin ).Ensure | Should Be 'Absent'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should be Absent when an unknown Windows User or Group is provided' {
                 ( Get-TargetResource @getTargetResource_UnknownWindows ).Ensure | Should Be 'Absent'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
         }
 
@@ -211,7 +207,6 @@ try
                 $result.LoginPasswordPolicyEnforced | Should Not Be $null
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should be Present when a known Windows User is provided' {
@@ -221,7 +216,6 @@ try
                 $result.LoginType | Should Be 'WindowsUser'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should be Present when a known Windows User is provided' {
@@ -231,14 +225,12 @@ try
                 $result.LoginType | Should Be 'WindowsGroup'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
         }
     }
 
     Describe "$($script:DSCResourceName)\Test-TargetResource" {
-        Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Verifiable
-        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
+        Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
 
         Context 'When the desired state is Absent' {
             It 'Should return $true when the specified Windows user is Absent' {
@@ -248,7 +240,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsUserAbsent_EnsureAbsent ) | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified Windows group is Absent' {
@@ -258,7 +249,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsGroupAbsent_EnsureAbsent ) | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified SQL Login is Absent' {
@@ -268,7 +258,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginAbsent_EnsureAbsent ) | Should Be $true 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified Windows user is Present' {
@@ -278,7 +267,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsUserPresent_EnsureAbsent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified Windows group is Present' {
@@ -288,7 +276,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsGroupPresent_EnsureAbsent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified SQL Login is Present' {
@@ -298,7 +285,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithDefaultValues_EnsureAbsent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
         }
         
@@ -310,7 +296,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsUserAbsent_EnsurePresent ) | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified Windows group is Absent' {
@@ -320,7 +305,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsGroupAbsent_EnsurePresent ) | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified SQL Login is Absent' {
@@ -330,7 +314,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginAbsent_EnsurePresent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified Windows user is Present' {
@@ -340,7 +323,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsUserPresent_EnsurePresent ) | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified Windows group is Present' {
@@ -350,7 +332,6 @@ try
                 ( Test-TargetResource @testTargetResource_WindowsGroupPresent_EnsurePresent ) | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified SQL Login is Present using default parameter values' {
@@ -360,7 +341,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithDefaultValues_EnsurePresent ) | Should Be $true 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified SQL Login is Present and PasswordExpirationEnabled is $true' {
@@ -371,7 +351,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordExpirationEnabledTrue_EnsurePresent ) | Should Be $true 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified SQL Login is Present and PasswordExpirationEnabled is $false' {
@@ -382,7 +361,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordExpirationEnabledFalse_EnsurePresent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $true when the specified SQL Login is Present and PasswordPolicyEnforced is $true' {
@@ -393,7 +371,6 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedTrue_EnsurePresent ) | Should Be $true 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should return $false when the specified SQL Login is Present and PasswordPolicyEnforced is $false' {
@@ -404,13 +381,33 @@ try
                 ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent ) | Should Be $false 
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should return $true when the specified SQL Login is Present using default parameter values and the password is properly configured.' {
+                $testTargetResource_SqlLoginPresentWithDefaultValuesGoodPw_EnsurePresent = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
+                $testTargetResource_SqlLoginPresentWithDefaultValuesGoodPw_EnsurePresent.Add( 'Ensure','Present' )
+                $testTargetResource_SqlLoginPresentWithDefaultValuesGoodPw_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
+
+                ( Test-TargetResource @testTargetResource_SqlLoginPresentWithDefaultValuesGoodPw_EnsurePresent ) | Should Be $true 
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+            }
+
+            It 'Should return $false when the specified SQL Login is Present using default parameter values and the password is not properly configured.' {
+                Mock -CommandName Connect-SQL -MockWith { throw } -ModuleName $script:DSCResourceName -Scope It -Verifiable -ParameterFilter { $SetupCredential }
+                
+                $testTargetResource_SqlLoginPresentWithDefaultValuesBadPw_EnsurePresent = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
+                $testTargetResource_SqlLoginPresentWithDefaultValuesBadPw_EnsurePresent.Add( 'Ensure','Present' )
+                $testTargetResource_SqlLoginPresentWithDefaultValuesBadPw_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialBadpassword )
+
+                ( Test-TargetResource @testTargetResource_SqlLoginPresentWithDefaultValuesBadPw_EnsurePresent ) | Should Be $false 
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
             }
         }
     }
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
-        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
         Context 'When the desired state is Absent' {
@@ -423,7 +420,7 @@ try
                 Set-TargetResource @setTargetResource_WindowsUserPresent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should drop the specified Windows Group when it is Present' {
@@ -435,7 +432,7 @@ try
                 Set-TargetResource @setTargetResource_WindowsGroupPresent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should drop the specified SQL Login when it is Present' {
@@ -447,7 +444,7 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginPresent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should do nothing when the specified Windows User is Absent' {
@@ -459,7 +456,7 @@ try
                 Set-TargetResource @setTargetResource_WindwsUserAbsent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should do nothing when the specified Windows Group is Absent' {
@@ -471,7 +468,7 @@ try
                 Set-TargetResource @setTargetResource_WindwsGroupAbsent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should do nothing when the specified SQL Login is Absent' {
@@ -483,7 +480,7 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsureAbsent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
         }
 
@@ -497,7 +494,7 @@ try
                 Set-TargetResource @setTargetResource_WindowsUserAbsent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should add the specified Windows Group when it is Absent' {
@@ -509,7 +506,7 @@ try
                 Set-TargetResource @setTargetResource_WindowsGroupAbsent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should add the specified SQL Login when it is Absent' {
@@ -522,21 +519,6 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-            }
-
-            It 'Should add the specified SQL Login when it is Absent and MustChangePassword is $false' {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
-                
-                $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsent.Clone()
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginMustChangePassword',$false )
-
-                Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
 
             }
 
@@ -551,7 +533,6 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should throw when adding an unsupported login type' {
@@ -563,7 +544,7 @@ try
                 { Set-TargetResource @setTargetResource_CertificateAbsent_EnsurePresent } | Should Throw 'LoginTypeNotImplemented'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should throw LoginCredentialNotFound when adding the specified SQL Login when it is Absent and is missing the LoginCredential parameter' {
@@ -575,18 +556,7 @@ try
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred } | Should Throw 'LoginCredentialNotFound'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-            }
-            It 'Should throw LoginCredentialNotFound when modifying the specified SQL Login when it is Present and is missing the LoginCredential parameter' {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
-                
-                $setTargetResource_SqlLoginPresent_EnsurePresent_NoCred = $setTargetResource_SqlLoginPresent.Clone()
-                $setTargetResource_SqlLoginPresent_EnsurePresent_NoCred.Add( 'Ensure','Present' )
 
-                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent_NoCred } | Should Throw 'LoginCredentialNotFound'
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
             }
 
             It 'Should do nothing if the specified Windows User is Present' {
@@ -598,7 +568,7 @@ try
                 Set-TargetResource @setTargetResource_WindowsUserPresent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should do nothing if the specified Windows Group is Present' {
@@ -610,10 +580,10 @@ try
                 Set-TargetResource @setTargetResource_WindowsGroupPresent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
-            It 'Should do nothing if the specified SQL Login is Present and all parameters match' {
+            It 'Should update the password of the specified SQL Login if it is Present and all parameters match' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
                 
                 $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
@@ -623,7 +593,7 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should set PasswordExpirationEnabled on the specified SQL Login if it does not match the LoginPasswordExpirationEnabled parameter' {
@@ -637,7 +607,7 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent_LoginPasswordExpirationEnabled
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should set PasswordPolicyEnforced on the specified SQL Login if it does not match the LoginPasswordPolicyEnforced parameter' {
@@ -651,7 +621,7 @@ try
                 Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent_LoginPasswordPolicyEnforced
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should throw when creating a SQL Login if the LoginMode is not Mixed' {
@@ -694,7 +664,7 @@ try
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'IncorrectLoginMode'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
             
             It 'Should throw when password validation fails when creating a SQL Login' {
@@ -707,8 +677,47 @@ try
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'PasswordValidationFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
+
+            It 'Should throw PasswordValidationFailed when updating a SQL Login' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
+                $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialBadpassword )
+
+                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent } | Should Throw 'PasswordValidationFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+
+            }
+
+            It 'Should throw PasswordChangeFailed when updating a SQL Login' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
+                $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialReusedpassword )
+
+                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent } | Should Throw 'PasswordChangeFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+
+            }
+
+            It 'Should throw PasswordChangeFailed when updating a SQL Login' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                
+                $setTargetResource_SqlLoginPresent_EnsurePresent = $setTargetResource_SqlLoginPresent.Clone()
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_SqlLoginPresent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredentialOtherpassword )
+
+                { Set-TargetResource @setTargetResource_SqlLoginPresent_EnsurePresent } | Should Throw 'PasswordChangeFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+
+            }     
             
             It 'Should throw when creating a SQL Login fails' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
@@ -720,7 +729,7 @@ try
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'LoginCreationFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should throw when creating a SQL Login fails with an unhandled exception' {
@@ -733,7 +742,7 @@ try
                 { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'LoginCreationFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+
             }
 
             It 'Should throw when creating a SQL Login fails with an unhandled exception' {

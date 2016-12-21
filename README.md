@@ -278,14 +278,14 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 ### xSQLServerLogin
 
 * **Ensure**: The specified login is Present or Absent.
-* **Name**: (Key) The name of the SQL login.
-* **LoginType**: The type of login to be created. If LoginType is 'WindowsUser' or 'WindowsGroup' then provide the name in the format DOMAIN\name.
+* **Name**: (Key) The name of the login.
+* **LoginType**: The type of login to be created. If LoginType is 'WindowsUser' or 'WindowsGroup' then provide the name in the format DOMAIN\name. Default is WindowsUser. Unsupported login types are Certificate, AsymmetricKey, ExternalUser, and ExternalGroup.
 * **SQLServer**: (Key) The hostname of the SQL Server to be configured.
 * **SQLInstanceName**: (Key) Name of the SQL instance to be configured.
 * **LoginCredential**: If LoginType is 'SqlLogin' then a PSCredential is needed for the password to the login.
-* **LoginMustChangePassword**: Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
-* **LoginPasswordExpirationEnabled**: Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
-* **LoginPasswordPolicyEnforced**: Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
+* **LoginMustChangePassword**: Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Default is $true.
+* **LoginPasswordExpirationEnabled**: Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
+* **LoginPasswordPolicyEnforced**: Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
 
 ### xSQLServerRole
 
