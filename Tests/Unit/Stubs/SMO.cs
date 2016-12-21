@@ -196,19 +196,60 @@ namespace Microsoft.SqlServer.Management.Smo
     {
         private bool _mockPasswordPassed = false;
 
-        public Login( Server server, string name ) {
-            this.Name = name;
-        } 
-
-        public Login( Object server, string name ) {
-            this.Name = name;
-        } 
-            
         public string Name;
         public LoginType LoginType = LoginType.Unknown;
-        public bool PasswordPolicyEnforced = true;
-        public bool PasswordExpirationEnabled = true;
+        public bool MustChangePassword = false;
+        public bool PasswordPolicyEnforced = false;
+        public bool PasswordExpirationEnabled = false;
 
+        public Login( Server server, string name )
+        {
+            this.Name = name;
+        }
+        
+        public Login( Object server, string name )
+        {
+            this.Name = name;
+        }
+        
+        public void Alter () {}
+        
+        public void ChangePassword ( SecureString secureString )
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try
+            {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(secureString);
+                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
+                {                    
+                    throw new FailedOperationException (
+                        "FailedOperationException",
+                        new SmoException (
+                            "SmoException",
+                            new SqlServerManagementException (
+                                "SqlServerManagementException",
+                                new Exception (
+                                    "Password validation failed. The password does not meet Windows policy requirements because it is too short."
+                                )
+                            )
+                        )
+                    );
+                }
+                else if ( Marshal.PtrToStringUni(valuePtr) == "reused" )
+                {
+                    throw new FailedOperationException ();
+                }
+                else if ( Marshal.PtrToStringUni(valuePtr) == "other" )
+                {
+                    throw new Exception ();
+                }
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+        
         public void Create()
         {
             if( this.LoginType == LoginType.Unknown ) {
@@ -220,7 +261,7 @@ namespace Microsoft.SqlServer.Management.Smo
             }
         }
 
-        public void Create( String secureString )
+        public void Create( SecureString secureString )
         {
             _mockPasswordPassed = true;
 
