@@ -21,20 +21,18 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $SQLInstanceName
     )
-
-    Import-SQLPSModule
     
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
@@ -95,13 +93,13 @@ function Get-TargetResource
     The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
 
     .PARAMETER LoginMustChangePassword
-    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
+    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Default is $true.
 
     .PARAMETER LoginPasswordExpirationEnabled
-    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
+    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
 
     .PARAMETER LoginPasswordPolicyEnforced
-    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
+    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
 #>
 function Set-TargetResource
 {
@@ -113,7 +111,7 @@ function Set-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
@@ -154,8 +152,6 @@ function Set-TargetResource
         [bool]
         $LoginPasswordPolicyEnforced = $true
     )
-
-    Import-SQLPSModule
     
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     
@@ -169,10 +165,7 @@ function Set-TargetResource
 
                 if ( $login.LoginType -eq 'SqlLogin' )
                 {                    
-                    if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
-                    {
-                        throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
-                    }
+                    
                     
                     if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
                     {
@@ -186,6 +179,30 @@ function Set-TargetResource
                         New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
                         $login.Alter()
+                    }
+
+                    # Set the password if it is specified
+                    if ( $LoginCredential )
+                    {
+                        try
+                        {
+                            $login.ChangePassword($LoginCredential.Password)
+                        }
+                        catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
+                        {
+                            if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
+                            {
+                                throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
+                            }
+                            else
+                            {
+                                throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+                            }
+                        }
+                        catch
+                        {
+                            throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+                    }
                     }
                 }
             }
@@ -291,13 +308,13 @@ function Set-TargetResource
     The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
 
     .PARAMETER LoginMustChangePassword
-    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
+    Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Default is $true.
 
     .PARAMETER LoginPasswordExpirationEnabled
-    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
+    Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
 
     .PARAMETER LoginPasswordPolicyEnforced
-    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
+    Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
 #>
 function Test-TargetResource
 {
@@ -310,7 +327,7 @@ function Test-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
@@ -326,11 +343,11 @@ function Test-TargetResource
         [System.String]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $SQLServer,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $SQLInstanceName,
 
@@ -359,6 +376,7 @@ function Test-TargetResource
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
+
     $loginInfo = Get-TargetResource @getParams
 
     if ( $Ensure -ne $loginInfo.Ensure )
@@ -387,6 +405,22 @@ function Test-TargetResource
             {
                 New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has PasswordPolicyEnforced set to $($loginInfo.LoginPasswordPolicyEnforced) rather than $LoginPasswordPolicyEnforced"
                 $testPassed = $false
+            }
+
+            # If testPassed is still true and a login credential was specified, test the password
+            if ( $testPassed -and $LoginCredential )
+            {
+                $userCred = [System.Management.Automation.PSCredential]::new($Name, $LoginCredential.Password)
+                
+                try
+                {
+                    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $userCred    
+                }
+                catch
+                {
+                    New-VerboseMessage -Message "Password validation failed for the login '$Name'."
+                    $testPassed = $false
+                }
             }
         }
     }
