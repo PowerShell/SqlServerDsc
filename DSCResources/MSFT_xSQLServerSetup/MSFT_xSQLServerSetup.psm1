@@ -510,7 +510,6 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install',
@@ -799,7 +798,7 @@ function Set-TargetResource
         $clusterIPAddresses = @()
 
         ## Get a required lising of drives based on user parameters
-        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\') } | Select -Unique
+        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\') } | Select-Object -Unique
 
         ## Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_ResourceGroup -Filter "Name = 'Available Storage'" |
@@ -808,11 +807,11 @@ function Set-TargetResource
         foreach ($diskResource in $availableStorage)
         {
             ## Determine whether the current node is a possible owner of the disk resource
-            $possibleOwners = $diskResource | Get-CimAssociatedInstance -Association 'MSCluster_ResourceToPossibleOwner' -KeyOnly | Select -ExpandProperty Name
+            $possibleOwners = $diskResource | Get-CimAssociatedInstance -Association 'MSCluster_ResourceToPossibleOwner' -KeyOnly | Select-Object -ExpandProperty Name
             if ($possibleOwners -icontains $env:COMPUTERNAME)
             {
                 ## Determine whether this disk contains one of our required partitions
-                if ($requiredDrives -icontains ($diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select -ExpandProperty Path))
+                if ($requiredDrives -icontains ($diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select-Object -ExpandProperty Path))
                 {
                     $failoverClusterDisks += $diskResource.Name
                 }
@@ -820,11 +819,11 @@ function Set-TargetResource
         }
 
         ## Ensure we have a unique listing of disks
-        $failoverClusterDisks = $failoverClusterDisks | Select -Unique
+        $failoverClusterDisks = $failoverClusterDisks | Select-Object -Unique
 
         ## Ensure we mapped all required drives
-        $requiredDriveCount = $requiredDrives | Measure-Object | Select -ExpandProperty Count
-        $mappedDriveCount = $failoverClusterDisks | Measure-Object | Select -ExpandProperty Count
+        $requiredDriveCount = $requiredDrives | Measure-Object | Select-Object -ExpandProperty Count
+        $mappedDriveCount = $failoverClusterDisks | Measure-Object | Select-Object -ExpandProperty Count
 
         if ($mappedDriveCount -ne $requiredDriveCount)
         {
@@ -859,8 +858,8 @@ function Set-TargetResource
         }
 
         ## Ensure we mapped all required networks
-        $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select -ExpandProperty Count
-        $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select -ExpandProperty Count
+        $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select-Object -ExpandProperty Count
+        $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select-Object -ExpandProperty Count
         
         if ($suppliedNetworkCount -ne $mappedNetworkCount)
         {
@@ -1068,9 +1067,8 @@ function Set-TargetResource
 
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
-    Write-Host $arguments
-    <#
     $process = StartWin32Process -Path $path -Arguments $arguments.Trim()
+
     New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
 
@@ -1090,7 +1088,6 @@ function Set-TargetResource
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
-    #>
 }
 
 <#
@@ -1242,7 +1239,6 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
         $Action = 'Install', 
