@@ -22,6 +22,7 @@
     - Robocopy is now started using Start-Process and the error handling has been improved.
     - Robocopy now removes files at the destination path if they no longer exists at the source.
     - Robocopy copies using unbuffered I/O when available (recommended for large files).
+  - Added a more descriptive text for the parameter `SourceCredential` to further explain how the parameter work.
 - Changes to xSQLServerScript
   - All credential parameters now also has the type [System.Management.Automation.Credential()] to better work with PowerShell 4.0.
   - It is now possible to configure two instances on the same node, with the same script.

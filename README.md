@@ -369,7 +369,13 @@ _Note: There is a known problem running this resource using PowerShell 4.0. See 
 * **SourcePath**: (Required) The path to the root of the source files for installation. I.e and UNC path to a shared resource.
 * **SourceFolder**: Folder within the source path containing the source files for installation. Default value is 'Source'.
 * **SetupCredential**: (Required) Credential to be used to perform the installation.
-* **SourceCredential**: Credential used to access SourcePath.
+* **SourceCredential**: Credentials used to access the path set in the parameter `SourcePath` and `SourceFolder`. Using this parameter will trigger a copy of the installation media to a temp folder on the target node. Setup will then be started from the temp folder on the target node. For any subsequent calls to the resource, the parameter `SourceCredential` is used to evaluate what major version the file 'setup.exe' has in the path set, again, by the parameter `SourcePath` and `SourceFolder`.
+  * Temp folder is evaluated like this according to online documentation for [System.IO.Path.GetTempPath()](https://msdn.microsoft.com/en-us/library/system.io.path.gettemppath(v=vs.110).aspx)
+  * > - Checks for the existence of environment variables in the following order and uses the first path found:
+  * >  - The path specified by the TMP environment variable.
+  * >  - The path specified by the TEMP environment variable.
+  * >  - The path specified by the USERPROFILE environment variable.
+  * >  - The Windows directory.
 * **SuppressReboot**: Suppresses reboot.
 * **ForceReboot**: Forces reboot.
 * **Features**: (Key) SQL features to be installed.
