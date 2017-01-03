@@ -381,9 +381,6 @@ namespace Microsoft.SqlServer.Management.Smo
         {
         }
 
-        public string Name;
-        public string Login;
-
         public void Drop()
         {
         }
