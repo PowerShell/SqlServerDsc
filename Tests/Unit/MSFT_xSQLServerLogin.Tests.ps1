@@ -857,30 +857,6 @@ try
                     { SetPassword @setPwParams } | Should Throw 'PasswordChangeFailed'
                 }
             }
-
-            It 'Should throw when creating a SQL Login fails with an unhandled exception' {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
-                
-                $setTargetResource_SqlLoginAbsent_EnsurePresent = $setTargetResource_SqlLoginAbsentUnknown.Clone()
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure','Present' )
-                $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential',$mockSqlLoginCredential )
-
-                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should Throw 'LoginCreationFailed'
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
-            }
-
-            It 'Should return $false when the specified SQL Login is Present and PasswordPolicyEnforced is $false' {
-                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
-                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent.Add( 'Ensure','Present' )
-                $testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent.Add( 'LoginPasswordPolicyEnforced',$false )
-
-                ( Test-TargetResource @testTargetResource_SqlLoginPresentWithPasswordPolicyEnforcedFalse_EnsurePresent ) | Should Be $false 
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Time 1 -Exactly
-            }
         }
     }
 
