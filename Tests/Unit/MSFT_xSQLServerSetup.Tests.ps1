@@ -461,17 +461,60 @@ try
             )
         }
 
+        $mockRobocopyExecutableName = 'Robocopy.exe'
+        $mockRobocopyExectuableVersionWithoutUnbufferedIO = '6.2.9200.00000'
+        $mockRobocopyExectuableVersionWithUnbufferedIO = '6.3.9600.16384'
+        $mockRobocopyExectuableVersion = ''     # Set dynamically during runtime
+        $mockRobocopyArgumentSilent = '/njh /njs /ndl /nc /ns /nfl'
+        $mockRobocopyArgumentCopySubDirectoriesIncludingEmpty = '/e'
+        $mockRobocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource = '/purge'
+        $mockRobocopyArgumentUseUnbufferedIO = '/J'
+        $mockRobocopyArgumentSourcePath = 'C:\Source\SQL2016'
+        $mockRobocopyArgumentDestinationPath = 'D:\Temp'
+
+        $mockGetCommand = {
+            return @(
+                (
+                    New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockRobocopyExecutableName -PassThru |
+                        Add-Member ScriptProperty FileVersionInfo {
+                            return @( ( New-Object Object |
+                                    Add-Member -MemberType NoteProperty -Name 'ProductVersion' -Value $mockRobocopyExectuableVersion -PassThru -Force
+                                ) )
+                        } -PassThru -Force
+                )
+            )
+        }
+
+        $mockStartProcessExpectedArgument = ''  # Set dynamically during runtime
+        $mockStartProcessExitCode = 0  # Set dynamically during runtime
+
+        $mockStartProcess = {
+            if ( $ArgumentList -ne $mockStartProcessExpectedArgument )
+            {
+                throw "Expected arguments was not the same as the arguments in the function call.`nExpected: '$mockStartProcessExpectedArgument' `n But was: '$ArgumentList'"
+            }
+
+            return New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'ExitCode' -Value 0 -PassThru -Force
+        }
+
+        $mockStartProcess_WithExitCode = {
+            return New-Object Object | 
+                        Add-Member -MemberType NoteProperty -Name 'ExitCode' -Value $mockStartProcessExitCode -PassThru -Force
+        }
+
         $mockGetTemporaryFolder = {
             return $mockSourcePathUNC
         }
 
         <#
         Needed a way to see into the Set-method for the arguments the Set-method is building and sending to 'setup.exe', and fail 
-        the test if the arguments is diffentent from the expected arguments.
+        the test if the arguments is different from the expected arguments.
         Solved this by dynamically set the expected arguments before each It-block. If the arguments differs the mock of
         StartWin32Process throws an error message, similiar to what Pester would have reported (expected -> but was).
         #> 
-        $mockStartWin32ProcessExpectedArgument = ''
+        $mockStartWin32ProcessExpectedArgument = '' # Set dynamically during runtime
         $mockStartWin32Process = {
             if ( $Arguments -ne $mockStartWin32ProcessExpectedArgument )
             {
@@ -2005,7 +2048,7 @@ try
                         }
 
                         Mock -CommandName NetUse -Verifiable
-                        Mock -CommandName Copy-ItemWithRoboCopy -Verifiable
+                        Mock -CommandName Start-Process -Verifiable
                         Mock -CommandName Get-TemporaryFolder -MockWith $mockGetTemporaryFolder -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockEmptyHashtable -Verifiable
 
@@ -2036,7 +2079,7 @@ try
                         
                         Assert-MockCalled -CommandName NetUse -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Copy-ItemWithRoboCopy -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Start-Process -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Connect-SQLAnalysis -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
@@ -2158,7 +2201,7 @@ try
                         }
 
                         Mock -CommandName NetUse -Verifiable
-                        Mock -CommandName Copy-ItemWithRoboCopy -Verifiable
+                        Mock -CommandName Start-Process -Verifiable
                         Mock -CommandName Get-TemporaryFolder -MockWith $mockGetTemporaryFolder -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockEmptyHashtable -Verifiable
 
@@ -2188,7 +2231,7 @@ try
                         
                         Assert-MockCalled -CommandName NetUse -Exactly -Times 4 -Scope It
                         Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Copy-ItemWithRoboCopy -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Connect-SQLAnalysis -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
@@ -2456,6 +2499,163 @@ try
             }
             
             Assert-VerifiableMocks
+        }
+
+        # Tests only the parts of the code that does not already get tested thru the other tests.
+        Describe 'Copy-ItemWithRoboCopy' -Tag 'Helper' {
+            Context 'When Copy-ItemWithRoboCopy is called it should return the correct arguments' {
+                BeforeEach {
+                    Mock -CommandName Get-Command -MockWith $mockGetCommand -Verifiable
+                    Mock -CommandName Start-Process -MockWith $mockStartProcess -Verifiable
+                }
+
+
+                It 'Should use Unbuffered IO when copying' {
+                    $mockRobocopyExectuableVersion = $mockRobocopyExectuableVersionWithUnbufferedIO
+
+                    $mockStartProcessExpectedArgument = 
+                        $mockRobocopyArgumentSourcePath,
+                        $mockRobocopyArgumentDestinationPath,
+                        $mockRobocopyArgumentCopySubDirectoriesIncludingEmpty,
+                        $mockRobocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource,
+                        $mockRobocopyArgumentUseUnbufferedIO,
+                        $mockRobocopyArgumentSilent -join ' '
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Not Throw
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should not use Unbuffered IO when copying' {
+                    $mockRobocopyExectuableVersion = $mockRobocopyExectuableVersionWithoutUnbufferedIO
+
+                    $mockStartProcessExpectedArgument = 
+                        $mockRobocopyArgumentSourcePath,
+                        $mockRobocopyArgumentDestinationPath,
+                        $mockRobocopyArgumentCopySubDirectoriesIncludingEmpty,
+                        $mockRobocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource,
+                        '',
+                        $mockRobocopyArgumentSilent -join ' '
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Not Throw
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When Copy-ItemWithRoboCopy throws an exception it should return the correct error messages' {
+                BeforeEach {
+                    $mockRobocopyExectuableVersion = $mockRobocopyExectuableVersionWithUnbufferedIO
+
+                    Mock -CommandName Get-Command -MockWith $mockGetCommand -Verifiable
+                    Mock -CommandName Start-Process -MockWith $mockStartProcess_WithExitCode -Verifiable
+                }
+
+                It 'Should throw the correct error message when error code is 8' {
+                    $mockStartProcessExitCode = 8
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Throw "Robocopy reported errors when copying files. Error code: $mockStartProcessExitCode."
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should throw the correct error message when error code is 16' {
+                    $mockStartProcessExitCode = 16
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Throw "Robocopy reported errors when copying files. Error code: $mockStartProcessExitCode."
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should throw the correct error message when error code is greater than 7 (but not 8 or 16)' {
+                    $mockStartProcessExitCode = 9
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Throw "Robocopy reported that failures occured when copying files. Error code: $mockStartProcessExitCode."
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When Copy-ItemWithRoboCopy is called and finishes succesfully it should return the correct exit code' {
+                BeforeEach {
+                    $mockRobocopyExectuableVersion = $mockRobocopyExectuableVersionWithUnbufferedIO
+
+                    Mock -CommandName Get-Command -MockWith $mockGetCommand -Verifiable
+                    Mock -CommandName Start-Process -MockWith $mockStartProcess_WithExitCode -Verifiable
+                }
+
+                It 'Should finish succesfully with exit code 1' {
+                    $mockStartProcessExitCode = 1
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Not Throw
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should finish succesfully with exit code 2' {
+                    $mockStartProcessExitCode = 2
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Not Throw
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should finish succesfully with exit code 3' {
+                    $mockStartProcessExitCode = 3
+
+                    $copyItemWithRoboCopyParameter = @{
+                        Path = $mockRobocopyArgumentSourcePath
+                        DestinationPath = $mockRobocopyArgumentDestinationPath
+                    }
+
+                    { Copy-ItemWithRoboCopy @copyItemWithRoboCopyParameter } | Should Not Throw
+                    
+                    Assert-MockCalled -CommandName Get-Command -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Start-Process -Exactly -Times 1 -Scope It
+                }
+            }
         }
     }
 }
