@@ -171,38 +171,20 @@ function Set-TargetResource
                     {
                         New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                         $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
-                        $login.Alter()
+                        AlterLogin -Login $login
                     }
 
                     if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
                     {
                         New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
-                        $login.Alter()
+                        AlterLogin -Login $login
                     }
 
                     # Set the password if it is specified
                     if ( $LoginCredential )
                     {
-                        try
-                        {
-                            $login.ChangePassword($LoginCredential.Password)
-                        }
-                        catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
-                        {
-                            if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
-                            {
-                                throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
-                            }
-                            else
-                            {
-                                throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                            }
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                    }
+                        SetPassword -Login $login -SecureString $LoginCredential.Password
                     }
                 }
             }
@@ -244,31 +226,13 @@ function Set-TargetResource
                         {
                             $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::None
                         }
-                        
-                        try
-                        {
-                            $login.Create($LoginCredential.Password,$LoginCreateOptions)
-                        }
-                        catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
-                        {
-                            if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
-                            {
-                                throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
-                            }
-                            else
-                            {
-                                throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                            }
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
-                        }
+
+                        CreateLogin -Login $login -LoginCreateOptions $LoginCreateOptions -SecureString $LoginCredential.Password -ErrorAction Stop 
                     }
 
                     default
                     {
-                        $login.Create()
+                        CreateLogin -Login $login
                     }
                 }
             }
@@ -279,7 +243,7 @@ function Set-TargetResource
             if ( $serverObject.Logins[$Name] )
             {
                 New-VerboseMessage -Message "Dropping the login '$Name' from the '$SQLServer\$SQLInstanceName' instance."
-                $serverObject.Logins[$Name].Drop()
+                DropLogin -Login $serverObject.Logins[$Name]
             }
         }
     }
@@ -426,6 +390,116 @@ function Test-TargetResource
     }
     
     return $testPassed
+}
+
+# Create a function to alter the login. This allows us to more easily write mocks.
+function AlterLogin
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Login]
+        $Login
+    )
+
+    $Login.Alter()
+}
+
+# Create a function to create the login. This allows us to more easily write mocks.
+function CreateLogin
+{
+    [CmdletBinding(DefaultParameterSetName = 'WindowsLogin')]
+    Param
+    (
+        [Parameter(Mandatory = $true, ParameterSetName = 'WindowsLogin')]
+        [Parameter(ParameterSetName = 'SqlLogin')]
+        [Microsoft.SqlServer.Management.Smo.Login]
+        $Login,
+
+        [Parameter(ParameterSetName = 'SqlLogin')]
+        [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]
+        $LoginCreateOptions,
+
+        [Parameter(ParameterSetName = 'SqlLogin')]
+        [System.Security.SecureString]
+        $SecureString
+    )
+
+    switch ( $PSCmdlet.ParameterSetName )
+    {
+        'SqlLogin' 
+        { 
+            try
+            {
+                $login.Create($SecureString,$LoginCreateOptions) 
+            }
+            catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
+            {
+                if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
+                {
+                    throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
+                }
+                else
+                {
+                    throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
+                }
+            }
+            catch
+            {
+                throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
+            }
+        }
+
+        'WindowsLogin' { $login.Create() }
+    }
+}
+
+# Create a function to drop the login. This allows us to more easily write mocks.
+function DropLogin
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Login]
+        $Login
+    )
+
+    $Login.Drop()
+}
+
+# Create a function to set the password. This allows us to more easily write mocks.
+function SetPassword
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Login]
+        $Login,
+
+        [Parameter(Mandatory = $true)]
+        [System.Security.SecureString]
+        $SecureString
+    )
+
+    try
+    {
+        $Login.ChangePassword($SecureString)
+    }
+    catch [Microsoft.SqlServer.Management.Smo.FailedOperationException]
+    {
+        if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
+        {
+            throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name,$_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
+        }
+        else
+        {
+            throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+        }
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
