@@ -241,6 +241,13 @@ function Set-TargetResource
             $agManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
             $clusterPermissionsPresesnt = $false
 
+            $permissionsParams = @{
+                SQLServer = $SQLServer
+                SQLInstanceName = $SQLInstanceName
+                Database = 'master'
+                WithResults = $true
+            }
+
             # Using the clusSvc is preferred, so check for it first
             if ( $serverObject.Logins[$clusSvcName] -and -not $clusterPermissionsPresesnt )
             {
@@ -251,7 +258,8 @@ function Set-TargetResource
                     FROM fn_my_permissions(null,'SERVER')
                     REVERT
                 "
-                $clusSvcEffectPerms = $serverObject.Databases['master'].ExecuteWithResults($clusSvcEffectPermsQuery).Tables.Rows.permission_name
+                $clusSvcEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQueryClusSvc
+                $clusSvcEffectPerms = $clusSvcEffectPermsResult.Tables.Rows.permission_name
                 $clusSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $clusSvcEffectPerms | 
                                             Where-Object { $_.SideIndicator -ne '=>' } |
                                             Select-Object -ExpandProperty InputObject 
@@ -272,7 +280,8 @@ function Set-TargetResource
                     FROM fn_my_permissions(null,'SERVER')
                     REVERT
                 "
-                $systemEffectPerms = $serverObject.Databases['master'].ExecuteWithResults($clusSvcEffectPermsQuerySystem).Tables.Rows.permission_name
+                $systemEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQuerySystem
+                $systemEffectPerms = $systemEffectPermsResult.Tables.Rows.permission_name
                 $systemSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $systemEffectPerms | 
                                             Where-Object { $_.SideIndicator -ne '=>' } |
                                             Select-Object -ExpandProperty InputObject 

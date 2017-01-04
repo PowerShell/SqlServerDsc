@@ -1735,3 +1735,69 @@ function Remove-SqlDatabasePermission
                                    -ErrorCategory InvalidResult
     }
 }
+
+<#
+    .SYNOPSIS
+    Executes a query on the specified database.
+
+    .PARAMETER SQLServer
+    The hostname of the server that hosts the SQL instance.
+    
+    .PARAMETER SQLInstanceName
+    The name of the SQL instance that hosts the database.
+
+    .PARAMETER Database
+    Specify the name of the database to execute the query on.
+
+    .PARAMETER Query
+    The query string to execute.
+
+    .PARAMETER WithResults
+    Specifies if the query should return results.
+
+    .EXAMPLE
+    Invoke-Query -SQLServer Server1 -SQLInstanceName MSSQLSERVER -Database master -Query 'SELECT name FROM sys.databases' -WithResults
+
+    .EXAMPLE
+    Invoke-Query -SQLServer Server1 -SQLInstanceName MSSQLSERVER -Database master -Query 'RESTORE DATABASE [NorthWinds] WITH RECOVERY'
+#>
+function Invoke-Query
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SQLServer,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLInstanceName,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $Database,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $Query,
+
+        [Parameter()]
+        [Switch]
+        $WithResults
+    )
+
+    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+
+    if ( $WithResults )
+    {
+        $result = $serverObject.Databases[$Database].ExecuteWithResults($Query)
+    }
+    else
+    {
+        $serverObject.Databases[$Database].ExecuteNonQuery($Query)
+    }
+
+    return $result
+}
