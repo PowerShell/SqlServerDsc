@@ -204,8 +204,8 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         
+        Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName
         Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
-        
         Mock -CommandName New-SqlAvailabilityReplica -MockWith {
             #TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
             return New-Object PSObject -Property @{
@@ -218,9 +218,7 @@ try
                 Name = 'Server1'
             }
         } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
-
         Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable
-        
         Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
 
         Context 'When the Availability Group is Absent' {
