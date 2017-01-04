@@ -58,9 +58,9 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
-* [**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent
 * [**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases
+* [**xSQLServerAlwaysOnAvailabilityGroup**](xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
 * [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server
 * [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener) Create or remove an availability group listener.
 * [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
@@ -167,6 +167,23 @@ No description.
 
 * [Add an SQL Server alias](/Examples/Resources/xSQLServerAlias/1-AddSQLServerAlias.ps1)
 * [Remove an SQL Server alias](/Examples/Resources/xSQLServerAlias/2-RemoveSQLServerAlias.ps1)
+
+### xSQLServerAlwaysOnAvailabilityGroup
+
+* **Name**: (key) The name of the availability group.
+* **SQLServer**: (key) Hostname of the SQL Server to be configured.
+* **SQLInstanceName**: (key) Name of the SQL instance to be configued.
+* **Ensure**: (required) Specifies if the availability group should be present or absent.
+* **AutomatedBackupPreference**: Specifies the automated backup preference for the availability group. (Primary, SecondaryOnly, Secondary, None)
+* **AvailabilityMode**: Specifies the replica availability mode. Default is 'AsynchronousCommit'. (AsynchronousCommit, SynchronousCommit)
+* **BackupPriority**: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.
+* **BasicAvailabilityGroup**: Specifies the type of availability group.
+* **ConnectionModeInPrimaryRole**: Specifies how the availability replica handles connections when in the primary role. (AllowAllConnections, AllowReadWriteConnections)
+* **ConnectionModeInSecondaryRole**: Specifies how the availability replica handles connections when in the secondary role. (AllowNoConnections, AllowReadIntentConnectionsOnly, AllowAllConnections)
+* **EndpointPort**: Specifies the port of the database mirroring endpoint. Default is 5022.
+* **FailureConditionLevel**: Specifies the automatic failover behavior of the availability group. (OnServerDown, OnServerUnresponsive, OnCriticalServerErrors, OnModerateServerErrors, OnAnyQualifiedFailureCondition)
+* **FailoverMode**: Specifies the failover mode. Default is 'Manual'. (Automatic, Manual"}, Values{"Automatic","Manual"}] String FailoverMode)
+* **HealthCheckTimeout**: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.
 
 ### xSQLServerAlwaysOnService
 

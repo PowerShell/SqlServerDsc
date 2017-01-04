@@ -57,4 +57,11 @@ DropLoginFailed = Dropping the login '{0}' failed.
 FailoverClusterDiskMappingError = Unable to map the specified paths to valid cluster storage. Drives mapped: {0}
 FailoverClusterIPAddressNotValid = Unable to map the specified IP Address(es) to valid cluster networks.
 FailoverClusterResourceNotFound = Could not locate a SQL Server cluster resource for instance {0}.
+
+# AlwaysOnAvailabilityGroup
+AgPropertiesNotSet = The properties on the AG do not match the desired state.
+CreateAgReplicaFailed = Creating the AG Replica failed
+CreateAvailabilityGroupFailed = Creating the availability group failed
+HadrNotEnabled = HADR is not enabled
+ClusterPermissionsMissing = The cluster does not have permissions to manage the Availability Group on '{0}\\{1}'. Grant 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' to either 'NT SERVICE\\ClusSvc' or 'NT AUTHORITY\\SYSTEM'.
 '@
