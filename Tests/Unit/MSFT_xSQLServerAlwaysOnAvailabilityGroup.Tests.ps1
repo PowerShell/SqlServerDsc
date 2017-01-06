@@ -18,6 +18,38 @@ $TestEnvironment = Initialize-TestEnvironment `
 # Loading stub cmdlets
 Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
 
+$absentAg = @{
+    Name = 'AbsentAG'
+    SQLInstanceName = 'MSSQLSERVER'
+    SQLServer = 'Server1'
+    Ensure = 'Present'
+    AutomatedBackupPreference = 'Secondary'
+    AvailabilityMode = 'AsynchronousCommit'
+    BackupPriority = 50
+    BasicAvailabilityGroup = $false
+    ConnectionModeInPrimaryRole = 'AllowAllConnections'
+    ConnectionModeInSecondaryRole = 'AllowNoConnections'
+    FailureConditionLevel = 'OnServerDown'
+    FailoverMode = 'Manual'
+    HealthCheckTimeout = '30000'
+}
+
+$presentAg = @{
+    Name = 'PresentAG'
+    SQLInstanceName = 'MSSQLSERVER'
+    SQLServer = 'Server1'
+    Ensure = 'Present'
+    AutomatedBackupPreference = 'Secondary'
+    AvailabilityMode = 'AsynchronousCommit'
+    BackupPriority = 50
+    BasicAvailabilityGroup = $false
+    ConnectionModeInPrimaryRole = 'AllowAllConnections'
+    ConnectionModeInSecondaryRole = 'AllowNoConnections'
+    FailureConditionLevel = 'OnServerDown'
+    FailoverMode = 'Manual'
+    HealthCheckTimeout = '30000'
+}
+
 $createAg = @{
     Name = 'AvailabilityGroup1'
     SQLInstanceName = 'MSSQLSERVER'
@@ -73,6 +105,58 @@ $removeAg = @{
     Ensure = 'Absent'
 }
 
+
+$mockConnectSqlVersion12 = {
+    New-Object PSObject -Property @{
+        AvailabilityGroups = @{
+            PresentAG = @{
+                AutomatedBackupPreference = 'Secondary'
+                FailureConditionLevel = 'OnServerDown'
+                HealthCheckTimeout = 30000
+                Name = 'AvailabilityGroup1'
+                AvailabilityReplicas = @{
+                    Server1 = @{
+                        AvailabilityMode = 'AsynchronousCommit'
+                        BackupPriority = 50
+                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        FailoverMode = 'Manual'
+                    }
+                }
+            }
+        }
+        Version = @{
+            Major = 12
+        }
+    }
+}
+
+$mockConnectSqlVersion13 = {
+    New-Object PSObject -Property @{
+        AvailabilityGroups = @{
+            PresentAG = @{
+                AutomatedBackupPreference = 'Secondary'
+                FailureConditionLevel = 'OnServerDown'
+                HealthCheckTimeout = 30000
+                Name = 'AvailabilityGroup1'
+                BasicAvailabilityGroup = $false
+                AvailabilityReplicas = @{
+                    Server1 = @{
+                        AvailabilityMode = 'AsynchronousCommit'
+                        BackupPriority = 50
+                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        FailoverMode = 'Manual'
+                    }
+                }
+            }
+        }
+        Version = @{
+            Major = 13
+        }
+    }
+}
+
 # Begin Testing
 try
 {
@@ -80,18 +164,14 @@ try
         
         Context 'When the Availability Group is Absent'{
 
-            Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{ 
-                    AvailabilityGroups = @{}
-                }
-            } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            It 'Should not return an Availability Group when Ensure is Present and the version is 12' {
 
-            It 'Should not return an Aviailability Group when Ensure is Present' {
-
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
                 $getParams = @{
-                    Name = $createAg.Name
-                    SQLServer = $createAg.SQLServer
-                    SQLInstanceName = $createAg.SQLInstanceName
+                    Name = $absentAg.Name
+                    SQLServer = $absentAg.SQLServer
+                    SQLInstanceName = $absentAg.SQLInstanceName
                 }
                 
                 # Get the current state
@@ -102,14 +182,16 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should not return an Aviailability Group when Ensure is Absent' {
+            It 'Should not return an Availability Group when Ensure is Present and the version is 13' {
 
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
                 $getParams = @{
-                    Name = $removeAg.Name
-                    SQLServer = $removeAg.SQLServer
-                    SQLInstanceName = $removeAg.SQLInstanceName
+                    Name = $absentAg.Name
+                    SQLServer = $absentAg.SQLServer
+                    SQLInstanceName = $absentAg.SQLInstanceName
                 }
-
+                
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
@@ -121,45 +203,22 @@ try
 
         Context 'When the Availability Group is Present'{
 
-            Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{ 
-                    AvailabilityGroups = @{
-                        AvailabilityGroup1 = @{
-                            AutomatedBackupPreference = 'Secondary'
-                            FailureConditionLevel = 'OnServerDown'
-                            HealthCheckTimeout = 30000
-                            Name = 'AvailabilityGroup1'
-                            AvailabilityReplicas = @{
-                                Server1 = @{
-                                    AvailabilityMode = 'AsynchronousCommit'
-                                    BackupPriority = 50
-                                    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                                    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                                    FailoverMode = 'Manual'
-                                }
-                            }
-                        }
-                    }
-                    Version = @{
-                        Major = 12
-                    }
-                }
-            } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            It 'Should return the Availability Group properties when Ensure is Present and the SQL version is 12' {
 
-            It 'Should return the Availability Group properties when Ensure is Present' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
                 $getParams = @{
-                    Name = $createAg.Name
-                    SQLServer = $createAg.SQLServer
-                    SQLInstanceName = $createAg.SQLInstanceName
+                    Name = $presentAg.Name
+                    SQLServer = $presentAg.SQLServer
+                    SQLInstanceName = $presentAg.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $createAg.Name
-                $result.SQLServer | Should Be $createAg.SQLServer
-                $result.SQLInstanceName | Should Be $createAg.SQLInstanceName
+                $result.Name | Should Be $presentAg.Name
+                $result.SQLServer | Should Be $presentAg.SQLServer
+                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -169,24 +228,27 @@ try
                 $result.FailureConditionLevel | Should Not Be $null
                 $result.FailoverMode | Should Not Be $null
                 $result.HealthCheckTimeout | Should Not Be $null
+                $result.BasicAvailabilityGroup | Should Be $null
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should return the Availability Group properties when Ensure is Absent' {
+            It 'Should return the Availability Group properties when Ensure is Absent and the SQL version is 12' {
 
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
                 $getParams = @{
-                    Name = $removeAg.Name
-                    SQLServer = $removeAg.SQLServer
-                    SQLInstanceName = $removeAg.SQLInstanceName
+                    Name = $presentAg.Name
+                    SQLServer = $presentAg.SQLServer
+                    SQLInstanceName = $presentAg.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $removeAg.Name
-                $result.SQLServer | Should Be $removeAg.SQLServer
-                $result.SQLInstanceName | Should Be $removeAg.SQLInstanceName
+                $result.Name | Should Be $presentAg.Name
+                $result.SQLServer | Should Be $presentAg.SQLServer
+                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -196,6 +258,67 @@ try
                 $result.FailureConditionLevel | Should Not Be $null
                 $result.FailoverMode | Should Not Be $null
                 $result.HealthCheckTimeout | Should Not Be $null
+                $result.BasicAvailabilityGroup | Should Be $null
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should return the Availability Group properties when Ensure is Present and the SQL version is 13' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $getParams = @{
+                    Name = $presentAg.Name
+                    SQLServer = $presentAg.SQLServer
+                    SQLInstanceName = $presentAg.SQLInstanceName
+                }
+                
+                # Get the current state
+                $result = Get-TargetResource @getParams
+
+                $result.Name | Should Be $presentAg.Name
+                $result.SQLServer | Should Be $presentAg.SQLServer
+                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Ensure | Should Be 'Present'
+                $result.AutomatedBackupPreference | Should Not Be $null
+                $result.AvailabilityMode | Should Not Be $null
+                $result.BackupPriority | Should Not Be $null
+                $result.ConnectionModeInPrimaryRole | Should Not Be $null
+                $result.ConnectionModeInSecondaryRole | Should Not Be $null
+                $result.FailureConditionLevel | Should Not Be $null
+                $result.FailoverMode | Should Not Be $null
+                $result.HealthCheckTimeout | Should Not Be $null
+                $result.BasicAvailabilityGroup | Should Not Be $null
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should return the Availability Group properties when Ensure is Absent and the SQL version is 13' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $getParams = @{
+                    Name = $presentAg.Name
+                    SQLServer = $presentAg.SQLServer
+                    SQLInstanceName = $presentAg.SQLInstanceName
+                }
+                
+                # Get the current state
+                $result = Get-TargetResource @getParams
+
+                $result.Name | Should Be $presentAg.Name
+                $result.SQLServer | Should Be $presentAg.SQLServer
+                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Ensure | Should Be 'Present'
+                $result.AutomatedBackupPreference | Should Not Be $null
+                $result.AvailabilityMode | Should Not Be $null
+                $result.BackupPriority | Should Not Be $null
+                $result.ConnectionModeInPrimaryRole | Should Not Be $null
+                $result.ConnectionModeInSecondaryRole | Should Not Be $null
+                $result.FailureConditionLevel | Should Not Be $null
+                $result.FailoverMode | Should Not Be $null
+                $result.HealthCheckTimeout | Should Not Be $null
+                $result.BasicAvailabilityGroup | Should Not Be $null
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -390,67 +513,112 @@ try
         
         Context 'When the Availability Group is Absent' {
 
-            Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{ 
-                    AvailabilityGroups = @{}
-                    Version = @{
-                        Major = 12
-                    }
-                }
-            } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            It 'Should be $false when the desired state is Present and the SQL version is 12' {
 
-            It 'Should be $false when the desired state is Present' {
+                $absentAg.Ensure = 'Present'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @absentAg | Should Be $false
 
-                Test-TargetResource @createAg | Should Be $false
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should be $true when the desired state is Absent' {
+            It 'Should be $true when the desired state is Absent and the SQL version is 12' {
 
-                Test-TargetResource @removeAg | Should Be $true
+                $absentAg.Ensure = 'Absent'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Test-TargetResource @absentAg | Should Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $false when the desired state is Present and the SQL version is 13' {
+
+                $absentAg.Ensure = 'Present'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @absentAg | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $true when the desired state is Absent and the SQL version is 13' {
+
+                $absentAg.Ensure = 'Absent'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                Test-TargetResource @absentAg | Should Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
         }
 
         Context 'When the Availability Group is Present' {
 
-            Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{ 
-                    AvailabilityGroups = @{
-                        AvailabilityGroup1 = @{
-                            AutomatedBackupPreference = 'Secondary'
-                            FailureConditionLevel = 'OnServerDown'
-                            HealthCheckTimeout = 30000
-                            Name = 'AvailabilityGroup1'
-                            AvailabilityReplicas = @{
-                                Server1 = @{
-                                    AvailabilityMode = 'AsynchronousCommit'
-                                    BackupPriority = 50
-                                    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                                    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                                    FailoverMode = 'Manual'
-                                }
-                            }
-                        }
-                    }
-                    Version = @{
-                        Major = 12
-                    }
-                }
-            } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            It 'Should be $false when the desired state is Absent and the SQL version is 12' {
 
-            It 'Should be $false when the desired state is Absent' {
+                $presentAg.Ensure = 'Absent'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @presentAg | Should Be $false
 
-                Test-TargetResource @removeAg | Should Be $false
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $true when the desired state is Present and the SQL version is 12' {
+                
+                $presentAg.Ensure = 'Present'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @presentAg | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
             }
 
-            It 'Should be $true when the desired state is Present' {
+            It 'Should be $false when the desired state is Present, there is a parameter not correctly set, and the SQL version is 12' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $presentAgIncorrectParameter = $presentAg.Clone()
+                $presentAgIncorrectParameter.Ensure = 'Present'
+                $presentAgIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
                 
-                Test-TargetResource @createAg | Should Be $true
+                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+            }
+
+            It 'Should be $false when the desired state is Absent and the SQL version is 13' {
+
+                $presentAg.Ensure = 'Absent'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @presentAg | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $true when the desired state is Present and the SQL version is 13' {
+                
+                $presentAg.Ensure = 'Present'
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @presentAg | Should Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $false when the desired state is Present, there is a parameter not correctly set, and the SQL version is 13' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $presentAgIncorrectParameter = $presentAg.Clone()
+                $presentAgIncorrectParameter.Ensure = 'Present'
+                $presentAgIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
+                $presentAgIncorrectParameter.BasicAvailabilityGroup = $true
+                
+                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
             }
