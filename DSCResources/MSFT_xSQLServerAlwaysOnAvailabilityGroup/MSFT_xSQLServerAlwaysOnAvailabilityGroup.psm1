@@ -550,24 +550,50 @@ function Test-TargetResource
 
     $state = Get-TargetResource @parameters
 
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-
-    foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
+    switch ($Ensure)
     {
-        if ( $state.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+        'Absent'
         {
-            if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
+            if ( $state.Ensure -eq 'Absent' )
             {
-                # Move on to the next property if the instance is not at least SQL Server 2016
-                if ( $serverObject.Version.Major -lt 13 )
+                $result = $true
+            }
+            else
+            {
+                $result = $false    
+            }
+        }
+
+        'Present'
+        {
+            if ( $state.Ensure -eq 'Present' )
+            {
+                foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
                 {
-                    continue
+                    if ( $state.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+                    {
+                        if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
+                        {
+                            # Connect to the instance
+                            $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+                            
+                            # Move on to the next property if the instance is not at least SQL Server 2016
+                            if ( $serverObject.Version.Major -lt 13 )
+                            {
+                                continue
+                            }
+                        }
+                        
+                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($state.($psBoundParameter.Key))'"
+                        
+                        $result = $False
+                    }
                 }
             }
-            
-            New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($state.($psBoundParameter.Key))'"
-            
-            $result = $False
+            else
+            {
+                $result = $false
+            }
         }
     }
 
