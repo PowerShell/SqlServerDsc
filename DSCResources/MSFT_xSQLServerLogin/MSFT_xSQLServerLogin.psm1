@@ -171,20 +171,20 @@ function Set-TargetResource
                     {
                         New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                         $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
-                        AlterLogin -Login $login
+                        Update-SQLServerLogin -Login $login
                     }
 
                     if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
                     {
                         New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
-                        AlterLogin -Login $login
+                        Update-SQLServerLogin -Login $login
                     }
 
                     # Set the password if it is specified
                     if ( $LoginCredential )
                     {
-                        SetPassword -Login $login -SecureString $LoginCredential.Password
+                         Set-SQLServerLoginPassword -Login $login -SecureString $LoginCredential.Password
                     }
                 }
             }
@@ -227,12 +227,12 @@ function Set-TargetResource
                             $LoginCreateOptions = [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::None
                         }
 
-                        CreateLogin -Login $login -LoginCreateOptions $LoginCreateOptions -SecureString $LoginCredential.Password -ErrorAction Stop 
+                        New-SQLServerLogin -Login $login -LoginCreateOptions $LoginCreateOptions -SecureString $LoginCredential.Password -ErrorAction Stop 
                     }
 
                     default
                     {
-                        CreateLogin -Login $login
+                        New-SQLServerLogin -Login $login
                     }
                 }
             }
@@ -243,7 +243,7 @@ function Set-TargetResource
             if ( $serverObject.Logins[$Name] )
             {
                 New-VerboseMessage -Message "Dropping the login '$Name' from the '$SQLServer\$SQLInstanceName' instance."
-                DropLogin -Login $serverObject.Logins[$Name]
+                Remove-SQLServerLogin -Login $serverObject.Logins[$Name]
             }
         }
     }
@@ -392,35 +392,77 @@ function Test-TargetResource
     return $testPassed
 }
 
-# Create a function to alter the login. This allows us to more easily write mocks.
-function AlterLogin
+<#
+    .SYNOPSIS
+    Alters a login.
+
+    .PARAMETER Login
+    The Login object to alter.
+
+    .NOTES
+    This function allows us to more easily write mocks.
+#>
+function Update-SQLServerLogin
 {
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [Microsoft.SqlServer.Management.Smo.Login]
         $Login
     )
 
-    $Login.Alter()
+    $originalErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Stop'
+
+    try
+    {
+        $Login.Alter()
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType AlterLoginFailed -FormatArgs $Login.Name -ErrorCategory NotSpecified
+    }
+
+    $ErrorActionPreference = 'Continue'
 }
 
-# Create a function to create the login. This allows us to more easily write mocks.
-function CreateLogin
+<#
+    .SYNOPSIS
+    Creates a login.
+
+    .PARAMETER Login
+    The Login object to create.
+
+    .PARAMETER LoginCreateOptions
+    The LoginCreateOptions object to use when creating a SQL login.
+
+    .PARAMETER SecureString
+    The SecureString object that contains the password for a SQL login.
+
+    .EXAMPLE
+    CreateLogin -Login $login -LoginCreateOptions $LoginCreateOptions -SecureString $LoginCredential.Password -ErrorAction Stop
+
+    .EXAMPLE
+    CreateLogin -Login $login
+
+    .NOTES
+    This function allows us to more easily write mocks.
+#>
+function New-SQLServerLogin
 {
     [CmdletBinding(DefaultParameterSetName = 'WindowsLogin')]
-    Param
+    param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'WindowsLogin')]
-        [Parameter(ParameterSetName = 'SqlLogin')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SqlLogin')]
         [Microsoft.SqlServer.Management.Smo.Login]
         $Login,
 
-        [Parameter(ParameterSetName = 'SqlLogin')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SqlLogin')]
         [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]
         $LoginCreateOptions,
 
-        [Parameter(ParameterSetName = 'SqlLogin')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SqlLogin')]
         [System.Security.SecureString]
         $SecureString
     )
@@ -450,27 +492,65 @@ function CreateLogin
             }
         }
 
-        'WindowsLogin' { $login.Create() }
+        'WindowsLogin'
+        {
+            try
+            {
+                $login.Create()
+            }
+            catch
+            {
+                throw New-TerminatingError -ErrorType LoginCreationFailed -FormatArgs $Name -ErrorCategory NotSpecified
+            }
+        }
     }
 }
 
-# Create a function to drop the login. This allows us to more easily write mocks.
-function DropLogin
+<#
+    .SYNOPSIS
+    Drops a login.
+
+    .PARAMETER Login
+    The Login object to drop.
+
+    .NOTES
+    This function allows us to more easily write mocks.
+#>
+function Remove-SQLServerLogin
 {
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [Microsoft.SqlServer.Management.Smo.Login]
         $Login
     )
 
-    $Login.Drop()
+    try
+    {
+        $Login.Drop()
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType DropLoginFailed -FormatArgs $Login.Name -ErrorCategory NotSpecified
+    }
 }
 
-# Create a function to set the password. This allows us to more easily write mocks.
-function SetPassword
+<#
+    .SYNOPSIS
+    Changes the password of a SQL Login.
+
+    .PARAMETER Login
+    The Login object to change the password on.
+
+    .PARAMETER SecureString
+    The SecureString object that contains the password for a SQL login.
+
+    .NOTES
+    This function allows us to more easily write mocks.
+#>
+function Set-SQLServerLoginPassword
 {
-    Param
+    param
     (
         [Parameter(Mandatory = $true)]
         [Microsoft.SqlServer.Management.Smo.Login]

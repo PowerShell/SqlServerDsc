@@ -202,6 +202,9 @@ namespace Microsoft.SqlServer.Management.Smo
         public bool PasswordPolicyEnforced = false;
         public bool PasswordExpirationEnabled = false;
 
+        public string MockName;
+        public LoginType MockLoginType;
+
         public Login( Server server, string name )
         {
             this.Name = name;
@@ -212,14 +215,31 @@ namespace Microsoft.SqlServer.Management.Smo
             this.Name = name;
         }
         
-        public void Alter () {}
+        public void Alter()
+        {
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
+            }
+        }
         
-        public void ChangePassword ( SecureString secureString )
+        public void ChangePassword( SecureString secureString )
         {
             IntPtr valuePtr = IntPtr.Zero;
             try
             {
-                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(secureString);
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(secureString);            
                 if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
                 {                    
                     throw new FailedOperationException (
@@ -258,6 +278,22 @@ namespace Microsoft.SqlServer.Management.Smo
 
             if( this.LoginType == LoginType.SqlLogin && _mockPasswordPassed != true ) {
                 throw new System.Exception( "Called Create() method for the LoginType 'SqlLogin' but called with the wrong overloaded method. Did not pass the password with the Create() method." );
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
             }
         }
 
@@ -312,6 +348,21 @@ namespace Microsoft.SqlServer.Management.Smo
 
         public void Drop()
         {
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
+            }
         }
     }
 	
