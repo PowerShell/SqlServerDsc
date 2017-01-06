@@ -11,10 +11,10 @@ function Get-TargetResource
     param
     (
         [System.String]
-        $SourcePath = "$PSScriptRoot\..\..\",
+        $SourcePath,
 
         [System.String]
-        $SourceFolder = "Source",
+        $SourceFolder,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -32,7 +32,7 @@ function Get-TargetResource
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $SQLVersion = GetSQLVersion -Path $Path
-    
+
     if($InstanceName -eq "MSSQLSERVER")
     {
         $DBServiceName = "MSSQLSERVER"
@@ -50,7 +50,7 @@ function Get-TargetResource
         $ASServiceName = "MSOLAP`$$InstanceName"
     }
     $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
-    
+
     $Ensure = "Present"
     $Services = Get-Service
     $FeaturesInstalled = ""
@@ -171,10 +171,10 @@ function Set-TargetResource
         $Ensure = "Present",
 
         [System.String]
-        $SourcePath = "$PSScriptRoot\..\..\",
+        $SourcePath,
 
         [System.String]
-        $SourceFolder = "Source",
+        $SourceFolder,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -210,7 +210,7 @@ function Set-TargetResource
         $ASServiceName = "MSOLAP`$$InstanceName"
     }
     $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
-    
+
     $SQLData = Get-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName
 
     foreach($Feature in $SQLData.Features.Split(","))
@@ -294,10 +294,10 @@ function Test-TargetResource
         $Ensure = "Present",
 
         [System.String]
-        $SourcePath = "$PSScriptRoot\..\..\",
+        $SourcePath,
 
         [System.String]
-        $SourceFolder = "Source",
+        $SourceFolder,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -309,7 +309,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName).Ensure -eq $Ensure)
-    
+
     $result
 }
 
@@ -336,7 +336,7 @@ function GetSQLPath
         [Parameter(Mandatory=$true)]
         [String]
         $Feature,
-        
+
         [String]
         $InstanceName,
 
