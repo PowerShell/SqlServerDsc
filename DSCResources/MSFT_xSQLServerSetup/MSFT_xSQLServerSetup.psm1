@@ -102,6 +102,9 @@ function Get-TargetResource
     $integrationServiceName = "MsDtsServer$($sqlVersion)0"
 
     $features = ''
+    $clusteredSqlGroupName = ''
+    $clusteredSqlHostname = ''
+    $clusteredSqlIPAddress = ''
 
     $services = Get-Service
     if ($services | Where-Object {$_.Name -eq $databaseServiceName})
@@ -161,11 +164,15 @@ function Get-TargetResource
 
         if ($databaseServer.IsClustered)
         {
+            New-VerboseMessage -Message 'Clustered instance detected'
+
             $clusteredSqlInstance = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" |
                 Where-Object { $_.PrivateProperties.InstanceName -eq $InstanceName }
 
             if ($clusteredSqlInstance)
             {
+                New-VerboseMessage -Message 'Clustered SQL Server resource located'
+
                 $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
                 $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource | 
                     Where-Object { $_.Type -eq "Network Name" }
@@ -177,6 +184,10 @@ function Get-TargetResource
                 $clusteredSqlGroupName = $clusteredSqlGroup.Name
                 $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
             }
+        }
+        else 
+        {
+            New-VerboseMessage -Message 'Clustered instance not detected'
         }
     }
 
@@ -339,8 +350,8 @@ function Get-TargetResource
         ASTempDir = $analysisTempDirectory
         ASConfigDir = $analysisConfigDirectory
         ISSvcAccountUsername = $integrationServiceAccountUsername
-        FailoverClusterGroupName = $clusteredSqlGroupName
-        FailoverClusterNetworkName = $clusteredSqlNetworkName
+        FailoverClusterGroup = $clusteredSqlGroupName
+        FailoverClusterNetworkName = $clusteredSqlHostname
         FailoverClusterIPAddress = $clusteredSqlIPAddress
     }
 }
@@ -816,7 +827,7 @@ function Set-TargetResource
         }
 
         ## add the cluster disks as a setup argument
-        $setupArgs.Add('FailoverClusterDisks', $failoverClusterDisks)
+        $setupArgs.Add('FailoverClusterDisks', $failoverClusterDisks) | Out-Null
 
         ## Get the available cluster networks
         $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
@@ -856,10 +867,10 @@ function Set-TargetResource
         }
 
         ## add the networks to the installation arguments
-        $setupArgs.Add('FailoverClusterIPAddresses', $clusterIPAddresses)
+        $setupArgs.Add('FailoverClusterIPAddresses', $clusterIPAddresses) | Out-Null
 
         ## brought over from old module. need to remove this...
-        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors')
+        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors') | Out-Null
     }
 
     # Add standard install arguments
@@ -918,7 +929,7 @@ function Set-TargetResource
             $arguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
         }
 
-        $setupArgs.Add('SQLSysAdminAccounts', $($SetupCredential.UserName))
+        $setupArgs.Add('SQLSysAdminAccounts', $($SetupCredential.UserName)) | Out-Null
         if ($PSBoundParameters -icontains 'SQLSysAdminAccounts')
         {
             $setupArgs['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
@@ -926,10 +937,10 @@ function Set-TargetResource
         
         if ($SecurityMode -eq 'SQL')
         {
-            $setupArgs.Add('SAPwd', $SAPwd.GetNetworkCredential().Password)
+            $setupArgs.Add('SAPwd', $SAPwd.GetNetworkCredential().Password) | Out-Null
         }
 
-        $setupArgs.Add('AGTSVCSTARTUPTYPE','Automatic')
+        $setupArgs.Add('AGTSVCSTARTUPTYPE','Automatic') | Out-Null
     }
 
     if ($Features.Contains('FULLTEXT'))
@@ -971,7 +982,7 @@ function Set-TargetResource
             $setupArgs['ASSysAdminAccounts'] += $ASSysAdminAccounts
         }
 
-        $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName))
+        $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName)) | Out-Null
 
         if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
         {
@@ -990,7 +1001,7 @@ function Set-TargetResource
     ## automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
-        $setupArgs.Add($argument, (Get-Variable -Name $argument -ValueOnly))
+        $setupArgs.Add($argument, (Get-Variable -Name $argument -ValueOnly)) | Out-Null
     }
 
     ## TODO: Apply parameter filtering based on $Action
@@ -1396,7 +1407,7 @@ function Test-TargetResource
     {
         New-VerboseMessage -Message "Clustered install, checking parameters."
 
-        if ($sqlData.FailoverClusterGroup -ne $FailoverClusterGroup)
+        if ($sqlData.FailoverClusterGroup -eq $FailoverClusterGroup)
         {
             if ($sqlData.FailoverClusterNetworkName -eq $FailoverClusterNetworkName)
             {
