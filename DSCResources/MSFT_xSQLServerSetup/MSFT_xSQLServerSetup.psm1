@@ -1657,7 +1657,6 @@ function Test-IPAddress
     return (($IPAddressDecimal -band $SubnetDecimal) -eq ($NetworkDecimal -band $SubnetDecimal))
 }
 
-<<<<<<< 5fc129f536806a599d9c949fadae68c8909ede33
 <#
     .SYNOPSIS
         Builds service account parameters for setup
