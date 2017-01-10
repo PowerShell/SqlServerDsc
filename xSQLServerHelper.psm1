@@ -1328,7 +1328,7 @@ function Get-SqlDatabasePermission
         $PermissionState
     )
 
-    Write-Verbose -Message "Getting Sql Databases and SQL Logins"
+    Write-Verbose -Message 'Getting Sql Databases and SQL Logins'
     $sqlDatabase = $Sql.Databases[$Database]
     $sqlLogin = $Sql.Logins[$Name]
     $sqlInstanceName = $Sql.InstanceName
@@ -1344,7 +1344,9 @@ function Get-SqlDatabasePermission
             Write-Verbose -Message "Getting Permissions for SQL Login $Name in database $Database"
 
             $databasePermissionInfo = $sqlDatabase.EnumDatabasePermissions($Name)
-            $databasePermissionInfo = $databasePermissionInfo | where { $_.PermissionState -eq $PermissionState }
+            $databasePermissionInfo = $databasePermissionInfo | Where-Object -FilterScript { 
+                $_.PermissionState -eq $PermissionState
+            }
 
             foreach ($currentDatabasePermissionInfo in $databasePermissionInfo)
             {
@@ -1424,7 +1426,7 @@ function Add-SqlDatabasePermission
         $Permissions
     )
 
-    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
+    Write-Verbose -Message 'Getting SQL Databases and SQL Logins'
     $sqlDatabase = $Sql.Databases[$Database]
     $sqlLogin = $Sql.Logins[$Name]
     $sqlInstanceName = $Sql.InstanceName
@@ -1438,16 +1440,16 @@ function Add-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
-                                           "$Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Adding SQL login $Name as a user of database " + `
+                                            "$Database on $sqlServer\$sqlInstanceName")
                     $sqlDatabaseUser = New-Object Microsoft.SqlServer.Management.Smo.User $sqlDatabase,$Name
                     $sqlDatabaseUser.Login = $Name
                     $sqlDatabaseUser.Create()
                 }
                 catch
                 {
-                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
-                                           "database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Failed adding SQL login $Name as a user of " + `
+                                            "database $Database on $sqlServer\$sqlInstanceName")
                 }
             }
 
@@ -1455,8 +1457,8 @@ function Add-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose -Message "$PermissionState - Adding SQL login $Name to permissions $permissions " + `
-                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("$PermissionState - Adding SQL login $Name to permissions $permissions " + `
+                                            "on database $Database on $sqlServer\$sqlInstanceName")
                     $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
                     foreach ($permission in $permissions)
                     {
@@ -1464,14 +1466,14 @@ function Add-SqlDatabasePermission
                     }
                     switch ($PermissionState) 
                     {
-                        "Grant" { $sqlDatabase.Grant($permissionSet,$Name) }
-                        "Deny" { $sqlDatabase.Deny($permissionSet,$Name) }
+                        'Grant' { $sqlDatabase.Grant($permissionSet,$Name) }
+                        'Deny' { $sqlDatabase.Deny($permissionSet,$Name) }
                     }                    
                 }
                 catch
                 {
-                    Write-Verbose -Message "Failed adding SQL login $Name to permissions $permissions " + `
-                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Failed setting SQL login $Name to permissions $permissions " + `
+                                            "on database $Database on $sqlServer\$sqlInstanceName")
                 }
             }
         }
@@ -1539,7 +1541,7 @@ function Remove-SqlDatabasePermission
         $Permissions
     )
 
-    Write-Verbose -Message "Getting SQL Databases and SQL Logins"
+    Write-Verbose -Message 'Getting SQL Databases and SQL Logins'
     $sqlDatabase = $Sql.Databases[$Database]
     $sqlLogin = $Sql.Logins[$Name]
     $sqlInstanceName = $Sql.InstanceName
@@ -1553,8 +1555,8 @@ function Remove-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose -Message "Adding SQL login $Name as a user of database " + `
-                                           "$Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Adding SQL login $Name as a user of database " + `
+                                            "$Database on $sqlServer\$sqlInstanceName")
                     $sqlDatabaseUser = New-Object -TypeName Microsoft.SqlServer.Management.Smo.User `
                                                   -ArgumentList $sqlDatabase,$Name
                     $sqlDatabaseUser.Login = $Name
@@ -1562,8 +1564,8 @@ function Remove-SqlDatabasePermission
                 }
                 catch
                 {
-                    Write-Verbose -Message "Failed adding SQL login $Name as a user of " + `
-                                           "database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Failed adding SQL login $Name as a user of " + `
+                                            "database $Database on $sqlServer\$sqlInstanceName")
                 }
             }
 
@@ -1571,8 +1573,8 @@ function Remove-SqlDatabasePermission
             {
                 try
                 {
-                    Write-Verbose -Message "$PermissionState - Removing SQL login $Name to permissions $permissions " + `
-                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("$PermissionState - Removing SQL login $Name to permissions $permissions " + `
+                                            "on database $Database on $sqlServer\$sqlInstanceName")
                     $permissionSet = New-Object -TypeName Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
                     foreach ($permission in $permissions)
                     {
@@ -1586,8 +1588,8 @@ function Remove-SqlDatabasePermission
                 }
                 catch
                 {
-                    Write-Verbose -Message "Failed removing SQL login $Name to permissions $permissions " + `
-                                           "on database $Database on $sqlServer\$sqlInstanceName"
+                    Write-Verbose -Message ("Failed removing SQL login $Name to permissions $permissions " + `
+                                            "on database $Database on $sqlServer\$sqlInstanceName")
                 }
             }
         }
