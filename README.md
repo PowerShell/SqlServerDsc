@@ -292,7 +292,7 @@ No description.
 
 * [Set database owner](/Examples/Resources/xSQLServerDatabaseOwner/1-SetDatabaseOwner.ps1)
 
-### xSQLServerDatabasePermissions
+### xSQLServerDatabasePermission
 
 No description.
 
@@ -303,11 +303,13 @@ No description.
 
 #### Parameters
 
+* **[String] Ensure** _(Write)_: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
 * **[String] Database** _(Key)_: The SQL Database
-* **[String] Name** _(Required)_: The name of permissions for the SQL database
+* **[String] Name** _(Key)_: The name of permissions for the SQL database
 * **[String[]] Permissions** _(Required)_: The set of Permissions for the SQL database
-* **[String] SQLServer** _(Write)_: The SQL Server for the database
-* **[String] SQLInstanceName** _(Write)_: The SQL instance for the database
+* **[String] PermissionState** _(Required)_: The state of permission set. Valid values are 'Grant' or 'Deny'.
+* **[String] SQLServer** _(Key)_: The SQL Server for the database
+* **[String] SQLInstanceName** _(Key)_: The SQL instance for the database
 
 #### Examples
 
