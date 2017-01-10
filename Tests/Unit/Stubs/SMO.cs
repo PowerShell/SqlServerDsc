@@ -2,11 +2,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.SqlServer.Management.Smo
 {
     #region Public Enums
 
+    // TypeName: Microsoft.SqlServer.Management.Smo.LoginCreateOptions
+    // Used by:
+    //  MSFT_xSQLServerLogin.Tests.ps1
+    public enum LoginCreateOptions
+    {
+        None = 0,
+        IsHashed = 1,
+        MustChange = 2
+    }
+    
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginType
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by: 
@@ -226,17 +238,80 @@ namespace Microsoft.SqlServer.Management.Smo
     {
         private bool _mockPasswordPassed = false;
 
-        public Login( Server server, string name ) {
-            this.Name = name;
-        } 
-
-        public Login( Object server, string name ) {
-            this.Name = name;
-        } 
-            
         public string Name;
         public LoginType LoginType = LoginType.Unknown;
+        public bool MustChangePassword = false;
+        public bool PasswordPolicyEnforced = false;
+        public bool PasswordExpirationEnabled = false;
 
+        public string MockName;
+        public LoginType MockLoginType;
+
+        public Login( Server server, string name )
+        {
+            this.Name = name;
+        }
+        
+        public Login( Object server, string name )
+        {
+            this.Name = name;
+        }
+        
+        public void Alter()
+        {
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
+            }
+        }
+        
+        public void ChangePassword( SecureString secureString )
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try
+            {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(secureString);            
+                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
+                {                    
+                    throw new FailedOperationException (
+                        "FailedOperationException",
+                        new SmoException (
+                            "SmoException",
+                            new SqlServerManagementException (
+                                "SqlServerManagementException",
+                                new Exception (
+                                    "Password validation failed. The password does not meet Windows policy requirements because it is too short."
+                                )
+                            )
+                        )
+                    );
+                }
+                else if ( Marshal.PtrToStringUni(valuePtr) == "reused" )
+                {
+                    throw new FailedOperationException ();
+                }
+                else if ( Marshal.PtrToStringUni(valuePtr) == "other" )
+                {
+                    throw new Exception ();
+                }
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+        
         public void Create()
         {
             if( this.LoginType == LoginType.Unknown ) {
@@ -246,17 +321,90 @@ namespace Microsoft.SqlServer.Management.Smo
             if( this.LoginType == LoginType.SqlLogin && _mockPasswordPassed != true ) {
                 throw new System.Exception( "Called Create() method for the LoginType 'SqlLogin' but called with the wrong overloaded method. Did not pass the password with the Create() method." );
             }
+
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
+            }
         }
 
-        public void Create( String secureString )
+        public void Create( SecureString secureString )
         {
             _mockPasswordPassed = true;
 
             this.Create();
         }
 
+        public void Create( SecureString password, LoginCreateOptions options  )
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try
+            {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(password);
+                if ( Marshal.PtrToStringUni(valuePtr) == "pw" )
+                {                    
+                    throw new FailedOperationException (
+                        "FailedOperationException",
+                        new SmoException (
+                            "SmoException",
+                            new SqlServerManagementException (
+                                "SqlServerManagementException",
+                                new Exception (
+                                    "Password validation failed. The password does not meet Windows policy requirements because it is too short."
+                                )
+                            )
+                        )
+                    );
+                }
+                else if ( this.Name == "Existing" )
+                {
+                    throw new FailedOperationException ( "The login already exists" );
+                }
+                else if ( this.Name == "Unknown" )
+                {
+                    throw new Exception ();
+                }
+                else
+                {                    
+                    _mockPasswordPassed = true;
+                    
+                    this.Create();
+                }
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+
         public void Drop()
         {
+            if( !( String.IsNullOrEmpty(this.MockName) ) )
+            {
+                if(this.MockName != this.Name)
+                {
+                    throw new Exception();
+                }
+            }
+
+            if( !( String.IsNullOrEmpty(this.MockLoginType.ToString()) ) )
+            {
+                if( this.MockLoginType != this.LoginType )
+                {
+                    throw new Exception(this.MockLoginType.ToString());
+                }
+            }
         }
     }
 	
@@ -350,14 +498,16 @@ namespace Microsoft.SqlServer.Management.Smo
     //  xSQLServerDatabaseRole.Tests.ps1
     public class User 
     {
-       public User( Server server, string name ) {
+        public User( Server server, string name )
+        {
             this.Name = name;
         } 
 
-        public User( Object server, string name ) {
+        public User( Object server, string name )
+        {
             this.Name = name;
-        } 
-            
+        }
+
         public string Name;
         public string Login;
 
@@ -368,6 +518,45 @@ namespace Microsoft.SqlServer.Management.Smo
         public void Drop()
         {
         }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.SqlServerManagementException
+    // BaseType: System.Exception 
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class SqlServerManagementException : Exception
+    {
+        public SqlServerManagementException () : base () {}
+
+        public SqlServerManagementException (string message) : base (message) {}
+
+        public SqlServerManagementException (string message, Exception inner) : base (message, inner) {}
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.SmoException
+    // BaseType: Microsoft.SqlServer.Management.Smo.SqlServerManagementException  
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class SmoException : SqlServerManagementException
+    {
+        public SmoException () : base () {}
+
+        public SmoException (string message) : base (message) {}
+        
+        public SmoException (string message, SqlServerManagementException inner) : base (message, inner) {}
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.FailedOperationException
+    // BaseType: Microsoft.SqlServer.Management.Smo.SmoException
+    // Used by:
+    //  xSqlServerLogin.Tests.ps1
+    public class FailedOperationException : SmoException
+    {
+        public FailedOperationException () : base () {}
+        
+        public FailedOperationException (string message) : base (message) {}
+        
+        public FailedOperationException (string message, SmoException inner) : base (message, inner) {}
     }
 
     #endregion Public Classes

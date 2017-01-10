@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
 
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource.
-    
+
     .PARAMETER SourceFolder
         Folder within the source path containing the source files for installation. Default value is 'Source'.
 
@@ -16,7 +16,8 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
         Credential to be used to perform the installation.
 
     .PARAMETER SourceCredential
-        Credential to be used to access SourcePath.
+        Credentials used to access the path set in the parameter `SourcePath` and `SourceFolder`. The parameter `SourceCredential` is used
+        to evaluate what major version the file 'setup.exe' has in the path set, again, by the parameter `SourcePath` and `SourceFolder`.
 
     .PARAMETER InstanceName
         Name of the SQL instance to be installed.
@@ -54,10 +55,10 @@ function Get-TargetResource
     {
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Present'
     }
-    
+
     $path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath 'setup.exe'
     $path = ResolvePath -Path $path
-    
+
     New-VerboseMessage -Message "Using path: $path"
 
     $sqlVersion = GetSQLVersion -Path $path
@@ -66,7 +67,7 @@ function Get-TargetResource
     {
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Absent'
     }
-    
+
     if ($InstanceName -eq 'MSSQLSERVER')
     {
         $databaseServiceName = 'MSSQLSERVER'
@@ -83,9 +84,9 @@ function Get-TargetResource
         $reportServiceName = "ReportServer`$$InstanceName"
         $analysisServiceName = "MSOLAP`$$InstanceName"
     }
-    
+
     $integrationServiceName = "MsDtsServer$($sqlVersion)0"
-    
+
     $features = ''
 
     $services = Get-Service
@@ -93,8 +94,8 @@ function Get-TargetResource
     {
         $features += 'SQLENGINE,'
 
-        $sqlServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $databaseServiceName}).StartName
-        $agentServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $agentServiceName}).StartName
+        $sqlServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$databaseServiceName'").StartName
+        $agentServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$agentServiceName'").StartName
 
         $fullInstanceId = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' -Name $InstanceName).$InstanceName
 
@@ -105,7 +106,7 @@ function Get-TargetResource
         {
             New-VerboseMessage -Message 'Replication feature detected'
             $Features += 'REPLICATION,'
-        } 
+        }
         else
         {
             New-VerboseMessage -Message 'Replication feature not detected'
@@ -118,7 +119,7 @@ function Get-TargetResource
 
         $sqlCollation = $databaseServer.Collation
 
-        $sqlSystemAdminAccounts = @() 
+        $sqlSystemAdminAccounts = @()
         foreach ($sqlUser in $databaseServer.Logins)
         {
             foreach ($sqlRole in $sqlUser.ListMembers())
@@ -129,13 +130,13 @@ function Get-TargetResource
                 }
             }
         }
-        
+
         if ($databaseServer.LoginMode -eq 'Mixed')
         {
             $securityMode = 'SQL'
         }
         else
-        { 
+        {
             $securityMode = 'Windows'
         }
 
@@ -148,20 +149,20 @@ function Get-TargetResource
     if ($services | Where-Object {$_.Name -eq $fullTextServiceName})
     {
         $features += 'FULLTEXT,'
-        $fulltextServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $fullTextServiceName}).StartName
+        $fulltextServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$fullTextServiceName'").StartName
     }
 
     if ($services | Where-Object {$_.Name -eq $reportServiceName})
     {
         $features += 'RS,'
-        $reportingServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $reportServiceName}).StartName
+        $reportingServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$reportServiceName'").StartName
     }
 
     if ($services | Where-Object {$_.Name -eq $analysisServiceName})
     {
         $features += 'AS,'
-        $analysisServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $analysisServiceName}).StartName
-        
+        $analysisServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$analysisServiceName'").StartName
+
         $analysisServer = Connect-SQLAnalysis -SQLServer localhost -SQLInstanceName $InstanceName
 
         $analysisCollation = $analysisServer.ServerProperties['CollationName'].Value
@@ -178,53 +179,55 @@ function Get-TargetResource
     if ($services | Where-Object {$_.Name -eq $integrationServiceName})
     {
         $features += 'IS,'
-        $integrationServiceAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $integrationServiceName}).StartName
+        $integrationServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$integrationServiceName'").StartName
     }
 
-    $products = Get-WmiObject -Class Win32_Product
+    $registryUninstallPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
 
-    switch ($sqlVersion)
-    {
-        '10'
-        {
-            $identifyingNumber = '{72AB7E6F-BC24-481E-8C45-1AB5B3DD795D}'
-        }
+    # Verify if SQL Server Management Studio 2008 or SQL Server Management Studio 2008 R2 (major version 10) is installed
+    $installedProductSqlServerManagementStudio2008R2 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{72AB7E6F-BC24-481E-8C45-1AB5B3DD795D}'
+    ) -ErrorAction SilentlyContinue
 
-        '11'
-        {
-            $identifyingNumber = '{A7037EB2-F953-4B12-B843-195F4D988DA1}'
-        }
+    # Verify if SQL Server Management Studio 2012 (major version 11) is installed
+    $installedProductSqlServerManagementStudio2012 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{A7037EB2-F953-4B12-B843-195F4D988DA1}'
+    ) -ErrorAction SilentlyContinue
 
-        '12'
-        {
-            $identifyingNumber = '{75A54138-3B98-4705-92E4-F619825B121F}'
-        }
-    }
+    # Verify if SQL Server Management Studio 2014 (major version 12) is installed
+    $installedProductSqlServerManagementStudio2014 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{75A54138-3B98-4705-92E4-F619825B121F}'
+    ) -ErrorAction SilentlyContinue
 
-    if ($products | Where-Object {$_.IdentifyingNumber -eq $identifyingNumber})
+    if (
+        ($sqlVersion -eq 10 -and $installedProductSqlServerManagementStudio2008R2) -or
+        ($sqlVersion -eq 11 -and $installedProductSqlServerManagementStudio2012) -or
+        ($sqlVersion -eq 12 -and $installedProductSqlServerManagementStudio2014)
+        )
     {
         $features += 'SSMS,'
     }
 
-    switch ($sqlVersion)
-    {
-        '10'
-        {
-            $identifyingNumber = '{B5FE23CC-0151-4595-84C3-F1DE6F44FE9B}'
-        }
+    # Evaluating if SQL Server Management Studio Advanced 2008  or SQL Server Management Studio Advanced 2008 R2 (major version 10) is installed
+    $installedProductSqlServerManagementStudioAdvanced2008R2 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{B5FE23CC-0151-4595-84C3-F1DE6F44FE9B}'
+    ) -ErrorAction SilentlyContinue
 
-        '11'
-        {
-            $identifyingNumber = '{7842C220-6E9A-4D5A-AE70-0E138271F883}'
-        }
+    # Evaluating if SQL Server Management Studio Advanced 2012 (major version 11) is installed
+    $installedProductSqlServerManagementStudioAdvanced2012 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{7842C220-6E9A-4D5A-AE70-0E138271F883}'
+    ) -ErrorAction SilentlyContinue
 
-        '12'
-        {
-            $identifyingNumber = '{B5ECFA5C-AC4F-45A4-A12E-A76ABDD9CCBA}'
-        }
-    }
+    # Evaluating if SQL Server Management Studio Advanced 2014 (major version 12) is installed
+    $installedProductSqlServerManagementStudioAdvanced2014 = Get-ItemProperty -Path (
+        Join-Path -Path $registryUninstallPath -ChildPath '{B5ECFA5C-AC4F-45A4-A12E-A76ABDD9CCBA}'
+    ) -ErrorAction SilentlyContinue
 
-    if ($Products | Where-Object {$_.IdentifyingNumber -eq $identifyingNumber})
+    if (
+        ($sqlVersion -eq 10 -and $installedProductSqlServerManagementStudioAdvanced2008R2) -or
+        ($sqlVersion -eq 11 -and $installedProductSqlServerManagementStudioAdvanced2012) -or
+        ($sqlVersion -eq 12 -and $installedProductSqlServerManagementStudioAdvanced2014)
+        )
     {
         $features += 'ADV_SSMS,'
     }
@@ -312,7 +315,7 @@ function Get-TargetResource
 
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource.
-    
+
     .PARAMETER SourceFolder
         Folder within the source path containing the source files for installation. Default value is 'Source'.
 
@@ -320,7 +323,10 @@ function Get-TargetResource
         Credential to be used to perform the installation.
 
     .PARAMETER SourceCredential
-        Credential to be used to access SourcePath.
+        Credentials used to access the path set in the parameter `SourcePath` and `SourceFolder`. Using this parameter will trigger a copy
+        of the installation media to a temp folder on the target node. Setup will then be started from the temp folder on the target node.
+        For any subsequent calls to the resource, the parameter `SourceCredential` is used to evaluate what major version the file 'setup.exe'
+        has in the path set, again, by the parameter `SourcePath` and `SourceFolder`.
 
     .PARAMETER SuppressReboot
         Suppressed reboot.
@@ -435,6 +441,8 @@ function Get-TargetResource
 #>
 function Set-TargetResource
 {
+    # Suppressing this rule because $global:DSCMachineStatus is used to trigger a reboot, either by force or when there are pending changes.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [CmdletBinding()]
     param
     (
@@ -577,7 +585,7 @@ function Set-TargetResource
 
     $InstanceName = $InstanceName.ToUpper()
 
-    $mediaSourcePath = (Join-Path -Path $SourcePath -ChildPath $SourceFolder) 
+    $mediaSourcePath = (Join-Path -Path $SourcePath -ChildPath $SourceFolder)
 
     if ($SourceCredential)
     {
@@ -588,16 +596,16 @@ function Set-TargetResource
 
         New-VerboseMessage -Message "Robocopy is copying media from source '$mediaSourcePath' to destination '$mediaDestinationPath'"
         Copy-ItemWithRoboCopy -Path $mediaSourcePath -DestinationPath $mediaDestinationPath
-        
+
         NetUse -SourcePath $SourcePath -Credential $SourceCredential -Ensure 'Absent'
 
         $mediaSourcePath = $mediaDestinationPath
     }
 
     $path = ResolvePath (Join-Path -Path $mediaSourcePath -ChildPath 'setup.exe')
-    
+
     New-VerboseMessage -Message "Using path: $path"
-    
+
     $sqlVersion = GetSQLVersion -Path $path
 
     # Determine features to install
@@ -617,7 +625,7 @@ function Set-TargetResource
             $featuresToInstall += "$feature,"
         }
     }
-    
+
     $Features = $featuresToInstall.Trim(',')
 
     # If SQL shared components already installed, clear InstallShared*Dir variables
@@ -709,7 +717,7 @@ function Set-TargetResource
         'InstanceDir'
     )
 
-    if ($BrowserSvcStartupType -ne $null)
+    if ($null -ne $BrowserSvcStartupType)
     {
         $argumentVars += 'BrowserSvcStartupType'
     }
@@ -729,29 +737,12 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
         {
-            if ($SQLSvcAccount.UserName -eq "SYSTEM")
-            {
-                $arguments += " /SQLSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-            }
-            else
-            {
-                $arguments += " /SQLSVCACCOUNT=`"" + $SQLSvcAccount.UserName + "`""
-                $arguments += " /SQLSVCPASSWORD=`"" + $SQLSvcAccount.GetNetworkCredential().Password + "`""
-            }
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'SQLSVCACCOUNT' -PasswordArgumentName 'SQLSVCPASSWORD' -User $SQLSvcAccount
         }
 
         if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
         {
-            if($AgtSvcAccount.UserName -eq 'SYSTEM')
-            {
-                $arguments += " /AGTSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-            }
-            else
-            {
-                $arguments += " /AGTSVCACCOUNT=`"" + $AgtSvcAccount.UserName + "`""
-                $arguments += " /AGTSVCPASSWORD=`"" + $AgtSvcAccount.GetNetworkCredential().Password + "`""
-            }
-
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'AGTSVCACCOUNT' -PasswordArgumentName 'AGTSVCPASSWORD' -User $AgtSvcAccount
         }
 
         $arguments += ' /AGTSVCSTARTUPTYPE=Automatic'
@@ -761,31 +752,15 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('FTSvcAccount'))
         {
-            if ($FTSvcAccount.UserName -eq 'SYSTEM')
-            {
-                $arguments += " /FTSVCACCOUNT=`"NT AUTHORITY\LOCAL SERVICE`""
-            }
-            else
-            {
-                $arguments += " /FTSVCACCOUNT=`"" + $FTSvcAccount.UserName + "`""
-                $arguments += " /FTSVCPASSWORD=`"" + $FTSvcAccount.GetNetworkCredential().Password + "`""
-            }
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'FTSVCACCOUNT' -PasswordArgumentName 'FTSVCPASSWORD' -User $FTSvcAccount
         }
     }
 
     if ($Features.Contains('RS'))
     {
-        if ($PSBoundParameters.ContainsKey("RSSvcAccount"))
+        if ($PSBoundParameters.ContainsKey('RSSvcAccount'))
         {
-            if ($RSSvcAccount.UserName -eq "SYSTEM")
-            {
-                $arguments += " /RSSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-            }
-            else
-            {
-                $arguments += " /RSSVCACCOUNT=`"" + $RSSvcAccount.UserName + "`""
-                $arguments += " /RSSVCPASSWORD=`"" + $RSSvcAccount.GetNetworkCredential().Password + "`""
-            }
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'RSSVCACCOUNT' -PasswordArgumentName 'RSSVCPASSWORD' -User $RSSvcAccount
         }
     }
 
@@ -802,15 +777,7 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('ASSvcAccount'))
         {
-            if($ASSvcAccount.UserName -eq 'SYSTEM')
-            {
-                $arguments += " /ASSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-            }
-            else
-            {
-                $arguments += " /ASSVCACCOUNT=`"" + $ASSvcAccount.UserName + "`""
-                $arguments += " /ASSVCPASSWORD=`"" + $ASSvcAccount.GetNetworkCredential().Password + "`""
-            }
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ASSVCACCOUNT' -PasswordArgumentName 'ASSVCPASSWORD' -User $ASSvcAccount
         }
     }
 
@@ -818,15 +785,7 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('ISSvcAccount'))
         {
-            if ($ISSvcAccount.UserName -eq 'SYSTEM')
-            {
-                $arguments += " /ISSVCACCOUNT=`"NT AUTHORITY\SYSTEM`""
-            }
-            else
-            {
-                $arguments += " /ISSVCACCOUNT=`"" + $ISSvcAccount.UserName + "`""
-                $arguments += " /ISSVCPASSWORD=`"" + $ISSvcAccount.GetNetworkCredential().Password + "`""
-            }
+            $arguments = $arguments | Join-ServiceAccountInfo -UsernameArgumentName 'ISSVCACCOUNT' -PasswordArgumentName 'ISSVCPASSWORD' -User $ISSvcAccount
         }
     }
 
@@ -848,7 +807,7 @@ function Set-TargetResource
                 $arguments += " `"$adminAccount`""
             }
         }
-        
+
         if ($SecurityMode -eq 'SQL')
         {
             $arguments += " /SAPwd=" + $SAPwd.GetNetworkCredential().Password
@@ -918,7 +877,7 @@ function Set-TargetResource
 
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource.
-    
+
     .PARAMETER SourceFolder
         Folder within the source path containing the source files for installation. Default value is 'Source'.
 
@@ -926,7 +885,8 @@ function Set-TargetResource
         Credential to be used to perform the installation.
 
     .PARAMETER SourceCredential
-        Credential to be used to access SourcePath.
+        Credentials used to access the path set in the parameter `SourcePath` and `SourceFolder`. The parameter `SourceCredential` is used
+        to evaluate what major version the file 'setup.exe' has in the path set, again, by the parameter `SourcePath` and `SourceFolder`.
 
     .PARAMETER SuppressReboot
         Suppresses reboot.
@@ -1185,7 +1145,7 @@ function Test-TargetResource
 
     $result = $false
     if ($sqlData.Features )
-    { 
+    {
         $result = $true
 
         foreach ($feature in $Features.Split(","))
@@ -1226,10 +1186,10 @@ function GetSQLVersion
 
 <#
     .SYNOPSIS
-        Returns the first item value in the registry location provided in the Path parameter. 
+        Returns the first item value in the registry location provided in the Path parameter.
 
     .PARAMETER Path
-        String containing the path to the registry.    
+        String containing the path to the registry.
 #>
 function Get-FirstItemPropertyValue
 {
@@ -1241,7 +1201,7 @@ function Get-FirstItemPropertyValue
         $Path
     )
 
-    $registryProperty = Get-Item -Path $Path -ErrorAction SilentlyContinue 
+    $registryProperty = Get-Item -Path $Path -ErrorAction SilentlyContinue
     if ($registryProperty)
     {
         $registryProperty = $registryProperty | Select-Object -ExpandProperty Property | Select-Object -First 1
@@ -1249,8 +1209,8 @@ function Get-FirstItemPropertyValue
         {
             $registryPropertyValue = (Get-ItemProperty -Path $Path -Name $registryProperty).$registryProperty.TrimEnd('\')
         }
-    } 
-    
+    }
+
     return $registryPropertyValue
 }
 
@@ -1260,7 +1220,7 @@ function Get-FirstItemPropertyValue
 
     .PARAMETER Path
         Source path to be copied.
-    
+
     .PARAMETER DestinationPath
         The path to the destination.
 #>
@@ -1269,28 +1229,152 @@ function Copy-ItemWithRoboCopy
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Path,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $DestinationPath
     )
 
-    & robocopy.exe $Path $DestinationPath /e
+    $robocopyExecutable = Get-Command -Name "Robocopy.exe" -ErrorAction Stop
+
+    $robocopyArgumentSilent = '/njh /njs /ndl /nc /ns /nfl'
+    $robocopyArgumentCopySubDirectoriesIncludingEmpty = '/e'
+    $robocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource = '/purge'
+
+    if ([System.Version]$robocopyExecutable.FileVersionInfo.ProductVersion -ge [System.Version]'6.3.9600.16384')
+    {
+        Write-Verbose "Robocopy is using unbuffered I/O."
+        $robocopyArgumentUseUnbufferedIO = '/J'
+    }
+    else
+    {
+        Write-Verbose 'Unbuffered I/O cannot be used due to incompatible version of Robocopy.'
+    }
+
+    $robocopyArgumentList = '{0} {1} {2} {3} {4} {5}' -f $Path,
+                                                         $DestinationPath,
+                                                         $robocopyArgumentCopySubDirectoriesIncludingEmpty,
+                                                         $robocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource,
+                                                         $robocopyArgumentUseUnbufferedIO,
+                                                         $robocopyArgumentSilent
+
+    $robocopyStartProcessParameters = @{
+        FilePath = $robocopyExecutable.Name
+        ArgumentList = $robocopyArgumentList
+    }
+
+    Write-Verbose ('Robocopy is started with the following arguments: {0}' -f $robocopyArgumentList )
+    $robocopyProcess = Start-Process @robocopyStartProcessParameters -Wait -NoNewWindow -PassThru
+
+    switch ($($robocopyProcess.ExitCode))
+    {
+        {$_ -in 8, 16}
+        {
+            throw "Robocopy reported errors when copying files. Error code: $_."
+        }
+
+        {$_ -gt 7 }
+        {
+            throw "Robocopy reported that failures occured when copying files. Error code: $_."
+        }
+
+        1
+        {
+            Write-Verbose 'Robocopy copied files sucessfully'
+        }
+
+        2
+        {
+            Write-Verbose 'Robocopy found files at the destination path that is not present at the source path, these extra files was remove at the destination path.'
+        }
+
+        3
+        {
+            Write-Verbose 'Robocopy copied files to destination sucessfully. Robocopy also found files at the destination path that is not present at the source path, these extra files was remove at the destination path.'
+        }
+
+        {$_ -eq 0 -or $null -eq $_ }
+        {
+            Write-Verbose 'Robocopy reported that all files already present.'
+        }
+    }
 }
 
 <#
     .SYNOPSIS
-        Returns the path of the current user's temporary folder. 
+        Returns the path of the current user's temporary folder.
 #>
 function Get-TemporaryFolder
 {
     [CmdletBinding()]
+    [OutputType([System.String])]
     param()
 
     return [IO.Path]::GetTempPath()
+}
+
+<#
+    .SYNOPSIS
+        Returns the argument string appeneded with the account information as is given in UserAlias and User parameters
+#>
+function Join-ServiceAccountInfo
+{
+    <#
+        Suppressing this rule because there are parameters that contain the text 'UserName' and 'Password' 
+        but they are not actually used to pass any credentials. Instead the parameters are used to provide the
+        argument that should be evaluated for setup.exe.
+    #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingUsernameAndPasswordParams', '')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline=$true)]
+        [string]
+        $ArgumentString,
+
+        [Parameter(Mandatory)]
+        [PSCredential]
+        $User,
+
+        [Parameter(Mandatory)]
+        [string]
+        $UsernameArgumentName,
+
+        [Parameter(Mandatory)]
+        [string]
+        $PasswordArgumentName
+    )
+
+    process {
+
+        <#
+            Regex to determine if given username is an NT Authority account or not.
+            Accepted inputs are optional ntauthority with or without space between nt and authority
+            then a predefined list of users system, networkservice and localservice
+        #>
+        if($User.UserName.ToUpper() -match '^(NT ?AUTHORITY\\)?(SYSTEM|LOCALSERVICE|NETWORKSERVICE)$')
+        {
+            # Dealing with NT Authority user
+            $ArgumentString += (' /{0}="NT AUTHORITY\{1}"' -f $UsernameArgumentName, $matches[2])
+        }
+        elseif ($User.UserName -like '*$')
+        {
+            # Dealing with Managed Service Account
+            $ArgumentString += (' /{0}="{1}"' -f $UsernameArgumentName, $User.UserName)
+        }
+        else
+        {
+            # Dealing with local or domain user
+            $ArgumentString += (' /{0}="{1}"' -f $UsernameArgumentName, $User.UserName)
+            $ArgumentString += (' /{0}="{1}"' -f $PasswordArgumentName, $User.GetNetworkCredential().Password)
+        }
+
+        return $ArgumentString
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
