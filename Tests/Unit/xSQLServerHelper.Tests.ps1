@@ -201,4 +201,91 @@ InModuleScope $script:moduleName {
             }
         }
     }
+
+    Describe "Testing Get-SqlDatabaseRecoveryModel" {
+        $mockSqlServerObject = [pscustomobject]@{
+            InstanceName = 'MSSQLSERVER'
+            ComputerNamePhysicalNetBIOS = 'SQL01'
+            Databases = @{
+                AdventureWorks = @{
+                    RecoveryModel = 'Full'
+                }
+            }
+        }
+        
+        Context 'When the specified database does not exist' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'UnknownDatabase'
+            }
+            
+            It 'Should throw the correct error' {
+                { Get-SqlDatabaseRecoveryModel @testParameters } | Should Throw "Database 'UnknownDatabase' does not exist on SQL server 'SQL01\MSSQLSERVER'."
+            }
+        }
+
+        Context 'When the specified database and the system is not in desired state' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'AdventureWorks'
+            }
+
+            It 'Should not return the correct RecoveryModel' {
+                $recoveryModel = Get-SqlDatabaseRecoveryModel @testParameters 
+                $recoveryModel -contains 'Simple' | Should Be $false
+            }            
+        }
+
+        Context 'When the specified database and the system is in desired state' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'AdventureWorks'
+            }
+
+            It 'Should return the correct RecoveryModel' {
+                $recoveryModel = Get-SqlDatabaseRecoveryModel @testParameters
+                $recoveryModel -contains 'Full' | Should Be $true
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
+
+    Describe "Testing Set-SqlDatabaseRecoveryModel" {
+        $mockSqlServerObject = [pscustomobject]@{
+            InstanceName = 'MSSQLSERVER'
+            ComputerNamePhysicalNetBIOS = 'SQL01'
+            Databases = @{
+                AdventureWorks = @{
+                    RecoveryModel = 'Full'
+                } | Add-Member -MemberType ScriptMethod -Name Alter -Value {} -PassThru -Force
+            }
+        }
+
+        Context 'When the specified database does not exist' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'UnknownDatabase'
+                RecoveryModel = 'Simple'
+            }
+            
+            It 'Should throw the correct error' {
+                { Set-SqlDatabaseRecoveryModel @testParameters } | Should Throw "Database 'UnknownDatabase' does not exist on SQL server 'SQL01\MSSQLSERVER'."
+            }
+        }
+
+        Context 'When the specified database and the system is not in desired state' {
+            $testParameters = @{
+                Sql = $mockSqlServerObject
+                Name = 'AdventureWorks'
+                RecoveryModel = 'Simple'
+            }
+
+            It 'Should not trow' {
+                { Set-SqlDatabaseRecoveryModel @testParameters } | Should not Throw
+            }            
+        }
+
+        Assert-VerifiableMocks
+    }
 }
