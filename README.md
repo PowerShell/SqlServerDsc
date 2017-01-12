@@ -306,7 +306,7 @@ No description.
 
 #### Parameters
 
-* **[String] Ensure** _(Write)_: If the values should be present or absent. Valid values are 'Present' or 'Absent'. 
+* **[String] Ensure** _(Write)_: If the values should be present or absent. Valid values are 'Present' or 'Absent'.
 * **[String] Database** _(Key)_: The SQL Database
 * **[String] Name** _(Key)_: The name of permissions for the SQL database
 * **[String[]] Permissions** _(Required)_: The set of Permissions for the SQL database
