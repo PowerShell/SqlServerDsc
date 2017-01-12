@@ -17,7 +17,6 @@ Configuration Example
     node localhost {
         xSQLServerLogin Add_SqlServerLogin_SQLAdmin
         {
-            DependsOn = '[xSqlServerSetup]SETUP_SqlMSSQLSERVER'
             Ensure = 'Present'
             Name = 'CONTOSO\SQLAdmin'
             LoginType = 'WindowsUser'        
@@ -28,7 +27,6 @@ Configuration Example
 
         xSQLServerDatabasePermission Add_SqlDatabasePermissions_SQLAdmin
         {
-            DependsOn = '[xSQLServerLogin]Add_SqlServerLogin_SQLAdmin'
             Ensure = 'Absent'
             Name = 'CONTOSO\SQLAdmin'
             Database = 'AdventureWorks'
