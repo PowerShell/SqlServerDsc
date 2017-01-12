@@ -128,7 +128,7 @@ Configuration SQLSA
                 Database = "TestDB"
                 Name = "TestUser2"
            }
-           xSQLServerDatabasePermissions($Node.Nodename)
+           xSQLServerDatabasePermission($Node.Nodename)
            {
                 Database = "Model"
                 Name = "TestUser1"

@@ -26,7 +26,7 @@ Configuration Example
             PsDscRunAsCredential = $SysAdminAccount
         }
 
-        xSQLServerDatabasePermissions Add_SqlDatabasePermissions_SQLAdmin
+        xSQLServerDatabasePermission Add_SqlDatabasePermissions_SQLAdmin
         {
             DependsOn = '[xSQLServerLogin]Add_SqlServerLogin_SQLAdmin'
             Ensure = 'Absent'
