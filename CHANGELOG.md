@@ -5,7 +5,6 @@
 - Improvements how tests are initiated in AppVeyor
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
-<<<<<<< HEAD
 - Changes to README.md
   - Changed the contributing section to help new contributors.
   - Added links for each resource so it is easier to navigate to the parameter list for each resource.
