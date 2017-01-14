@@ -491,7 +491,6 @@ No description.
 * **[String] InstanceName** _(Key)_: SQL instance to enable firewall rules for.
 * **[String] Ensure** _(Write)_: Ensures that SQL firewall rules are **Present** or **Absent** on the machine. { *Present* | Absent }.
 * **[String] SourcePath** _(Write)_: UNC path to the root of the source files for installation.
-* **[String] SourceFolder** _(Write)_: Folder within the source path containing the source files for installation.
 
 #### Read-Only Properties from Get-TargetResource
 

@@ -1,8 +1,6 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Debug -Message "CurrentPath: $currentPath"
-
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+$script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xPDT.psm1')
 
 function Get-TargetResource
 {
@@ -13,25 +11,44 @@ function Get-TargetResource
         [System.String]
         $SourcePath,
 
-        [System.String]
-        $SourceFolder,
-
         [parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName
+        $InstanceName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SourceCredential
     )
 
     $InstanceName = $InstanceName.ToUpper()
 
-    Import-Module $PSScriptRoot\..\..\xPDT.psm1
+    $SourcePath = [Environment]::ExpandEnvironmentVariables($SourcePath)
 
-    $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
-    $Path = ResolvePath $Path
-    $SQLVersion = GetSQLVersion -Path $Path
+    if ($SourceCredential)
+    {
+        $newSmbMappingParameters = @{
+            RemotePath = $SourcePath
+            UserName = "$($SourceCredential.GetNetworkCredential().Domain)\$($SourceCredential.GetNetworkCredential().UserName)"
+            Password = $($SourceCredential.GetNetworkCredential().Password)
+        }
+
+        $null = New-SmbMapping @newSmbMappingParameters
+    }
+
+    $pathToSetupExecutable = Join-Path -Path $SourcePath -ChildPath 'setup.exe'
+
+    New-VerboseMessage -Message "Using path: $pathToSetupExecutable"
+
+    $sqlVersion = Get-SqlMajorVersion -Path $pathToSetupExecutable
+
+    if ($SourceCredential)
+    {
+        Remove-SmbMapping -RemotePath $SourcePath -Force
+    }
 
     if($InstanceName -eq "MSSQLSERVER")
     {
@@ -49,6 +66,7 @@ function Get-TargetResource
         $RSServiceName = "ReportServer`$$InstanceName"
         $ASServiceName = "MSOLAP`$$InstanceName"
     }
+
     $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
 
     $Ensure = "Present"
@@ -83,6 +101,7 @@ function Get-TargetResource
                     }
                 }
             }
+
             "RS"
             {
                 if($Services | Where-Object {$_.Name -eq $RSServiceName})
@@ -99,6 +118,7 @@ function Get-TargetResource
                     }
                 }
             }
+
             "AS"
             {
                 if($Services | Where-Object {$_.Name -eq $ASServiceName})
@@ -124,6 +144,7 @@ function Get-TargetResource
                     }
                 }
             }
+
             "IS"
             {
                 if($Services | Where-Object {$_.Name -eq $ISServiceName})
@@ -142,6 +163,7 @@ function Get-TargetResource
             }
         }
     }
+
     $FeaturesInstalled = $FeaturesInstalled.Trim(",")
 
     $returnValue = @{
@@ -173,25 +195,44 @@ function Set-TargetResource
         [System.String]
         $SourcePath,
 
-        [System.String]
-        $SourceFolder,
-
         [parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName
+        $InstanceName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SourceCredential
     )
 
     $InstanceName = $InstanceName.ToUpper()
 
-    Import-Module $PSScriptRoot\..\..\xPDT.psm1
+    $SourcePath = [Environment]::ExpandEnvironmentVariables($SourcePath)
 
-    $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
-    $Path = ResolvePath $Path
-    $SQLVersion = GetSQLVersion -Path $Path
+    if ($SourceCredential)
+    {
+        $newSmbMappingParameters = @{
+            RemotePath = $SourcePath
+            UserName = "$($SourceCredential.GetNetworkCredential().Domain)\$($SourceCredential.GetNetworkCredential().UserName)"
+            Password = $($SourceCredential.GetNetworkCredential().Password)
+        }
+
+        $null = New-SmbMapping @newSmbMappingParameters
+    }
+
+    $path = Join-Path -Path $SourcePath -ChildPath 'setup.exe'
+
+    New-VerboseMessage -Message "Using path: $path"
+
+    $sqlVersion = Get-SqlMajorVersion -Path $path
+
+    if ($SourceCredential)
+    {
+        Remove-SmbMapping -RemotePath $SourcePath -Force
+    }
 
     if($InstanceName -eq "MSSQLSERVER")
     {
@@ -282,7 +323,6 @@ function Set-TargetResource
     }
 }
 
-
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -296,37 +336,23 @@ function Test-TargetResource
         [System.String]
         $SourcePath,
 
-        [System.String]
-        $SourceFolder,
-
         [parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName
+        $InstanceName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SourceCredential
     )
 
     $result = ((Get-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName).Ensure -eq $Ensure)
 
     $result
 }
-
-
-function GetSQLVersion
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        [String]
-        $Path
-    )
-
-    return (Get-Item -Path $Path).VersionInfo.ProductVersion.Split(".")[0]
-}
-
 
 function GetSQLPath
 {
@@ -368,7 +394,6 @@ function GetSQLPath
 
     return $Path
 }
-
 
 function Get-FirewallRule
 {
@@ -429,7 +454,6 @@ function Get-FirewallRule
     return $Return
 }
 
-
 function New-FirewallRule
 {
     [CmdletBinding()]
@@ -462,6 +486,5 @@ function New-FirewallRule
         New-NetFirewallRule -DisplayName $DisplayName -Enabled True -Profile Any -Direction Inbound -Protocol $Port.Split("/")[0] -LocalPort $Port.Split("/")[1]
     }
 }
-
 
 Export-ModuleMember -Function *-TargetResource
