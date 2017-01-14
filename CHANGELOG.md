@@ -33,7 +33,7 @@
   - Old code, that no longer filled any function, has been replaced.
       - Function `ResolvePath` has been replaced with `[Environment]::ExpandEnvironmentVariables($SourcePath)` so that environment variables still can be used in Source Path.
       - Function `NetUse` has been replaced with `New-SmbMapping` and `Remove-SmbMapping`.
-  - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`.
+  - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`. It has also been moved to xSQLServerHelper helper module.
 - Changes to xSQLServerScript
   - All credential parameters now also has the type [System.Management.Automation.Credential()] to better work with PowerShell 4.0.
   - It is now possible to configure two instances on the same node, with the same script.
@@ -41,8 +41,11 @@
   - Added examples to show how to authenticate using either SQL or Windows authentication.
   - A recent issue showed that there is a known problem running this resource using PowerShell 4.0. For more information, see [issue #273](https://github.com/PowerShell/xSQLServer/issues/273)
 - Changes to xSQLServerFirewall
+  - BREAKING CHANGE: Removed parameter SourceFolder.
   - BREAKING CHANGE: Removed default value "$PSScriptRoot\..\..\" from parameter SourcePath.
-  - BREAKING CHANGE: Removed default value "Source" from parameter SourceFolder.
+  - Old code, that no longer filled any function, has been replaced.
+    - Function `ResolvePath` has been replaced with `[Environment]::ExpandEnvironmentVariables($SourcePath)` so that environment variables still can be used in Source Path.
+  - Adding new optional parameter SourceCredential that can be used to authenticate against SourcePath.
 - Changes to the unit test for resource
   - xSQLServerSetup
     - Added test coverage for helper function Copy-ItemWithRoboCopy
@@ -73,6 +76,9 @@
 - Changes to xSQLServerDatabaseRecoveryModel
   - BREAKING CHANGE: Renamed xSQLDatabaseRecoveryModel to xSQLServerDatabaseRecoveryModel to align wíth naming convention.
   - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
+- xPDT helper module
+  - Function GetxPDTVariable was removed since it no longer was used by any resources.
+  - File xPDT.xml was removed since it was not used by any resources, and did not provide any value to the module.
 
 ## 4.0.0.0
 

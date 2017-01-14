@@ -1299,16 +1299,16 @@ function Restart-SqlService
 #>
 function Get-SqlDatabaseRecoveryModel
 {
-    [CmdletBinding()]    
+    [CmdletBinding()]
     param
-    (   
+    (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNull()] 
+        [ValidateNotNull()]
         [System.Object]
         $SqlServerObject,
-        
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()] 
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $DatabaseName
     )
@@ -1319,7 +1319,7 @@ function Get-SqlDatabaseRecoveryModel
     $sqlServer = $SqlServerObject.ComputerNamePhysicalNetBIOS
 
     if ($sqlDatabase)
-    {        
+    {
         $sqlDatabaseRecoveryModel = $sqlDatabase.RecoveryModel
         Write-Verbose -Message "The current recovery model used by database $Name is '$sqlDatabaseRecoveryModel'"
     }
@@ -1348,16 +1348,16 @@ function Get-SqlDatabaseRecoveryModel
 #>
 function Set-SqlDatabaseRecoveryModel
 {
-    [CmdletBinding()]    
+    [CmdletBinding()]
     param
-    (   
+    (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNull()] 
+        [ValidateNotNull()]
         [System.Object]
         $SqlServerObject,
-        
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()] 
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $DatabaseName,
 
@@ -1374,7 +1374,7 @@ function Set-SqlDatabaseRecoveryModel
     $sqlServer = $SqlServerObject.ComputerNamePhysicalNetBIOS
 
     if ($sqlDatabase)
-    {  
+    {
         if($sqlDatabase.RecoveryModel -ne $RecoveryModel)
         {
             $sqlDatabase.RecoveryModel = $RecoveryModel
@@ -1388,4 +1388,24 @@ function Set-SqlDatabaseRecoveryModel
                                    -FormatArgs @($DatabaseName,$sqlServer,$sqlInstanceName) `
                                    -ErrorCategory InvalidResult
     }
+}
+
+<#
+    .SYNOPSIS
+        Returns the SQL Server major version from the setup.exe executable provided in the Path parameter.
+
+    .PARAMETER Path
+        String containing the path to the SQL Server setup.exe executable.
+#>
+function Get-SqlMajorVersion
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [String]
+        $Path
+    )
+
+    (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
 }
