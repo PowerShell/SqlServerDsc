@@ -397,6 +397,7 @@ function GetSQLPath
 
 function Get-FirewallRule
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param
     (
