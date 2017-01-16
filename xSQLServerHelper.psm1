@@ -1389,3 +1389,41 @@ function Set-SqlDatabaseRecoveryModel
                                    -ErrorCategory InvalidResult
     }
 }
+
+<#
+    .SYNOPSIS
+    This cmdlet is used to return the dynamic max degree of parallelism
+    
+    .PARAMETER SqlServerObject
+    This is the SQL Server object returned by Connect-SQL
+#>
+function Get-SqlDscDynamicMaxDop
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()] 
+        [System.Object]
+        $SqlServerObject
+    )
+
+    $numCores = $SqlServerObject.Processors
+    $numProcs = (Measure-Object -InputObject $SqlServerObject.AffinityInfo -Property NumaNodes).Count
+
+    if ($numProcs -eq 1)
+    {
+        $dynamicMaxDop = ($numCores / 2)
+        $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [system.midpointrounding]::AwayFromZero)
+    }
+    elseif ($numCores -ge 8)
+    {
+        $dynamicMaxDop = 8
+    }
+    else
+    {
+        $dynamicMaxDop = $numCores
+    }
+
+    $dynamicMaxDop
+}
