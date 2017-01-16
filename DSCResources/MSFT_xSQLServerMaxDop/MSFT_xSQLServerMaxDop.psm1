@@ -1,21 +1,31 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Verbose -Message "CurrentPath: $currentPath"
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
+<#
+    .SYNOPSIS
+    This function gets the max degree of parallelism Server Configuration Option
 
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
 
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME
+        $SQLServer
     )
 
     if(!$sql)
@@ -41,17 +51,39 @@ function Get-TargetResource
     $returnValue
 }
 
+<#
+    .SYNOPSIS
+    This function sets the max degree of parallelism Server Configuration Option
+
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
+
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
+
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
+
+    .PARAMETER DynamicAlloc
+    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+
+    .PARAMETER DynamicAlloc
+    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [ValidateSet("Present","Absent")]
         [System.String]
@@ -100,18 +132,40 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+    This function tests the max degree of parallelism Server Configuration Option
+
+    .PARAMETER SQLServer
+    This is a the SQL Server for the database
+
+    .PARAMETER SQLInstanceName
+    This is a the SQL instance for the database
+
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
+
+    .PARAMETER DynamicAlloc
+    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+
+    .PARAMETER DynamicAlloc
+    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [ValidateSet("Present","Absent")]
         [System.String]

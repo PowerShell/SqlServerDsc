@@ -547,7 +547,7 @@ Read more about max degree of parallelism in this article [Configure the max deg
 * **[String] Ensure** _(Write)_: An enumerated value that describes if Min and Max memory is configured. { *Present* | Absent }.
 * **[Boolean] DyamicAlloc** _(Write)_: Flag to indicate if MaxDop is dynamically configured
 * **[Sint32] MaxDop** _(Write)_: Numeric value to configure MaxDop to
-* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured
+* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured
 
 #### Examples
 
