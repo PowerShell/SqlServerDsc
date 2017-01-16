@@ -1416,30 +1416,15 @@ function Test-TargetResource
     {
         New-VerboseMessage -Message "Clustered install, checking parameters."
 
-        if ($sqlData.FailoverClusterGroup -eq $FailoverClusterGroup)
-        {
-            if ($sqlData.FailoverClusterNetworkName -eq $FailoverClusterNetworkName)
-            {
-                if ($sqlData.FailoverClusterIPAddress -eq $FailoverClusterIPAddress)
-                {
-                    $result = $true
-                }
-                else
-                {
-                    New-VerboseMessage -Message "IP Address '$FailoverClusterIPAddress' not valid for cluster host name '$FailoverClusterNetworkName'"
-                    $result = $false
-                }
-            }
-            else
-            {
-                New-VerboseMessage -Message "Hostname '$FailoverClusterNetworkName' not valid for cluster group '$FailoverClusterGroup'."
+        $result = $true
+
+        Get-Variable -Name FailoverCluster* | ForEach-Object {
+            $variableName = $_.Name
+
+            if ($sqlData.$variableName -ne $_.Value) {
+                New-VerboseMessage -Message "$variableName '$($_.Value)' is not valid for this cluster."
                 $result = $false
             }
-        }
-        else
-        {
-            New-VerboseMessage -Message "Unable to find cluster group '$FailoverClusterGroup'"
-            $result = $false
         }
     }
 
