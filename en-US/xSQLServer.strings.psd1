@@ -52,4 +52,8 @@ PasswordChangeFailed = Setting the password failed for the SQL Login '{0}'.
 AlterLoginFailed = Altering the login '{0}' failed.
 CreateLoginFailed = Creating the login '{0}' failed.
 DropLoginFailed = Dropping the login '{0}' failed.
+
+# Clustered Setup
+FailoverClusterDiskMappingError = Unable to map the specified paths to valid cluster storage. Drives mapped: {0}
+FailoverClusterIPAddressNotValid = Unable to map the specified IP Address(es) to valid cluster networks.
 '@
