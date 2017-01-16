@@ -1,6 +1,3 @@
-# Set Global Module Verbose
-$VerbosePreference = 'Continue'
-
 # Load Localization Data
 Import-LocalizedData LocalizedData -filename xSQLServer.strings.psd1 -ErrorAction SilentlyContinue
 Import-LocalizedData USLocalizedData -filename xSQLServer.strings.psd1 -UICulture en-US -ErrorAction SilentlyContinue

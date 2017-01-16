@@ -33,7 +33,7 @@
   - Old code, that no longer filled any function, has been replaced.
       - Function `ResolvePath` has been replaced with `[Environment]::ExpandEnvironmentVariables($SourcePath)` so that environment variables still can be used in Source Path.
       - Function `NetUse` has been replaced with `New-SmbMapping` and `Remove-SmbMapping`.
-  - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`. It has also been moved to xSQLServerHelper helper module.
+  - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`.
 - Changes to xSQLServerScript
   - All credential parameters now also has the type [System.Management.Automation.Credential()] to better work with PowerShell 4.0.
   - It is now possible to configure two instances on the same node, with the same script.
@@ -80,6 +80,10 @@
 - xPDT helper module
   - Function GetxPDTVariable was removed since it no longer was used by any resources.
   - File xPDT.xml was removed since it was not used by any resources, and did not provide any value to the module.
+- Changes xSQLServerHelper moduled
+  - Removed the globally defined `$VerbosePreference = 'Continue'` from xSQLServerHelper.
+- Added tests for resources
+  - xSQLServerFirewall
 
 ## 4.0.0.0
 
