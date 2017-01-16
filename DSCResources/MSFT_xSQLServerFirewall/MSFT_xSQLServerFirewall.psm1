@@ -148,8 +148,7 @@ function Get-TargetResource
             "IS"
             {
                 if($Services | Where-Object {$_.Name -eq $ISServiceName})
-                {
-                    $FeaturesInstalled += "IS,"
+                {                    $FeaturesInstalled += "IS,"
                     if((Get-FirewallRule -DisplayName "SQL Server Integration Services Application" -Application ((GetSQLPath -Feature "IS" -SQLVersion $SQLVersion) + "Binn\MsDtsSrvr.exe")) -and (Get-FirewallRule -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"))
                     {
                         $IntegrationServicesFirewall = $true
@@ -169,7 +168,6 @@ function Get-TargetResource
     $returnValue = @{
         Ensure = $Ensure
         SourcePath = $SourcePath
-        SourceFolder = $SourceFolder
         Features = $FeaturesInstalled
         InstanceName = $InstanceName
         DatabaseEngineFirewall = $DatabaseEngineFirewall
@@ -252,7 +250,7 @@ function Set-TargetResource
     }
     $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
 
-    $SQLData = Get-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName
+    $SQLData = Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName
 
     foreach($Feature in $SQLData.Features.Split(","))
     {
@@ -317,7 +315,7 @@ function Set-TargetResource
         }
     }
 
-    if(!(Test-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName))
+    if(!(Test-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName))
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
@@ -349,7 +347,7 @@ function Test-TargetResource
         $SourceCredential
     )
 
-    $result = ((Get-TargetResource -SourcePath $SourcePath -SourceFolder $SourceFolder -Features $Features -InstanceName $InstanceName).Ensure -eq $Ensure)
+    $result = ((Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName).Ensure -eq $Ensure)
 
     $result
 }
@@ -486,6 +484,26 @@ function New-FirewallRule
     {
         New-NetFirewallRule -DisplayName $DisplayName -Enabled True -Profile Any -Direction Inbound -Protocol $Port.Split("/")[0] -LocalPort $Port.Split("/")[1]
     }
+}
+
+<#
+    .SYNOPSIS
+        Returns the SQL Server major version from the setup.exe executable provided in the Path parameter.
+
+    .PARAMETER Path
+        String containing the path to the SQL Server setup.exe executable.
+#>
+function Get-SqlMajorVersion
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [String]
+        $Path
+    )
+
+    (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
 }
 
 Export-ModuleMember -Function *-TargetResource

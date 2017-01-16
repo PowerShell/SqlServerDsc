@@ -479,7 +479,33 @@ None.
 
 ### xSQLServerFirewall
 
-No description.
+This will set default firewall rules for the supported features. Currently the features supported are Database Engine,
+Analysis Services, SQL Browser, SQL Reporting Services and Integration Services.
+
+Default rules for default instance
+
+| Feature | Component | Enable Firewall Rule |
+| --- | --- | --- |
+| SQLENGINE | Database Engine | Application: sqlservr.exe |
+| SQLENGINE | Database Engine | Service: SQLBrowser |
+| AS | Analysis Services | Service: MSSQLServerOLAPService  |
+| AS | Analysis Services | Service: SQLBrowser |
+| RS | Reporting Services | Port: tcp/80 |
+| RS | Reporting Services | Port: tcp/443 |
+| IS | Integration Services | Port: tcp/135 |
+
+Default rules for named instance
+
+| Feature | Component | Enable Firewall Rule |
+| --- | --- | --- |
+| SQLENGINE | Database Engine | Application: sqlservr.exe |
+| SQLENGINE | Database Engine | Service: SQLBrowser |
+| AS | Analysis Services | Service: MSOLAP$INSTANCE |
+| AS | Analysis Services | Service: SQLBrowser |
+| RS | Reporting Services | Port: tcp/80 |
+| RS | Reporting Services | Port: tcp/443 |
+| IS | Integration Services | Port: tcp/135 |
+
 
 #### Requirements
 
