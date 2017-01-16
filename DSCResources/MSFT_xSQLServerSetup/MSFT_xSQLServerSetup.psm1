@@ -787,23 +787,32 @@ function Set-TargetResource
 
     $setupArgs = @{}
 
-    ## Build caches for clustered installations
-    if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
+    if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
+    {
+        ## brought over from old module. probably should remove it...
+        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors') | Out-Null
+    }
+
+    ## perform disk mapping for specific cluster installation types
+    if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
         $failoverClusterDisks = @()
         $clusterIPAddresses = @()
 
         ## Get a required lising of drives based on user parameters
-        $requiredDrives = Get-Variable -Name '*SQL*Dir' | ForEach-Object { [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\') } | Select-Object -Unique
+        $requiredDrives = Get-Variable -Name 'SQL*Dir' | Where-Object{ -not [String]::IsNullOrEmpty($_.Value) } | ForEach-Object {
+            [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\')
+        } | Select-Object -Unique
 
         ## Get the disk resources that are available (not assigned to a cluster role)
-        $availableStorage = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_ResourceGroup -Filter "Name = 'Available Storage'" |
+        $availableStorage = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_ResourceGroup' -Filter "Name = 'Available Storage'" |
                                 Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource
 
         foreach ($diskResource in $availableStorage)
         {
             ## Determine whether the current node is a possible owner of the disk resource
             $possibleOwners = $diskResource | Get-CimAssociatedInstance -Association 'MSCluster_ResourceToPossibleOwner' -KeyOnly | Select-Object -ExpandProperty Name
+
             if ($possibleOwners -icontains $env:COMPUTERNAME)
             {
                 ## Determine whether this disk contains one of our required partitions
@@ -827,17 +836,22 @@ function Set-TargetResource
         }
 
         ## add the cluster disks as a setup argument
-        $setupArgs.Add('FailoverClusterDisks', $failoverClusterDisks) | Out-Null
+        $setupArgs.Add('FailoverClusterDisks', ($failoverClusterDisks | Sort-Object)) | Out-Null
+    }
 
-        ## Get the available cluster networks
-        $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
-
+    ## detemine network mapping for specific cluster installation types
+    if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
+    {
+        ## If no IP has been specified, configure DHCP on the first client network
         if (($FailoverClusterIPAddress | Measure-Object).Count -eq 0)
         {
-            $clusterIPAddresses += "IPv4; DHCP; $($ClusterNetwork[0].Name)"
+            $clusterIPAddresses += "DEFAULT"
         }
         else
         {
+            ## Get the available client networks
+            $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
+
             ## Add supplied IP Addresses that are valid for available cluster networks
             foreach ($address in $FailoverClusterIPAddress)
             {
@@ -847,7 +861,7 @@ function Set-TargetResource
                     if (Test-IPAddress -IPAddress $address -NetworkID $network.Address -SubnetMask $network.AddressMask)
                     {
                         ## Add the formatted string to our array
-                        $clusterIPAddresses += "IPv4; $address; $(network.Name); $($network.AddressMask)"
+                        $clusterIPAddresses += "IPv4; $address; $($network.Name); $($network.AddressMask)"
                     }
                 }
             }
@@ -856,21 +870,15 @@ function Set-TargetResource
         ## Ensure we mapped all required networks
         $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select-Object -ExpandProperty Count
         $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select-Object -ExpandProperty Count
-        
-        if ($suppliedNetworkCount -ne $mappedNetworkCount)
+
+        ## Determine whether we have mapping issues
+        if ($mappedNetworkCount -lt $suppliedNetworkCount)
         {
-            ## Nothing is supplied, but we got one mapping is expected (DHCP)
-            if (($suppliedNetworkCount -eq 0) -and ($mappedNetworkCount -ne 1))
-            {
-                throw New-TerminatingError -ErrorType FailoverClusterIPAddressNotValid -ErrorCategory InvalidArgument
-            }
+            throw New-TerminatingError -ErrorType FailoverClusterIPAddressNotValid -ErrorCategory InvalidArgument
         }
 
         ## add the networks to the installation arguments
         $setupArgs.Add('FailoverClusterIPAddresses', $clusterIPAddresses) | Out-Null
-
-        ## brought over from old module. need to remove this...
-        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors') | Out-Null
     }
 
     # Add standard install arguments
@@ -1015,7 +1023,8 @@ function Set-TargetResource
             ## arrays are handled specially
             if ($setupArg.Value -is [array])
             {
-                $setupArgValue = ($setupArg.Value | ForEach-Object { "`"$_`"" }) -join ' '
+                ## sort and format the array
+                $setupArgValue = ($setupArg.Value | Sort-Object | ForEach-Object { "`"$_`"" }) -join ' '
             }
             elseif ($setupArg.Value -is [Boolean])
             {
