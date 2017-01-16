@@ -57,9 +57,6 @@ try
         $mockSqlDatabaseEngineInstanceIdName = $mockSqlDatabaseEngineName
         $mockSqlAnalysisServicesInstanceIdName = 'MSAS'
 
-        $mockSqlCollation = 'Finnish_Swedish_CI_AS'
-        $mockSqlLoginMode = 'Integrated'
-
         $mockSetupExecutableName = 'setup.exe'
         $mockDatabaseEngineExecutableName  = 'sqlservr.exe'
         $mockIntegrationServicesExecutableName = 'MsDtsSrvr.exe'
@@ -70,20 +67,6 @@ try
         $mockFirewallRulePort_ReportingServicesSslLocalPort = 443
         $mockFirewallRulePort_IntegrationServicesProtocol = 'tcp'
         $mockFirewallRulePort_IntegrationServicesLocalPort = 135
-
-        $mockSqlSharedDirectory = 'C:\Program Files\Microsoft SQL Server'
-        $mockSqlSharedWowDirectory = 'C:\Program Files (x86)\Microsoft SQL Server'
-        $mockSqlProgramDirectory = 'C:\Program Files\Microsoft SQL Server'
-        $mockSqlSystemAdministrator = 'COMPANY\Stacy'
-
-
-        $mockSqlAnalysisCollation = 'Finnish_Swedish_CI_AS'
-        $mockSqlAnalysisAdmins = @('COMPANY\Stacy','COMPANY\SSAS Administrators')
-        $mockSqlAnalysisDataDirectory = 'C:\Program Files\Microsoft SQL Server\OLAP\Data'
-        $mockSqlAnalysisTempDirectory= 'C:\Program Files\Microsoft SQL Server\OLAP\Temp'
-        $mockSqlAnalysisLogDirectory = 'C:\Program Files\Microsoft SQL Server\OLAP\Log'
-        $mockSqlAnalysisBackupDirectory = 'C:\Program Files\Microsoft SQL Server\OLAP\Backup'
-        $mockSqlAnalysisConfigDirectory = 'C:\Program Files\Microsoft SQL Server\OLAP\Config'
 
         $mockDefaultInstance_InstanceName = 'MSSQLSERVER'
 
@@ -109,117 +92,9 @@ try
         $mockmockSourceCredentialPassword = "dummyPassw0rd" | ConvertTo-SecureString -asPlainText -Force
         $mockSourceCredential = New-Object System.Management.Automation.PSCredential( $mockmockSourceCredentialUserName, $mockmockSourceCredentialPassword )
 
-        $mockSqlServiceAccount = 'COMPANY\SqlAccount'
-        $mockAgentServiceAccount = 'COMPANY\AgentAccount'
-
         #region Function mocks
-        $mockGetSqlMajorVersion = {
-            return $mockCurrentSqlMajorVersion
-        }
-
         $mockEmptyHashtable = {
             return @()
-        }
-
-        $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber = '{72AB7E6F-BC24-481E-8C45-1AB5B3DD795D}'
-        $mockSqlServerManagementStudio2012_ProductIdentifyingNumber = '{A7037EB2-F953-4B12-B843-195F4D988DA1}'
-        $mockSqlServerManagementStudio2014_ProductIdentifyingNumber = '{75A54138-3B98-4705-92E4-F619825B121F}'
-        $mockSqlServerManagementStudioAdvanced2008R2_ProductIdentifyingNumber = '{B5FE23CC-0151-4595-84C3-F1DE6F44FE9B}'
-        $mockSqlServerManagementStudioAdvanced2012_ProductIdentifyingNumber = '{7842C220-6E9A-4D5A-AE70-0E138271F883}'
-        $mockSqlServerManagementStudioAdvanced2014_ProductIdentifyingNumber = '{B5ECFA5C-AC4F-45A4-A12E-A76ABDD9CCBA}'
-
-        $mockRegistryUninstallProductsPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-
-        $mockGetItemProperty_UninstallProducts2008R2 = {
-            return @(
-                $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber,  # Mock product SSMS 2008 and SSMS 2008 R2
-                $mockSqlServerManagementStudioAdvanced2008R2_ProductIdentifyingNumber  # Mock product ADV_SSMS 2012
-            )
-        }
-
-        $mockGetItemProperty_UninstallProducts2012 = {
-            return @(
-                $mockSqlServerManagementStudio2012_ProductIdentifyingNumber,    # Mock product ADV_SSMS 2008 and ADV_SSMS 2008 R2
-                $mockSqlServerManagementStudioAdvanced2012_ProductIdentifyingNumber    # Mock product SSMS 2014
-            )
-        }
-
-        $mockGetItemProperty_UninstallProducts2014 = {
-            return @(
-                $mockSqlServerManagementStudio2014_ProductIdentifyingNumber,    # Mock product SSMS 2012
-                $mockSqlServerManagementStudioAdvanced2014_ProductIdentifyingNumber     # Mock product ADV_SSMS 2014
-            )
-        }
-
-        $mockGetItemProperty_UninstallProducts = {
-            return @(
-                $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber,  # Mock product SSMS 2008 and SSMS 2008 R2
-                $mockSqlServerManagementStudio2012_ProductIdentifyingNumber,    # Mock product ADV_SSMS 2008 and ADV_SSMS 2008 R2
-                $mockSqlServerManagementStudio2014_ProductIdentifyingNumber,    # Mock product SSMS 2012
-                $mockSqlServerManagementStudioAdvanced2008R2_ProductIdentifyingNumber,  # Mock product ADV_SSMS 2012
-                $mockSqlServerManagementStudioAdvanced2012_ProductIdentifyingNumber,    # Mock product SSMS 2014
-                $mockSqlServerManagementStudioAdvanced2014_ProductIdentifyingNumber     # Mock product ADV_SSMS 2014
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_DatabaseService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_DatabaseServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_AgentService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_AgentServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockAgentServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_FullTextService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_FullTextServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_ReportingService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_ReportingServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_IntegrationService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value ($mockDefaultInstance_IntegrationServiceName -f $mockSqlMajorVersion) -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_DefaultInstance_AnalysisService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_AnalysisServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
         }
 
         $mockGetService_DefaultInstance = {
@@ -251,65 +126,6 @@ try
             )
         }
 
-        $mockGetCimInstance_NamedInstance_DatabaseService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_DatabaseServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_NamedInstance_AgentService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_AgentServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockAgentServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_NamedInstance_FullTextService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_FullTextServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_NamedInstance_ReportingService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_ReportingServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_NamedInstance_IntegrationService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value ($mockNamedInstance_IntegrationServiceName -f $mockSqlMajorVersion) -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetCimInstance_NamedInstance_AnalysisService = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_AnalysisServiceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name 'StartName' -Value $mockSqlServiceAccount -PassThru -Force
-                )
-            )
-        }
 
         $mockGetService_NamedInstance = {
             return @(
@@ -336,15 +152,6 @@ try
                 (
                     New-Object Object |
                         Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockNamedInstance_AnalysisServiceName -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItemProperty_ConfigurationState = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'SQL_Replication_Core_Inst' -Value 1 -PassThru -Force
                 )
             )
         }
@@ -419,60 +226,6 @@ try
         $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter = {
             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockCurrentSqlMajorVersion)0\DTS\setup" -and
             $Name -eq 'SQLPath'
-        }
-
-        $mockGetItemProperty_SharedDirectory = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name '28A1158CDF9ED6B41B2B7358982D4BA8' -Value $mockSqlSharedDirectory -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItem_SharedDirectory = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Property' -Value '28A1158CDF9ED6B41B2B7358982D4BA8' -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItemProperty_SharedWowDirectory = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name '28A1158CDF9ED6B41B2B7358982D4BA8' -Value $mockSqlSharedWowDirectory -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItem_SharedWowDirectory = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Property' -Value '28A1158CDF9ED6B41B2B7358982D4BA8' -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItemProperty_Setup = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'SqlProgramDir' -Value $mockSqlProgramDirectory -PassThru -Force
-                )
-            )
-        }
-
-        $mockGetItemProperty_ServicesAnalysis = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'ImagePath' -Value ('"C:\Program Files\Microsoft SQL Server\OLAP\bin\msmdsrv.exe" -s "{0}"' -f $mockSqlAnalysisConfigDirectory) -PassThru -Force
-                )
-            )
         }
 
         $mockGetNetFirewallRule = {
@@ -621,45 +374,6 @@ try
                     "Local port: $LocalPort`n"
         }
 
-        $mockConnectSQLAnalysis = {
-            return @(
-                (
-                    New-Object Object |
-                        Add-Member ScriptProperty ServerProperties  {
-                            return @{
-                                'CollationName' = @( New-Object Object | Add-Member NoteProperty -Name 'Value' -Value $mockSqlAnalysisCollation -PassThru -Force )
-                                'DataDir' = @( New-Object Object | Add-Member NoteProperty -Name 'Value' -Value $mockSqlAnalysisDataDirectory -PassThru -Force )
-                                'TempDir' = @( New-Object Object | Add-Member NoteProperty -Name 'Value' -Value $mockSqlAnalysisTempDirectory -PassThru -Force )
-                                'LogDir' = @( New-Object Object | Add-Member NoteProperty -Name 'Value' -Value $mockSqlAnalysisLogDirectory -PassThru -Force )
-                                'BackupDir' = @( New-Object Object | Add-Member NoteProperty -Name 'Value' -Value $mockSqlAnalysisBackupDirectory -PassThru -Force )
-                            }
-                        } -PassThru |
-                        Add-Member ScriptProperty Roles  {
-                            return @{
-                                'Administrators' = @( New-Object Object |
-                                    Add-Member ScriptProperty Members {
-                                        return New-Object Object |
-                                            Add-Member ScriptProperty Name {
-                                                return $mockSqlAnalysisAdmins
-                                            } -PassThru -Force
-                                    } -PassThru -Force
-                                ) }
-                        } -PassThru -Force
-                )
-            )
-        }
-
-        $mockRobocopyExecutableName = 'Robocopy.exe'
-        $mockRobocopyExectuableVersionWithoutUnbufferedIO = '6.2.9200.00000'
-        $mockRobocopyExectuableVersionWithUnbufferedIO = '6.3.9600.16384'
-        $mockRobocopyExectuableVersion = ''     # Set dynamically during runtime
-        $mockRobocopyArgumentSilent = '/njh /njs /ndl /nc /ns /nfl'
-        $mockRobocopyArgumentCopySubDirectoriesIncludingEmpty = '/e'
-        $mockRobocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource = '/purge'
-        $mockRobocopyArgumentUseUnbufferedIO = '/J'
-        $mockRobocopyArgumentSourcePath = 'C:\Source\SQL2016'
-        $mockRobocopyArgumentDestinationPath = 'D:\Temp'
-
         $mockGetItem_SqlMajorVersion = {
             return New-Object Object |
                         Add-Member ScriptProperty VersionInfo {
@@ -672,50 +386,6 @@ try
             $Path -eq $mockCurrentPathToSetupExecutable
         }
 
-        $mockStartProcessExpectedArgument = ''  # Set dynamically during runtime
-        $mockStartProcessExitCode = 0  # Set dynamically during runtime
-
-        $mockStartProcess = {
-            if ( $ArgumentList -cne $mockStartProcessExpectedArgument )
-            {
-                throw "Expected arguments was not the same as the arguments in the function call.`nExpected: '$mockStartProcessExpectedArgument' `n But was: '$ArgumentList'"
-            }
-
-            return New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'ExitCode' -Value 0 -PassThru -Force
-        }
-
-        $mockStartProcess_WithExitCode = {
-            return New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'ExitCode' -Value $mockStartProcessExitCode -PassThru -Force
-        }
-
-        $mockSourcePathUNCWithoutLeaf = '\\server\share'
-        $mockSourcePathGuid = 'cc719562-0f46-4a16-8605-9f8a47c70402'
-        $mockNewGuid = {
-            return New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'Guid' -Value $mockSourcePathGuid -PassThru -Force
-        }
-
-        $mockGetTemporaryFolder = {
-            return $mockSourcePathUNC
-        }
-
-        <#
-        Needed a way to see into the Set-method for the arguments the Set-method is building and sending to 'setup.exe', and fail
-        the test if the arguments is different from the expected arguments.
-        Solved this by dynamically set the expected arguments before each It-block. If the arguments differs the mock of
-        StartWin32Process throws an error message, similiar to what Pester would have reported (expected -> but was).
-        #>
-        $mockStartWin32ProcessExpectedArgument = '' # Set dynamically during runtime
-        $mockStartWin32Process = {
-            if ( $Arguments -ne $mockStartWin32ProcessExpectedArgument )
-            {
-                throw "Expected arguments was not the same as the arguments in the function call.`nExpected: '$mockStartWin32ProcessExpectedArgument' `n But was: '$Arguments'"
-            }
-
-            return 'Process started'
-        }
         #endregion Function mocks
 
         # Default parameters that are used for the It-blocks
