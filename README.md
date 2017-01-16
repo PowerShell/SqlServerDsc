@@ -567,7 +567,9 @@ None.
 
 ### xSQLServerMaxDop
 
-No description.
+This resource set the max degree of parallelism Server Configuration Option.
+The max degree of parallelism option configure the number of processors to use in parallel plan execution.
+Read more about max degree of parallelism in this article [Configure the max degree of parallelism Server Configuration Option](https://msdn.microsoft.com/en-us/library/ms189094.aspx)
 
 #### Requirements
 
@@ -576,11 +578,11 @@ No description.
 
 #### Parameters
 
-* **[String] SQLInstance** (Key): The SQL instance where to set MaxDop
+* **[String] SQLInstance** (Key): The name of the SQL instance to be configured
 * **[String] Ensure** _(Write)_: An enumerated value that describes if Min and Max memory is configured. { *Present* | Absent }.
 * **[Boolean] DyamicAlloc** _(Write)_: Flag to indicate if MaxDop is dynamically configured
 * **[Sint32] MaxDop** _(Write)_: Numeric value to configure MaxDop to
-* **[String] SQLServer** _(Write)_: The SQL Server where to set MaxDop
+* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured
 
 #### Examples
 
