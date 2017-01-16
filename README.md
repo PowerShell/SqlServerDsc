@@ -793,6 +793,9 @@ Installs SQL Server on the target node.
 * **[String] ASConfigDir** _(Write)_: Path for Analysis Services config.
 * **ISSvcAccount** _(Write)_: Service account for Integration Services service.
 * **[String] BrowserSvcStartupType** _(Write)_: Specifies the startup mode for SQL Server Browser service. { Automatic | Disabled | 'Manual' }
+* **[String] FailoverClusterGroup**: The name of the resource group to create for the clustered SQL Server instance
+* **[IPAddress[]]FailoverClusterIPAddress**: Array of IP Addresses to be assigned to the clustered SQL Server instance
+* **[String] FailoverClusterNetworkName**: Host name to be assigned to the clustered SQL Server instance
 
 #### Read-Only Properties from Get-TargetResource
 
