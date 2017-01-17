@@ -1386,23 +1386,3 @@ function Set-SqlDatabaseRecoveryModel
                                    -ErrorCategory InvalidResult
     }
 }
-
-<#
-    .SYNOPSIS
-        Returns the SQL Server major version from the setup.exe executable provided in the Path parameter.
-
-    .PARAMETER Path
-        String containing the path to the SQL Server setup.exe executable.
-#>
-function Get-SqlMajorVersion
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        [String]
-        $Path
-    )
-
-    (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
-}
