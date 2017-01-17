@@ -60,7 +60,9 @@ function Get-TargetResource
             if ($MaxDop)
             {
                 Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
-                throw New-TerminatingError -ErrorType ParameterConflict `                                           -FormatArgs @( $SQLServer,$SQLInstanceName ) `                                           -ErrorCategory InvalidArgument  
+                throw New-TerminatingError -ErrorType ParameterConflict `
+                                           -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                           -ErrorCategory InvalidArgument  
             }
 
             $dynamicMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
@@ -93,7 +95,7 @@ function Get-TargetResource
     }
     else
     {
-        $Ensure = 'Absent'
+        $currentEnsure = 'Absent'
     }
 
     $returnValue = @{
@@ -167,7 +169,9 @@ function Set-TargetResource
                     if ($MaxDop)
                     {
                         Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
-                        throw New-TerminatingError -ErrorType ParameterConflict `                                                   -FormatArgs @( $SQLServer,$SQLInstanceName ) `                                                   -ErrorCategory InvalidArgument  
+                        throw New-TerminatingError -ErrorType ParameterConflict `
+                                                   -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                                   -ErrorCategory InvalidArgument  
                     }
 
                     $targetMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
