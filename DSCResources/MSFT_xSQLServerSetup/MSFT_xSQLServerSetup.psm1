@@ -832,7 +832,7 @@ function Set-TargetResource
 
         if ($mappedDriveCount -ne $requiredDriveCount)
         {
-            throw New-TerminatingError -ErrorType FailoverClusterDiskMappingError -FormatArgs ($failoverClusterDisks -join ';') -ErrorCategory InvalidResult
+            throw New-TerminatingError -ErrorType FailoverClusterDiskMappingError -FormatArgs ($failoverClusterDisks -join '; ') -ErrorCategory InvalidResult
         }
 
         ## add the cluster disks as a setup argument
@@ -888,13 +888,6 @@ function Set-TargetResource
         Action = $Action
     }
 
-    # Add standard install arguments
-    $setupArgs += @{
-        Quiet = $true
-        IAcceptSQLServerLicenseTerms = $true
-        Action = $Action
-    }
-
     $argumentVars = @(
         'InstanceName',
         'InstanceID',
@@ -929,12 +922,12 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -AccountType 'SQL')
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -AccountType 'SQL')
         }
 
         if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
         }
 
         $setupArgs.Add('SQLSysAdminAccounts', $($SetupCredential.UserName)) | Out-Null
@@ -955,7 +948,7 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('FTSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -AccountType 'FT')
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -AccountType 'FT')
         }
     }
 
@@ -963,7 +956,7 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('RSSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -AccountType 'RS')
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -AccountType 'RS')
         }
     }
 
@@ -980,14 +973,7 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('ASSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
-        }
-
-        $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName))
-
-        if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
-        {
-            $setupArgs['ASSysAdminAccounts'] += $ASSysAdminAccounts
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
         }
 
         $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName)) | Out-Null
@@ -1002,7 +988,7 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('ISSvcAccount'))
         {
-            $arguments += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -AccountType 'IS')
+            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -AccountType 'IS')
         }
     }
 
@@ -1072,7 +1058,7 @@ function Set-TargetResource
 
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
-    $process = StartWin32Process -Path $path -Arguments $arguments.Trim()
+    $process = StartWin32Process -Path $pathToSetupExecutable -Arguments $arguments.Trim()
 
     New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
@@ -1392,7 +1378,7 @@ function Test-TargetResource
     }
 
     $getTargetResourceResult = Get-TargetResource @parameters
-    New-VerboseMessage -Message "Features found: '$($SQLData.Features)'"
+    New-VerboseMessage -Message "Features found: '$($getTargetResourceResult.Features)'"
 
     $result = $false
     if ($getTargetResourceResult.Features )
@@ -1421,7 +1407,7 @@ function Test-TargetResource
         Get-Variable -Name FailoverCluster* | ForEach-Object {
             $variableName = $_.Name
 
-            if ($sqlData.$variableName -ne $_.Value) {
+            if ($getTargetResourceResult.$variableName -ne $_.Value) {
                 New-VerboseMessage -Message "$variableName '$($_.Value)' is not valid for this cluster."
                 $result = $false
             }
