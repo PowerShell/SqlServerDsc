@@ -35,27 +35,29 @@ try
         SQLInstanceName = $instanceName
         SQLServer       = $serverName
     }
-
-    $mockSqlServerObject = [pscustomobject]@{
-        InstanceName                = $instanceName
-        ComputerNamePhysicalNetBIOS = $serverName
-        Configuration = @{
-            MaxDegreeOfParallelism = @{
-                DisplayName = 'max degree of parallelism'
-                Description = 'maximum degree of parallelism'
-                RunValue    = 4
-                ConfigValue = 4
-            }
-        }
-    }
     
-    # Add the Alter method
-    $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
-
     #endregion Pester Test Initialization
 
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
-        Mock -CommandName Connect-SQL -MockWith { $mockSqlServerObject } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MaxDegreeOfParallelism = @{
+                        DisplayName = 'max degree of parallelism'
+                        Description = 'maximum degree of parallelism'
+                        RunValue    = 4
+                        ConfigValue = 4
+                    }
+                }
+            }
+            
+            # Add the Alter method
+            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
 
         Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
             return 4
@@ -66,6 +68,7 @@ try
             $testParameters += @{
                 MaxDop          = 1
                 DynamicAlloc    = $false
+                Ensure          = 'Present'
             }
 
             $result = Get-TargetResource @testParameters
@@ -97,6 +100,7 @@ try
             $testParameters += @{
                 MaxDop          = 4
                 DynamicAlloc    = $false
+                Ensure          = 'Present'
             }
 
             $result = Get-TargetResource @testParameters
@@ -198,7 +202,25 @@ try
     }
     
     Describe "$($script:DSCResourceName)\Test-TargetResource" {
-        Mock -CommandName Connect-SQL -MockWith { $mockSqlServerObject } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MaxDegreeOfParallelism = @{
+                        DisplayName = 'max degree of parallelism'
+                        Description = 'maximum degree of parallelism'
+                        RunValue    = 4
+                        ConfigValue = 4
+                    }
+                }
+            }
+            
+            # Add the Alter method
+            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
 
         Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
             return 4
@@ -294,7 +316,25 @@ try
     }
     
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
-        Mock -CommandName Connect-SQL -MockWith { $mockSqlServerObject } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MaxDegreeOfParallelism = @{
+                        DisplayName = 'max degree of parallelism'
+                        Description = 'maximum degree of parallelism'
+                        RunValue    = 4
+                        ConfigValue = 4
+                    }
+                }
+            }
+            
+            # Add the Alter method
+            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
 
         Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
             return 4
