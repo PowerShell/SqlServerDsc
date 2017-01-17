@@ -77,6 +77,7 @@
   - added functions
     - Get-SqlDatabaseRecoveryModel
     - Set-SqlDatabaseRecoveryModel
+    - Get-SqlDscDynamicMaxDop
 - Examples
   - xSQLServerDatabaseRecoveryModel
     - 1-SetDatabaseRecoveryModel.ps1
@@ -87,10 +88,14 @@
   - xSQLServerFirewall
     - 1-CreateInboundFirewallRules
     - 2-RemoveInboundFirewallRules
+  - xSQLServerMaxDop
+    - 1-SetMaxDopToOne.ps1
+    - 2-SetMaxDopToAuto.ps1
 - Added tests for resources
   - xSQLServerDatabaseRecoveryModel
   - xSQLServerDatabasePermissions
   - xSQLServerFirewall
+  - xSQLServerMaxDop
 - Changes to xSQLServerDatabaseRecoveryModel
   - BREAKING CHANGE: Renamed xSQLDatabaseRecoveryModel to xSQLServerDatabaseRecoveryModel to align wíth naming convention.
   - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
@@ -112,6 +117,8 @@
   - Removed the globally defined `$VerbosePreference = 'Continue'` from xSQLServerHelper.
   - Fixed a typo in a variable name in the function New-ListenerADObject.
   - Now Restart-SqlService will correctly show the services it restarts. Also fixed PSSA warnings.
+- Changes to xSQLServerMaxDop
+  - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
 
 ## 4.0.0.0
 
