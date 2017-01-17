@@ -653,7 +653,7 @@ function New-ListenerADObject
             Exit
             }
 
-            $SucccessChk =0
+            $SuccessChk =0
 
         #Check for AD Object Validate at least three successful attempts
         $i=1
