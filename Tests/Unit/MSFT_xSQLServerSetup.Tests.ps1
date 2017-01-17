@@ -705,7 +705,7 @@ try
                 {
                     $key = $Matches[1]
                     $value = ($Matches[2] -replace '" "','; ') -replace '"',''
-                     $argumentHashTable.Add($key, $value) | Out-Null
+                    $argumentHashTable.Add($key, $value) | Out-Null
                 }
             }
 
@@ -1715,21 +1715,6 @@ try
                             SourcePath = $mockSourcePath
                         }
 
-                        # Mock this here to make sure we don't return any older components (<=2014) when testing SQL Server 2016
-                        if ($mockSqlMajorVersion -eq 13)
-                        {
-                            # Mock this here to make sure we don't return any older components (<=2014) when testing SQL Server 2016
-                            Mock -CommandName Get-WmiObject -ParameterFilter { 
-                                $Class -eq 'Win32_Product' 
-                            } -MockWith $mockGetWmiObject_SqlProduct -Verifiable
-                        } 
-                        else 
-                        {
-                            Mock -CommandName Get-WmiObject -ParameterFilter { 
-                                $Class -eq 'Win32_Product' 
-                            } -MockWith $mockEmptyHashtable -Verifiable
-                        }
-
                         Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
                         Mock -CommandName Get-CimInstance -MockWith {} -Verifiable
@@ -1768,24 +1753,11 @@ try
 
                         $mockInstanceName = $mockDefaultInstance_InstanceName
 
-                        # Mock this here to make sure we don't return any older components (<=2014) when testing SQL Server 2016
-                        if ($mockSqlMajorVersion -eq 13)
-                        {
-                            # Mock this here to make sure we don't return any older components (<=2014) when testing SQL Server 2016
-                            Mock -CommandName Get-WmiObject -ParameterFilter { 
-                                $Class -eq 'Win32_Product' 
-                            } -MockWith $mockGetWmiObject_SqlProduct -Verifiable
-                        } 
-                        else 
-                        {
-                            Mock -CommandName Get-WmiObject -ParameterFilter { 
-                                $Class -eq 'Win32_Product' 
-                            } -MockWith $mockEmptyHashtable -Verifiable
-                        }
-
                         Mock -CommandName Connect-SQL -MockWith $mockConnectSQLCluster -Verifiable
 
-                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResource -Verifiable
+                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResource -Verifiable -ParameterFilter {
+                            $Filter -eq "Type = 'SQL Server'"
+                        }
 
                         Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSClusterResourceGroup_DefaultInstance -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
 
@@ -1800,7 +1772,7 @@ try
                         $currentState = Get-TargetResource @testParams
 
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
                         Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 1 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
                         Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 2 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
 
@@ -2291,7 +2263,9 @@ try
 
                     Mock -CommandName Connect-SQL -MockWith $mockConnectSQLCluster -Verifiable
 
-                    Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResource -Verifiable
+                    Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResource -Verifiable -ParameterFilter { 
+                        $Filter -eq "Type = 'SQL Server'"
+                    }
 
                     Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSClusterResourceGroup_DefaultInstance -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
 
@@ -2310,7 +2284,7 @@ try
                     $result | Should Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
                     Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 3 -Scope It
                 }
             }
@@ -3072,14 +3046,6 @@ try
                         Mock -CommandName Get-TemporaryFolder -MockWith $mockGetTemporaryFolder -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockEmptyHashtable -Verifiable
 
-                        Mock -CommandName Get-WmiObject -ParameterFilter { 
-                            $Class -eq 'Win32_Product' 
-                        } -MockWith $mockEmptyHashtable -Verifiable
-
-                        Mock -CommandName Get-WmiObject -ParameterFilter {
-                            $Class -eq 'Win32_Service'
-                        } -MockWith $mockEmptyHashtable -Verifiable
-
                         Mock -CommandName Get-ItemProperty -ParameterFilter {
                                 $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
                         } -MockWith $mockGetItemProperty_ConfigurationState -Verifiable 
@@ -3133,13 +3099,6 @@ try
                             $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' -and 
                             ($Name -eq $mockDefaultInstance_InstanceName) 
                         } -Exactly -Times 0 -Scope It
-
-                        Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Service' } `
-                            -Exactly -Times 0 -Scope It
-
-                        Assert-MockCalled -CommandName Get-WmiObject -ParameterFilter { $Class -eq 'Win32_Product' } `
-                            -Exactly -Times 1 -Scope It
-
                         Assert-MockCalled -CommandName StartWin32Process -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName WaitForWin32ProcessEnd -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Test-TargetResource -Exactly -Times 1 -Scope It
@@ -3200,8 +3159,6 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
                             ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
                         } -Verifiable
-
-                        Mock -CommandName Get-WmiObject -MockWith $mockGetWmiObject_SqlProduct
                     }
 
                     It 'Should throw an error when one or more paths are not resolved to clustered storage' {
@@ -3209,7 +3166,7 @@ try
                         ## pass in a bad path
                         $badPathParameters.SQLUserDBDir = 'C:\MSSQL\'
 
-                        { Set-TargetResource @badPathParameters } | Should Throw 'FailoverClusterDiskMappingError'
+                        { Set-TargetResource @badPathParameters } | Should Throw 'Unable to map the specified paths to valid cluster storage. Drives mapped: TempDbLogs; UserLogs; TempDbData'
                     }
 
                     It 'Should properly map paths to clustered disk resources' {
@@ -3239,7 +3196,7 @@ try
                             FailoverClusterIPAddress = '192.168.0.100'
                         }
 
-                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'FailoverClusterIPAddressNotValid'
+                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'Unable to map the specified IP Address(es) to valid cluster networks.'
                     }
 
                     It 'Should throw an error when an invalid IP Address is specified for a multi-subnet instance' {
@@ -3250,7 +3207,7 @@ try
                             FailoverClusterIPAddress = @('10.0.0.100','192.168.0.100')
                         }
 
-                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'FailoverClusterIPAddressNotValid'
+                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'Unable to map the specified IP Address(es) to valid cluster networks.'
                     }
 
                     It 'Should build a valid IP address string for a single address' {
@@ -3507,7 +3464,64 @@ try
                 }
             }
         }
-   }
+
+        Describe 'Get-ServiceAccountParameters' -Tag 'Helper' {
+            $serviceTypes = @('SQL','AGT','IS','RS','AS','FT')
+
+            BeforeAll {
+                $mockServiceAccountPassword = ConvertTo-SecureString 'Password' -AsPlainText -Force
+
+                $mockSystemServiceAccount = (
+                    New-Object System.Management.Automation.PSCredential 'NT AUTHORITY\SYSTEM', $mockServiceAccountPassword
+                )
+
+                $mockVirtualServiceAccount = (
+                    New-Object System.Management.Automation.PSCredential 'NT SERVICE\MSSQLSERVER', $mockServiceAccountPassword
+                )
+
+                $mockManagedServiceAccount = (
+                    New-Object System.Management.Automation.PSCredential 'COMPANY\ManagedAccount$', $mockServiceAccountPassword
+                )
+
+                $mockDomainServiceAccount = (
+                    New-Object System.Management.Automation.PSCredential 'COMPANY\sql.service', $mockServiceAccountPassword
+                )
+            }
+
+            $serviceTypes | ForEach-Object {
+
+                $serviceType = $_
+
+                It "Should return the correct parameters when the service type is $serviceType and the account is a system account." {
+                    $result = Get-ServiceAccountParameters -ServiceAccount $mockSystemServiceAccount -ServiceType $serviceType
+
+                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockSystemServiceAccount.UserName
+                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                }
+
+                It "Should return the correct parameters when the service type is $serviceType and the account is a virtual service account" {
+                    $result = Get-ServiceAccountParameters -ServiceAccount $mockVirtualServiceAccount -ServiceType $serviceType
+
+                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockVirtualServiceAccount.UserName
+                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                }
+
+                It "Should return the correct parameters when the servie type is $serviceType and the account is a managed service account" {
+                    $result = Get-ServiceAccountParameters -ServiceAccount $mockManagedServiceAccount -ServiceType $serviceType
+
+                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockManagedServiceAccount.UserName
+                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                }
+
+                It "Should return the correct parameters when the servie type is $serviceType and the account is a domain account" {
+                    $result = Get-ServiceAccountParameters -ServiceAccount $mockDomainServiceAccount -ServiceType $serviceType
+
+                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockDomainServiceAccount.UserName
+                    $result.$("$($serviceType)SVCPASSWORD") | Should BeExactly $mockDomainServiceAccount.GetNetworkCredential().Password
+                }
+            }
+        }
+    }
 }
 finally
 {

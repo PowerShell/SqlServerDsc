@@ -1657,41 +1657,44 @@ function Get-ServiceAccountParameters {
 
         [ValidateSet('SQL','AGT','IS','RS','AS','FT')]
         [String]
-        $AccountType
+        $ServiceType
     )
+
+    $parameters = @{}
 
     switch -Regex ($ServiceAccount.UserName.ToUpper())
     {
         '^(?:NT ?AUTHORITY\\)?(SYSTEM|LOCALSERVICE|LOCAL SERVICE|NETWORKSERVICE|NETWORK SERVICE)$'
         {
-            $user = "NT AUTHORITY\$($Matches[1])"
-            $passwd = ''
+            $parameters = @{
+                "$($ServiceType)SVCACCOUNT" = "NT AUTHORITY\$($Matches[1])"
+            }
         }
 
         '^(?:NT SERVICE\\)(.*)$'
         {
-            $user = "NT SERVICE\$($Matches[1])"
-            $passwd = ''
+            $parameters = @{
+                "$($ServiceType)SVCACCOUNT" = "NT SERVICE\$($Matches[1])"
+            }
         }
 
         '.*\$'
         {
-            $user = $ServiceAccount.UserName
-            $passwd = '' 
+            $parameters = @{
+                "$($ServiceType)SVCACCOUNT" = $ServiceAccount.UserName
+            }
         }
 
         default
         {
-            $user = $ServiceAccount.UserName
-            $passwd = $ServiceAccount.GetNetworkCredential().Password
+            $parameters = @{
+                "$($ServiceType)SVCACCOUNT" = $ServiceAccount.UserName
+                "$($ServiceType)SVCPASSWORD" = $ServiceAccount.GetNetworkCredential().Password
+            }
         }
     }
 
-    return @{
-        "$($AccountType)SVCACCOUNT" = $user
-        "$($AccountType)SVCPASSWORD" = $passwd
-    }
-
+    return $parameters
 }
 
 <#
