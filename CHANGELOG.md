@@ -62,13 +62,19 @@
   - added functions
     - Get-SqlDatabaseRecoveryModel
     - Set-SqlDatabaseRecoveryModel
+    - Get-SqlDscDynamicMaxDop
 - Examples
   - xSQLServerDatabaseRecoveryModel
     - 1-SetDatabaseRecoveryModel.ps1
+  - xSQLServerMaxDop
+    - 1-SetMaxDopToOne.ps1
+    - 2-SetMaxDopToAuto.ps1
 - Added tests for resources
   - xSQLServerDatabaseRecoveryModel
+  - xSQLServerMaxDop
 - Changes to xSQLServerDatabaseRecoveryModel
   - BREAKING CHANGE: Renamed xSQLDatabaseRecoveryModel to xSQLServerDatabaseRecoveryModel to align wíth naming convention.
+- Changes to xSQLServerMaxDop
   - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
 
 ## 4.0.0.0
