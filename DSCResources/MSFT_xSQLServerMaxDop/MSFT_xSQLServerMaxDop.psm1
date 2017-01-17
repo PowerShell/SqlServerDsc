@@ -10,6 +10,15 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     .PARAMETER SQLInstanceName
     This is a the SQL instance for the database
+
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
+
+    .PARAMETER DynamicAlloc
+    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+
+    .PARAMETER DynamicAlloc
+    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
 #>
 function Get-TargetResource
 {
@@ -25,7 +34,18 @@ function Get-TargetResource
         [parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer
+        $SQLServer,
+
+        [ValidateSet('Present','Absent')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Ensure = 'Present',
+
+        [System.Boolean]
+        $DynamicAlloc = $false,
+
+        [System.Int32]
+        $MaxDop
     )
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -35,15 +55,52 @@ function Get-TargetResource
         Write-Verbose -Message 'Getting the max degree of parallelism Server Configuration Option'
         $currentMaxDop = $sql.Configuration.MaxDegreeOfParallelism.ConfigValue
 
-        if ($currentMaxDop)
+        if ($DynamicAlloc)
         {
-             New-VerboseMessage -Message "MaxDop is $currentMaxDop"
+            if ($MaxDop)
+            {
+                Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
+                throw New-TerminatingError -ErrorType ParameterConflict `                                           -FormatArgs @( $SQLServer,$SQLInstanceName ) `                                           -ErrorCategory InvalidArgument  
+            }
+
+            $dynamicMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
+            New-VerboseMessage -Message "Dynamic MaxDop is $dynamicMaxDop."
+
+            if ($currentMaxDop -eq $dynamicMaxDop)
+            {
+                New-VerboseMessage -Message "Current MaxDop is at Requested value $dynamicMaxDop."
+                $currentEnsure = 'Present'
+            }
+            else 
+            {
+                New-VerboseMessage -Message "Current MaxDop is $currentMaxDop should be updated to $dynamicMaxDop"
+                $currentEnsure = 'Absent'
+            }
         }
+        else 
+        {
+            if ($currentMaxDop -eq $MaxDop)
+            {
+                New-VerboseMessage -Message "Current MaxDop is at Requested value $MaxDop."
+                $currentEnsure = 'Present'
+            }
+            else 
+            {
+                New-VerboseMessage -Message "Current MaxDop is $currentMaxDop should be updated to $MaxDop"
+                $currentEnsure = 'Absent'
+            }
+        }
+    }
+    else
+    {
+        $Ensure = 'Absent'
     }
 
     $returnValue = @{
         SQLInstanceName = $SQLInstanceName
         SQLServer       = $SQLServer
+        Ensure          = $currentEnsure
+        DynamicAlloc    = $DynamicAlloc
         MaxDop          = $currentMaxDop
     }
 
@@ -84,7 +141,8 @@ function Set-TargetResource
         [System.String]
         $SQLServer,
 
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $Ensure = 'Present',
 
@@ -92,7 +150,7 @@ function Set-TargetResource
         $DynamicAlloc = $false,
 
         [System.Int32]
-        $MaxDop = 0
+        $MaxDop
     )
 
     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -104,27 +162,42 @@ function Set-TargetResource
         {
             "Present"
             {
-                if ($DynamicAlloc -eq $true)
+                if ($DynamicAlloc)
                 {
-                    $MaxDop = Get-SqlDscDynamicMaxDop $sql
+                    if ($MaxDop)
+                    {
+                        Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
+                        throw New-TerminatingError -ErrorType ParameterConflict `                                                   -FormatArgs @( $SQLServer,$SQLInstanceName ) `                                                   -ErrorCategory InvalidArgument  
+                    }
+
+                    $targetMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
+                    New-VerboseMessage -Message "Dynamic MaxDop is $targetMaxDop."
+                }
+                else
+                {
+                    $targetMaxDop = $MaxDop
                 }
             }
             
             "Absent"
             {
-                $MaxDop = 0
+                $targetMaxDop = 0
+                New-VerboseMessage -Message 'Ensure is absent - MAXDOP reset to default value'
             }
         }
 
         try
         {
-            $sql.Configuration.MaxDegreeOfParallelism.ConfigValue = $MaxDop
-            $sql.alter()
-            New-VerboseMessage -Message "Set MaxDop to $MaxDop"
+            $sql.Configuration.MaxDegreeOfParallelism.ConfigValue = $targetMaxDop
+            $sql.Alter()
+            New-VerboseMessage -Message "Set MaxDop to $targetMaxDop"
         }
         catch
         {
-            New-VerboseMessage -Message "Failed setting MaxDop to $MaxDop"
+            throw New-TerminatingError -ErrorType MaxDopGetError `
+                                       -FormatArgs @($SQLServer,$SQLInstanceName,$targetMaxDop) `
+                                       -ErrorCategory InvalidOperation `
+                                       -InnerException $_.Exception
         }
     }
 }
@@ -164,7 +237,8 @@ function Test-TargetResource
         [System.String]
         $SQLServer,
 
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $Ensure = 'Present',
 
@@ -172,53 +246,16 @@ function Test-TargetResource
         $DynamicAlloc = $false,
 
         [System.Int32]
-        $MaxDop = 0
+        $MaxDop
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-
-    if ($sql)
-    {
-        Write-Verbose -Message 'Testing the max degree of parallelism Server Configuration Option'
-        $currentMaxDop = $sql.Configuration.MaxDegreeOfParallelism.ConfigValue
-
-        switch ($Ensure)
-        {
-            "Present"
-            {
-                if ($DynamicAlloc -eq $true)
-                {
-                    $MaxDop = Get-SqlDscDynamicMaxDop $sql
-                    New-VerboseMessage -Message "Dynamic MaxDop is $MaxDop."
-                }
-
-                if ($currentMaxDop -eq $MaxDop)
-                {
-                    New-VerboseMessage -Message "Current MaxDop is at Requested value $MaxDop."
-                    return $true
-                }
-                else 
-                {
-                    New-VerboseMessage -Message "Current MaxDop is $currentMaxDop should be updated to $MaxDop"
-                    return $false
-                }
-            }
-
-            "Absent"
-            {
-                if ($currentMaxDop -eq 0)
-                {
-                    New-VerboseMessage -Message "Current MaxDop is at Requested value 0."
-                    return $true
-                }
-                else 
-                {
-                    New-VerboseMessage -Message "Current MaxDop is $currentMaxDop should be updated to 0"
-                    return $false
-                }
-            }
-        }
-    }
+    Write-Verbose -Message 'Testing the max degree of parallelism Server Configuration Option'
+     
+    $currentValues = Get-TargetResource @PSBoundParameters
+    $PSBoundParameters.Ensure = $Ensure
+    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+                                     -DesiredValues $PSBoundParameters `
+                                     -ValuesToCheck @('Ensure')
 }
 
 Export-ModuleMember -Function *-TargetResource
