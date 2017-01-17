@@ -508,7 +508,6 @@ Analysis Services, SQL Browser, SQL Reporting Services and Integration Services.
 | RS | Reporting Services | Port: tcp/443 |
 | IS | Integration Services | Port: tcp/135 |
 
-
 #### Requirements
 
 * Target machine must be running Windows Server 2008 R2.
