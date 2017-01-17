@@ -1246,10 +1246,10 @@ function Restart-SqlService
                             Where-Object { ($_.Type -eq "SQL Server Agent") -and ($_.State -eq 2) }
 
         ## Build a listing of resources being acted upon
-        $resourceNames = @($sqlService.Name, ($agentService | Select -ExpandProperty Name)) -join ","
+        $resourceNames = @($sqlService.Name, ($agentService | Select-Object -ExpandProperty Name)) -join ","
 
         ## Stop the SQL Server and dependent resources
-        New-VerboseMessage -Message 'Bringing the SQL Server resources $resourceNames offline.'
+        New-VerboseMessage -Message "Bringing the SQL Server resources $resourceNames offline."
         $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{ Timeout = $Timeout }
 
         ## Start the SQL server resource
