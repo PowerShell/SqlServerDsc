@@ -669,7 +669,11 @@ function New-SqlAvailabilityGroup {
         ${Path},
 
         [switch]
-        ${Script}
+        ${Script},
+
+        [Parameter()]
+        [switch]
+        $BasicAvailabilityGroup
    )
 
     throw '{0}: StubNotImplemented' -f $MyInvocation.MyCommand
