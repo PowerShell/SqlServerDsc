@@ -60,8 +60,17 @@ FailoverClusterResourceNotFound = Could not locate a SQL Server cluster resource
 
 # AlwaysOnAvailabilityGroup
 AgPropertiesNotSet = The properties on the AG do not match the desired state.
+AlterAvailabilityGroupFailed = Failed to alter the availability group '{0}'
+AlterAvailabilityGroupReplicaFailed = Failed to alter the avilability group replica '{0}'
+ClusterPermissionsMissing = The cluster does not have permissions to manage the Availability Group on '{0}\\{1}'. Grant 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' to either 'NT SERVICE\\ClusSvc' or 'NT AUTHORITY\\SYSTEM'.
 CreateAgReplicaFailed = Creating the AG Replica failed
 CreateAvailabilityGroupFailed = Creating the availability group failed
+DatabaseMirroringEndpointNotFound = No DatabaseMirroring endpoint was found on '{0}\{1}'.
 HadrNotEnabled = HADR is not enabled
-ClusterPermissionsMissing = The cluster does not have permissions to manage the Availability Group on '{0}\\{1}'. Grant 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' to either 'NT SERVICE\\ClusSvc' or 'NT AUTHORITY\\SYSTEM'.
+InstanceNotPrimaryReplica = The instance '{0}' is not the primary replica for the availability group '{1}'.
+RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' from the '{1}' instance
+
+# SQLServerHelper
+ExecuteQueryWithResultsFailed=Executing query with results failed on database '{0}'
+ExecuteNonQueryFailed=Executing non-query failed on database '{0}'
 '@

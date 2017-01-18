@@ -17,6 +17,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 # Loading stub cmdlets
 Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
+Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
 $absentAg = @{
     Name = 'AbsentAG'
@@ -32,6 +33,7 @@ $absentAg = @{
     FailureConditionLevel = 'OnServerDown'
     FailoverMode = 'Manual'
     HealthCheckTimeout = '30000'
+    EndpointHostName = 'Server1'
 }
 
 $presentAg = @{
@@ -48,91 +50,78 @@ $presentAg = @{
     FailureConditionLevel = 'OnServerDown'
     FailoverMode = 'Manual'
     HealthCheckTimeout = '30000'
+    EndpointHostName = 'Server1'
 }
-
-$createAg = @{
-    Name = 'AvailabilityGroup1'
-    SQLInstanceName = 'MSSQLSERVER'
-    SQLServer = 'Server1'
-    Ensure = 'Present'
-    AutomatedBackupPreference = 'Secondary'
-    AvailabilityMode = 'AsynchronousCommit'
-    BackupPriority = 50
-    BasicAvailabilityGroup = $false
-    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-    FailureConditionLevel = 'OnServerDown'
-    FailoverMode = 'Manual'
-    HealthCheckTimeout = '30000'
-}
-
-$createAgReplicaInvalidParameter = @{
-    Name = 'AvailabilityGroup1'
-    SQLInstanceName = 'MSSQLSERVER'
-    SQLServer = 'Server1'
-    Ensure = 'Present'
-    AutomatedBackupPreference = 'Secondary'
-    AvailabilityMode = 'InvalidParameter'
-    BackupPriority = 50
-    BasicAvailabilityGroup = $false
-    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-    FailureConditionLevel = 'OnServerDown'
-    FailoverMode = 'Manual'
-    HealthCheckTimeout = '30000'
-}
-
-$createAgInvalidParameter = @{
-    Name = 'AvailabilityGroup1'
-    SQLInstanceName = 'MSSQLSERVER'
-    SQLServer = 'Server1'
-    Ensure = 'Present'
-    AutomatedBackupPreference = 'InvalidParameter'
-    AvailabilityMode = 'AsynchronousCommit'
-    BackupPriority = 50
-    BasicAvailabilityGroup = $false
-    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-    FailureConditionLevel = 'OnServerDown'
-    FailoverMode = 'Manual'
-    HealthCheckTimeout = '30000'
-}
-
-$removeAg = @{
-    Name = 'AvailabilityGroup1'
-    SQLInstanceName = 'MSSQLSERVER'
-    SQLServer = 'Server1'
-    Ensure = 'Absent'
-}
-
 
 $mockConnectSqlVersion12 = {
-    New-Object PSObject -Property @{
+    $mock = New-Object PSObject -Property @{
         AvailabilityGroups = @{
             PresentAG = @{
                 AutomatedBackupPreference = 'Secondary'
                 FailureConditionLevel = 'OnServerDown'
                 HealthCheckTimeout = 30000
                 Name = 'AvailabilityGroup1'
+                PrimaryReplica = 'Server1'
                 AvailabilityReplicas = @{
                     Server1 = @{
                         AvailabilityMode = 'AsynchronousCommit'
                         BackupPriority = 50
                         ConnectionModeInPrimaryRole = 'AllowAllConnections'
                         ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        EndpointUrl = 'TCP://Server1:5022'
                         FailoverMode = 'Manual'
                     }
                 }
             }
         }
+        Databases = @{
+            'master' = @{
+                Name = 'master'
+            }
+        }
+        Endpoints = @(
+            New-Object PSObject -Property @{
+                EndpointType = 'DatabaseMirroring'
+                Protocol = @{
+                    TCP = @{
+                        ListenerPort = 5022
+                    }
+                }
+            }
+        )
+        IsHadrEnabled = $true
+        Logins = @{
+            'NT SERVICE\ClusSvc' = @{}
+            'NT AUTHORITY\SYSTEM' = @{}
+        }
+        NetName = 'Server1'
+        Roles = @{}
         Version = @{
             Major = 12
         }
     }
+
+    # Add the ExecuteWithResults method
+    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+        return New-Object PSObject -Property @{
+            Tables = @{
+                Rows = @{
+                    permission_name = @(
+                        'testing'
+                    )
+                }
+            }
+        }
+    }
+
+    # Type the mock as a server object
+    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+    return $mock
 }
 
 $mockConnectSqlVersion13 = {
-    New-Object PSObject -Property @{
+    $mock = New-Object PSObject -Property @{
         AvailabilityGroups = @{
             PresentAG = @{
                 AutomatedBackupPreference = 'Secondary'
@@ -140,19 +129,106 @@ $mockConnectSqlVersion13 = {
                 HealthCheckTimeout = 30000
                 Name = 'AvailabilityGroup1'
                 BasicAvailabilityGroup = $false
+                PrimaryReplica = 'Server1'
                 AvailabilityReplicas = @{
                     Server1 = @{
                         AvailabilityMode = 'AsynchronousCommit'
                         BackupPriority = 50
                         ConnectionModeInPrimaryRole = 'AllowAllConnections'
                         ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        EndpointUrl = 'TCP://Server1:5022'
                         FailoverMode = 'Manual'
                     }
                 }
             }
         }
+        Databases = @{
+            'master' = @{
+                Name = 'master'
+            }
+        }
+        Endpoints = @(
+            New-Object PSObject -Property @{
+                EndpointType = 'DatabaseMirroring'
+                Protocol = @{
+                    TCP = @{
+                        ListenerPort = 5022
+                    }
+                }
+            }
+        )
+        IsHadrEnabled = $true
+        Logins = @{
+            'NT SERVICE\ClusSvc' = @{}
+            'NT AUTHORITY\SYSTEM' = @{}
+        }
+        NetName = 'Server1'
+        Roles = @{}
         Version = @{
             Major = 13
+        }
+    }
+
+    # Add the ExecuteWithResults method
+    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+        return New-Object PSObject -Property @{
+            Tables = @{
+                Rows = @{
+                    permission_name = @(
+                        'testing'
+                    )
+                }
+            }
+        }
+    }
+
+    # Type the mock as a server object
+    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+    return $mock
+}
+
+$mockNewSqlAvailabilityReplica = {
+    #TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+    $mock = return New-Object PSObject -Property @{
+        AvailabilityMode = 'AsynchronousCommit'
+        BackupPriority = 50
+        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+        EndpointUrl = 'TCP://Server1:5022'
+        FailoverMode = 'Manual'
+        Name = 'Server1'
+    }
+
+    # Type the mock as an Availability Replica object
+    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.AvailabilityReplica')
+
+    return $mock
+}
+
+$mockInvokeQueryClusterServiceCorrectPermissions = {
+    return New-Object PSObject -Property @{
+        Tables = @{
+            Rows = @{
+                permission_name = @(
+                    'Connect SQL',
+                    'Alter Any Availability Group',
+                    'View Server State'
+                )
+            }
+        }
+    }
+}
+
+$mockInvokeQueryClusterServiceMissingPermissions = {
+    return New-Object PSObject -Property @{
+        Tables = @{
+            Rows = @{
+                permission_name = @(
+                    'Connect SQL',
+                    'View Server State'
+                )
+            }
         }
     }
 }
@@ -327,38 +403,561 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         
-        Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName
-        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName
-        Mock -CommandName New-SqlAvailabilityReplica -MockWith {
-            #TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
-            return New-Object PSObject -Property @{
-                AvailabilityMode = 'AsynchronousCommit'
-                BackupPriority = 50
-                ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                EndpointUrl = 'TCP://Server1:5022'
-                FailoverMode = 'Manual'
-                Name = 'Server1'
-            }
-        } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
-        Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable
-        Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName
+        Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Import-SQLPSModule -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the Availability Group is Absent' {
+
+            Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            Mock -CommandName Update-AvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            Mock -CommandName Update-AvailabilityGroupReplica -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
             
-            It 'Should create the Availability Group when Ensure is set to Present' {
+            It 'Should create the Availability Group when Ensure is set to Present and the SQL version is 12' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+
+                { Set-TargetResource @absentAg } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should create the Availability Group when Ensure is set to Present and the SQL version is 13' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                $absentAg.BasicAvailabilityGroup = $true
+
+                { Set-TargetResource @absentAg } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error, HadrNotEnabled, when Ensure is set to Present, but Always On is not enabled' {
+                Mock -CommandName Connect-SQL -MockWith {
+                    return New-Object PSObject -Property @{ 
+                        IsHadrEnabled = $false
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'HadrNotEnabled'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should create the Availability Group when Ensure is set to Present and NT AUTHORITY\SYSTEM has the correct permissions' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceMissingPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' } -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT AUTHORITY\\SYSTEM' } -Scope It
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+
+                { Set-TargetResource @absentAg } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+            
+            It 'Should throw the correct error, ClusterPermissionsMissing, when Ensure is set to Present, but the cluster does not have the correct permissions' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceMissingPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' } -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceMissingPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT AUTHORITY\\SYSTEM' } -Scope It
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'ClusterPermissionsMissing'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error, DatabaseMirroringEndpointNotFound, when Ensure is set to Present, but no DatabaseMirroring endpoints are present' {
+                Mock -CommandName Connect-SQL -MockWith {
+                    return New-Object PSObject -Property @{ 
+                        AvailabilityGroups = @()
+                        Endpoints = @()
+                        IsHadrEnabled = $true
+                        Logins = @{
+                            'NT SERVICE\ClusSvc' = @{}
+                        }
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'DatabaseMirroringEndpointNotFound'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+            
+            It 'Should throw the correct error, CreateAgReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 12' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAgReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAgReplicaFailed'
+                
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error, CreateAgReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 13' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAgReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAgReplicaFailed'
+                
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error "CreateAvailabilityGroupFailed" when Ensure is set to Present, but the Availability Group failed to create and the SQL version is 12' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityGroup { throw 'CreateAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $absentAg.Ensure = 'Present'
+                
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupFailed'
+                
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error "CreateAvailabilityGroupFailed" when Ensure is set to Present, but the Availability Group failed to create and the SQL version is 13' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityGroup { throw 'CreateAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Scope It
+                
+                $absentAg.Ensure = 'Present'
+
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupFailed'
+                
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+        }
+
+        Context 'When the Availability Group is Present' {
+            Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            Mock -CommandName Update-AvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            Mock -CommandName Update-AvailabilityGroupReplica -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            
+            It 'Should remove the Availability Group when Ensure is set to Absent and the SQL version is 12' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $presentAg.Ensure = 'Absent'
+                
+                { Set-TargetResource @presentAg } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should remove the Availability Group when Ensure is set to Absent and the SQL version is 13' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $presentAg.Ensure = 'Absent'
+                
+                { Set-TargetResource @presentAg } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error message, InstanceNotPrimaryReplica, when Ensure is set to Absent and the primary replica is not on the current instance' {
 
                 Mock -CommandName Connect-SQL -MockWith {
-                    $mock =  New-Object PSObject -Property @{ 
-                        AvailabilityGroups = @{}
+                    return New-Object PSObject -Property @{ 
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplica = 'Server1'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'TCP://Server1:5022'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
+                        IsHadrEnabled = $true
+                        NetName = 'Server2'
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $presentAg.Ensure = 'Absent'
+                
+                { Set-TargetResource @presentAg } | Should Throw 'InstanceNotPrimaryReplica'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error message when Ensure is set to Absent but the Availability Group remove fails, and the SQL version is 12' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Remove-SqlAvailabilityGroup -MockWith { throw 'RemoveAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $presentAg.Ensure = 'Absent'
+                
+                { Set-TargetResource @presentAg } | Should Throw 'RemoveAvailabilityGroupFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error message when Ensure is set to Absent but the Availability Group remove fails, and the SQL version is 13' {
+                
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Remove-SqlAvailabilityGroup -MockWith { throw 'RemoveAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                $presentAg.Ensure = 'Absent'
+                
+                { Set-TargetResource @presentAg } | Should Throw 'RemoveAvailabilityGroupFailed'
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should set the AutomatedBackupPreference to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.AutomatedBackupPreference = 'Primary'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should set the AvailabilityMode to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.AvailabilityMode = 'SynchronousCommit'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the BackupPriority to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.BackupPriority = 42
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the BasicAvailabilityGroup to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.BasicAvailabilityGroup = $true
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should set the ConnectionModeInPrimaryRole to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.ConnectionModeInPrimaryRole = 'AllowReadWriteConnections'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the ConnectionModeInSecondaryRole to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.ConnectionModeInSecondaryRole = 'AllowReadIntentConnectionsOnly'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the EndpointUrl to the desired state when the endpoint port is changed' {
+
+                Mock -CommandName Connect-SQL -MockWith {
+                    $mock = New-Object PSObject -Property @{
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplica = 'Server1'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'TCP://Server1:5021'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
                         Databases = @{
                             'master' = @{
                                 Name = 'master'
                             }
                         }
+                        Endpoints = @(
+                            New-Object PSObject -Property @{
+                                EndpointType = 'DatabaseMirroring'
+                                Protocol = @{
+                                    TCP = @{
+                                        ListenerPort = 5022
+                                    }
+                                }
+                            }
+                        )
                         IsHadrEnabled = $true
                         Logins = @{
                             'NT SERVICE\ClusSvc' = @{}
+                            'NT AUTHORITY\SYSTEM' = @{}
                         }
                         NetName = 'Server1'
                         Roles = @{}
@@ -385,126 +984,283 @@ try
 
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It
-
-                Mock -CommandName Test-TargetResource -MockWith {$true} -ModuleName $script:DSCResourceName -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                Set-TargetResource @createAg
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Test-TargetResource -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
             }
 
-            It 'Should throw HadrNotEnabled when Ensure is set to Present, but Always On is not enabled' {
+            It 'Should set the EndpointUrl to the desired state when the EndpointHostName is specified' {
 
-                Mock -CommandName Connect-SQL -MockWith {
-                    return New-Object PSObject -Property @{ 
-                        IsHadrEnabled = $false
-                    }
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                { Set-TargetResource @createAg } | Should Throw 'HadrNotEnabled'
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.EndpointHostName = 'TestServer.Contoso.com'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
             }
-            
-            It 'Should throw CreateAgReplicaFailed when Ensure is set to Present, but the Availability Group Replica failed to create' {
-                
+
+            It 'Should set the EndpointUrl to the desired state when the EndpointHostName is not specified' {
+
                 Mock -CommandName Connect-SQL -MockWith {
-                    return New-Object PSObject -Property @{ 
-                        AvailabilityGroups = @{}
+                    $mock = New-Object PSObject -Property @{
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplica = 'Server1'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'TCP://Server1.contoso.com:5022'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
+                        Databases = @{
+                            'master' = @{
+                                Name = 'master'
+                            }
+                        }
+                        Endpoints = @(
+                            New-Object PSObject -Property @{
+                                EndpointType = 'DatabaseMirroring'
+                                Protocol = @{
+                                    TCP = @{
+                                        ListenerPort = 5022
+                                    }
+                                }
+                            }
+                        )
                         IsHadrEnabled = $true
+                        Logins = @{
+                            'NT SERVICE\ClusSvc' = @{}
+                            'NT AUTHORITY\SYSTEM' = @{}
+                        }
                         NetName = 'Server1'
+                        Roles = @{}
                         Version = @{
                             Major = 12
                         }
                     }
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Scope It
-                
-                { Set-TargetResource @createAgReplicaInvalidParameter } | Should Throw 'CreateAgReplicaFailed'
-                
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
-            }
-
-            It 'Should throw CreateAvailabilityGroupFailed when Ensure is set to Present, but the Availability Group failed to create' {
-                
-                Mock -CommandName Connect-SQL -MockWith {
-                    return New-Object PSObject -Property @{ 
-                        AvailabilityGroups = @{}
-                        IsHadrEnabled = $true
-                        NetName = 'Server1'
-                        Version = @{
-                            Major = 12
-                        }
-                    }
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
-
-                Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Scope It
-                
-                { Set-TargetResource @createAgInvalidParameter } | Should Throw 'CreateAvailabilityGroupFailed'
-                
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
-            }
-
-            It 'Should throw the correct error message when Ensure is set to Present, but the Availability Group properties are incorrect' {
-                
-                { Set-TargetResource @createAg } | Should Throw 'CreateAvailabilityGroupFailedWithIncorrectProperties'
-
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
-            }
-        }
-
-        Context 'When the Availability Group is Present' {
-
-            Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{ 
-                    AvailabilityGroups = @{
-                        AvailabilityGroup1 = @{
-                            AutomatedBackupPreference = 'Secondary'
-                            FailureConditionLevel = 'OnServerDown'
-                            HealthCheckTimeout = 30000
-                            Name = 'AvailabilityGroup1'
-                            AvailabilityReplicas = @{
-                                Server1 = @{
-                                    AvailabilityMode = 'AsynchronousCommit'
-                                    BackupPriority = 50
-                                    ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                                    ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                                    FailoverMode = 'Manual'
+                    # Add the ExecuteWithResults method
+                    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                        return New-Object PSObject -Property @{
+                            Tables = @{
+                                Rows = @{
+                                    permission_name = @(
+                                        'testing'
+                                    )
                                 }
                             }
                         }
                     }
-                    NetName = 'Server1'
-                    Version = @{
-                        Major = 12
+
+                    # Type the mock as a server object
+                    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+                    return $mock
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.Remove('EndpointHostName')
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the EndpointUrl to the desired state when the endpoint protocal is changed' {
+
+                Mock -CommandName Connect-SQL -MockWith {
+                    $mock = New-Object PSObject -Property @{
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplica = 'Server1'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'HTTP://Server1:5022'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
+                        Databases = @{
+                            'master' = @{
+                                Name = 'master'
+                            }
+                        }
+                        Endpoints = @(
+                            New-Object PSObject -Property @{
+                                EndpointType = 'DatabaseMirroring'
+                                Protocol = @{
+                                    TCP = @{
+                                        ListenerPort = 5022
+                                    }
+                                }
+                            }
+                        )
+                        IsHadrEnabled = $true
+                        Logins = @{
+                            'NT SERVICE\ClusSvc' = @{}
+                            'NT AUTHORITY\SYSTEM' = @{}
+                        }
+                        NetName = 'Server1'
+                        Roles = @{}
+                        Version = @{
+                            Major = 12
+                        }
                     }
-                }
-            } -ModuleName $script:DSCResourceName -Verifiable -Scope Context
 
-            It 'Should remove the Availability Group when Ensure is set to Absent' {
+                    # Add the ExecuteWithResults method
+                    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                        return New-Object PSObject -Property @{
+                            Tables = @{
+                                Rows = @{
+                                    permission_name = @(
+                                        'testing'
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-                Set-TargetResource @removeAg
-            }
+                    # Type the mock as a server object
+                    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
 
-            It 'Should correct incorrect properties when Ensure is set to Present' {
-
-                Set-TargetResource @createAg
-            }
-
-            It 'Should throw the correct error message when Ensure is set to Absent, but the Availability Group has not been removed' {
+                    return $mock
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                { Set-TargetResource @removeAg } | Should Throw 'RemoveAvailabilityGroupFailed'
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
             }
 
-            It 'Should throw the correct error message when Ensure is set to Present, but the Availability Group properties are incorrect' {
-                
-                { Set-TargetResource @createAg } | Should Throw 'AvailabilityGroupFailedWithIncorrectProperties'
+            It 'Should set the FailureConditionLevel to the desired state' {
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.FailureConditionLevel = 'OnAnyQualifiedFailureCondition'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should set the FailoverMode to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.FailoverMode = 'Automatic'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should set the HealthCheckTimeout to the desired state' {
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                $presentAgIncorrectProperties.HealthCheckTimeout = 42
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
             }
         }
     }
