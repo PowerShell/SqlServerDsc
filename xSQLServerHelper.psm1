@@ -1792,11 +1792,25 @@ function Invoke-Query
 
     if ( $WithResults )
     {
-        $result = $serverObject.Databases[$Database].ExecuteWithResults($Query)
+        try
+        {
+            $result = $serverObject.Databases[$Database].ExecuteWithResults($Query)
+        }
+        catch
+        {
+            throw New-TerminatingError -ErrorType ExecuteQueryWithResultsFailed -FormatArgs $Database -ErrorCategory NotSpecified
+        }
     }
     else
     {
-        $serverObject.Databases[$Database].ExecuteNonQuery($Query)
+        try
+        {
+            $serverObject.Databases[$Database].ExecuteNonQuery($Query)
+        }
+        catch
+        {
+            throw New-TerminatingError -ErrorType ExecuteNonQueryFailed -FormatArgs $Database -ErrorCategory NotSpecified
+        }
     }
 
     return $result

@@ -34,7 +34,7 @@ namespace Microsoft.SqlServer.Management.Smo
         WindowsUser = 0,
         Unknown = -1    // Added for verification (mock) purposes, to verify that a login type is passed  
     }
-
+    
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplicaFailoverMode
     // Used by: 
     //  MSFT_xSQLAOGroupEnsure.Tests
@@ -556,5 +556,51 @@ namespace Microsoft.SqlServer.Management.Smo
         public FailedOperationException (string message, SmoException inner) : base (message, inner) {}
     }
 
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroup
+    // BaseType: Microsoft.SqlServer.Management.Smo.NamedSmoObject
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroup
+    public class AvailabilityGroup
+    {
+        public AvailabilityGroup()
+        {}
+
+        public AvailabilityGroup( Server server, string name )
+        {}
+
+        public string AutomatedBackupPreference;
+        public string AvailabilityReplicas;
+        public bool BasicAvailabilityGroup;
+        public string FailureConditionLevel;
+        public string HealthCheckTimeout;
+        public string Name;
+        public string PrimaryReplica;
+    }
+    
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+    // BaseType: Microsoft.SqlServer.Management.Smo.NamedSmoObject
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroup
+    public class AvailabilityReplica
+    {
+        public AvailabilityReplica()
+        {}
+
+        public AvailabilityReplica( AvailabilityGroup availabilityGroup, string name )
+        {}
+
+        public string AvailabilityMode;
+        public string BackupPriority;
+        public string ConnectionModeInPrimaryRole;
+        public string ConnectionModeInSecondaryRole;
+        public string EndpointUrl;
+        public string FailoverMode;
+
+        public void Alter()
+        {}
+
+        public void Create()
+        {}
+    }
     #endregion Public Classes
 }
