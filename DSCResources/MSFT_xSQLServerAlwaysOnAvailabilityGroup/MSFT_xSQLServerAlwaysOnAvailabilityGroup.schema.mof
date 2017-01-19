@@ -5,45 +5,14 @@ class MSFT_xSQLServerAlwaysOnAvailabilityGroup : OMI_BaseResource
     [Key, Description("Hostname of the SQL Server to be configured.")] String SQLServer;
     [Key, Description("Name of the SQL instance to be configued.")] String SQLInstanceName;
     [Required, Description("Specifies if the availability group should be present or absent."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [
-        Write, 
-        Description("Specifies the automated backup preference for the availability group."), 
-        ValueMap{"Primary","SecondaryOnly","Secondary","None"}, 
-        Values{"Primary","SecondaryOnly","Secondary","None"}
-    ] String AutomatedBackupPreference
-    [
-        Write, 
-        Description("Specifies the replica availability mode. Default is 'AsynchronousCommit'."), 
-        ValueMap{"AsynchronousCommit","SynchronousCommit"}, 
-        Values{"AsynchronousCommit","SynchronousCommit"}
-    ] String AvailabilityMode
-    [
-        Write, 
-        Description("Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.")
-    ] UInt32 BackupPriority
-    [Write, Description("Specifies the type of availability group.")] Bool BasicAvailabilityGroup
-    [
-        Write, 
-        Description("Specifies how the availability replica handles connections when in the primary role."), 
-        ValueMap{"AllowAllConnections","AllowReadWriteConnections"}, 
-        Values{"AllowAllConnections","AllowReadWriteConnections"}
-    ] String ConnectionModeInPrimaryRole
-    [
-        Write, 
-        Description("Specifies how the availability replica handles connections when in the secondary role."), 
-        ValueMap{"AllowNoConnections","AllowReadIntentConnectionsOnly","AllowAllConnections"}, 
-        Values{"AllowNoConnections","AllowReadIntentConnectionsOnly","AllowAllConnections"}
-    ] String ConnectionModeInSecondaryRole
-    [Write, Description("Specifies the port of the database mirroring endpoint. Default is 5022.")] SInt32 EndpointPort
-    [
-        Write, 
-        Description("Specifies the automatic failover behavior of the availability group."), 
-        ValueMap{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}, 
-        Values{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}
-    ] String FailureConditionLevel
-    [Write, Description("Specifies the failover mode. Default is 'Manual'."), ValueMap{"Automatic","Manual"}, Values{"Automatic","Manual"}] String FailoverMode
-    [
-        Write, 
-        Description("Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.")
-    ] UInt32 HealthCheckTimeout
+    [Write, Description("Specifies the automated backup preference for the availability group."), ValueMap{"Primary","SecondaryOnly","Secondary","None"}, Values{"Primary","SecondaryOnly","Secondary","None"}] String AutomatedBackupPreference;
+    [Write, Description("Specifies the replica availability mode. Default is 'AsynchronousCommit'."), ValueMap{"AsynchronousCommit","SynchronousCommit"}, Values{"AsynchronousCommit","SynchronousCommit"}] String AvailabilityMode;
+    [Write, Description("Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.")] UInt32 BackupPriority;
+    [Write, Description("Specifies the type of availability group.")] Boolean BasicAvailabilityGroup;
+    [Write, Description("Specifies how the availability replica handles connections when in the primary role."), ValueMap{"AllowAllConnections","AllowReadWriteConnections"}, Values{"AllowAllConnections","AllowReadWriteConnections"}] String ConnectionModeInPrimaryRole;
+    [Write, Description("Specifies how the availability replica handles connections when in the secondary role."), ValueMap{"AllowNoConnections","AllowReadIntentConnectionsOnly","AllowAllConnections"}, Values{"AllowNoConnections","AllowReadIntentConnectionsOnly","AllowAllConnections"}] String ConnectionModeInSecondaryRole;
+    [Write, Description("Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.")] SInt32 EndpointHostName;
+    [Write, Description("Specifies the automatic failover behavior of the availability group."), ValueMap{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}, Values{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}] String FailureConditionLevel;
+    [Write, Description("Specifies the failover mode. Default is 'Manual'."), ValueMap{"Automatic","Manual"}, Values{"Automatic","Manual"}] String FailoverMode;
+    [Write, Description("Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.")] UInt32 HealthCheckTimeout;
 };
