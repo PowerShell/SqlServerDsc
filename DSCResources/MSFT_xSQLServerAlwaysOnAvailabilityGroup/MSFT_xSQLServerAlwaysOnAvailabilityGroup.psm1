@@ -93,7 +93,7 @@ function Get-TargetResource
     Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group should be present or absent.
+    Specifies if the availability group should be present or absent. Default is Present.
 
     .PARAMETER AutomatedBackupPreference
     Specifies the automated backup preference for the availability group.
@@ -139,10 +139,10 @@ function Set-TargetResource
         [String]
         $SQLInstanceName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateSet('Present','Absent')]
         [String]
-        $Ensure,
+        $Ensure = 'Present',
 
         [Parameter()]
         [ValidateSet('Primary','SecondaryOnly','Secondary','None')]
@@ -480,7 +480,7 @@ function Set-TargetResource
     Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group should be present or absent.
+    Specifies if the availability group should be present or absent. Default is Present.
 
     .PARAMETER AutomatedBackupPreference
     Specifies the automated backup preference for the availability group.
@@ -527,10 +527,10 @@ function Test-TargetResource
         [String]
         $SQLInstanceName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateSet('Present','Absent')]
         [String]
-        $Ensure,
+        $Ensure = 'Present',
 
         [Parameter()]
         [ValidateSet('Primary','SecondaryOnly','Secondary','None')]
