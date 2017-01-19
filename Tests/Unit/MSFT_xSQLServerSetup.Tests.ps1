@@ -3492,32 +3492,35 @@ try
 
                 $serviceType = $_
 
-                It "Should return the correct parameters when the service type is $serviceType and the account is a system account." {
-                    $result = Get-ServiceAccountParameters -ServiceAccount $mockSystemServiceAccount -ServiceType $serviceType
+                Context "When service type is $serviceType" {
 
-                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockSystemServiceAccount.UserName
-                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
-                }
+                    It "Should return the correct parameters when the account is a system account." {
+                        $result = Get-ServiceAccountParameters -ServiceAccount $mockSystemServiceAccount -ServiceType $serviceType
 
-                It "Should return the correct parameters when the service type is $serviceType and the account is a virtual service account" {
-                    $result = Get-ServiceAccountParameters -ServiceAccount $mockVirtualServiceAccount -ServiceType $serviceType
+                        $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockSystemServiceAccount.UserName
+                        $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                    }
 
-                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockVirtualServiceAccount.UserName
-                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
-                }
+                    It "Should return the correct parameters when the account is a virtual service account" {
+                        $result = Get-ServiceAccountParameters -ServiceAccount $mockVirtualServiceAccount -ServiceType $serviceType
 
-                It "Should return the correct parameters when the servie type is $serviceType and the account is a managed service account" {
-                    $result = Get-ServiceAccountParameters -ServiceAccount $mockManagedServiceAccount -ServiceType $serviceType
+                        $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockVirtualServiceAccount.UserName
+                        $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                    }
 
-                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockManagedServiceAccount.UserName
-                    $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
-                }
+                    It "Should return the correct parameters when the account is a managed service account" {
+                        $result = Get-ServiceAccountParameters -ServiceAccount $mockManagedServiceAccount -ServiceType $serviceType
 
-                It "Should return the correct parameters when the servie type is $serviceType and the account is a domain account" {
-                    $result = Get-ServiceAccountParameters -ServiceAccount $mockDomainServiceAccount -ServiceType $serviceType
+                        $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockManagedServiceAccount.UserName
+                        $result.ContainsKey("$($serviceType)SVCPASSWORD") | Should Be $false
+                    }
 
-                    $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockDomainServiceAccount.UserName
-                    $result.$("$($serviceType)SVCPASSWORD") | Should BeExactly $mockDomainServiceAccount.GetNetworkCredential().Password
+                    It "Should return the correct parameters when the account is a domain account" {
+                        $result = Get-ServiceAccountParameters -ServiceAccount $mockDomainServiceAccount -ServiceType $serviceType
+
+                        $result.$("$($serviceType)SVCACCOUNT") | Should BeExactly $mockDomainServiceAccount.UserName
+                        $result.$("$($serviceType)SVCPASSWORD") | Should BeExactly $mockDomainServiceAccount.GetNetworkCredential().Password
+                    }
                 }
             }
         }
