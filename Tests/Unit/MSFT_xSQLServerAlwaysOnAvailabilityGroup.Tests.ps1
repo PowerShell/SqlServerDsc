@@ -1380,6 +1380,54 @@ try
             }
         }
     }
+
+    InModuleScope -ModuleName $script:DSCResourceName {
+        Describe "$($script:DSCResourceName)\Update-AvailabilityGroup" {
+            Mock -CommandName New-TerminatingError -MockWith { $ErrorType } -ModuleName $script:DSCResourceName
+            
+            Context 'When the Availability Group is altered' {
+                It 'Should silently alter the Availability Group' {
+                    $ag = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
+                    
+                    { Update-AvailabilityGroup -AvailabilityGroup $ag } | Should Not Throw
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                }
+
+                It 'Should throw the correct error, AlterAvailabilityGroupFailed, when altering the Availaiblity Group fails' {
+                    $ag = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
+                    $ag.Name = 'AlterFailed'
+                    
+                    { Update-AvailabilityGroup -AvailabilityGroup $ag } | Should Throw 'AlterAvailabilityGroupFailed'
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                }
+            }
+        }
+
+        Describe "$($script:DSCResourceName)\Update-AvailabilityGroupReplica" {
+            Mock -CommandName New-TerminatingError { $ErrorType } -ModuleName $script:DSCResourceName -Verifiable
+
+            Context 'When the Availability Group Replica is altered' {
+                It 'Should silently alter the Availability Group Replica' {
+                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                    
+                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Not Throw
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                }
+
+                It 'Should throw the correct error, AlterAvailabilityGroupReplicaFailed, when altering the Availaiblity Group Replica fails' {
+                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                    $availabilityReplica.Name = 'AlterFailed'
+                    
+                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Throw 'AlterAvailabilityGroupReplicaFailed'
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                }
+            }
+        }
+    }
 }
 finally
 {
