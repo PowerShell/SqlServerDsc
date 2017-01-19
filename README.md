@@ -180,7 +180,7 @@ No description.
 * **BasicAvailabilityGroup**: Specifies the type of availability group.
 * **ConnectionModeInPrimaryRole**: Specifies how the availability replica handles connections when in the primary role. (AllowAllConnections, AllowReadWriteConnections)
 * **ConnectionModeInSecondaryRole**: Specifies how the availability replica handles connections when in the secondary role. (AllowNoConnections, AllowReadIntentConnectionsOnly, AllowAllConnections)
-* **EndpointPort**: Specifies the port of the database mirroring endpoint. Default is 5022.
+* **EndpointHostName**: Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
 * **FailureConditionLevel**: Specifies the automatic failover behavior of the availability group. (OnServerDown, OnServerUnresponsive, OnCriticalServerErrors, OnModerateServerErrors, OnAnyQualifiedFailureCondition)
 * **FailoverMode**: Specifies the failover mode. Default is 'Manual'. (Automatic, Manual"}, Values{"Automatic","Manual"}] String FailoverMode)
 * **HealthCheckTimeout**: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.
