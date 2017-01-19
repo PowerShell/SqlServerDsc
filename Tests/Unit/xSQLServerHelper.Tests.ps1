@@ -11,6 +11,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 Import-Module (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'xSQLServerHelper.psm1') -Scope Global -Force
+Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
 # Loading mocked classes
 Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
@@ -524,5 +525,116 @@ InModuleScope $script:moduleName {
         }
 
         Assert-VerifiableMocks
+    }
+    
+    Describe 'Testing Invoke-Query' {
+        Mock -CommandName Connect-SQL -MockWith {
+            $mock = New-Object PSObject -Property @{
+                Databases = @{
+                    'master' = @{
+                        Name = 'master'
+                    }
+                }
+                NetName = 'Server1'
+            }
+
+            # Add the ExecuteNonQuery method
+            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteNonQuery -Value {
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [String]
+                    $Query
+                )
+
+                if ( $Query -eq 'BadQuery' )
+                {
+                    throw
+                }
+            }
+            
+            # Add the ExecuteWithResults method
+            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [String]
+                    $Query
+                )
+
+                if ( $Query -eq 'BadQuery' )
+                {
+                    throw
+                }
+                else
+                {
+                    return New-Object PSObject -Property @{
+                        Tables = @{
+                            Rows = @{
+                                permission_name = @(
+                                    'master',
+                                    'model',
+                                    'msdb',
+                                    'tempdb'
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Type the mock as a server object
+            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+            return $mock
+        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName New-TerminatingError -MockWith { $ErrorType } -ModuleName $script:DSCResourceName
+
+        $queryParams = @{
+            SQLServer = 'Server1'
+            SQLInstanceName = 'MSSQLSERVER'
+            Database = 'master'
+            Query = ''
+        }
+        
+        Context 'Execute a query with no results' {
+            It 'Should execute the query silently' {
+                $queryParams.Query = "EXEC sp_configure 'show advanced option', '1'"
+                
+                { Invoke-Query @queryParams } | Should Not Throw
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error, ExecuteNonQueryFailed, when executing the query fails' {
+                $queryParams.Query = 'BadQuery'
+                
+                { Invoke-Query @queryParams } | Should Throw 'ExecuteNonQueryFailed'
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+            }
+        }
+
+        Context 'Execute a query with results' {
+            It 'Should execute the query and return a result set' {
+                $queryParams.Query = 'SELECT name FROM sys.databases'
+                
+                Invoke-Query @queryParams -WithResults | Should Not BeNullOrEmpty
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should throw the correct error, ExecuteQueryWithResultsFailed, when executing the query fails' {
+                $queryParams.Query = 'BadQuery'
+                
+                { Invoke-Query @queryParams -WithResults } | Should Throw 'ExecuteQueryWithResultsFailed'
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+            }
+        }
     }
 }
