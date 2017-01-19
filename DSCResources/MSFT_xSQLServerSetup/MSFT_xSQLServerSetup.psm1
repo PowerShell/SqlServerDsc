@@ -790,14 +790,13 @@ function Set-TargetResource
     if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
         ## brought over from old module. probably should remove it...
-        $setupArgs.Add('SkipRules', 'Cluster_VerifyForErrors') | Out-Null
+        $setupArgs += @{ SkipRules = 'Cluster_VerifyForErrors' }
     }
 
     ## perform disk mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
         $failoverClusterDisks = @()
-        $clusterIPAddresses = @()
 
         ## Get a required lising of drives based on user parameters
         $requiredDrives = Get-Variable -Name 'SQL*Dir' | Where-Object{ -not [String]::IsNullOrEmpty($_.Value) } | ForEach-Object {
@@ -836,12 +835,14 @@ function Set-TargetResource
         }
 
         ## add the cluster disks as a setup argument
-        $setupArgs.Add('FailoverClusterDisks', ($failoverClusterDisks | Sort-Object)) | Out-Null
+        $setupArgs += @{ FailoverClusterDisks = ($failoverClusterDisks | Sort-Object) }
     }
 
     ## detemine network mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
+        $clusterIPAddresses = @()
+
         ## If no IP has been specified, configure DHCP on the first client network
         if (($FailoverClusterIPAddress | Measure-Object).Count -eq 0)
         {
@@ -878,7 +879,7 @@ function Set-TargetResource
         }
 
         ## add the networks to the installation arguments
-        $setupArgs.Add('FailoverClusterIPAddresses', $clusterIPAddresses) | Out-Null
+        $setupArgs += @{ FailoverClusterIPAddresses = $clusterIPAddresses }
     }
 
     # Add standard install arguments
@@ -930,7 +931,7 @@ function Set-TargetResource
             $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
         }
 
-        $setupArgs.Add('SQLSysAdminAccounts', $($SetupCredential.UserName)) | Out-Null
+        $setupArgs += @{ SQLSysAdminAccounts =  @($SetupCredential.UserName) }
         if ($PSBoundParameters -icontains 'SQLSysAdminAccounts')
         {
             $setupArgs['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
@@ -938,10 +939,10 @@ function Set-TargetResource
         
         if ($SecurityMode -eq 'SQL')
         {
-            $setupArgs.Add('SAPwd', $SAPwd.GetNetworkCredential().Password) | Out-Null
+            $setupArgs += @{ SAPwd = $SAPwd.GetNetworkCredential().Password }
         }
 
-        $setupArgs.Add('AGTSVCSTARTUPTYPE','Automatic') | Out-Null
+        $setupArgs += @{ AgtSvcStartupType = 'Automatic' }
     }
 
     if ($Features.Contains('FULLTEXT'))
@@ -976,7 +977,7 @@ function Set-TargetResource
             $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
         }
 
-        $setupArgs.Add('ASSysAdminAccounts', @($SetupCredential.UserName)) | Out-Null
+        $setupArgs += @{ ASSysAdminAccounts = @($SetupCredential.UserName) }
 
         if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
         {
@@ -995,7 +996,7 @@ function Set-TargetResource
     ## automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
-        $setupArgs.Add($argument, (Get-Variable -Name $argument -ValueOnly)) | Out-Null
+        $setupArgs += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
     }
 
     ## TODO: Apply parameter filtering based on $Action
