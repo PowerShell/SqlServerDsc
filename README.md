@@ -173,7 +173,7 @@ No description.
 * **Name**: (key) The name of the availability group.
 * **SQLServer**: (key) Hostname of the SQL Server to be configured.
 * **SQLInstanceName**: (key) Name of the SQL instance to be configued.
-* **Ensure**: (required) Specifies if the availability group should be present or absent.
+* **Ensure**: Specifies if the availability group should be present or absent. Default is Present.
 * **AutomatedBackupPreference**: Specifies the automated backup preference for the availability group. (Primary, SecondaryOnly, Secondary, None)
 * **AvailabilityMode**: Specifies the replica availability mode. Default is 'AsynchronousCommit'. (AsynchronousCommit, SynchronousCommit)
 * **BackupPriority**: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.
