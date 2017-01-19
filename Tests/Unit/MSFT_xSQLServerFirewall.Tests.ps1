@@ -344,13 +344,13 @@ try
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Reporting Services 80" -and
-                    $Protocol -eq 'TCP' -and
-                    $LocalPort -eq 80
+                    $Protocol -eq $mockFirewallRulePort_ReportingServicesNoSslProtocol -and
+                    $LocalPort -eq $mockFirewallRulePort_ReportingServicesNoSslLocalPort
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Reporting Services 443" -and
-                    $Protocol -eq 'TCP' -and
-                    $LocalPort -eq 443
+                    $Protocol -eq $mockFirewallRulePort_ReportingServicesSslProtocol -and
+                    $LocalPort -eq $mockFirewallRulePort_ReportingServicesSslLocalPort
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Integration Services Application" -and
@@ -358,8 +358,8 @@ try
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Integration Services Port" -and
-                    $Protocol -eq 'TCP' -and
-                    $LocalPort -eq 135
+                    $Protocol -eq $mockFirewallRulePort_IntegrationServicesProtocol -and
+                    $LocalPort -eq $mockFirewallRulePort_IntegrationServicesLocalPort
                 )
             )
             {
