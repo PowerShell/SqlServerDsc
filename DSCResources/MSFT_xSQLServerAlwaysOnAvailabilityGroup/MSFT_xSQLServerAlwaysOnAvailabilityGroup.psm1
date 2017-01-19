@@ -641,6 +641,13 @@ function Test-TargetResource
     return $result
 }
 
+<#
+    .SYNOPSIS
+    Executes the alter method on an Availability Group object.
+    
+    .PARAMETER AvailabilityGroup
+    The Availabilty Group object that must be altered.
+#>
 function Update-AvailabilityGroup
 {
     param
@@ -660,6 +667,13 @@ function Update-AvailabilityGroup
     }
 }
 
+<#
+    .SYNOPSIS
+    Executes the alter method on an Availability Group Replica object.
+    
+    .PARAMETER AvailabilityGroupReplica
+    The Availabilty Group Replica object that must be altered.
+#>
 function Update-AvailabilityGroupReplica
 {
     param
