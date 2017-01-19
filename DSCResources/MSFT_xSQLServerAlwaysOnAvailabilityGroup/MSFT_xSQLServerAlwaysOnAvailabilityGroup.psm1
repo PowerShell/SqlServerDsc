@@ -679,15 +679,4 @@ function Update-AvailabilityGroupReplica
     }
 }
 
-<#
-function Update-EndpointProtocolPropertyValue
-{
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        
-    )
-}
-#>
-
 Export-ModuleMember -Function *-TargetResource

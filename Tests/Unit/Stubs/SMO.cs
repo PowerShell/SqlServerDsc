@@ -575,6 +575,14 @@ namespace Microsoft.SqlServer.Management.Smo
         public string HealthCheckTimeout;
         public string Name;
         public string PrimaryReplica;
+
+        public void Alter()
+        {
+            if ( this.Name == "AlterFailed" )
+            {
+                throw new System.Exception( "Alter Availability Group failed" );
+            }
+        }
     }
     
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
@@ -595,9 +603,15 @@ namespace Microsoft.SqlServer.Management.Smo
         public string ConnectionModeInSecondaryRole;
         public string EndpointUrl;
         public string FailoverMode;
+        public string Name;
 
         public void Alter()
-        {}
+        {
+            if ( this.Name == "AlterFailed" )
+            {
+                throw new System.Exception( "Alter Availability Group Replica failed" );
+            }
+        }
 
         public void Create()
         {}
