@@ -607,10 +607,33 @@ function Test-TargetResource
 
         'Present'
         {
+            $parametersToCheck = @(
+                'Name',
+                'SQLServer',
+                'SQLInstanceName',
+                'Ensure',
+                'AutomatedBackupPreference',
+                'AvailabilityMode',
+                'BackupPriority',
+                'BasicAvailabilityGroup',
+                'ConnectionModeInPrimaryRole',
+                'ConnectionModeInSecondaryRole',
+                'EndpointHostName',
+                'FailureConditionLevel',
+                'FailoverMode',
+                'HealthCheckTimeout'
+            )
+            
             if ( $state.Ensure -eq 'Present' )
             {
                 foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
                 {
+                    # Make sure we don't try to validate a common parameter
+                    if ( $parametersToCheck -notcontains $psBoundParameter.Key )
+                    {
+                        continue
+                    }
+                    
                     if ( $state.($psBoundParameter.Key) -ne $psBoundParameter.Value )
                     {
                         if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )

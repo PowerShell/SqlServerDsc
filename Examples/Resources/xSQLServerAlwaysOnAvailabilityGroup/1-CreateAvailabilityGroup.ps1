@@ -26,7 +26,7 @@ Configuration Example
         $SysAdminAccount
     )
     
-    Import-DscResource -ModuleName xSqlServer -ModuleVersion 4.0.0.1
+    Import-DscResource -ModuleName xSqlServer
 
     Node $AllNodes.NodeName {
         # Adding the required service account to allow the cluster to log into SQL
@@ -58,6 +58,7 @@ Configuration Example
             EndPointName = 'HADR'
             Ensure = 'Present'
             Port = 5022
+            AuthorizedUser = 'sa'
             SQLServer = $Node.NodeName
             SQLInstanceName = $Node.SQLInstanceName
             PsDscRunAsCredential = $SysAdminAccount
