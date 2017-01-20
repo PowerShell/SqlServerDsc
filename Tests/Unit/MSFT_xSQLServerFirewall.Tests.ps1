@@ -156,6 +156,10 @@ try
             )
         }
 
+        $mockGetItemProperty_CallingWithWrongParameters = {
+            throw 'Mock Get-ItemProperty was called with wrong parameters'
+        }
+
         $mockRegistryPathSqlInstanceId = 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
         $mockRegistryPathAnalysisServicesInstanceId = 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\OLAP'
         $mockGetItemProperty_SqlInstanceId = {
@@ -428,6 +432,7 @@ try
                     -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter `
                     -MockWith $mockGetItemProperty_IntegrationsServicesSqlPath -Verifiable
 
+                Mock -CommandName Get-ItemProperty -MockWith $mockGetItemProperty_CallingWithWrongParameters -Verifiable
                 Mock -CommandName New-SmbMapping -Verifiable
                 Mock -CommandName Remove-SmbMapping -Verifiable
             }
@@ -860,6 +865,7 @@ try
                     -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter `
                     -MockWith $mockGetItemProperty_IntegrationsServicesSqlPath -Verifiable
 
+                Mock -CommandName Get-ItemProperty -MockWith $mockGetItemProperty_CallingWithWrongParameters -Verifiable
                 Mock -CommandName New-NetFirewallRule -MockWith $mockGetNewNetFirewallRule
                 Mock -CommandName New-SmbMapping -Verifiable
                 Mock -CommandName Remove-SmbMapping -Verifiable
@@ -951,11 +957,11 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesSqlBinRoot_ParameterFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter -Exactly -Times 2 -Scope It
                     }
                 }
 
@@ -1025,11 +1031,11 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesSqlBinRoot_ParameterFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter -Exactly -Times 3 -Scope It
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter -Exactly -Times 2 -Scope It
                     }
                 }
 
@@ -1100,6 +1106,7 @@ try
                     -ParameterFilter $mockGetItemProperty_IntegrationsServicesSqlPath_ParameterFilter `
                     -MockWith $mockGetItemProperty_IntegrationsServicesSqlPath -Verifiable
 
+                Mock -CommandName Get-ItemProperty -MockWith $mockGetItemProperty_CallingWithWrongParameters -Verifiable
                 Mock -CommandName New-SmbMapping -Verifiable
                 Mock -CommandName Remove-SmbMapping -Verifiable
             }

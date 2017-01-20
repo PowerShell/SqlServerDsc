@@ -49,134 +49,150 @@ function Get-TargetResource
         Remove-SmbMapping -RemotePath $SourcePath -Force
     }
 
-    if($InstanceName -eq "MSSQLSERVER")
+    if($InstanceName -eq 'MSSQLSERVER')
     {
-        $DBServiceName = "MSSQLSERVER"
-        $AgtServiceName = "SQLSERVERAGENT"
-        $FTServiceName = "MSSQLFDLauncher"
-        $RSServiceName = "ReportServer"
-        $ASServiceName = "MSSQLServerOLAPService"
+        $databaseServiceName = 'MSSQLSERVER'
+        $reportServiceName = 'ReportServer'
+        $analysisServiceName = 'MSSQLServerOLAPService'
     }
     else
     {
-        $DBServiceName = "MSSQL`$$InstanceName"
-        $AgtServiceName = "SQLAgent`$$InstanceName"
-        $FTServiceName = "MSSQLFDLauncher`$$InstanceName"
-        $RSServiceName = "ReportServer`$$InstanceName"
-        $ASServiceName = "MSOLAP`$$InstanceName"
+        $databaseServiceName = 'MSSQL${0}' -f $InstanceName
+        $reportServiceName = 'ReportServer${0}' -f $InstanceName
+        $analysisServiceName = 'MSOLAP${0}' -f $InstanceName
     }
 
-    $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
+    $integrationServiceName = 'MsDtsServer{0}0' -f $sqlVersion
+    $browserServiceName = 'SQLBrowser'
 
-    $Ensure = "Present"
-    $Services = Get-Service
-    $FeaturesInstalled = ""
-    foreach($Feature in $Features.Split(","))
+    $ensure = 'Present'
+    $featuresInstalled = ''
+
+    $services = Get-Service
+
+    foreach ($currentFeature in $Features.Split(','))
     {
-        switch($Feature)
+        switch ($currentFeature)
         {
-            "SQLENGINE"
+            'SQLENGINE'
             {
-                if($Services | Where-Object {$_.Name -eq $DBServiceName})
+                if ($services | Where-Object {$_.Name -eq $databaseServiceName})
                 {
-                    $FeaturesInstalled += "SQLENGINE,"
-                    if(Get-FirewallRule -DisplayName ("SQL Server Database Engine instance " + $InstanceName) -Application ((GetSQLPath -Feature "SQLENGINE" -InstanceName $InstanceName) + "\sqlservr.exe"))
+                    $featuresInstalled += "$_,"
+
+                    if (Get-FirewallRule `
+                            -DisplayName "SQL Server Database Engine instance $InstanceName" `
+                            -Application (Join-Path -Path (GetSQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'))
                     {
-                        $DatabaseEngineFirewall = $true
+                        $databaseEngineFirewall = $true
                     }
                     else
                     {
-                        $DatabaseEngineFirewall = $false
-                        $Ensure = "Absent"
+                        $databaseEngineFirewall = $false
+                        $ensure = 'Absent'
                     }
-                    if(Get-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser")
+
+                    if (Get-FirewallRule -DisplayName 'SQL Server Browser' -Service $browserServiceName)
                     {
-                        $BrowserFirewall = $true
+                        $browserFirewall = $true
                     }
                     else
                     {
-                        $BrowserFirewall = $false
-                        $Ensure = "Absent"
+                        $browserFirewall = $false
+                        $ensure = 'Absent'
                     }
                 }
             }
 
-            "RS"
+            'RS'
             {
-                if($Services | Where-Object {$_.Name -eq $RSServiceName})
+                if ($services | Where-Object {$_.Name -eq $reportServiceName})
                 {
-                    $FeaturesInstalled += "RS,"
-                    if((Get-FirewallRule -DisplayName "SQL Server Reporting Services 80" -Port "TCP/80") -and (Get-FirewallRule -DisplayName "SQL Server Reporting Services 443" -Port "TCP/443"))
+                    $featuresInstalled += "$_,"
+
+                    if (
+                        (Get-FirewallRule -DisplayName 'SQL Server Reporting Services 80' -Port 'TCP/80') -and
+                        (Get-FirewallRule -DisplayName 'SQL Server Reporting Services 443' -Port 'TCP/443')
+                    )
                     {
-                        $ReportingServicesFirewall = $true
+                        $reportingServicesFirewall = $true
                     }
                     else
                     {
-                        $ReportingServicesFirewall = $false
-                        $Ensure = "Absent"
+                        $reportingServicesFirewall = $false
+                        $ensure = "Absent"
                     }
                 }
             }
 
-            "AS"
+            'AS'
             {
-                if($Services | Where-Object {$_.Name -eq $ASServiceName})
+                if ($services | Where-Object {$_.Name -eq $analysisServiceName})
                 {
-                    $FeaturesInstalled += "AS,"
-                    if(Get-FirewallRule -DisplayName "SQL Server Analysis Services instance $InstanceName" -Service $ASServiceName)
+                    $featuresInstalled += "$_,"
+
+                    if (Get-FirewallRule -DisplayName "SQL Server Analysis Services instance $InstanceName" -Service $analysisServiceName)
                     {
-                        $AnalysisServicesFirewall = $true
+                        $analysisServicesFirewall = $true
                     }
                     else
                     {
-                        $AnalysisServicesFirewall = $false
-                        $Ensure = "Absent"
+                        $analysisServicesFirewall = $false
+                        $ensure = 'Absent'
                     }
-                    if(Get-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser")
+
+                    if (Get-FirewallRule -DisplayName 'SQL Server Browser' -Service $browserServiceName)
                     {
-                        $BrowserFirewall = $true
+                        $browserFirewall = $true
                     }
                     else
                     {
-                        $BrowserFirewall = $false
-                        $Ensure = "Absent"
+                        $browserFirewall = $false
+                        $ensure = "Absent"
                     }
                 }
             }
 
-            "IS"
+            'IS'
             {
-                if($Services | Where-Object {$_.Name -eq $ISServiceName})
-                {                    $FeaturesInstalled += "IS,"
-                    if((Get-FirewallRule -DisplayName "SQL Server Integration Services Application" -Application ((GetSQLPath -Feature "IS" -SQLVersion $SQLVersion) + "Binn\MsDtsSrvr.exe")) -and (Get-FirewallRule -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"))
+                if ($services | Where-Object {$_.Name -eq $integrationServiceName})
+                {
+                    $featuresInstalled += "$_,"
+
+                    if ((Get-FirewallRule `
+                            -DisplayName 'SQL Server Integration Services Application' `
+                            -Application (Join-Path -Path (Join-Path -Path (GetSQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
+                        ) -and (
+                            Get-FirewallRule `
+                                -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"
+                        )
+                    )
                     {
-                        $IntegrationServicesFirewall = $true
+                        $integrationServicesFirewall = $true
                     }
                     else
                     {
-                        $IntegrationServicesFirewall = $false
-                        $Ensure = "Absent"
+                        $integrationServicesFirewall = $false
+                        $ensure = 'Absent'
                     }
                 }
             }
         }
     }
 
-    $FeaturesInstalled = $FeaturesInstalled.Trim(",")
+    $featuresInstalled = $featuresInstalled.Trim(',')
 
-    $returnValue = @{
-        Ensure = $Ensure
+    return @{
+        Ensure = $ensure
         SourcePath = $SourcePath
-        Features = $FeaturesInstalled
+        Features = $featuresInstalled
         InstanceName = $InstanceName
-        DatabaseEngineFirewall = $DatabaseEngineFirewall
-        BrowserFirewall = $BrowserFirewall
-        ReportingServicesFirewall = $ReportingServicesFirewall
-        AnalysisServicesFirewall = $AnalysisServicesFirewall
-        IntegrationServicesFirewall = $IntegrationServicesFirewall
+        DatabaseEngineFirewall = $databaseEngineFirewall
+        BrowserFirewall = $browserFirewall
+        ReportingServicesFirewall = $reportingServicesFirewall
+        AnalysisServicesFirewall = $analysisServicesFirewall
+        IntegrationServicesFirewall = $integrationServicesFirewall
     }
-
-    $returnValue
 }
 
 
@@ -185,9 +201,9 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
         [System.String]
         $SourcePath,
@@ -231,90 +247,160 @@ function Set-TargetResource
         Remove-SmbMapping -RemotePath $SourcePath -Force
     }
 
-    if($InstanceName -eq "MSSQLSERVER")
+    if ($InstanceName -eq 'MSSQLSERVER')
     {
-        $DBServiceName = "MSSQLSERVER"
-        $AgtServiceName = "SQLSERVERAGENT"
-        $FTServiceName = "MSSQLFDLauncher"
-        $RSServiceName = "ReportServer"
-        $ASServiceName = "MSSQLServerOLAPService"
+        $analysisServiceName = 'MSSQLServerOLAPService'
     }
     else
     {
-        $DBServiceName = "MSSQL`$$InstanceName"
-        $AgtServiceName = "SQLAgent`$$InstanceName"
-        $FTServiceName = "MSSQLFDLauncher`$$InstanceName"
-        $RSServiceName = "ReportServer`$$InstanceName"
-        $ASServiceName = "MSOLAP`$$InstanceName"
+        $analysisServiceName = 'MSOLAP${0}' -f $InstanceName
     }
-    $ISServiceName = "MsDtsServer" + $SQLVersion + "0"
 
-    $SQLData = Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName
+    $browserServiceName = 'SQLBrowser'
 
-    foreach($Feature in $SQLData.Features.Split(","))
+    $getTargetResourceResult = Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName
+
+    foreach ($currentFeature in $getTargetResourceResult.Features.Split(','))
     {
-        switch($Feature)
+        switch ($currentFeature)
         {
-            "SQLENGINE"
+            'SQLENGINE'
             {
-                if(!($SQLData.DatabaseEngineFirewall)){
-                    if(!(Get-FirewallRule -DisplayName ("SQL Server Database Engine instance " + $InstanceName) -Application ((GetSQLPath -Feature "SQLENGINE" -InstanceName $InstanceName) + "\sqlservr.exe")))
+                if (-not ($getTargetResourceResult.DatabaseEngineFirewall))
+                {
+                    $pathToDatabaseEngineExecutable = Join-Path -Path (GetSQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'
+                    $databaseEngineFirewallRuleDisplayName = "SQL Server Database Engine instance $InstanceName"
+
+                    $databaseEngineFirewallRuleParameters = @{
+                        DisplayName = $databaseEngineFirewallRuleDisplayName
+                        Application = $pathToDatabaseEngineExecutable
+                    }
+
+                    if (-not (Get-FirewallRule @databaseEngineFirewallRuleParameters))
                     {
-                        New-FirewallRule -DisplayName ("SQL Server Database Engine instance " + $InstanceName) -Application ((GetSQLPath -Feature "SQLENGINE" -InstanceName $InstanceName) + "\sqlservr.exe")
+                        New-FirewallRule @databaseEngineFirewallRuleParameters
                     }
                 }
-                if(!($SQLData.BrowserFirewall)){
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser"))
+
+                if (-not ($getTargetResourceResult.BrowserFirewall))
+                {
+                    $browserFirewallRuleDisplayName = 'SQL Server Browser'
+
+                    $browserFirewallRuleParameters = @{
+                        DisplayName = $browserFirewallRuleDisplayName
+                        Service = $browserServiceName
+                    }
+
+                    if (-not (Get-FirewallRule @browserFirewallRuleParameters))
                     {
-                        New-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser"
+                        New-FirewallRule @browserFirewallRuleParameters
                     }
                 }
             }
-            "RS"
+
+            'RS'
             {
-                if(!($SQLData.ReportingServicesFirewall)){
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Reporting Services 80" -Port "TCP/80"))
-                    {
-                        New-FirewallRule -DisplayName "SQL Server Reporting Services 80" -Port "TCP/80"
+                if (-not ($getTargetResourceResult.ReportingServicesFirewall))
+                {
+                    $reportingServicesNoSslProtocol = 'TCP'
+                    $reportingServicesNoSslLocalPort = '80'
+                    $reportingServicesNoSslFirewallRuleDisplayName = 'SQL Server Reporting Services 80'
+
+                    $reportingServicesSslProtocol = 'TCP'
+                    $reportingServicesSslLocalPort = '443'
+                    $reportingServicesSslFirewallRuleDisplayName = 'SQL Server Reporting Services 443'
+
+                    $reportingServicesNoSslFirewallRuleParameters = @{
+                        DisplayName = $reportingServicesNoSslFirewallRuleDisplayName
+                        Port = "$reportingServicesNoSslProtocol/$reportingServicesNoSslLocalPort"
                     }
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Reporting Services 443" -Port "TCP/443"))
+
+                    if (-not (Get-FirewallRule @reportingServicesNoSslFirewallRuleParameters))
                     {
-                        New-FirewallRule -DisplayName "SQL Server Reporting Services 443" -Port "TCP/443"
+                        New-FirewallRule @reportingServicesNoSslFirewallRuleParameters
+                    }
+
+                    $reportingServicesSslFirewallRuleParameters = @{
+                        DisplayName = $reportingServicesSslFirewallRuleDisplayName
+                        Port = "$reportingServicesSslProtocol/$reportingServicesSslLocalPort"
+                    }
+
+                    if (-not (Get-FirewallRule @reportingServicesSslFirewallRuleParameters))
+                    {
+                        New-FirewallRule @reportingServicesSslFirewallRuleParameters
                     }
                 }
             }
-            "AS"
+
+            'AS'
             {
-                if(!($SQLData.AnalysisServicesFirewall)){
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Analysis Services instance $InstanceName" -Service $ASServiceName))
+                if (-not ($getTargetResourceResult.AnalysisServicesFirewall))
+                {
+                    $analysisServicesFirewallRuleDisplayName = "SQL Server Analysis Services instance $InstanceName"
+
+                    $analysisServicesFirewallRuleParameters = @{
+                        DisplayName = $analysisServicesFirewallRuleDisplayName
+                        Service = $analysisServiceName
+                    }
+
+                    if(-not (Get-FirewallRule @analysisServicesFirewallRuleParameters))
                     {
-                        New-FirewallRule -DisplayName "SQL Server Analysis Services instance $InstanceName" -Service $ASServiceName
+                        New-FirewallRule @analysisServicesFirewallRuleParameters
                     }
                 }
-                if(!($SQLData.BrowserFirewall)){
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser"))
+
+                if (-not ($getTargetResourceResult.BrowserFirewall))
+                {
+                    $browserFirewallRuleDisplayName = 'SQL Server Browser'
+
+                    $browserFirewallRuleParameters = @{
+                        DisplayName = $browserFirewallRuleDisplayName
+                        Service = $browserServiceName
+                    }
+
+                    if (-not (Get-FirewallRule @browserFirewallRuleParameters))
                     {
-                        New-FirewallRule -DisplayName "SQL Server Browser" -Service "SQLBrowser"
+                        New-FirewallRule @browserFirewallRuleParameters
                     }
                 }
             }
-            "IS"
+
+            'IS'
             {
-                if(!($SQLData.IntegrationServicesFirewall)){
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Integration Services Application" -Application ((GetSQLPath -Feature "IS" -SQLVersion $SQLVersion) + "Binn\MsDtsSrvr.exe")))
-                    {
-                        New-FirewallRule -DisplayName "SQL Server Integration Services Application" -Application ((GetSQLPath -Feature "IS" -SQLVersion $SQLVersion) + "Binn\MsDtsSrvr.exe")
+                if (!($getTargetResourceResult.IntegrationServicesFirewall))
+                {
+                    $integrationServicesRuleApplicationDisplayName = 'SQL Server Integration Services Application'
+                    $pathToIntegrationServicesExecutable = (Join-Path -Path (Join-Path -Path (GetSQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
+
+                    $integrationServicesProtocol = 'TCP'
+                    $integrationServicesLocalPort = '135'
+                    $integrationServicesFirewallRuleDisplayName = 'SQL Server Integration Services Port'
+
+                    $integrationServicesFirewallRuleApplicationParameters = @{
+                        DisplayName = $integrationServicesRuleApplicationDisplayName
+                        Application = $pathToIntegrationServicesExecutable
                     }
-                    if(!(Get-FirewallRule -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"))
+
+                    if (-not (Get-FirewallRule @integrationServicesFirewallRuleApplicationParameters))
                     {
-                        New-FirewallRule -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"
+                        New-FirewallRule @integrationServicesFirewallRuleApplicationParameters
+                    }
+
+                    $integrationServicesFirewallRulePortParameters = @{
+                        DisplayName = $integrationServicesFirewallRuleDisplayName
+                        Port = "$integrationServicesProtocol/$integrationServicesLocalPort"
+                    }
+
+                    if (-not (Get-FirewallRule @integrationServicesFirewallRulePortParameters))
+                    {
+                        New-FirewallRule @integrationServicesFirewallRulePortParameters
                     }
                 }
             }
         }
     }
 
-    if(!(Test-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName))
+    if (-not (Test-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName))
     {
         throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
     }
@@ -326,9 +412,9 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
         [System.String]
         $SourcePath,
@@ -346,9 +432,9 @@ function Test-TargetResource
         $SourceCredential
     )
 
-    $result = ((Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName).Ensure -eq $Ensure)
+    $getTargetResourceResult = Get-TargetResource -SourcePath $SourcePath -Features $Features -InstanceName $InstanceName
 
-    $result
+    return ($getTargetResourceResult.Ensure -eq $Ensure)
 }
 
 function GetSQLPath
