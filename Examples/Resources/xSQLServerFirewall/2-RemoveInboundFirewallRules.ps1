@@ -16,7 +16,7 @@ Configuration Example
 
     node localhost
     {
-        xSQLServerFirewall Add_SqlServerLogin_SQLAdmin
+        xSQLServerFirewall Remove_FirewallRules_For_SQL2012
         {
             Ensure = 'Absent'
             Features = 'SQLENGINE,AS,RS,IS'
@@ -26,7 +26,7 @@ Configuration Example
             PsDscRunAsCredential = $SysAdminAccount
         }
 
-        xSQLServerFirewall Add_SqlServerLogin_SQLAdmin
+        xSQLServerFirewall Remove_FirewallRules_For_SQL2016
         {
             Ensure = 'Absent'
             Features = 'SQLENGINE'
