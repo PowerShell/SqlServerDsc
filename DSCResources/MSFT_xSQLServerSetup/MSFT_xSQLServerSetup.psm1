@@ -180,7 +180,7 @@ function Get-TargetResource
                 $clusteredSqlIPAddress = ($clusteredSqlNetworkName | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
                     Where-Object { $_.Type -eq "IP Address" }).PrivateProperties.Address
 
-                ## extract the required values
+                # Extract the required values
                 $clusteredSqlGroupName = $clusteredSqlGroup.Name
                 $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
             }
@@ -789,32 +789,32 @@ function Set-TargetResource
 
     if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
-        ## brought over from old module. probably should remove it...
+        # Brought over from old module. probably should remove it...
         $setupArgs += @{ SkipRules = 'Cluster_VerifyForErrors' }
     }
 
-    ## perform disk mapping for specific cluster installation types
+    # Perform disk mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
         $failoverClusterDisks = @()
 
-        ## Get a required lising of drives based on user parameters
+        # Get a required lising of drives based on user parameters
         $requiredDrives = Get-Variable -Name 'SQL*Dir' | Where-Object{ -not [String]::IsNullOrEmpty($_.Value) } | ForEach-Object {
             [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\')
         } | Select-Object -Unique
 
-        ## Get the disk resources that are available (not assigned to a cluster role)
+        # Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_ResourceGroup' -Filter "Name = 'Available Storage'" |
                                 Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource
 
         foreach ($diskResource in $availableStorage)
         {
-            ## Determine whether the current node is a possible owner of the disk resource
+            # Determine whether the current node is a possible owner of the disk resource
             $possibleOwners = $diskResource | Get-CimAssociatedInstance -Association 'MSCluster_ResourceToPossibleOwner' -KeyOnly | Select-Object -ExpandProperty Name
 
             if ($possibleOwners -icontains $env:COMPUTERNAME)
             {
-                ## Determine whether this disk contains one of our required partitions
+                # Determine whether this disk contains one of our required partitions
                 if ($requiredDrives -icontains ($diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select-Object -ExpandProperty Path))
                 {
                     $failoverClusterDisks += $diskResource.Name
@@ -822,10 +822,10 @@ function Set-TargetResource
             }
         }
 
-        ## Ensure we have a unique listing of disks
+        # Ensure we have a unique listing of disks
         $failoverClusterDisks = $failoverClusterDisks | Select-Object -Unique
 
-        ## Ensure we mapped all required drives
+        # Ensure we mapped all required drives
         $requiredDriveCount = $requiredDrives | Measure-Object | Select-Object -ExpandProperty Count
         $mappedDriveCount = $failoverClusterDisks | Measure-Object | Select-Object -ExpandProperty Count
 
@@ -834,51 +834,51 @@ function Set-TargetResource
             throw New-TerminatingError -ErrorType FailoverClusterDiskMappingError -FormatArgs ($failoverClusterDisks -join '; ') -ErrorCategory InvalidResult
         }
 
-        ## add the cluster disks as a setup argument
+        # Add the cluster disks as a setup argument
         $setupArgs += @{ FailoverClusterDisks = ($failoverClusterDisks | Sort-Object) }
     }
 
-    ## detemine network mapping for specific cluster installation types
+    # Detemine network mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
         $clusterIPAddresses = @()
 
-        ## If no IP has been specified, configure DHCP on the first client network
+        # If no IP has been specified, configure DHCP on the first client network
         if (($FailoverClusterIPAddress | Measure-Object).Count -eq 0)
         {
             $clusterIPAddresses += "DEFAULT"
         }
         else
         {
-            ## Get the available client networks
+            # Get the available client networks
             $availableNetworks = @(Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Network -Filter 'Role >= 2')
 
-            ## Add supplied IP Addresses that are valid for available cluster networks
+            # Add supplied IP Addresses that are valid for available cluster networks
             foreach ($address in $FailoverClusterIPAddress)
             {
                 foreach ($network in $availableNetworks)
                 {
-                    ## Determine whether the IP address is valid for this network
+                    # Determine whether the IP address is valid for this network
                     if (Test-IPAddress -IPAddress $address -NetworkID $network.Address -SubnetMask $network.AddressMask)
                     {
-                        ## Add the formatted string to our array
+                        # Add the formatted string to our array
                         $clusterIPAddresses += "IPv4; $address; $($network.Name); $($network.AddressMask)"
                     }
                 }
             }
         }
 
-        ## Ensure we mapped all required networks
+        # Ensure we mapped all required networks
         $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select-Object -ExpandProperty Count
         $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select-Object -ExpandProperty Count
 
-        ## Determine whether we have mapping issues
+        # Determine whether we have mapping issues
         if ($mappedNetworkCount -lt $suppliedNetworkCount)
         {
             throw New-TerminatingError -ErrorType FailoverClusterIPAddressNotValid -ErrorCategory InvalidArgument
         }
 
-        ## add the networks to the installation arguments
+        # Add the networks to the installation arguments
         $setupArgs += @{ FailoverClusterIPAddresses = $clusterIPAddresses }
     }
 
@@ -993,22 +993,22 @@ function Set-TargetResource
         }
     }
 
-    ## automatically include any additional arguments
+    # Automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
         $setupArgs += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
     }
 
-    ## build the argument string to be passed to setup
+    # Build the argument string to be passed to setup
     $arguments = ''
     foreach ($setupArg in $setupArgs.GetEnumerator())
     {
         if ($setupArg.Value -ne '')
             {
-            ## arrays are handled specially
+            # Arrays are handled specially
             if ($setupArg.Value -is [array])
             {
-                ## sort and format the array
+                # Sort and format the array
                 $setupArgValue = ($setupArg.Value | Sort-Object | ForEach-Object { '"{0}"' -f $_ }) -join ' '
             }
             elseif ($setupArg.Value -is [Boolean])
@@ -1018,7 +1018,7 @@ function Set-TargetResource
             }
             else
             {
-                ## features are comma-separated, no quotes
+                # Features are comma-separated, no quotes
                 if ($setupArg.Key -eq 'Features')
                 {
                     $setupArgValue = $setupArg.Value
@@ -1627,12 +1627,12 @@ function Test-IPAddress
         $SubnetMask
     )
     
-    ## Convert all values to decimal
+    # Convert all values to decimal
     $IPAddressDecimal = ConvertTo-Decimal -IPAddress $IPAddress
     $NetworkDecimal = ConvertTo-Decimal -IPAddress $NetworkID
     $SubnetDecimal = ConvertTo-Decimal -IPAddress $SubnetMask
 
-    ## Determine whether the IP Address is valid for this network / subnet
+    # Determine whether the IP Address is valid for this network / subnet
     return (($IPAddressDecimal -band $SubnetDecimal) -eq ($NetworkDecimal -band $SubnetDecimal))
 }
 
