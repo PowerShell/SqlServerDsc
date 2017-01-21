@@ -332,11 +332,11 @@ try
             }
         }
 
-        $mockGetNewNetFirewallRule = {
+        $mockNewNetFirewallRule = {
             if (
                 (
                     $DisplayName -eq "SQL Server Database Engine instance $mockCurrentInstanceName" -and
-                    $Application -eq (Join-Path $mockCurrentDatabaseEngineSqlBinDirectory -ChildPath $mockDatabaseEngineExecutableName)
+                    $Program -eq (Join-Path $mockCurrentDatabaseEngineSqlBinDirectory -ChildPath $mockDatabaseEngineExecutableName)
                 ) -or
                 (
                     $DisplayName -eq 'SQL Server Browser' -and
@@ -358,7 +358,7 @@ try
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Integration Services Application" -and
-                    $Application -eq (Join-Path -Path (Join-Path $mockCurrentIntegrationServicesSqlPathDirectory -ChildPath 'Binn') -ChildPath $mockIntegrationServicesExecutableName)
+                    $Program -eq (Join-Path -Path (Join-Path $mockCurrentIntegrationServicesSqlPathDirectory -ChildPath 'Binn') -ChildPath $mockIntegrationServicesExecutableName)
                 ) -or
                 (
                     $DisplayName -eq "SQL Server Integration Services Port" -and
@@ -372,7 +372,7 @@ try
 
             throw "`nMock Get-NewFirewallRule was called with an unexpected rule configuration`n" + `
                     "Display Name: $DisplayName`n" + `
-                    "Application: $Application`n" + `
+                    "Application: $Program`n" + `
                     "Service: $Service`n" + `
                     "Protocol: $Protocol`n" + `
                     "Local port: $LocalPort`n"
@@ -462,7 +462,7 @@ try
 
                 Context "When SQL Server version is $mockCurrentSqlMajorVersion. Testing helper function Get-SqlRootPath" {
                     It 'Should return the the correct path for Database Engine' {
-                        $result = GetSQLPath -Feature 'SQLEngine' -InstanceName $mockDefaultInstance_InstanceName
+                        $result = Get-SQLPath -Feature 'SQLEngine' -InstanceName $mockDefaultInstance_InstanceName
                         $result | Should Be $mockCurrentDatabaseEngineSqlBinDirectory
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 1 -Scope It
@@ -473,7 +473,7 @@ try
                     }
 
                     It 'Should return the the correct path for Analysis Services' {
-                        $result = GetSQLPath -Feature 'As' -InstanceName $mockDefaultInstance_InstanceName
+                        $result = Get-SQLPath -Feature 'As' -InstanceName $mockDefaultInstance_InstanceName
                         $result | Should Be $mockCurrentAnalysisServicesSqlBinDirectory
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
@@ -484,7 +484,7 @@ try
                     }
 
                     It 'Should return the the correct path for Integration Services' {
-                        $result = GetSQLPath -Feature 'Is' -InstanceName $mockDefaultInstance_InstanceName -SQLVersion $mockCurrentSqlMajorVersion
+                        $result = Get-SQLPath -Feature 'Is' -InstanceName $mockDefaultInstance_InstanceName -SQLVersion $mockCurrentSqlMajorVersion
                         $result | Should Be $mockCurrentIntegrationServicesSqlPathDirectory
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
@@ -504,8 +504,8 @@ try
                         }
 
                         Mock -CommandName Get-Service -MockWith $mockEmptyHashtable -Verifiable
-                        Mock -CommandName Get-FirewallRule -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName Test-IsFirewallRuleInDesiredState -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
                     }
 
                     It 'Should return the same values as passed as parameters' {
@@ -534,8 +534,8 @@ try
                         Assert-MockCalled -CommandName New-SmbMapping -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Remove-SmbMapping -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-FirewallRule -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Test-IsFirewallRuleInDesiredState -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 0 -Scope It
@@ -556,7 +556,7 @@ try
                         Mock -CommandName Get-NetFirewallApplicationFilter -Verifiable
                         Mock -CommandName Get-NetFirewallServiceFilter -Verifiable
                         Mock -CommandName Get-NetFirewallPortFilter -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockGetService_DefaultInstance -Verifiable
                     }
 
@@ -604,7 +604,7 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 1 -Scope It
@@ -625,7 +625,7 @@ try
                         Mock -CommandName Get-NetFirewallApplicationFilter -MockWith $mockGetNetFirewallApplicationFilter -Verifiable
                         Mock -CommandName Get-NetFirewallServiceFilter -MockWith $mockGetNetFirewallServiceFilter -Verifiable
                         Mock -CommandName Get-NetFirewallPortFilter -MockWith $mockGetNetFirewallPortFilter -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockGetService_DefaultInstance -Verifiable
                     }
 
@@ -673,7 +673,7 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 3 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 3 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 1 -Scope It
@@ -704,7 +704,7 @@ try
                         Mock -CommandName Get-NetFirewallApplicationFilter -Verifiable
                         Mock -CommandName Get-NetFirewallServiceFilter -Verifiable
                         Mock -CommandName Get-NetFirewallPortFilter -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockGetService_NamedInstance -Verifiable
                     }
 
@@ -752,7 +752,7 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 1 -Scope It
@@ -773,7 +773,7 @@ try
                         Mock -CommandName Get-NetFirewallApplicationFilter -MockWith $mockGetNetFirewallApplicationFilter -Verifiable
                         Mock -CommandName Get-NetFirewallServiceFilter -MockWith $mockGetNetFirewallServiceFilter -Verifiable
                         Mock -CommandName Get-NetFirewallPortFilter -MockWith $mockGetNetFirewallPortFilter -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockGetService_NamedInstance -Verifiable
                     }
 
@@ -821,7 +821,7 @@ try
                         Assert-MockCalled -CommandName Get-NetFirewallApplicationFilter -Exactly -Times 2 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallServiceFilter -Exactly -Times 3 -Scope It
                         Assert-MockCalled -CommandName Get-NetFirewallPortFilter -Exactly -Times 3 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 1 -Scope It
@@ -866,7 +866,7 @@ try
                     -MockWith $mockGetItemProperty_IntegrationsServicesSqlPath -Verifiable
 
                 Mock -CommandName Get-ItemProperty -MockWith $mockGetItemProperty_CallingWithWrongParameters -Verifiable
-                Mock -CommandName New-NetFirewallRule -MockWith $mockGetNewNetFirewallRule
+                Mock -CommandName New-NetFirewallRule -MockWith $mockNewNetFirewallRule -Verifiable
                 Mock -CommandName New-SmbMapping -Verifiable
                 Mock -CommandName Remove-SmbMapping -Verifiable
             }
@@ -908,8 +908,8 @@ try
                         Mock -CommandName New-SmbMapping -Verifiable
                         Mock -CommandName Remove-SmbMapping -Verifiable
                         Mock -CommandName Get-Service -MockWith $mockEmptyHashtable -Verifiable
-                        Mock -CommandName Get-FirewallRule -Verifiable
-                        Mock -CommandName New-FirewallRule -Verifiable
+                        Mock -CommandName Test-IsFirewallRuleInDesiredState -Verifiable
+                        Mock -CommandName New-NetFirewallRule -Verifiable
 
                         Mock New-TerminatingError -MockWith { return $ErrorType }
                     }
@@ -920,8 +920,8 @@ try
                         Assert-MockCalled -CommandName New-SmbMapping -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Remove-SmbMapping -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-FirewallRule -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName New-FirewallRule -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Test-IsFirewallRuleInDesiredState -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName New-NetFirewallRule -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_SqlInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_AnalysisServicesInstanceId_ParameterFilter -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter $mockGetItemProperty_DatabaseEngineSqlBinRoot_ParameterFilter -Exactly -Times 0 -Scope It

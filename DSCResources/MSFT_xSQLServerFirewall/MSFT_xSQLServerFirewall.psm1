@@ -1,20 +1,37 @@
 $script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
 
+<#
+    .SYNOPSIS
+        Returns the current state of the firewall rules.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.  Environment variables can be used in the path.
+
+    .PARAMETER Features
+        One or more SQL feature to create default firewall rules for. Each feature should be seperated with a comma, i.e. 'SQLEngine,IS,RS'.
+
+    .PARAMETER SourceCredential
+        Credentials used to access the path set in the parameter `SourcePath`.
+
+    .PARAMETER InstanceName
+        Name of the instance to get firewall rules for.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [Parameter()]
         [System.String]
         $SourcePath,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $InstanceName,
 
@@ -80,9 +97,18 @@ function Get-TargetResource
                 {
                     $featuresInstalled += "$_,"
 
-                    if (Get-FirewallRule `
-                            -DisplayName "SQL Server Database Engine instance $InstanceName" `
-                            -Application (Join-Path -Path (GetSQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'))
+                    $pathToDatabaseEngineExecutable = Join-Path -Path (Get-SQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'
+                    $databaseEngineFirewallRuleDisplayName = "SQL Server Database Engine instance $InstanceName"
+
+                    $databaseEngineFirewallRuleParameters = @{
+                        DisplayName = $databaseEngineFirewallRuleDisplayName
+                        Program = $pathToDatabaseEngineExecutable
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (Test-IsFirewallRuleInDesiredState @databaseEngineFirewallRuleParameters)
                     {
                         $databaseEngineFirewall = $true
                     }
@@ -92,7 +118,17 @@ function Get-TargetResource
                         $ensure = 'Absent'
                     }
 
-                    if (Get-FirewallRule -DisplayName 'SQL Server Browser' -Service $browserServiceName)
+                    $browserFirewallRuleDisplayName = 'SQL Server Browser'
+
+                    $browserFirewallRuleParameters = @{
+                        DisplayName = $browserFirewallRuleDisplayName
+                        Service = $browserServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters)
                     {
                         $browserFirewall = $true
                     }
@@ -110,10 +146,34 @@ function Get-TargetResource
                 {
                     $featuresInstalled += "$_,"
 
-                    if (
-                        (Get-FirewallRule -DisplayName 'SQL Server Reporting Services 80' -Port 'TCP/80') -and
-                        (Get-FirewallRule -DisplayName 'SQL Server Reporting Services 443' -Port 'TCP/443')
-                    )
+                    $reportingServicesNoSslProtocol = 'TCP'
+                    $reportingServicesNoSslLocalPort = '80'
+                    $reportingServicesNoSslFirewallRuleDisplayName = 'SQL Server Reporting Services 80'
+
+                    $reportingServicesNoSslFirewallRuleParameters = @{
+                        DisplayName = $reportingServicesNoSslFirewallRuleDisplayName
+                        Protocol = $reportingServicesNoSslProtocol
+                        LocalPort = $reportingServicesNoSslLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    $reportingServicesSslProtocol = 'TCP'
+                    $reportingServicesSslLocalPort = '443'
+                    $reportingServicesSslFirewallRuleDisplayName = 'SQL Server Reporting Services 443'
+
+                    $reportingServicesSslFirewallRuleParameters = @{
+                        DisplayName = $reportingServicesSslFirewallRuleDisplayName
+                        Protocol = $reportingServicesSslProtocol
+                        LocalPort = $reportingServicesSslLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if ((Test-IsFirewallRuleInDesiredState @reportingServicesNoSslFirewallRuleParameters) `
+                        -and (Test-IsFirewallRuleInDesiredState @reportingServicesSslFirewallRuleParameters))
                     {
                         $reportingServicesFirewall = $true
                     }
@@ -131,7 +191,17 @@ function Get-TargetResource
                 {
                     $featuresInstalled += "$_,"
 
-                    if (Get-FirewallRule -DisplayName "SQL Server Analysis Services instance $InstanceName" -Service $analysisServiceName)
+                    $analysisServicesFirewallRuleDisplayName = "SQL Server Analysis Services instance $InstanceName"
+
+                    $analysisServicesFirewallRuleParameters = @{
+                        DisplayName = $analysisServicesFirewallRuleDisplayName
+                        Service = $analysisServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (Test-IsFirewallRuleInDesiredState @analysisServicesFirewallRuleParameters)
                     {
                         $analysisServicesFirewall = $true
                     }
@@ -141,7 +211,17 @@ function Get-TargetResource
                         $ensure = 'Absent'
                     }
 
-                    if (Get-FirewallRule -DisplayName 'SQL Server Browser' -Service $browserServiceName)
+                    $browserFirewallRuleDisplayName = 'SQL Server Browser'
+
+                    $browserFirewallRuleParameters = @{
+                        DisplayName = $browserFirewallRuleDisplayName
+                        Service = $browserServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters)
                     {
                         $browserFirewall = $true
                     }
@@ -159,14 +239,32 @@ function Get-TargetResource
                 {
                     $featuresInstalled += "$_,"
 
-                    if ((Get-FirewallRule `
-                            -DisplayName 'SQL Server Integration Services Application' `
-                            -Application (Join-Path -Path (Join-Path -Path (GetSQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
-                        ) -and (
-                            Get-FirewallRule `
-                                -DisplayName "SQL Server Integration Services Port" -Port "TCP/135"
-                        )
-                    )
+                    $integrationServicesRuleApplicationDisplayName = 'SQL Server Integration Services Application'
+                    $pathToIntegrationServicesExecutable = (Join-Path -Path (Join-Path -Path (Get-SQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
+
+                    $integrationServicesFirewallRuleApplicationParameters = @{
+                        DisplayName = $integrationServicesRuleApplicationDisplayName
+                        Program = $pathToIntegrationServicesExecutable
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    $integrationServicesProtocol = 'TCP'
+                    $integrationServicesLocalPort = '135'
+                    $integrationServicesFirewallRuleDisplayName = 'SQL Server Integration Services Port'
+
+                    $integrationServicesFirewallRulePortParameters = @{
+                        DisplayName = $integrationServicesFirewallRuleDisplayName
+                        Protocol = $integrationServicesProtocol
+                        LocalPort = $integrationServicesLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if ((Test-IsFirewallRuleInDesiredState @integrationServicesFirewallRuleApplicationParameters) `
+                        -and (Test-IsFirewallRuleInDesiredState @integrationServicesFirewallRulePortParameters))
                     {
                         $integrationServicesFirewall = $true
                     }
@@ -195,24 +293,44 @@ function Get-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Creates, updates or remove the firewall rules.
 
+    .PARAMETER Ensure
+        If the firewall rules should be present ('Present') or absent ('Absent'). The default value is 'Present'.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.  Environment variables can be used in the path.
+
+    .PARAMETER Features
+        One or more SQL feature to create default firewall rules for. Each feature should be seperated with a comma, i.e. 'SQLEngine,IS,RS'.
+
+    .PARAMETER SourceCredential
+        Credentials used to access the path set in the parameter `SourcePath`.
+
+    .PARAMETER InstanceName
+        Name of the instance to get firewall rules for.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
     param
     (
+        [Parameter()]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present',
 
+        [Parameter()]
         [System.String]
         $SourcePath,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $InstanceName,
 
@@ -268,17 +386,20 @@ function Set-TargetResource
             {
                 if (-not ($getTargetResourceResult.DatabaseEngineFirewall))
                 {
-                    $pathToDatabaseEngineExecutable = Join-Path -Path (GetSQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'
+                    $pathToDatabaseEngineExecutable = Join-Path -Path (Get-SQLPath -Feature $_ -InstanceName $InstanceName) -ChildPath 'sqlservr.exe'
                     $databaseEngineFirewallRuleDisplayName = "SQL Server Database Engine instance $InstanceName"
 
                     $databaseEngineFirewallRuleParameters = @{
                         DisplayName = $databaseEngineFirewallRuleDisplayName
-                        Application = $pathToDatabaseEngineExecutable
+                        Program = $pathToDatabaseEngineExecutable
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if (-not (Get-FirewallRule @databaseEngineFirewallRuleParameters))
+                    if (-not (Test-IsFirewallRuleInDesiredState @databaseEngineFirewallRuleParameters))
                     {
-                        New-FirewallRule @databaseEngineFirewallRuleParameters
+                        New-NetFirewallRule @databaseEngineFirewallRuleParameters
                     }
                 }
 
@@ -289,11 +410,14 @@ function Set-TargetResource
                     $browserFirewallRuleParameters = @{
                         DisplayName = $browserFirewallRuleDisplayName
                         Service = $browserServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if (-not (Get-FirewallRule @browserFirewallRuleParameters))
+                    if (-not (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters))
                     {
-                        New-FirewallRule @browserFirewallRuleParameters
+                        New-NetFirewallRule @browserFirewallRuleParameters
                     }
                 }
             }
@@ -306,28 +430,36 @@ function Set-TargetResource
                     $reportingServicesNoSslLocalPort = '80'
                     $reportingServicesNoSslFirewallRuleDisplayName = 'SQL Server Reporting Services 80'
 
+                    $reportingServicesNoSslFirewallRuleParameters = @{
+                        DisplayName = $reportingServicesNoSslFirewallRuleDisplayName
+                        Protocol = $reportingServicesNoSslProtocol
+                        LocalPort = $reportingServicesNoSslLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (-not (Test-IsFirewallRuleInDesiredState @reportingServicesNoSslFirewallRuleParameters))
+                    {
+                        New-NetFirewallRule @reportingServicesNoSslFirewallRuleParameters
+                    }
+
                     $reportingServicesSslProtocol = 'TCP'
                     $reportingServicesSslLocalPort = '443'
                     $reportingServicesSslFirewallRuleDisplayName = 'SQL Server Reporting Services 443'
 
-                    $reportingServicesNoSslFirewallRuleParameters = @{
-                        DisplayName = $reportingServicesNoSslFirewallRuleDisplayName
-                        Port = "$reportingServicesNoSslProtocol/$reportingServicesNoSslLocalPort"
-                    }
-
-                    if (-not (Get-FirewallRule @reportingServicesNoSslFirewallRuleParameters))
-                    {
-                        New-FirewallRule @reportingServicesNoSslFirewallRuleParameters
-                    }
-
                     $reportingServicesSslFirewallRuleParameters = @{
                         DisplayName = $reportingServicesSslFirewallRuleDisplayName
-                        Port = "$reportingServicesSslProtocol/$reportingServicesSslLocalPort"
+                        Protocol = $reportingServicesSslProtocol
+                        LocalPort = $reportingServicesSslLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if (-not (Get-FirewallRule @reportingServicesSslFirewallRuleParameters))
+                    if (-not (Test-IsFirewallRuleInDesiredState @reportingServicesSslFirewallRuleParameters))
                     {
-                        New-FirewallRule @reportingServicesSslFirewallRuleParameters
+                        New-NetFirewallRule @reportingServicesSslFirewallRuleParameters
                     }
                 }
             }
@@ -341,11 +473,14 @@ function Set-TargetResource
                     $analysisServicesFirewallRuleParameters = @{
                         DisplayName = $analysisServicesFirewallRuleDisplayName
                         Service = $analysisServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if(-not (Get-FirewallRule @analysisServicesFirewallRuleParameters))
+                    if(-not (Test-IsFirewallRuleInDesiredState @analysisServicesFirewallRuleParameters))
                     {
-                        New-FirewallRule @analysisServicesFirewallRuleParameters
+                        New-NetFirewallRule @analysisServicesFirewallRuleParameters
                     }
                 }
 
@@ -356,11 +491,14 @@ function Set-TargetResource
                     $browserFirewallRuleParameters = @{
                         DisplayName = $browserFirewallRuleDisplayName
                         Service = $browserServiceName
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if (-not (Get-FirewallRule @browserFirewallRuleParameters))
+                    if (-not (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters))
                     {
-                        New-FirewallRule @browserFirewallRuleParameters
+                        New-NetFirewallRule @browserFirewallRuleParameters
                     }
                 }
             }
@@ -370,30 +508,37 @@ function Set-TargetResource
                 if (!($getTargetResourceResult.IntegrationServicesFirewall))
                 {
                     $integrationServicesRuleApplicationDisplayName = 'SQL Server Integration Services Application'
-                    $pathToIntegrationServicesExecutable = (Join-Path -Path (Join-Path -Path (GetSQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
+                    $pathToIntegrationServicesExecutable = (Join-Path -Path (Join-Path -Path (Get-SQLPath -Feature 'IS' -SQLVersion $sqlVersion) -ChildPath 'Binn') -ChildPath 'MsDtsSrvr.exe')
+
+                    $integrationServicesFirewallRuleApplicationParameters = @{
+                        DisplayName = $integrationServicesRuleApplicationDisplayName
+                        Program = $pathToIntegrationServicesExecutable
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
+                    }
+
+                    if (-not (Test-IsFirewallRuleInDesiredState @integrationServicesFirewallRuleApplicationParameters))
+                    {
+                        New-NetFirewallRule @integrationServicesFirewallRuleApplicationParameters
+                    }
 
                     $integrationServicesProtocol = 'TCP'
                     $integrationServicesLocalPort = '135'
                     $integrationServicesFirewallRuleDisplayName = 'SQL Server Integration Services Port'
 
-                    $integrationServicesFirewallRuleApplicationParameters = @{
-                        DisplayName = $integrationServicesRuleApplicationDisplayName
-                        Application = $pathToIntegrationServicesExecutable
-                    }
-
-                    if (-not (Get-FirewallRule @integrationServicesFirewallRuleApplicationParameters))
-                    {
-                        New-FirewallRule @integrationServicesFirewallRuleApplicationParameters
-                    }
-
                     $integrationServicesFirewallRulePortParameters = @{
                         DisplayName = $integrationServicesFirewallRuleDisplayName
-                        Port = "$integrationServicesProtocol/$integrationServicesLocalPort"
+                        Protocol = $integrationServicesProtocol
+                        LocalPort = $integrationServicesLocalPort
+                        Enabled = 'True'
+                        Profile = 'Any'
+                        Direction = 'Inbound'
                     }
 
-                    if (-not (Get-FirewallRule @integrationServicesFirewallRulePortParameters))
+                    if (-not (Test-IsFirewallRuleInDesiredState @integrationServicesFirewallRulePortParameters))
                     {
-                        New-FirewallRule @integrationServicesFirewallRulePortParameters
+                        New-NetFirewallRule @integrationServicesFirewallRulePortParameters
                     }
                 }
             }
@@ -406,24 +551,45 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Test if the firewall rules are in desired state.
+
+    .PARAMETER Ensure
+        If the firewall rules should be present ('Present') or absent ('Absent'). The default value is 'Present'.
+
+    .PARAMETER SourcePath
+        The path to the root of the source files for installation. I.e and UNC path to a shared resource.  Environment variables can be used in the path.
+
+    .PARAMETER Features
+        One or more SQL feature to create default firewall rules for. Each feature should be seperated with a comma, i.e. 'SQLEngine,IS,RS'.
+
+    .PARAMETER SourceCredential
+        Credentials used to access the path set in the parameter `SourcePath`.
+
+    .PARAMETER InstanceName
+        Name of the instance to get firewall rules for.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter()]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present',
 
+        [Parameter()]
         [System.String]
         $SourcePath,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Features,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $InstanceName,
 
@@ -437,7 +603,21 @@ function Test-TargetResource
     return ($getTargetResourceResult.Ensure -eq $Ensure)
 }
 
-function GetSQLPath
+<#
+    .SYNOPSIS
+        Get the path to SQL Server executables.
+
+    .PARAMETER Feature
+        String containing the feature name for which to get the path.
+
+    .PARAMETER InstanceName
+        String containing the name of the instance for which to get the path.
+
+    .PARAMETER SQLVersion
+        String containing the major version of the SQL server to get the path for.
+        This is used to evaluate the Integration Services version number.
+#>
+function Get-SQLPath
 {
     [CmdletBinding()]
     param
@@ -446,39 +626,72 @@ function GetSQLPath
         [String]
         $Feature,
 
+        [Parameter()]
         [String]
         $InstanceName,
 
+        [Parameter()]
         [String]
         $SQLVersion
     )
 
-    if(($Feature -eq "SQLENGINE") -or ($Feature -eq "AS"))
+    if (($Feature -eq 'SQLENGINE') -or ($Feature -eq 'AS'))
     {
-        switch($Feature)
+        switch ($Feature)
         {
-            "SQLENGINE"
+            'SQLENGINE'
             {
-                $RegSubKey = "SQL"
+                $productinstanceId = 'SQL'
             }
-            "AS"
+
+            'AS'
             {
-                $RegSubKey = "OLAP"
+                $productinstanceId = 'OLAP'
             }
         }
-        $RegKey = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\$RegSubKey" -Name $InstanceName).$InstanceName
-        $Path = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$RegKey\setup" -Name "SQLBinRoot")."SQLBinRoot"
+
+        $instanceId = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\$($productinstanceId)" -Name $InstanceName).$InstanceName
+        $path = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($instanceId)\setup" -Name 'SQLBinRoot').SQLBinRoot
     }
 
-    if($Feature -eq "IS")
+    if ($Feature -eq 'IS')
     {
-        $Path = (Get-ItemProperty -Path ("HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\" + $SQLVersion + "0\DTS\setup") -Name "SQLPath")."SQLPath"
+        $path = (Get-ItemProperty -Path ("HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($SQLVersion)0\DTS\setup") -Name 'SQLPath').SQLPath
     }
 
-    return $Path
+    return $path
 }
 
-function Get-FirewallRule
+<#
+    .SYNOPSIS
+        Evaluates if the firewall rule is in desired state.
+
+    .PARAMETER DisplayName
+        String containing the display name for the firewall rule.
+
+    .PARAMETER Enabled
+        String containing either 'True' or 'False' meaning if the firewall rule should be active or not.
+
+    .PARAMETER Profile
+        String containing one or more profiles to which the firewall rule is assigned.
+
+    .PARAMETER Direction
+        String containing the direction of traffic for the the firewall rule. It can be either 'Inbound' or 'Outbound'.
+
+    .PARAMETER Program
+        String containing the path to an executable. This paramater is optional.
+
+    .PARAMETER Service
+        String containing the name of a service for the firewall rule. This parameter is optional.
+
+    .PARAMETER Protocol
+        String containing the protocol for the local port parameter. This parameter is optional.
+
+    .PARAMETER LocalPort
+        String containing the local port for the firewall rule. This parameter is optional, with the exception that if
+        the parameter Protocol is specified this parameter must also be specified.
+#>
+function Test-IsFirewallRuleInDesiredState
 {
     [OutputType([System.Boolean])]
     [CmdletBinding()]
@@ -488,87 +701,81 @@ function Get-FirewallRule
         [String]
         $DisplayName,
 
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('True','False')]
         [String]
-        $Application,
+        $Enabled,
 
+        [Parameter(Mandatory=$true)]
+        [String[]]
+        [ValidateSet('Any','Domain','Private','Public','NotApplicable')]
+        $Profile,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('Inbound','Outbound')]
+        [String]
+        $Direction,
+
+        [Parameter()]
+        [String]
+        $Program,
+
+        [Parameter()]
         [String]
         $Service,
 
+        [Parameter()]
+        [ValidateSet('TCP','UDP','ICMPv4','ICMPv6')]
         [String]
-        $Port
+        $Protocol,
+
+        [Parameter()]
+        [String]
+        $LocalPort
     )
 
-    $Return = $false
-    if($FirewallRule = Get-NetFirewallRule -DisplayName $DisplayName -ErrorAction SilentlyContinue)
+    $isRuleInDesiredState = $false
+
+    if ($firewallRule = Get-NetFirewallRule -DisplayName $DisplayName -ErrorAction SilentlyContinue)
     {
-        if(($FirewallRule.Enabled) -and ($FirewallRule.Profile -eq "Any") -and ($FirewallRule.Direction -eq "Inbound"))
+        if (($firewallRule.Enabled -eq $Enabled) -and ($firewallRule.Profile -eq $Profile) -and ($firewallRule.Direction -eq $Direction))
         {
-            if($PSBoundParameters.ContainsKey("Application"))
+            if ($PSBoundParameters.ContainsKey('Program'))
             {
-                if($FirewallApplicationFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $FirewallRule -ErrorAction SilentlyContinue)
+                if ($firewallApplicationFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $firewallRule -ErrorAction SilentlyContinue)
                 {
-                    if($FirewallApplicationFilter.Program -eq $Application)
+                    if ($firewallApplicationFilter.Program -eq $Program)
                     {
-                        $Return = $true
+                        $isRuleInDesiredState = $true
                     }
                 }
             }
-            if($PSBoundParameters.ContainsKey("Service"))
+
+            if ($PSBoundParameters.ContainsKey('Service'))
             {
-                if($FirewallServiceFilter = Get-NetFirewallServiceFilter -AssociatedNetFirewallRule $FirewallRule -ErrorAction SilentlyContinue)
+                if ($firewallServiceFilter = Get-NetFirewallServiceFilter -AssociatedNetFirewallRule $firewallRule -ErrorAction SilentlyContinue)
                 {
-                    if($FirewallServiceFilter.Service -eq $Service)
+                    if ($firewallServiceFilter.Service -eq $Service)
                     {
-                        $Return = $true
+                        $isRuleInDesiredState = $true
                     }
                 }
             }
-            if($PSBoundParameters.ContainsKey("Port"))
+
+            if ($PSBoundParameters.ContainsKey('Protocol') -and $PSBoundParameters.ContainsKey('LocalPort'))
             {
-                if($FirewallPortFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $FirewallRule -ErrorAction SilentlyContinue)
+                if ($firewallPortFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $firewallRule -ErrorAction SilentlyContinue)
                 {
-                    if(($FirewallPortFilter.Protocol -eq $Port.Split("/")[0]) -and ($FirewallPortFilter.LocalPort -eq $Port.Split("/")[1]))
+                    if ($firewallPortFilter.Protocol -eq $Protocol -and $firewallPortFilter.LocalPort -eq $LocalPort)
                     {
-                        $Return = $true
+                        $isRuleInDesiredState = $true
                     }
                 }
             }
         }
     }
-    return $Return
-}
 
-function New-FirewallRule
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        [String]
-        $DisplayName,
-
-        [String]
-        $Application,
-
-        [String]
-        $Service,
-
-        [String]
-        $Port
-    )
-
-    if($PSBoundParameters.ContainsKey("Application"))
-    {
-        New-NetFirewallRule -DisplayName $DisplayName -Enabled True -Profile Any -Direction Inbound -Program $Application
-    }
-    if($PSBoundParameters.ContainsKey("Service"))
-    {
-        New-NetFirewallRule -DisplayName $DisplayName -Enabled True -Profile Any -Direction Inbound -Service $Service
-    }
-    if($PSBoundParameters.ContainsKey("Port"))
-    {
-        New-NetFirewallRule -DisplayName $DisplayName -Enabled True -Profile Any -Direction Inbound -Protocol $Port.Split("/")[0] -LocalPort $Port.Split("/")[1]
-    }
+    return $isRuleInDesiredState
 }
 
 <#
@@ -585,10 +792,10 @@ function Get-SqlMajorVersion
     (
         [Parameter(Mandatory=$true)]
         [String]
-        $Path
+        $path
     )
 
-    (Get-Item -Path $Path).VersionInfo.ProductVersion.Split('.')[0]
+    (Get-Item -Path $path).VersionInfo.ProductVersion.Split('.')[0]
 }
 
 Export-ModuleMember -Function *-TargetResource
