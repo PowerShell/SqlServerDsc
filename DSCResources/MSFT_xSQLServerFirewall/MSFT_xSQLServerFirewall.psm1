@@ -82,7 +82,7 @@ function Get-TargetResource
     $integrationServiceName = 'MsDtsServer{0}0' -f $sqlVersion
     $browserServiceName = 'SQLBrowser'
 
-    $ensure = 'Present'
+    $ensure = 'Absent'
     $featuresInstalled = ''
 
     $services = Get-Service
@@ -111,11 +111,11 @@ function Get-TargetResource
                     if (Test-IsFirewallRuleInDesiredState @databaseEngineFirewallRuleParameters)
                     {
                         $databaseEngineFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $databaseEngineFirewall = $false
-                        $ensure = 'Absent'
                     }
 
                     $browserFirewallRuleDisplayName = 'SQL Server Browser'
@@ -131,11 +131,11 @@ function Get-TargetResource
                     if (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters)
                     {
                         $browserFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $browserFirewall = $false
-                        $ensure = 'Absent'
                     }
                 }
             }
@@ -176,11 +176,11 @@ function Get-TargetResource
                         -and (Test-IsFirewallRuleInDesiredState @reportingServicesSslFirewallRuleParameters))
                     {
                         $reportingServicesFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $reportingServicesFirewall = $false
-                        $ensure = "Absent"
                     }
                 }
             }
@@ -204,11 +204,11 @@ function Get-TargetResource
                     if (Test-IsFirewallRuleInDesiredState @analysisServicesFirewallRuleParameters)
                     {
                         $analysisServicesFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $analysisServicesFirewall = $false
-                        $ensure = 'Absent'
                     }
 
                     $browserFirewallRuleDisplayName = 'SQL Server Browser'
@@ -224,11 +224,11 @@ function Get-TargetResource
                     if (Test-IsFirewallRuleInDesiredState @browserFirewallRuleParameters)
                     {
                         $browserFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $browserFirewall = $false
-                        $ensure = "Absent"
                     }
                 }
             }
@@ -267,11 +267,11 @@ function Get-TargetResource
                         -and (Test-IsFirewallRuleInDesiredState @integrationServicesFirewallRulePortParameters))
                     {
                         $integrationServicesFirewall = $true
+                        $ensure = 'Present'
                     }
                     else
                     {
                         $integrationServicesFirewall = $false
-                        $ensure = 'Absent'
                     }
                 }
             }

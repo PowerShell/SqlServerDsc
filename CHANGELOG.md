@@ -48,6 +48,7 @@
     - Function `ResolvePath` has been replaced with `[Environment]::ExpandEnvironmentVariables($SourcePath)` so that environment variables still can be used in Source Path.
   - Adding new optional parameter SourceCredential that can be used to authenticate against SourcePath.
   - Solved PSSA rules errors in the code.
+  - Get-TargetResource no longer return $true when no products was installed.
 - Changes to the unit test for resource
   - xSQLServerSetup
     - Added test coverage for helper function Copy-ItemWithRoboCopy

@@ -525,7 +525,7 @@ try
 
                     It 'Should return state as absent' {
                         $result = Get-TargetResource @testParameters
-                        $result.Ensure | Should Be 'Present' # This should actually return 'Absent', but due to a bug it does not. See issue #313.
+                        $result.Ensure | Should Be 'Absent'
                         $result.Features | Should BeNullOrEmpty
                     }
 
