@@ -638,7 +638,7 @@ function Set-TargetResource
         $FailoverClusterGroup = "SQL Server ($InstanceName)",
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
-        [System.Net.IPAddress[]]
+        [System.String[]]
         $FailoverClusterIPAddress,
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
@@ -1361,7 +1361,7 @@ function Test-TargetResource
         $FailoverClusterGroup = "SQL Server ($InstanceName)",
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
-        [System.Net.IPAddress[]]
+        [System.String[]]
         $FailoverClusterIPAddress,
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
