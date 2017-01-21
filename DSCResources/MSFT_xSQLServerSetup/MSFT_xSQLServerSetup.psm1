@@ -999,8 +999,6 @@ function Set-TargetResource
         $setupArgs += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
     }
 
-    ## TODO: Apply parameter filtering based on $Action
-
     ## build the argument string to be passed to setup
     $arguments = ''
     foreach ($setupArg in $setupArgs.GetEnumerator())
@@ -1011,12 +1009,12 @@ function Set-TargetResource
             if ($setupArg.Value -is [array])
             {
                 ## sort and format the array
-                $setupArgValue = ($setupArg.Value | Sort-Object | ForEach-Object { "`"$_`"" }) -join ' '
+                $setupArgValue = ($setupArg.Value | Sort-Object | ForEach-Object { '"{0}"' -f $_ }) -join ' '
             }
             elseif ($setupArg.Value -is [Boolean])
             {
                 $setupArgValue = @{ $true = 'True'; $false = 'False' }[$setupArg.Value]
-                $setupArgValue = "`"$setupArgValue`""
+                $setupArgValue = '"{0}"' -f $setupArgValue
             }
             else
             {
@@ -1027,7 +1025,7 @@ function Set-TargetResource
                 }
                 else 
                 {
-                    $setupArgValue = "`"$($setupArg.Value)`""
+                    $setupArgValue = '"{0}"' -f $setupArg.Value
                 }
             }
 
@@ -1648,14 +1646,17 @@ function Test-IPAddress
     .PARAMETER AccountType
         Type of service account 
 #>
-function Get-ServiceAccountParameters {
+function Get-ServiceAccountParameters
+{
     [CmdletBinding()]
     [OutputType([Hashtable])]
     param
     (
+        [Parameter(Mandatory = $true)]
         [PSCredential]
         $ServiceAccount,
 
+        [Parameter(Mandatory = $true)]
         [ValidateSet('SQL','AGT','IS','RS','AS','FT')]
         [String]
         $ServiceType
@@ -1696,65 +1697,6 @@ function Get-ServiceAccountParameters {
     }
 
     return $parameters
-}
-
-<#
-    .SYNOPSIS
-        Returns the argument string appeneded with the account information as is given in UserAlias and User parameters
-#>
-function Join-ServiceAccountInfo
-{
-    <#
-        Suppressing this rule because there are parameters that contain the text 'UserName' and 'Password'
-        but they are not actually used to pass any credentials. Instead the parameters are used to provide the
-        argument that should be evaluated for setup.exe.
-    #>
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingUsernameAndPasswordParams', '')]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
-    param(
-        [Parameter(Mandatory, ValueFromPipeline=$true)]
-        [string]
-        $ArgumentString,
-
-        [Parameter(Mandatory)]
-        [PSCredential]
-        $User,
-
-        [Parameter(Mandatory)]
-        [string]
-        $UsernameArgumentName,
-
-        [Parameter(Mandatory)]
-        [string]
-        $PasswordArgumentName
-    )
-
-    process {
-
-        <#
-            Regex to determine if given username is an NT Authority account or not.
-            Accepted inputs are optional ntauthority with or without space between nt and authority
-            then a predefined list of users system, networkservice and localservice
-        #>
-        if($User.UserName.ToUpper() -match '^(NT ?AUTHORITY\\)?(SYSTEM|LOCALSERVICE|NETWORKSERVICE)$')
-        {
-            # Dealing with NT Authority user
-            $ArgumentString += (' /{0}="NT AUTHORITY\{1}"' -f $UsernameArgumentName, $matches[2])
-        }
-        elseif ($User.UserName -like '*$')
-        {
-            # Dealing with Managed Service Account
-            $ArgumentString += (' /{0}="{1}"' -f $UsernameArgumentName, $User.UserName)
-        }
-        else
-        {
-            # Dealing with local or domain user
-            $ArgumentString += (' /{0}="{1}"' -f $UsernameArgumentName, $User.UserName)
-            $ArgumentString += (' /{0}="{1}"' -f $PasswordArgumentName, $User.GetNetworkCredential().Password)
-        }
-
-        return $ArgumentString
-    }
 }
 
 Export-ModuleMember -Function *-TargetResource

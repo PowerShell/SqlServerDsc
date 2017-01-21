@@ -3260,54 +3260,6 @@ try
             Assert-VerifiableMocks
         }
 
-        Describe 'Join-ServiceAccountInfo' -Tag 'Helper' {
-            Context 'When called it should return a string with service account information appended to the original argument string' {
-
-                $Params = @{ UsernameArgumentname = 'SQLSVCACCOUNT'; PasswordArgumentName = 'SQLSVCPASSWORD'; ArgumentString = "C:\Install\SQLSource\setup.exe" }
-
-                $mockSetupDomainCredential = New-Object System.Management.Automation.PSCredential( 'Company\SQLServer', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupMSACredential = New-Object System.Management.Automation.PSCredential( 'Company\SQLServer$', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupSystemCredential = New-Object System.Management.Automation.PSCredential( 'SYSTEM', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupLocalServiceCredential = New-Object System.Management.Automation.PSCredential( 'LOCALSERVICE', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupNetworkServiceCredential = New-Object System.Management.Automation.PSCredential( 'NETWORKSERVICE', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupNTSystemCredential = New-Object System.Management.Automation.PSCredential( 'NT AUTHORITY\SYSTEM', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupNTLocalServiceCredential = New-Object System.Management.Automation.PSCredential( 'NT AUTHORITY\LOCALSERVICE', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-                $mockSetupNTNetworkServiceCredential = New-Object System.Management.Automation.PSCredential( 'NT AUTHORITY\NETWORKSERVICE', (ConvertTo-SecureString 'password' -AsPlainText -Force) )
-
-                It 'Should return string with service account information and password appended Domain/Local Account' {
-                   Join-ServiceAccountInfo @Params -User $mockSetupDomainCredential | Should BeExactly ('{0} /{1}="{2}" /{3}="{4}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupDomainCredential.UserName, $Params['PasswordArgumentname'], $mockSetupDomainCredential.GetNetworkCredential().Password)
-                }
-
-                It 'Should return string service account information and no password appended for Managed Service Account' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupMSACredential | Should BeExactly ('{0} /{1}="{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupMSACredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\SYSTEM. Test without NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupSystemCredential | Should BeExactly ('{0} /{1}="NT AUTHORITY\{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupSystemCredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\LOCALSERVICE. Test without NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupLocalServiceCredential | Should BeExactly ('{0} /{1}="NT AUTHORITY\{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupLocalServiceCredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\NETWORKSERVICE. Test without NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupNetworkServiceCredential | Should BeExactly ('{0} /{1}="NT AUTHORITY\{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupNetworkServiceCredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\SYSTEM. Test with NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupNTSystemCredential | Should BeExactly ('{0} /{1}="{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupNTSystemCredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\LOCALSERVICE. Test with NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupNTLocalServiceCredential | Should BeExactly ('{0} /{1}="{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupNTLocalServiceCredential.UserName)
-                }
-
-                It 'Should return string service account information and no password appended for NT AUTHORITY\NETWORKSERVICE. Test with NT AUTHORITY prepended' {
-                    Join-ServiceAccountInfo @Params -User $mockSetupNTNetworkServiceCredential | Should BeExactly ('{0} /{1}="{2}"' -f $Params['ArgumentString'], $Params['UsernameArgumentname'], $mockSetupNTNetworkServiceCredential.UserName)
-                }
-            }
-        }
-
         # Tests only the parts of the code that does not already get tested thru the other tests.
         Describe 'Copy-ItemWithRoboCopy' -Tag 'Helper' {
             Context 'When Copy-ItemWithRoboCopy is called it should return the correct arguments' {
