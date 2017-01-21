@@ -1,7 +1,7 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerSetup")]
 class MSFT_xSQLServerSetup : OMI_BaseResource
 {
-    [Write, Description("The action to be performed. Default value is 'Install'."), ValueMap{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}, Values{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}]  String Action;
+    [Write, Description("The action to be performed. Default value is 'Install'."), ValueMap{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}, Values{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}] String Action;
     [Write, Description("The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.")] String SourcePath;
     [Required, EmbeddedInstance("MSFT_Credential"), Description("Credential to be used to perform the installation.")] String SetupCredential;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Credentials used to access the path set in the parameter 'SourcePath'.")] String SourceCredential;
@@ -48,7 +48,7 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Integration Services service.")] String ISSvcAccount;
     [Read, Description("Output username for the Integration Services service.")] String ISSvcAccountUsername;
     [Write, Description("Specifies the startup mode for SQL Server Browser service."), ValueMap{"Automatic", "Disabled", "Manual"}, Values{"Automatic", "Disabled", "Manual"}] String BrowserSvcStartupType;
-    [Write, Description("The name of the resource group to create for the clustered SQL Server instance")] String FailoverClusterGroup;
-    [Write, Description("Array of IP Addresses to be assigned to the clustered SQL Server instance")] String FailoverClusterIPAddress[];
+    [Write, Description("The name of the resource group to create for the clustered SQL Server instance.")] String FailoverClusterGroup;
+    [Write, Description("Array of IP Addresses to be assigned to the clustered SQL Server instance.")] String FailoverClusterIPAddress[];
     [Write, Description("Host name to be assigend to the clustered SQL Server instance.")] String FailoverClusterNetworkName;
 };
