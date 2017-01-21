@@ -486,27 +486,29 @@ Analysis Services, SQL Browser, SQL Reporting Services and Integration Services.
 
 ##### Default rules for default instance
 
-| Feature | Component | Enable Firewall Rule |
-| --- | --- | --- |
-| SQLENGINE | Database Engine | Application: sqlservr.exe |
-| SQLENGINE | Database Engine | Service: SQLBrowser |
-| AS | Analysis Services | Service: MSSQLServerOLAPService  |
-| AS | Analysis Services | Service: SQLBrowser |
-| RS | Reporting Services | Port: tcp/80 |
-| RS | Reporting Services | Port: tcp/443 |
-| IS | Integration Services | Port: tcp/135 |
+| Feature | Component | Enable Firewall Rule | Firewall Name |
+| --- | --- | --- | --- |
+| SQLENGINE | Database Engine | Application: sqlservr.exe | SQL Server Database Engine instance MSSQLSERVER |
+| SQLENGINE | Database Engine | Service: SQLBrowser | SQL Server Browser |
+| AS | Analysis Services | Service: MSSQLServerOLAPService | SQL Server Analysis Services instance MSSQLSERVER |
+| AS | Analysis Services | Service: SQLBrowser | SQL Server Browser |
+| RS | Reporting Services | Port: tcp/80 | SQL Server Reporting Services 80 |
+| RS | Reporting Services | Port: tcp/443 | SQL Server Reporting Services 443 |
+| IS | Integration Services | Application: MsDtsSrvr.exe | SQL Server Integration Services Application |
+| IS | Integration Services | Port: tcp/135 | SQL Server Integration Services Port |
 
 ##### Default rules for named instance
 
-| Feature | Component | Enable Firewall Rule |
-| --- | --- | --- |
-| SQLENGINE | Database Engine | Application: sqlservr.exe |
-| SQLENGINE | Database Engine | Service: SQLBrowser |
-| AS | Analysis Services | Service: MSOLAP$INSTANCE |
-| AS | Analysis Services | Service: SQLBrowser |
-| RS | Reporting Services | Port: tcp/80 |
-| RS | Reporting Services | Port: tcp/443 |
-| IS | Integration Services | Port: tcp/135 |
+| Feature | Component | Enable Firewall Rule | Firewall Name |
+| --- | --- | --- | --- |
+| SQLENGINE | Database Engine | Application: sqlservr.exe | SQL Server Database Engine instance \<NAMED_INSTANCE\> |
+| SQLENGINE | Database Engine | Service: SQLBrowser | SQL Server Browser |
+| AS | Analysis Services | Service: MSOLAP$INSTANCE | | SQL Server Analysis Services instance \<NAMED_INSTANCE\> |
+| AS | Analysis Services | Service: SQLBrowser | SQL Server Browser |
+| RS | Reporting Services | Port: tcp/80 | SQL Server Reporting Services 80 |
+| RS | Reporting Services | Port: tcp/443 | SQL Server Reporting Services 443 |
+| IS | Integration Services | Application: MsDtsSrvr.exe | SQL Server Integration Services Application |
+| IS | Integration Services | Port: tcp/135 | SQL Server Integration Services Port |
 
 #### Requirements
 
@@ -530,7 +532,8 @@ Analysis Services, SQL Browser, SQL Reporting Services and Integration Services.
 
 #### Examples
 
-None.
+* [Create inbound firewall rules](/Examples/Resources/xSQLServerFirewall/1-CreateInboundFirewallRules.ps1)
+* [Remove inbound firewall rules](/Examples/Resources/xSQLServerFirewall/2-RemoveInboundFirewallRules.ps1)
 
 ### xSQLServerLogin
 
