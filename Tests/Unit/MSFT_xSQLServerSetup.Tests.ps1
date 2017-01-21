@@ -99,7 +99,6 @@ try
 
         $mockSqlServiceAccount = 'COMPANY\SqlAccount'
         $mockAgentServiceAccount = 'COMPANY\AgentAccount'
-        $mockSourceFolder = 'Source' #  The parameter SourceFolder has a default value of 'Source', so lets mock that as well.
 
         $mockClusterNodes = @($env:COMPUTERNAME,'SQL01','SQL02')
 
@@ -650,7 +649,7 @@ try
             )
         }
 
-        ## mock to return physical disks that are part of the "Available Storage" cluster role
+        # Mock to return physical disks that are part of the "Available Storage" cluster role
         $mockGetCimAssociatedInstance_MSCluster_ResourceGroupToResource = {
             return @(
                 (
@@ -699,7 +698,7 @@ try
         $mockStartWin32Process = {
             $argumentHashTable = @{}
 
-            ## break the argument string into a hash table
+            # Break the argument string into a hash table
             ($Arguments -split ' ?/') | ForEach-Object {
                 if ($_ -imatch '(\w+)="?([^/]+)"?') 
                 {
@@ -733,15 +732,14 @@ try
         $mockDefaultClusterParameters = @{
             SetupCredential = $mockSetupCredential
 
-            ## Feature support is tested elsewhere, so just include the minimum
+            # Feature support is tested elsewhere, so just include the minimum
             Features = 'SQLEngine'
 
-            ## ensure we use "clustered" disks for our paths
+            # Ensure we use "clustered" disks for our paths
             SQLUserDBDir = 'K:\MSSQL\Data\'
             SQLUserDBLogDir = 'L:\MSSQL\Logs'
             SQLTempDbDir = 'M:\MSSQL\TempDb\Data\'
             SQLTempDbLogDir = 'N:\MSSQL\TempDb\Logs'
-            #SQLBackupDir = 'O:\MSSQL\Backup\'
         }
 
         Describe "xSQLServerSetup\Get-TargetResource" -Tag 'Get' {
@@ -3163,7 +3161,8 @@ try
 
                     It 'Should throw an error when one or more paths are not resolved to clustered storage' {
                         $badPathParameters = $testParameters.Clone()
-                        ## pass in a bad path
+                        
+                        # Pass in a bad path
                         $badPathParameters.SQLUserDBDir = 'C:\MSSQL\'
 
                         { Set-TargetResource @badPathParameters } | Should Throw 'Unable to map the specified paths to valid cluster storage. Drives mapped: TempDbLogs; UserLogs; TempDbData'
