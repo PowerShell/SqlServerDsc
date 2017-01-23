@@ -413,8 +413,7 @@ None.
 
 ### xSQLServerFailoverClusterSetup
 
-**This resource is deprecated.** 
-The functionality of this resource has been merged with [xSQLServerSetup](#xsqlserversetup). Please do not use this resource for new development efforts.
+**This resource is deprecated.** The functionality of this resource has been merged with [xSQLServerSetup](#xsqlserversetup). Please do not use this resource for new development efforts.
 
 #### Requirements
 
