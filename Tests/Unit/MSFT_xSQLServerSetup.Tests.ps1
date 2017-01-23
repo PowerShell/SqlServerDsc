@@ -2532,15 +2532,6 @@ try
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
 
-                            <#
-                            ### REMOVE ME ###
-                            $mockStartWin32ProcessExpectedArgument =
-                                '/Quiet="True"',
-                                '/IAcceptSQLServerLicenseTerms="True"',
-                                '/Action="Install"',
-                                '/InstanceName="MSSQLSERVER"',
-                                '/Features="ADV_SSMS"' -join ' '
-                            #>
                             $mockStartWin32ProcessExpectedArgument = @{
                                 Quiet = 'True'
                                 IAcceptSQLServerLicenseTerms = 'True'
@@ -2605,18 +2596,7 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
-                        <#
-                        ### REMOVE ME ###
-                        $mockStartWin32ProcessExpectedArgument =
-                            '/Quiet="True"',
-                            '/IAcceptSQLServerLicenseTerms="True"',
-                            '/Action="Install"',
-                            '/AGTSVCSTARTUPTYPE=Automatic',
-                            '/InstanceName="MSSQLSERVER"',
-                            '/Features="SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS"',
-                            '/SQLSysAdminAccounts="COMPANY\sqladmin"',
-                            '/ASSysAdminAccounts="COMPANY\sqladmin"' -join ' '
-                        #>
+                        
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
@@ -2677,15 +2657,6 @@ try
                         It 'Should set the system in the desired state when feature is SSMS' {
                             $testParameters.Features = 'SSMS'
 
-                            <#
-                            ### REMOVE ME ###
-                            $mockStartWin32ProcessExpectedArgument =
-                                '/Quiet="True"',
-                                '/IAcceptSQLServerLicenseTerms="True"',
-                                '/Action="Install"',
-                                '/InstanceName="MSSQLSERVER"',
-                                '/Features="SSMS"' -join ' '
-                            #>
                             $mockStartWin32ProcessExpectedArgument = @{
                                 Quiet = 'True'
                                 IAcceptSQLServerLicenseTerms = 'True'
@@ -2723,15 +2694,6 @@ try
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
 
-                            <#
-                            ### REMOVE ME ###
-                            $mockStartWin32ProcessExpectedArgument =
-                                '/Quiet="True"',
-                                '/IAcceptSQLServerLicenseTerms="True"',
-                                '/Action="Install"',
-                                '/InstanceName="MSSQLSERVER"',
-                                '/Features="ADV_SSMS"' -join ' '
-                            #>
                             $mockStartWin32ProcessExpectedArgument = @{
                                 Quiet = 'True'
                                 IAcceptSQLServerLicenseTerms = 'True'
