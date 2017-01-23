@@ -77,6 +77,7 @@
   - Added support for multi-subnet clusters
   - Added localized error messages for cluster object mapping
   - Updated README.md to reflect new parameters
+- Updated description for xSQLServerFailoverClusterSetup to indicate it is deprecated.
 
 ## 4.0.0.0
 
