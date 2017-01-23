@@ -48,7 +48,7 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Integration Services service.")] String ISSvcAccount;
     [Read, Description("Output username for the Integration Services service.")] String ISSvcAccountUsername;
     [Write, Description("Specifies the startup mode for SQL Server Browser service."), ValueMap{"Automatic", "Disabled", "Manual"}, Values{"Automatic", "Disabled", "Manual"}] String BrowserSvcStartupType;
-    [Write, Description("The name of the resource group to create for the clustered SQL Server instance.")] String FailoverClusterGroup;
+    [Write, Description("The name of the resource group to create for the clustered SQL Server instance.")] String FailoverClusterGroupName;
     [Write, Description("Array of IP Addresses to be assigned to the clustered SQL Server instance.")] String FailoverClusterIPAddress[];
     [Write, Description("Host name to be assigend to the clustered SQL Server instance.")] String FailoverClusterNetworkName;
 };
