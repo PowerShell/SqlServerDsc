@@ -78,7 +78,7 @@ try
 
         $mockDefaultInstance_FailoverClusterNetworkName = 'TestDefaultCluster'
         $mockDefaultInstance_FailoverClusterIPAddress = '10.0.0.10'
-        $mockDefaultInstance_FailoverClusterGroup = "SQL Server ($mockDefaultInstance_InstanceName)"
+        $mockDefaultInstance_FailoverClusterGroupName = "SQL Server ($mockDefaultInstance_InstanceName)"
 
         $mockNamedInstance_InstanceName = 'TEST'
         $mockNamedInstance_DatabaseServiceName = "$($mockSqlDatabaseEngineName)`$$($mockNamedInstance_InstanceName)"
@@ -90,7 +90,7 @@ try
 
         $mockNamedInstance_FailoverClusterNetworkName = 'TestDefaultCluster'
         $mockNamedInstance_FailoverClusterIPAddress = '10.0.0.20'
-        $mockNamedInstance_FailoverClusterGroup = "SQL Server ($mockNamedInstance_InstanceName)"
+        $mockNamedInstance_FailoverClusterGroupName = "SQL Server ($mockNamedInstance_InstanceName)"
 
         $mockmockSetupCredentialUserName = "COMPANY\sqladmin" 
 
@@ -574,9 +574,9 @@ try
             return @(
                 (
                     New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_Resource','root/MSCluster' |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($mockInstanceName)" -PassThru -Force |
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($mockCurrentInstanceName)" -PassThru -Force |
                         Add-Member -MemberType NoteProperty -Name 'Type' -Value 'SQL Server' -TypeName 'String' -PassThru -Force | 
-                        Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{ InstanceName = $mockInstanceName } -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{ InstanceName = $mockCurrentInstanceName } -PassThru -Force
                 )
             )
         }
@@ -591,7 +591,6 @@ try
         }
 
         $mockGetCimInstance_MSClusterNetwork = {
-
             return @(
                 (
                     $mockClusterSites | ForEach-Object {
@@ -611,7 +610,7 @@ try
             return @(
                 (
                     New-Object Microsoft.Management.Infrastructure.CimInstance 'MSCluster_ResourceGroup', 'root/MSCluster' |
-                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_FailoverClusterGroup -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDefaultInstance_FailoverClusterGroupName -PassThru -Force
                 )
             )
         }
@@ -693,8 +692,19 @@ try
         the test if the arguments is different from the expected arguments.
         Solved this by dynamically set the expected arguments before each It-block. If the arguments differs the mock of
         StartWin32Process throws an error message, similiar to what Pester would have reported (expected -> but was).
-        #> 
+        #>
         $mockStartWin32ProcessExpectedArgument = @{}
+
+        $mockStartWin32ProcessExpectedArgumentClusterDefault = @{
+            IAcceptSQLServerLicenseTerms = 'True'
+            Quiet = 'True'
+            InstanceName = 'MSSQLSERVER'
+            AGTSVCSTARTUPTYPE = 'Automatic'
+            Features = 'SQLENGINE'
+            SQLSysAdminAccounts = 'COMPANY\sqladmin'
+            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
+        }
+
         $mockStartWin32Process = {
             $argumentHashTable = @{}
 
@@ -704,9 +714,13 @@ try
                 {
                     $key = $Matches[1]
                     $value = ($Matches[2] -replace '" "','; ') -replace '"',''
-                    $argumentHashTable.Add($key, $value) | Out-Null
+                    $null = $argumentHashTable.Add($key, $value)
                 }
             }
+
+            # Start by checking whether we have the same number of parameters
+            New-VerboseMessage 'Verifying argument count (expected vs actual)'
+            $mockStartWin32ProcessExpectedArgument.Keys.Count | Should BeExactly $argumentHashTable.Keys.Count
 
             foreach ($argumentKey in $mockStartWin32ProcessExpectedArgument.Keys)
             {
@@ -1732,7 +1746,7 @@ try
                         Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 0 -Scope It
                         Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 0 -Scope It
 
-                        $currentState.FailoverClusterGroup | Should Be ''
+                        $currentState.FailoverClusterGroupName | Should Be ''
                         $currentState.FailoverClusterNetworkName | Should Be ''
                         $currentState.FailoverClusterIPAddress | Should Be ''
                     }
@@ -1749,7 +1763,7 @@ try
                             SourcePath = $mockSourcePath
                         }
 
-                        $mockInstanceName = $mockDefaultInstance_InstanceName
+                        $mockCurrentInstanceName = $mockDefaultInstance_InstanceName
 
                         Mock -CommandName Connect-SQL -MockWith $mockConnectSQLCluster -Verifiable
 
@@ -1766,7 +1780,7 @@ try
                         Mock -CommandName Get-Service -MockWith $mockGetService_DefaultInstance -Verifiable
                     }
 
-                    It 'Should return the same values passsed as parameters' {
+                    It 'Should collect information for a clustered instance' {
                         $currentState = Get-TargetResource @testParams
 
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
@@ -1780,7 +1794,7 @@ try
                     It 'Should return correct cluster information' {
                         $currentState = Get-TargetResource @testParams
 
-                        $currentState.FailoverClusterGroup | Should Be $mockDefaultInstance_FailoverClusterGroup
+                        $currentState.FailoverClusterGroupName | Should Be $mockDefaultInstance_FailoverClusterGroupName
                         $currentState.FailoverClusterIPAddress | Should Be $mockDefaultInstance_FailoverClusterIPAddress
                         $currentSTate.FailoverClusterNetworkName | Should Be $mockDefaultInstance_FailoverClusterNetworkName
                     }
@@ -2116,7 +2130,7 @@ try
                     $testClusterParameters = $testParameters.Clone()
 
                     $testClusterParameters += @{
-                        FailoverClusterGroup = $mockDefaultInstance_FailoverClusterGroup
+                        FailoverClusterGroupName = $mockDefaultInstance_FailoverClusterGroupName
                         FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
                         FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
                     }
@@ -2256,8 +2270,8 @@ try
                     #endregion Assert Get-CimInstance
                 }
 
-                It 'Should return that the desired state is present for a clustered instance' {
-                    $mockInstanceName = $mockDefaultInstance_InstanceName
+                It 'Should return that the desired state is present when the correct clustered instance was found' {
+                    $mockCurrentInstanceName = $mockDefaultInstance_InstanceName
 
                     Mock -CommandName Connect-SQL -MockWith $mockConnectSQLCluster -Verifiable
 
@@ -2272,7 +2286,7 @@ try
                     $testClusterParameters = $testParameters.Clone()
 
                     $testClusterParameters += @{
-                        FailoverClusterGroup = $mockDefaultInstance_FailoverClusterGroup
+                        FailoverClusterGroupName = $mockDefaultInstance_FailoverClusterGroupName
                         FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
                         FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
                     }
@@ -2518,12 +2532,22 @@ try
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
 
+                            <#
+                            ### REMOVE ME ###
                             $mockStartWin32ProcessExpectedArgument =
                                 '/Quiet="True"',
                                 '/IAcceptSQLServerLicenseTerms="True"',
                                 '/Action="Install"',
                                 '/InstanceName="MSSQLSERVER"',
                                 '/Features="ADV_SSMS"' -join ' '
+                            #>
+                            $mockStartWin32ProcessExpectedArgument = @{
+                                Quiet = 'True'
+                                IAcceptSQLServerLicenseTerms = 'True'
+                                Action = 'Install'
+                                InstanceName = 'MSSQLSERVER'
+                                Features = 'ADV_SSMS'
+                            }
 
                             { Set-TargetResource @testParameters } | Should Not Throw
 
@@ -2581,6 +2605,8 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
+                        <#
+                        ### REMOVE ME ###
                         $mockStartWin32ProcessExpectedArgument =
                             '/Quiet="True"',
                             '/IAcceptSQLServerLicenseTerms="True"',
@@ -2590,6 +2616,17 @@ try
                             '/Features="SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS"',
                             '/SQLSysAdminAccounts="COMPANY\sqladmin"',
                             '/ASSysAdminAccounts="COMPANY\sqladmin"' -join ' '
+                        #>
+                        $mockStartWin32ProcessExpectedArgument = @{
+                            Quiet = 'True'
+                            IAcceptSQLServerLicenseTerms = 'True'
+                            Action = 'Install'
+                            AgtSvcStartupType = 'Automatic'
+                            InstanceName = 'MSSQLSERVER'
+                            Features = 'SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS'
+                            SQLSysAdminAccounts = 'COMPANY\sqladmin'
+                            ASSysAdminAccounts = 'COMPANY\sqladmin'
+                        }
 
                         { Set-TargetResource @testParameters } | Should Not Throw
 
@@ -2640,12 +2677,22 @@ try
                         It 'Should set the system in the desired state when feature is SSMS' {
                             $testParameters.Features = 'SSMS'
 
+                            <#
+                            ### REMOVE ME ###
                             $mockStartWin32ProcessExpectedArgument =
                                 '/Quiet="True"',
                                 '/IAcceptSQLServerLicenseTerms="True"',
                                 '/Action="Install"',
                                 '/InstanceName="MSSQLSERVER"',
                                 '/Features="SSMS"' -join ' '
+                            #>
+                            $mockStartWin32ProcessExpectedArgument = @{
+                                Quiet = 'True'
+                                IAcceptSQLServerLicenseTerms = 'True'
+                                Action = 'Install'
+                                InstanceName = 'MSSQLSERVER'
+                                Features = 'SSMS'
+                            }
 
                             { Set-TargetResource @testParameters } | Should Not Throw
 
@@ -2676,12 +2723,22 @@ try
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
                             $testParameters.Features = 'ADV_SSMS'
 
+                            <#
+                            ### REMOVE ME ###
                             $mockStartWin32ProcessExpectedArgument =
                                 '/Quiet="True"',
                                 '/IAcceptSQLServerLicenseTerms="True"',
                                 '/Action="Install"',
                                 '/InstanceName="MSSQLSERVER"',
                                 '/Features="ADV_SSMS"' -join ' '
+                            #>
+                            $mockStartWin32ProcessExpectedArgument = @{
+                                Quiet = 'True'
+                                IAcceptSQLServerLicenseTerms = 'True'
+                                Action = 'Install'
+                                InstanceName = 'MSSQLSERVER'
+                                Features = 'ADV_SSMS'
+                            }
 
                             { Set-TargetResource @testParameters } | Should Not Throw
 
@@ -3077,15 +3134,10 @@ try
 
                     It 'Should add the SkipRules parameter to the installation arguments' {
 
-                        $mockStartWin32ProcessExpectedArgument = @{
-                            IAcceptSQLServerLicenseTerms = 'True'
-                            Quiet = 'True'
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{ 
                             Action = 'PrepareFailoverCluster'
-                            InstanceName = 'MSSQLSERVER'
-                            AGTSVCSTARTUPTYPE = 'Automatic'
                             SkipRules = 'Cluster_VerifyForErrors'
-                            Features = 'SQLENGINE'
-                            SQLSysAdminAccounts = 'COMPANY\sqladmin'
                         }
 
                         { Set-TargetResource @testParameters } | Should Not throw
@@ -3131,7 +3183,7 @@ try
                             InstanceName = 'MSSQLSERVER'
                             SourcePath = $mockSourcePath
                             Action = 'CompleteFailoverCluster'
-                            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
+                            FailoverClusterGroupName = 'SQL Server (MSSQLSERVER)'
                             FailoverClusterNetworkName = 'TestCluster'
                             FailoverClusterIPAddress = '10.0.0.100'
                         }
@@ -3165,12 +3217,22 @@ try
                         # Pass in a bad path
                         $badPathParameters.SQLUserDBDir = 'C:\MSSQL\'
 
-                        { Set-TargetResource @badPathParameters } | Should Throw 'Unable to map the specified paths to valid cluster storage. Drives mapped: TempDbLogs; UserLogs; TempDbData'
+                        { Set-TargetResource @badPathParameters } | Should Throw 'Unable to map the specified paths to valid cluster storage. Drives mapped: TempDbData; TempDbLogs; UserLogs'
                     }
 
                     It 'Should properly map paths to clustered disk resources' {
-                        $mockStartWin32ProcessExpectedArgument = @{
-                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                        
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{ 
+                            Action = 'CompleteFailoverCluster'
+                            FailoverClusterIPAddresses = 'IPV4; 10.0.0.100; SiteA_Prod; 255.255.255.0'
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs' 
                         }
 
                         { Set-TargetResource @testParameters } | Should Not Throw
@@ -3180,8 +3242,17 @@ try
                         $missingNetworkParams = $testParameters.Clone()
                         $missingNetworkParams.Remove('FailoverClusterIPAddress')
 
-                        $mockStartWin32ProcessExpectedArgument = @{
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
+                            Action = 'CompleteFailoverCluster'
                             FailoverClusterIPAddresses = 'DEFAULT'
+
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                            SkipRules = 'Cluster_VerifyForErrors'
                         }
 
                         { Set-TargetResource @missingNetworkParams } | Should Not Throw
@@ -3210,8 +3281,18 @@ try
                     }
 
                     It 'Should build a valid IP address string for a single address' {
-                        $mockStartWin32ProcessExpectedArgument = @{
+
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
                             FailoverClusterIPAddresses = 'IPv4; 10.0.0.100; SiteA_Prod; 255.255.255.0'
+
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Action = 'CompleteFailoverCluster'
                         }
 
                         { Set-TargetResource @testParameters } | Should Not Throw
@@ -3224,8 +3305,17 @@ try
                             FailoverClusterIPAddress = ($mockClusterSites | ForEach-Object { $_.Address })
                         }
 
-                        $mockStartWin32ProcessExpectedArgument = @{
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
                             FailoverClusterIPAddresses = 'IPv4; 10.0.0.100; SiteA_Prod; 255.255.255.0; IPv4; 10.0.10.100; SiteB_Prod; 255.255.255.0'
+
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs' 
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Action = 'CompleteFailoverCluster'
                         }
 
                         { Set-TargetResource @multiSubnetParameters } | Should Not Throw
@@ -3244,6 +3334,7 @@ try
                             Features = 'SQLEngine'
                             FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
                             FailoverClusterIPAddresses = 'IPV4; 10.0.0.100; SiteA_Prod; 255.255.255.0'
+                            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
                             SQLUserDBDir = 'K:\MSSQL\Data'
                             SQLUserDBLogDir = 'L:\MSSQL\Logs'
                             SQLTempDBDir = 'M:\MSSQL\TempDb\Data'

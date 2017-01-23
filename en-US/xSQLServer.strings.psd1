@@ -56,4 +56,5 @@ DropLoginFailed = Dropping the login '{0}' failed.
 # Clustered Setup
 FailoverClusterDiskMappingError = Unable to map the specified paths to valid cluster storage. Drives mapped: {0}
 FailoverClusterIPAddressNotValid = Unable to map the specified IP Address(es) to valid cluster networks.
+FailoverClusterResourceNotFound = Could not locate a SQL Server cluster resource for instance {0}.
 '@

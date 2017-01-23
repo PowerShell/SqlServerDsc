@@ -23,15 +23,6 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
 
     .PARAMETER InstanceName
         Name of the SQL instance to be installed.
-
-    .PARAMETER FailoverClusterGroup
-        The name of the resource group to create for the clustered SQL Server instance
-
-    .PARAMETER FailoverClusterIPAddress
-        Array of IP Addresses to be assigned to the clustered SQL Server instance
-
-    .PARAMETER FailoverClusterNetworkName
-        Host name to be assigned to the clustered SQL Server instance
 #>
 function Get-TargetResource
 {
@@ -169,21 +160,23 @@ function Get-TargetResource
             $clusteredSqlInstance = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" |
                 Where-Object { $_.PrivateProperties.InstanceName -eq $InstanceName }
 
-            if ($clusteredSqlInstance)
+            if (!$clusteredSqlInstance)
             {
-                New-VerboseMessage -Message 'Clustered SQL Server resource located'
-
-                $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
-                $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource | 
-                    Where-Object { $_.Type -eq "Network Name" }
-
-                $clusteredSqlIPAddress = ($clusteredSqlNetworkName | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
-                    Where-Object { $_.Type -eq "IP Address" }).PrivateProperties.Address
-
-                # Extract the required values
-                $clusteredSqlGroupName = $clusteredSqlGroup.Name
-                $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
+                throw New-TerminatingError -ErrorType FailoverClusterResourceNotFound -FormatArgs $InstanceName -ErrorCategory 'ObjectNotFound'
             }
+
+            New-VerboseMessage -Message 'Clustered SQL Server resource located'
+
+            $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
+            $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource | 
+                Where-Object { $_.Type -eq "Network Name" }
+
+            $clusteredSqlIPAddress = ($clusteredSqlNetworkName | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
+                Where-Object { $_.Type -eq "IP Address" }).PrivateProperties.Address
+
+            # Extract the required values
+            $clusteredSqlGroupName = $clusteredSqlGroup.Name
+            $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
         }
         else 
         {
@@ -350,7 +343,7 @@ function Get-TargetResource
         ASTempDir = $analysisTempDirectory
         ASConfigDir = $analysisConfigDirectory
         ISSvcAccountUsername = $integrationServiceAccountUsername
-        FailoverClusterGroup = $clusteredSqlGroupName
+        FailoverClusterGroupName = $clusteredSqlGroupName
         FailoverClusterNetworkName = $clusteredSqlHostname
         FailoverClusterIPAddress = $clusteredSqlIPAddress
     }
@@ -490,7 +483,7 @@ function Get-TargetResource
     .PARAMETER BrowserSvcStartupType
        Specifies the startup mode for SQL Server Browser service
 
-    .PARAMETER FailoverClusterGroup
+    .PARAMETER FailoverClusterGroupName
         The name of the resource group to create for the clustered SQL Server instance
 
     .PARAMETER FailoverClusterIPAddress
@@ -633,15 +626,12 @@ function Set-TargetResource
         [ValidateSet('Automatic', 'Disabled', 'Manual')]
         $BrowserSvcStartupType,
 
-        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
-        $FailoverClusterGroup = "SQL Server ($InstanceName)",
+        $FailoverClusterGroupName = "SQL Server ($InstanceName)",
 
-        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String[]]
         $FailoverClusterIPAddress,
 
-        [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
         $FailoverClusterNetworkName
     )
@@ -785,12 +775,17 @@ function Set-TargetResource
         }
     }
 
-    $setupArgs = @{}
+    $setupArguments = @{}
 
     if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
-        # Brought over from old module. probably should remove it...
-        $setupArgs += @{ SkipRules = 'Cluster_VerifyForErrors' }
+        # Set the group name for this clustered instance.
+        $setupArguments += @{ 
+            FailoverClusterGroup = $FailoverClusterGroupName
+
+            # This was brought over from the old module. Should be removed (breaking change).
+            SkipRules = 'Cluster_VerifyForErrors'
+        }
     }
 
     # Perform disk mapping for specific cluster installation types
@@ -799,9 +794,7 @@ function Set-TargetResource
         $failoverClusterDisks = @()
 
         # Get a required lising of drives based on user parameters
-        $requiredDrives = Get-Variable -Name 'SQL*Dir' | Where-Object{ -not [String]::IsNullOrEmpty($_.Value) } | ForEach-Object {
-            [System.IO.Path]::GetPathRoot($_.Value).TrimEnd('\')
-        } | Select-Object -Unique
+        $requiredDrives = Get-Variable -Name 'SQL*Dir' -ValueOnly | Where-Object { -not [String]::IsNullOrEmpty($_) } | Split-Path -Qualifier | Sort-Object -Unique
 
         # Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_ResourceGroup' -Filter "Name = 'Available Storage'" |
@@ -823,11 +816,11 @@ function Set-TargetResource
         }
 
         # Ensure we have a unique listing of disks
-        $failoverClusterDisks = $failoverClusterDisks | Select-Object -Unique
+        $failoverClusterDisks = $failoverClusterDisks | Sort-Object -Unique
 
         # Ensure we mapped all required drives
-        $requiredDriveCount = $requiredDrives | Measure-Object | Select-Object -ExpandProperty Count
-        $mappedDriveCount = $failoverClusterDisks | Measure-Object | Select-Object -ExpandProperty Count
+        $requiredDriveCount = $requiredDrives.Count
+        $mappedDriveCount = $failoverClusterDisks.Count
 
         if ($mappedDriveCount -ne $requiredDriveCount)
         {
@@ -835,16 +828,16 @@ function Set-TargetResource
         }
 
         # Add the cluster disks as a setup argument
-        $setupArgs += @{ FailoverClusterDisks = ($failoverClusterDisks | Sort-Object) }
+        $setupArguments += @{ FailoverClusterDisks = ($failoverClusterDisks | Sort-Object) }
     }
 
-    # Detemine network mapping for specific cluster installation types
+    # Determine network mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
         $clusterIPAddresses = @()
 
-        # If no IP has been specified, configure DHCP on the first client network
-        if (($FailoverClusterIPAddress | Measure-Object).Count -eq 0)
+        # If no IP Address has been specified, use "DEFAULT"
+        if ($FailoverClusterIPAddress.Count -eq 0)
         {
             $clusterIPAddresses += "DEFAULT"
         }
@@ -869,21 +862,21 @@ function Set-TargetResource
         }
 
         # Ensure we mapped all required networks
-        $suppliedNetworkCount = $FailoverClusterIPAddress | Measure-Object | Select-Object -ExpandProperty Count
-        $mappedNetworkCount = $clusterIPAddresses | Measure-Object | Select-Object -ExpandProperty Count
+        $suppliedNetworkCount = $FailoverClusterIPAddress.Count
+        $mappedNetworkCount = $clusterIPAddresses.Count
 
-        # Determine whether we have mapping issues
+        # Determine whether we have mapping issues for the IP Address(es)
         if ($mappedNetworkCount -lt $suppliedNetworkCount)
         {
             throw New-TerminatingError -ErrorType FailoverClusterIPAddressNotValid -ErrorCategory InvalidArgument
         }
 
         # Add the networks to the installation arguments
-        $setupArgs += @{ FailoverClusterIPAddresses = $clusterIPAddresses }
+        $setupArguments += @{ FailoverClusterIPAddresses = $clusterIPAddresses }
     }
 
     # Add standard install arguments
-    $setupArgs += @{
+    $setupArguments += @{
         Quiet = $true
         IAcceptSQLServerLicenseTerms = $true
         Action = $Action
@@ -923,33 +916,33 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -AccountType 'SQL')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -ServiceType 'SQL')
         }
 
         if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -AccountType 'AGT')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -ServiceType 'AGT')
         }
 
-        $setupArgs += @{ SQLSysAdminAccounts =  @($SetupCredential.UserName) }
+        $setupArguments += @{ SQLSysAdminAccounts =  @($SetupCredential.UserName) }
         if ($PSBoundParameters -icontains 'SQLSysAdminAccounts')
         {
-            $setupArgs['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
+            $setupArguments['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
         }
         
         if ($SecurityMode -eq 'SQL')
         {
-            $setupArgs += @{ SAPwd = $SAPwd.GetNetworkCredential().Password }
+            $setupArguments += @{ SAPwd = $SAPwd.GetNetworkCredential().Password }
         }
 
-        $setupArgs += @{ AgtSvcStartupType = 'Automatic' }
+        $setupArguments += @{ AgtSvcStartupType = 'Automatic' }
     }
 
     if ($Features.Contains('FULLTEXT'))
     {
         if ($PSBoundParameters.ContainsKey('FTSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -AccountType 'FT')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $FTSvcAccount -ServiceType 'FT')
         }
     }
 
@@ -957,7 +950,7 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('RSSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -AccountType 'RS')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -ServiceType 'RS')
         }
     }
 
@@ -974,14 +967,14 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('ASSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -AccountType 'AS')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $ASSvcAccount -ServiceType 'AS')
         }
 
-        $setupArgs += @{ ASSysAdminAccounts = @($SetupCredential.UserName) }
+        $setupArguments += @{ ASSysAdminAccounts = @($SetupCredential.UserName) }
 
         if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
         {
-            $setupArgs['ASSysAdminAccounts'] += $ASSysAdminAccounts
+            $setupArguments['ASSysAdminAccounts'] += $ASSysAdminAccounts
         }
     }
 
@@ -989,47 +982,47 @@ function Set-TargetResource
     {
         if ($PSBoundParameters.ContainsKey('ISSvcAccount'))
         {
-            $setupArgs += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -AccountType 'IS')
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $ISSvcAccount -ServiceType 'IS')
         }
     }
 
     # Automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
-        $setupArgs += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
+        $setupArguments += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
     }
 
     # Build the argument string to be passed to setup
     $arguments = ''
-    foreach ($setupArg in $setupArgs.GetEnumerator())
+    foreach ($currentSetupArgument in $setupArguments.GetEnumerator())
     {
-        if ($setupArg.Value -ne '')
-            {
+        if ($currentSetupArgument.Value -ne '')
+        {
             # Arrays are handled specially
-            if ($setupArg.Value -is [array])
+            if ($currentSetupArgument.Value -is [array])
             {
                 # Sort and format the array
-                $setupArgValue = ($setupArg.Value | Sort-Object | ForEach-Object { '"{0}"' -f $_ }) -join ' '
+                $setupArgumentValue = ($currentSetupArgument.Value | Sort-Object | ForEach-Object { '"{0}"' -f $_ }) -join ' '
             }
-            elseif ($setupArg.Value -is [Boolean])
+            elseif ($currentSetupArgument.Value -is [Boolean])
             {
-                $setupArgValue = @{ $true = 'True'; $false = 'False' }[$setupArg.Value]
-                $setupArgValue = '"{0}"' -f $setupArgValue
+                $setupArgumentValue = @{ $true = 'True'; $false = 'False' }[$currentSetupArgument.Value]
+                $setupArgumentValue = '"{0}"' -f $setupArgumentValue
             }
             else
             {
                 # Features are comma-separated, no quotes
-                if ($setupArg.Key -eq 'Features')
+                if ($currentSetupArgument.Key -eq 'Features')
                 {
-                    $setupArgValue = $setupArg.Value
+                    $setupArgumentValue = $currentSetupArgument.Value
                 }
                 else 
                 {
-                    $setupArgValue = '"{0}"' -f $setupArg.Value
+                    $setupArgumentValue = '"{0}"' -f $currentSetupArgument.Value
                 }
             }
 
-            $arguments += "/$($setupArg.Key.ToUpper())=$($setupArgValue) "
+            $arguments += "/$($currentSetupArgument.Key.ToUpper())=$($setupArgumentValue) "
         }
 
     }
@@ -1057,10 +1050,11 @@ function Set-TargetResource
 
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
-    $process = StartWin32Process -Path $pathToSetupExecutable -Arguments $arguments.Trim()
+    $arguments = $arguments.Trim()
+    $process = StartWin32Process -Path $pathToSetupExecutable -Arguments $arguments
 
     New-VerboseMessage -Message $process
-    WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments.Trim()
+    WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments
 
     if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
     {
@@ -1214,7 +1208,7 @@ function Set-TargetResource
     .PARAMETER BrowserSvcStartupType
        Specifies the startup mode for SQL Server Browser service
 
-    .PARAMETER FailoverClusterGroup
+    .PARAMETER FailoverClusterGroupName
         The name of the resource group to create for the clustered SQL Server instance
 
     .PARAMETER FailoverClusterIPAddress
@@ -1358,7 +1352,7 @@ function Test-TargetResource
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
-        $FailoverClusterGroup = "SQL Server ($InstanceName)",
+        $FailoverClusterGroupName = "SQL Server ($InstanceName)",
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String[]]
@@ -1407,7 +1401,7 @@ function Test-TargetResource
             $variableName = $_.Name
 
             if ($getTargetResourceResult.$variableName -ne $_.Value) {
-                New-VerboseMessage -Message "$variableName '$($_.Value)' is not valid for this cluster."
+                New-VerboseMessage -Message "$variableName '$($_.Value)' is not in the desired state for this cluster."
                 $result = $false
             }
         }
@@ -1580,6 +1574,7 @@ function Get-TemporaryFolder
 function ConvertTo-Decimal
 {
     [CmdletBinding()]
+    [OutputType([System.UInt32])]
     param(
         [Parameter(Mandatory = $true)]
         [System.Net.IPAddress]
@@ -1643,7 +1638,7 @@ function Test-IPAddress
     .PARAMETER ServiceAccount
         Credential for the service account
 
-    .PARAMETER AccountType
+    .PARAMETER ServiceType
         Type of service account 
 #>
 function Get-ServiceAccountParameters
