@@ -278,7 +278,7 @@ function Set-TargetResource
                 $clusSvcEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQueryClusSvc
                 $clusSvcEffectPerms = $clusSvcEffectPermsResult.Tables.Rows.permission_name
 
-                if ( $clusSvcEffectPerms -ne $null )
+                if ( $null -ne $clusSvcEffectPerms )
                 {
                     $clusSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $clusSvcEffectPerms | 
                         Where-Object { $_.SideIndicator -ne '=>' } |
@@ -307,7 +307,7 @@ function Set-TargetResource
                 "
                 $systemEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQuerySystem
                 $systemEffectPerms = $systemEffectPermsResult.Tables.Rows.permission_name
-                if ( $systemEffectPerms -ne $null )
+                if ( $null -ne $systemEffectPerms )
                 {
                     $systemSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $systemEffectPerms | 
                                                 Where-Object { $_.SideIndicator -ne '=>' } |
