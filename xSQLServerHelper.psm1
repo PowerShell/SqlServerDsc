@@ -1760,7 +1760,7 @@ function Get-SqlDscDynamicMaxDop
     if ($numProcs -eq 1)
     {
         $dynamicMaxDop = ($numCores / 2)
-        $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [system.midpointrounding]::AwayFromZero)
+        $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [System.MidpointRounding]::AwayFromZero)
     }
     elseif ($numCores -ge 8)
     {
