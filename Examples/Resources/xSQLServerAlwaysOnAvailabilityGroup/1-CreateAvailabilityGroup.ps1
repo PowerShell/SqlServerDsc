@@ -72,7 +72,7 @@ Configuration Example
                 Ensure = 'Present'
                 Name = 'TestAG'
                 SQLInstanceName = $Node.SQLInstanceName
-                SQLServer = $Node.NodeNAme
+                SQLServer = $Node.NodeName
                 DependsOn = '[xSQLServerEndpoint]HADREndpoint','[xSQLServerPermission]AddNTServiceClusSvcPermissions'
                 PsDscRunAsCredential = $SysAdminAccount
             }
