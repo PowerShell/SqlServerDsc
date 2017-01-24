@@ -216,7 +216,7 @@ function Set-TargetResource
     # Determine if HADR is enabled on the instance. If not, throw an error
     if ( -not $serverObject.IsHadrEnabled )
     {
-        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure,$serverInstance -ErrorCategory NotImplemented
+        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory NotImplemented
     }
 
     $version = $serverObject.Version.Major
@@ -232,7 +232,7 @@ function Set-TargetResource
             if ( $ag )
             {
                 # If the primary replica is currently on this instance
-                if ( $ag.PrimaryReplicaServerName -eq $serverObject.NetName )
+                if ( $ag.PrimaryReplicaServerName -eq $serverObject.Name )
                 {
                     try
                     {
@@ -240,12 +240,12 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupFailed -FormatArgs $ag.Name,$serverInstance -ErrorCategory ResourceUnavailable
+                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupFailed -FormatArgs $ag.Name,$SQLInstanceName -ErrorCategory ResourceUnavailable
                     }
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType InstanceNotPrimaryReplica -FormatArgs $serverInstance,$ag.Name -ErrorCategory ResourceUnavailable
+                    throw New-TerminatingError -ErrorType InstanceNotPrimaryReplica -FormatArgs $SQLInstanceName,$ag.Name -ErrorCategory ResourceUnavailable
                 }
             }
         }
@@ -366,7 +366,7 @@ function Set-TargetResource
                 }
                 catch
                 {
-                    throw New-TerminatingError -ErrorType CreateAgReplicaFailed -FormatArgs $Ensure,$serverInstance -ErrorCategory OperationStopped
+                    throw New-TerminatingError -ErrorType CreateAgReplicaFailed -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory OperationStopped
                 }
 
                 # Set up the parameters for the new availability group
