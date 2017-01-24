@@ -7,7 +7,7 @@ $ConfigData = @{
     AllNodes = @(
         @{
             NodeName= '*'
-            CertificateFile = '333895F4346E654E236082EAACE99AB31C900DCF'
+            CertificateFile = '763E73C85EA410AADCE94584687573F65EDC45FB'
             SQLInstanceName = 'MSSQLSERVER'
         },
 

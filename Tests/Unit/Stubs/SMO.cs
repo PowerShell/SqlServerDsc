@@ -574,7 +574,8 @@ namespace Microsoft.SqlServer.Management.Smo
         public string FailureConditionLevel;
         public string HealthCheckTimeout;
         public string Name;
-        public string PrimaryReplica;
+        public string PrimaryReplicaServerName;
+        public string LocalReplicaRole;
 
         public void Alter()
         {
@@ -604,7 +605,7 @@ namespace Microsoft.SqlServer.Management.Smo
         public string EndpointUrl;
         public string FailoverMode;
         public string Name;
-
+        
         public void Alter()
         {
             if ( this.Name == "AlterFailed" )

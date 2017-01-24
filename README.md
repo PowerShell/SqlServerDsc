@@ -176,14 +176,14 @@ No description.
 * **Ensure**: Specifies if the availability group should be present or absent. Default is Present.
 * **AutomatedBackupPreference**: Specifies the automated backup preference for the availability group. (Primary, SecondaryOnly, Secondary, None)
 * **AvailabilityMode**: Specifies the replica availability mode. Default is 'AsynchronousCommit'. (AsynchronousCommit, SynchronousCommit)
-* **BackupPriority**: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.
+* **BackupPriority**: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 * **BasicAvailabilityGroup**: Specifies the type of availability group.
 * **ConnectionModeInPrimaryRole**: Specifies how the availability replica handles connections when in the primary role. (AllowAllConnections, AllowReadWriteConnections)
 * **ConnectionModeInSecondaryRole**: Specifies how the availability replica handles connections when in the secondary role. (AllowNoConnections, AllowReadIntentConnectionsOnly, AllowAllConnections)
 * **EndpointHostName**: Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
 * **FailureConditionLevel**: Specifies the automatic failover behavior of the availability group. (OnServerDown, OnServerUnresponsive, OnCriticalServerErrors, OnModerateServerErrors, OnAnyQualifiedFailureCondition)
 * **FailoverMode**: Specifies the failover mode. Default is 'Manual'. (Automatic, Manual"}, Values{"Automatic","Manual"}] String FailoverMode)
-* **HealthCheckTimeout**: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.
+* **HealthCheckTimeout**: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
 
 ### xSQLServerAlwaysOnService
 
