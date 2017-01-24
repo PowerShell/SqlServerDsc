@@ -95,6 +95,145 @@ $mockConnectSqlVersion12 = {
             'NT SERVICE\ClusSvc' = @{}
             'NT AUTHORITY\SYSTEM' = @{}
         }
+        Name = 'Server1'
+        NetName = 'Server1'
+        Roles = @{}
+        Version = @{
+            Major = 12
+        }
+    }
+
+    # Add the ExecuteWithResults method
+    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+        return New-Object PSObject -Property @{
+            Tables = @{
+                Rows = @{
+                    permission_name = @(
+                        'testing'
+                    )
+                }
+            }
+        }
+    }
+
+    # Type the mock as a server object
+    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+    return $mock
+}
+
+$mockConnectSqlVersion12IncorrectEndpointProtocol = {
+    $mock = New-Object PSObject -Property @{
+        AvailabilityGroups = @{
+            PresentAG = @{
+                AutomatedBackupPreference = 'Secondary'
+                FailureConditionLevel = 'OnServerDown'
+                HealthCheckTimeout = 30000
+                Name = 'AvailabilityGroup1'
+                PrimaryReplicaServerName = 'Server1'
+                LocalReplicaRole = 'Primary'
+                AvailabilityReplicas = @{
+                    Server1 = @{
+                        AvailabilityMode = 'AsynchronousCommit'
+                        BackupPriority = 50
+                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        EndpointUrl = 'UDP://Server1:5022'
+                        FailoverMode = 'Manual'
+                    }
+                }
+            }
+        }
+        Databases = @{
+            'master' = @{
+                Name = 'master'
+            }
+        }
+        Endpoints = @(
+            New-Object PSObject -Property @{
+                EndpointType = 'DatabaseMirroring'
+                Protocol = @{
+                    TCP = @{
+                        ListenerPort = 5022
+                    }
+                }
+            }
+        )
+        IsHadrEnabled = $true
+        Logins = @{
+            'NT SERVICE\ClusSvc' = @{}
+            'NT AUTHORITY\SYSTEM' = @{}
+        }
+        Name = 'Server1'
+        NetName = 'Server1'
+        Roles = @{}
+        Version = @{
+            Major = 12
+        }
+    }
+
+    # Add the ExecuteWithResults method
+    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+        return New-Object PSObject -Property @{
+            Tables = @{
+                Rows = @{
+                    permission_name = @(
+                        'testing'
+                    )
+                }
+            }
+        }
+    }
+
+    # Type the mock as a server object
+    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+    return $mock
+}
+
+$mockConnectSqlVersion12IncorrectEndpointPort = {
+    $mock = New-Object PSObject -Property @{
+        AvailabilityGroups = @{
+            PresentAG = @{
+                AutomatedBackupPreference = 'Secondary'
+                FailureConditionLevel = 'OnServerDown'
+                HealthCheckTimeout = 30000
+                Name = 'AvailabilityGroup1'
+                PrimaryReplicaServerName = 'Server1'
+                LocalReplicaRole = 'Primary'
+                AvailabilityReplicas = @{
+                    Server1 = @{
+                        AvailabilityMode = 'AsynchronousCommit'
+                        BackupPriority = 50
+                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                        EndpointUrl = 'TCP://Server1:1000'
+                        FailoverMode = 'Manual'
+                    }
+                }
+            }
+        }
+        Databases = @{
+            'master' = @{
+                Name = 'master'
+            }
+        }
+        Endpoints = @(
+            New-Object PSObject -Property @{
+                EndpointType = 'DatabaseMirroring'
+                Protocol = @{
+                    TCP = @{
+                        ListenerPort = 5022
+                    }
+                }
+            }
+        )
+        IsHadrEnabled = $true
+        Logins = @{
+            'NT SERVICE\ClusSvc' = @{}
+            'NT AUTHORITY\SYSTEM' = @{}
+        }
+        Name = 'Server1'
         NetName = 'Server1'
         Roles = @{}
         Version = @{
@@ -164,6 +303,7 @@ $mockConnectSqlVersion13 = {
             'NT SERVICE\ClusSvc' = @{}
             'NT AUTHORITY\SYSTEM' = @{}
         }
+        Name = 'Server1'
         NetName = 'Server1'
         Roles = @{}
         Version = @{
@@ -830,6 +970,7 @@ try
                             'NT SERVICE\ClusSvc' = @{}
                             'NT AUTHORITY\SYSTEM' = @{}
                         }
+                        Name = 'Server1'
                         NetName = 'Server1'
                         Roles = @{}
                         Version = @{
@@ -897,6 +1038,7 @@ try
                             'NT SERVICE\ClusSvc' = @{}
                             'NT AUTHORITY\SYSTEM' = @{}
                         }
+                        Name = 'Server1'
                         NetName = 'Server1'
                         Roles = @{}
                         Version = @{
@@ -1116,6 +1258,7 @@ try
                             'NT SERVICE\ClusSvc' = @{}
                             'NT AUTHORITY\SYSTEM' = @{}
                         }
+                        Name = 'Server1'
                         NetName = 'Server1'
                         Roles = @{}
                         Version = @{
@@ -1140,7 +1283,7 @@ try
                     $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
 
                     return $mock
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1161,7 +1304,7 @@ try
 
             It 'Should set the EndpointUrl to the desired state when the EndpointHostName is specified' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1225,6 +1368,7 @@ try
                             'NT SERVICE\ClusSvc' = @{}
                             'NT AUTHORITY\SYSTEM' = @{}
                         }
+                        Name = 'Server1'
                         NetName = 'Server1'
                         Roles = @{}
                         Version = @{
@@ -1249,7 +1393,7 @@ try
                     $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
 
                     return $mock
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1313,6 +1457,7 @@ try
                             'NT SERVICE\ClusSvc' = @{}
                             'NT AUTHORITY\SYSTEM' = @{}
                         }
+                        Name = 'Server1'
                         NetName = 'Server1'
                         Roles = @{}
                         Version = @{
@@ -1337,7 +1482,7 @@ try
                     $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
 
                     return $mock
-                } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1358,7 +1503,7 @@ try
 
             It 'Should set the FailureConditionLevel to the desired state' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1380,7 +1525,7 @@ try
 
             It 'Should set the FailoverMode to the desired state' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -1488,7 +1633,7 @@ try
                 
                 Test-TargetResource @presentAg | Should Be $true
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $false when the desired state is Present, there is a parameter not correctly set, and the SQL version is 12' {
@@ -1501,7 +1646,7 @@ try
                 
                 Test-TargetResource @presentAgIncorrectParameter | Should Be $false
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $false when the desired state is Absent and the SQL version is 13' {
@@ -1535,7 +1680,52 @@ try
                 
                 Test-TargetResource @presentAgIncorrectParameter | Should Be $false
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $true when the desired state is Present and the Endpoint Host Name is not specified' {
+                $presentAgEndpointHostNameNotSpecified = $presentAg.Clone()
+                $presentAgEndpointHostNameNotSpecified.Ensure = 'Present'
+                $presentAgEndpointHostNameNotSpecified.Remove('EndpointHostName')
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
+                Test-TargetResource @presentAgEndpointHostNameNotSpecified | Should Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+            
+            It 'Should be $false when the desired state is Present and the Endpoint Hostname is incorrectly configured' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $presentAgIncorrectParameter = $presentAg.Clone()
+                $presentAgIncorrectParameter.Ensure = 'Present'
+                $presentAgIncorrectParameter.EndpointHostName = 'server1.contoso.com'
+                
+                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $false when the desired state is Present and the Endpoint Protocol is incorrectly configured' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12IncorrectEndpointProtocol -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $presentAgIncorrectParameter = $presentAg.Clone()
+                $presentAgIncorrectParameter.Ensure = 'Present'
+                
+                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should be $false when the desired state is Present and the Endpoint Port is incorrectly configured' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12IncorrectEndpointPort -ModuleName $script:DSCResourceName -Verifiable -Scope It
+
+                $presentAgIncorrectParameter = $presentAg.Clone()
+                $presentAgIncorrectParameter.Ensure = 'Present'
+                
+                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
         }
     }
