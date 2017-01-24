@@ -849,7 +849,7 @@ try
                                 FailureConditionLevel = 'OnServerDown'
                                 HealthCheckTimeout = 30000
                                 Name = 'AvailabilityGroup1'
-                                PrimaryReplica = 'Server1'
+                                PrimaryReplicaServerName = 'Server1'
                                 AvailabilityReplicas = @{
                                     Server1 = @{
                                         AvailabilityMode = 'AsynchronousCommit'
