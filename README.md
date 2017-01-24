@@ -567,9 +567,15 @@ None.
 
 ### xSQLServerMaxDop
 
-This resource set the max degree of parallelism Server Configuration Option.
-The max degree of parallelism option configure the number of processors to use in parallel plan execution.
+This resource set the max degree of parallelism server configuration option.
+The max degree of parallelism option is used to limit the number of processors to use in parallel plan execution.
 Read more about max degree of parallelism in this article [Configure the max degree of parallelism Server Configuration Option](https://msdn.microsoft.com/en-us/library/ms189094.aspx)
+
+#### Formula for dynamically allocating max degree of parallelism.
+
+* If the number of configured NUMA nodes configured in SQL Server equals 1, then max degree of parallelism is calculated using number of cores divided in 2 (numberOfCores / 2), then rounded up to the next integer (3.5 > 4).
+* If the number of cores configured in SQL Server are greater than or equal to 8 cores then max degree of parallelism will be set to 8.
+* If the number of configured NUMA nodes configured in SQL Server is greater than 2 and thenumber of cores are less than 8 then max degree of parallelism will be set to the number of cores.
 
 #### Requirements
 
@@ -578,11 +584,11 @@ Read more about max degree of parallelism in this article [Configure the max deg
 
 #### Parameters
 
-* **[String] SQLInstance** (Key): The name of the SQL instance to be configured
-* **[String] Ensure** _(Write)_: An enumerated value that describes if Min and Max memory is configured. { *Present* | Absent }.
-* **[Boolean] DyamicAlloc** _(Write)_: Flag to indicate if MaxDop is dynamically configured
-* **[Sint32] MaxDop** _(Write)_: Numeric value to configure MaxDop to
-* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured
+* **[String] SQLInstance** (Key): The name of the SQL instance to be configured.
+* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured.
+* **[String] Ensure** _(Write)_: When set to 'Present' then max degree of parallelism will be set to either the value in parameter MaxDop or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' max degree of parallelism will be set to 0 which means no limit in number of processors used in parallel plan execution. { *Present* | Absent }.
+* **[Boolean] DynamicAlloc** _(Write)_: If set to $true then max degree of parallelism will be dynamically configured. When this is set parameter is set to $true, the parameter MaxDop must be set to $null or not be configured.
+* **[Sint32] MaxDop** _(Write)_: A numeric value to limit the number of processors used in parallel plan execution.
 
 #### Examples
 
