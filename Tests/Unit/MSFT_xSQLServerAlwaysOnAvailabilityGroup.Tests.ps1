@@ -61,7 +61,8 @@ $mockConnectSqlVersion12 = {
                 FailureConditionLevel = 'OnServerDown'
                 HealthCheckTimeout = 30000
                 Name = 'AvailabilityGroup1'
-                PrimaryReplica = 'Server1'
+                PrimaryReplicaServerName = 'Server1'
+                LocalReplicaRole = 'Primary'
                 AvailabilityReplicas = @{
                     Server1 = @{
                         AvailabilityMode = 'AsynchronousCommit'
@@ -129,7 +130,8 @@ $mockConnectSqlVersion13 = {
                 HealthCheckTimeout = 30000
                 Name = 'AvailabilityGroup1'
                 BasicAvailabilityGroup = $false
-                PrimaryReplica = 'Server1'
+                PrimaryReplicaServerName = 'Server1'
+                LocalReplicaRole = 'Primary'
                 AvailabilityReplicas = @{
                     Server1 = @{
                         AvailabilityMode = 'AsynchronousCommit'
@@ -784,9 +786,163 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
             }
 
+            It 'Should connect to the instance hosting the primary replica when the LocalReplicaRole is not Primary' {
+
+                Mock -CommandName Connect-SQL -MockWith {
+                    $mock = New-Object PSObject -Property @{
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplicaServerName = 'Server2'
+                                LocalReplicaRole = 'Secondary'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'TCP://Server1:5022'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
+                        Databases = @{
+                            'master' = @{
+                                Name = 'master'
+                            }
+                        }
+                        Endpoints = @(
+                            New-Object PSObject -Property @{
+                                EndpointType = 'DatabaseMirroring'
+                                Protocol = @{
+                                    TCP = @{
+                                        ListenerPort = 5022
+                                    }
+                                }
+                            }
+                        )
+                        IsHadrEnabled = $true
+                        Logins = @{
+                            'NT SERVICE\ClusSvc' = @{}
+                            'NT AUTHORITY\SYSTEM' = @{}
+                        }
+                        NetName = 'Server1'
+                        Roles = @{}
+                        Version = @{
+                            Major = 12
+                        }
+                    }
+
+                    # Add the ExecuteWithResults method
+                    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                        return New-Object PSObject -Property @{
+                            Tables = @{
+                                Rows = @{
+                                    permission_name = @(
+                                        'testing'
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    # Type the mock as a server object
+                    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+                    return $mock
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
+                Mock -CommandName Connect-SQL -MockWith {
+                    $mock = New-Object PSObject -Property @{
+                        AvailabilityGroups = @{
+                            PresentAG = @{
+                                AutomatedBackupPreference = 'Secondary'
+                                FailureConditionLevel = 'OnServerDown'
+                                HealthCheckTimeout = 30000
+                                Name = 'AvailabilityGroup1'
+                                PrimaryReplicaServerName = 'Server2'
+                                LocalReplicaRole = 'Primary'
+                                AvailabilityReplicas = @{
+                                    Server1 = @{
+                                        AvailabilityMode = 'AsynchronousCommit'
+                                        BackupPriority = 50
+                                        ConnectionModeInPrimaryRole = 'AllowAllConnections'
+                                        ConnectionModeInSecondaryRole = 'AllowNoConnections'
+                                        EndpointUrl = 'TCP://Server2:5022'
+                                        FailoverMode = 'Manual'
+                                    }
+                                }
+                            }
+                        }
+                        Databases = @{
+                            'master' = @{
+                                Name = 'master'
+                            }
+                        }
+                        Endpoints = @(
+                            New-Object PSObject -Property @{
+                                EndpointType = 'DatabaseMirroring'
+                                Protocol = @{
+                                    TCP = @{
+                                        ListenerPort = 5022
+                                    }
+                                }
+                            }
+                        )
+                        IsHadrEnabled = $true
+                        Logins = @{
+                            'NT SERVICE\ClusSvc' = @{}
+                            'NT AUTHORITY\SYSTEM' = @{}
+                        }
+                        NetName = 'Server1'
+                        Roles = @{}
+                        Version = @{
+                            Major = 12
+                        }
+                    }
+
+                    # Add the ExecuteWithResults method
+                    $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                        return New-Object PSObject -Property @{
+                            Tables = @{
+                                Rows = @{
+                                    permission_name = @(
+                                        'testing'
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    # Type the mock as a server object
+                    $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+                    return $mock
+                } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server2' }
+                Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                
+                $presentAgIncorrectProperties = $presentAg.Clone()
+                $presentAgIncorrectProperties.Ensure = 'Present'
+                
+                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+            }
+            
             It 'Should set the AutomatedBackupPreference to the desired state' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -852,7 +1008,7 @@ try
 
             It 'Should set the BasicAvailabilityGroup to the desired state' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -896,7 +1052,7 @@ try
 
             It 'Should set the ConnectionModeInSecondaryRole to the desired state' {
 
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
                 $presentAgIncorrectProperties = $presentAg.Clone()
@@ -926,7 +1082,8 @@ try
                                 FailureConditionLevel = 'OnServerDown'
                                 HealthCheckTimeout = 30000
                                 Name = 'AvailabilityGroup1'
-                                PrimaryReplica = 'Server1'
+                                PrimaryReplicaServerName = 'Server1'
+                                LocalReplicaRole = 'Primary'
                                 AvailabilityReplicas = @{
                                     Server1 = @{
                                         AvailabilityMode = 'AsynchronousCommit'
@@ -1034,7 +1191,8 @@ try
                                 FailureConditionLevel = 'OnServerDown'
                                 HealthCheckTimeout = 30000
                                 Name = 'AvailabilityGroup1'
-                                PrimaryReplica = 'Server1'
+                                PrimaryReplicaServerName = 'Server1'
+                                LocalReplicaRole = 'Primary'
                                 AvailabilityReplicas = @{
                                     Server1 = @{
                                         AvailabilityMode = 'AsynchronousCommit'
@@ -1121,7 +1279,8 @@ try
                                 FailureConditionLevel = 'OnServerDown'
                                 HealthCheckTimeout = 30000
                                 Name = 'AvailabilityGroup1'
-                                PrimaryReplica = 'Server1'
+                                PrimaryReplicaServerName = 'Server1'
+                                LocalReplicaRole = 'Primary'
                                 AvailabilityReplicas = @{
                                     Server1 = @{
                                         AvailabilityMode = 'AsynchronousCommit'
