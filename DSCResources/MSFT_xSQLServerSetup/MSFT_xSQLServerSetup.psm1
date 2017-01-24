@@ -1054,7 +1054,15 @@ function Set-TargetResource
     New-VerboseMessage -Message "Starting setup using arguments: $log"
 
     $arguments = $arguments.Trim()
-    $process = StartWin32Process -Path $pathToSetupExecutable -Arguments $arguments
+    $processArgs = @{
+        Path = $pathToSetupExecutable
+        Arguments = $arguments
+    };
+    if ($Action -in @('InstallFailoverCluster'))
+    {
+        $processArgs.Add('Credential',$SetupCredential);
+    }
+    $process = StartWin32Process @processArgs;
 
     New-VerboseMessage -Message $process
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments

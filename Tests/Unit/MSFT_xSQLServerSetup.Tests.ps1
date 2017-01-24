@@ -3043,6 +3043,190 @@ try
                     }
                 }
 
+                # For testing InstallFailoverCluster action
+                Context "When SQL Server version is $mockSQLMajorVersion and the system is not in the desired state and the action is InstallFailoverCluster" {
+                    BeforeAll {
+                        $testParameters = $mockDefaultClusterParameters.Clone()
+
+                        $testParameters += @{
+                            InstanceName = 'MSSQLSERVER'
+                            SourcePath = $mockSourcePath
+                            Action = 'InstallFailoverCluster'
+                            FailoverClusterGroupName = 'SQL Server (MSSQLSERVER)'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
+                        }
+
+                    }
+
+                    BeforeAll {
+                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResourceGroup_AvailableStorage -ParameterFilter {
+                            $Filter -eq "Name = 'Available Storage'"
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_ResourceGroupToResource -ParameterFilter { 
+                            ($Association -eq 'MSCluster_ResourceGroupToResource') -and ($ResultClassName -eq 'MSCluster_Resource')
+                        } -Verfiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_ResourceToPossibleOwner -ParameterFilter {
+                            $Association -eq 'MSCluster_ResourceToPossibleOwner'
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_DiskPartition -ParameterFilter {
+                            $ResultClassName -eq 'MSCluster_DiskPartition'
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
+                            ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
+                        } -Verifiable
+                    }
+
+                    It 'Should pass proper parameters to setup' {
+                        $mockStartWin32ProcessExpectedArgument = @{
+                            IAcceptSQLServerLicenseTerms = 'True'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Quiet = 'True'
+                            SQLSysAdminAccounts = 'COMPANY\sqladmin'
+                            Action = 'InstallFailoverCluster'
+                            InstanceName = 'MSSQLSERVER'
+                            Features = 'SQLEngine'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_SingleSite
+                            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                        }
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+
+                    It 'Should pass the SetupCredential object to the StartWin32Process function' {
+                        $mockStartWin32Process_SetupCredential = {
+                            $Credential | Should Not Be $null;
+                            return "Process started.";
+                        }
+
+                        Mock -CommandName StartWin32Process -MockWith $mockStartWin32Process_SetupCredential;
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+
+                    It 'Should throw an error when one or more paths are not resolved to clustered storage' {
+                        $badPathParameters = $testParameters.Clone()
+                        
+                        # Pass in a bad path
+                        $badPathParameters.SQLUserDBDir = 'C:\MSSQL\'
+
+                        { Set-TargetResource @badPathParameters } | Should Throw 'Unable to map the specified paths to valid cluster storage. Drives mapped: TempDbData; TempDbLogs; UserLogs'
+                    }
+
+                    It 'Should properly map paths to clustered disk resources' {
+                        
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{ 
+                            Action = 'InstallFailoverCluster'
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_SingleSite
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs' 
+                        }
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+
+                    It 'Should build a DEFAULT address string when no network is specified' {
+                        $missingNetworkParams = $testParameters.Clone()
+                        $missingNetworkParams.Remove('FailoverClusterIPAddress')
+
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
+                            Action = 'InstallFailoverCluster'
+                            FailoverClusterIPAddresses = 'DEFAULT'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                        }
+
+                        { Set-TargetResource @missingNetworkParams } | Should Not Throw
+                    }
+
+                    It 'Should throw an error when an invalid IP Address is specified' {
+                        $invalidAddressParameters = $testParameters.Clone()
+
+                        $invalidAddressParameters.Remove('FailoverClusterIPAddress')
+                        $invalidAddressParameters += @{
+                            FailoverClusterIPAddress = '192.168.0.100'
+                        }
+
+                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'Unable to map the specified IP Address(es) to valid cluster networks.'
+                    }
+
+                    It 'Should throw an error when an invalid IP Address is specified for a multi-subnet instance' {
+                        $invalidAddressParameters = $testParameters.Clone()
+
+                        $invalidAddressParameters.Remove('FailoverClusterIPAddress')
+                        $invalidAddressParameters += @{
+                            FailoverClusterIPAddress = @('10.0.0.100','192.168.0.100')
+                        }
+
+                        { Set-TargetResource @invalidAddressParameters } | Should Throw 'Unable to map the specified IP Address(es) to valid cluster networks.'
+                    }
+
+                    It 'Should build a valid IP address string for a single address' {
+
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_SingleSite
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Action = 'InstallFailoverCluster'
+                        }
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+
+                    It 'Should build a valid IP address string for a multi-subnet cluster' {
+                        $multiSubnetParameters = $testParameters.Clone()
+                        $multiSubnetParameters.Remove('FailoverClusterIPAddress')
+                        $multiSubnetParameters += @{
+                            FailoverClusterIPAddress = ($mockClusterSites | ForEach-Object { $_.Address })
+                        }
+
+                        $mockStartWin32ProcessExpectedArgument = $mockStartWin32ProcessExpectedArgumentClusterDefault.Clone()
+                        $mockStartWin32ProcessExpectedArgument += @{
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_MultiSite
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'K:\MSSQL\Data'
+                            SQLUserDBLogDir = 'L:\MSSQL\Logs'
+                            SQLTempDBDir = 'M:\MSSQL\TempDb\Data'
+                            SQLTempDBLogDir = 'N:\MSSQL\TempDb\Logs'
+                            FailoverClusterDisks = 'TempDbData; TempDbLogs; UserData; UserLogs' 
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Action = 'InstallFailoverCluster'
+                        }
+
+                        { Set-TargetResource @multiSubnetParameters } | Should Not Throw
+                    }
+
+
+                }
+                
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state and the action is PrepareFailoverCluster" {
                     BeforeAll {
                         $testParameters = $mockDefaultParameters.Clone()
