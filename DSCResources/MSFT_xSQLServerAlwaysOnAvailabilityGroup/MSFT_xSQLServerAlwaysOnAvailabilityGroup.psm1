@@ -37,6 +37,13 @@ function Get-TargetResource
     # Connect to the instance
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
+    # Get the endpoint properties
+    $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
+    if ( $endpoint )
+    {
+        $endpointPort = $endpoint.Protocol.Tcp.ListenerPort
+    }
+    
     # Get the AG
     $ag = $serverObject.AvailabilityGroups[$Name]
 
@@ -56,7 +63,10 @@ function Get-TargetResource
             FailureConditionLevel = $ag.FailureConditionLevel
             FailoverMode = $ag.AvailabilityReplicas[$serverObject.Name].FailoverMode
             HealthCheckTimeout = $ag.HealthCheckTimeout
-            EndpointHostName = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace('//','').Split(':')[1]
+            EndpointURL = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl
+            EndpointPort = $endpointPort
+            SQLServerNetName = $serverObject.NetName
+            Version = $serverObject.Version.Major
         }
 
         # Add properties that are only present in SQL 2016 or newer
@@ -625,7 +635,6 @@ function Test-TargetResource
                 'BasicAvailabilityGroup',
                 'ConnectionModeInPrimaryRole',
                 'ConnectionModeInSecondaryRole',
-                'EndpointHostName',
                 'FailureConditionLevel',
                 'FailoverMode',
                 'HealthCheckTimeout'
@@ -644,12 +653,9 @@ function Test-TargetResource
                     if ( $state.($psBoundParameter.Key) -ne $psBoundParameter.Value )
                     {
                         if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
-                        {
-                            # Connect to the instance
-                            $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-                            
+                        {                          
                             # Move on to the next property if the instance is not at least SQL Server 2016
-                            if ( $serverObject.Version.Major -lt 13 )
+                            if ( $state.Version -lt 13 )
                             {
                                 continue
                             }
@@ -659,6 +665,35 @@ function Test-TargetResource
                         
                         $result = $False
                     }
+                }
+
+                # Get the Endpoint URL properties
+                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $state.EndpointUrl.Replace('//','').Split(':')
+
+                if ( -not $EndpointHostName )
+                {
+                    $EndpointHostName = $state.SQLServerNetName
+                }
+                
+                # Verify the hostname in the endpoint URL is correct
+                if ( $EndpointHostName -ne $currentEndpointHostName )
+                {
+                    New-VerboseMessage -Message "'EndpointHostName' should be '$EndpointHostName' but is '$currentEndpointHostName'"
+                    $result = $false
+                }
+
+                # Verify the protocol in the endpoint URL is correct
+                if ( 'TCP' -ne $currentEndpointProtocol )
+                {
+                    New-VerboseMessage -Message "'EndpointProtocol' should be 'TCP' but is '$currentEndpointProtocol'"
+                    $result = $false
+                }
+
+                # Verify the port in the endpoint URL is correct
+                if ( $state.EndpointPort -ne $currentEndpointPort )
+                {
+                    New-VerboseMessage -Message "'EndpointPort' should be '$($state.EndpointPort)' but is '$currentEndpointPort'"
+                    $result = $false
                 }
             }
             else
