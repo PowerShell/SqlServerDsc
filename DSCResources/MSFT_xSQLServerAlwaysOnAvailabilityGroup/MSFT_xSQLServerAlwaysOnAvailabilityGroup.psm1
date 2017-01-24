@@ -49,14 +49,14 @@ function Get-TargetResource
             SQLInstanceName = $SQLInstanceName
             Ensure = 'Present'
             AutomatedBackupPreference = $ag.AutomatedBackupPreference
-            AvailabilityMode = $ag.AvailabilityReplicas[$SQLServer].AvailabilityMode
-            BackupPriority = $ag.AvailabilityReplicas[$SQLServer].BackupPriority
-            ConnectionModeInPrimaryRole = $ag.AvailabilityReplicas[$SQLServer].ConnectionModeInPrimaryRole
-            ConnectionModeInSecondaryRole = $ag.AvailabilityReplicas[$SQLServer].ConnectionModeInSecondaryRole
+            AvailabilityMode = $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode
+            BackupPriority = $ag.AvailabilityReplicas[$serverObject.Name].BackupPriority
+            ConnectionModeInPrimaryRole = $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole
+            ConnectionModeInSecondaryRole = $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole
             FailureConditionLevel = $ag.FailureConditionLevel
-            FailoverMode = $ag.AvailabilityReplicas[$SQLServer].FailoverMode
+            FailoverMode = $ag.AvailabilityReplicas[$serverObject.Name].FailoverMode
             HealthCheckTimeout = $ag.HealthCheckTimeout
-            EndpointHostName = $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl.Replace('//','').Split(':')[1]
+            EndpointHostName = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace('//','').Split(':')[1]
         }
 
         # Add properties that are only present in SQL 2016 or newer
@@ -102,7 +102,7 @@ function Get-TargetResource
     Specifies the replica availability mode. Default is 'AsynchronousCommit'.
 
     .PARAMETER BackupPriority
-    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.
+    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 
     .PARAMETER BasicAvailabilityGroup
     Specifies the type of availability group.
@@ -120,7 +120,7 @@ function Get-TargetResource
     Specifies the automatic failover behavior of the availability group.
 
     .PARAMETER HealthCheckTimeout
-    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.
+    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
 #>
 function Set-TargetResource
 {
@@ -157,7 +157,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateRange(0,100)]
         [UInt32]
-        $BackupPriority,
+        $BackupPriority = 50,
 
         [Parameter()]
         [bool]
@@ -195,7 +195,7 @@ function Set-TargetResource
 
         [Parameter()]
         [UInt32]
-        $HealthCheckTimeout
+        $HealthCheckTimeout = 30000
     )
     
     Import-SQLPSModule
@@ -222,7 +222,7 @@ function Set-TargetResource
             if ( $ag )
             {
                 # If the primary replica is currently on this instance
-                if ( $ag.PrimaryReplica -eq $serverObject.NetName )
+                if ( $ag.PrimaryReplicaServerName -eq $serverObject.NetName )
                 {
                     try
                     {
@@ -337,7 +337,7 @@ function Set-TargetResource
 
                 # Set up the parameters to create the AG Replica
                 $newReplicaParams = @{
-                    Name = $serverObject.NetName
+                    Name = $serverObject.Name
                     Version = $version
                     AsTemplate = $true
                     AvailabilityMode = $AvailabilityMode
@@ -378,28 +378,35 @@ function Set-TargetResource
                 }
                 catch
                 {
-                    throw New-TerminatingError -ErrorType CreateAvailabilityGroupFailed -FormatArgs $Ensure,$serverInstance -ErrorCategory OperationStopped
+                    throw New-TerminatingError -ErrorType CreateAvailabilityGroupFailed -FormatArgs $Name,$_.Exception -ErrorCategory OperationStopped
                 }
             }
             # Otherwise let's check each of the parameters passed and update the AG accordingly
             else
             {                
+                # Make sure we're communicating with the primary replica
+                if ( $ag.LocalReplicaRole -ne 'Primary' )
+                {
+                    $primaryServerObject = Connect-SQL -SQLServer $ag.PrimaryReplicaServerName
+                    $ag = $primaryServerObject.AvailabilityGroups[$Name]
+                }
+                
                 if ( $AutomatedBackupPreference -ne $ag.AutomatedBackupPreference )
                 {
                     $ag.AutomatedBackupPreference = $AutomatedBackupPreference
                     Update-AvailabilityGroup -AvailabilityGroup $ag
                 }
 
-                if ( $AvailabilityMode -ne $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode )
+                if ( $AvailabilityMode -ne $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode = $AvailabilityMode
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $AvailabilityMode
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( $BackupPriority -ne $ag.AvailabilityReplicas[$serverObject.NetName].BackupPriority )
+                if ( $BackupPriority -ne $ag.AvailabilityReplicas[$serverObject.Name].BackupPriority )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode = $BackupPriority
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $BackupPriority
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
                 if ( $BasicAvailabilityGroup -and ( $version -ge 13 ) -and ( $BasicAvailabilityGroup -ne $ag.BasicAvailabilityGroup ) ) 
@@ -408,57 +415,57 @@ function Set-TargetResource
                     Update-AvailabilityGroup -AvailabilityGroup $ag
                 }
 
-                if ( $ConnectionModeInPrimaryRole -ne $ag.AvailabilityReplicas[$serverObject.NetName].ConnectionModeInPrimaryRole )
+                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole ) )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode = $ConnectionModeInPrimaryRole
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( $ConnectionModeInSecondaryRole -ne $ag.AvailabilityReplicas[$serverObject.NetName].ConnectionModeInSecondaryRole )
+                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole ) )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode = $ConnectionModeInSecondaryRole
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
                 
                 # Break out the EndpointUrl properties
-                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl.Replace('//','').Split(':')
+                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace('//','').Split(':')
 
                 if ( $endpoint.Protocol.Tcp.ListenerPort -ne $currentEndpointPort )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
-                    $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
+                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
                 if ( $EndpointHostName -ne $currentEndpointHostName )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl.Replace($currentEndpointHostName,$EndpointHostName)
-                    $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointHostName,$EndpointHostName)
+                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
                 if ( $currentEndpointProtocol -ne 'TCP' )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl.Replace($currentEndpointProtocol,'TCP')
-                    $ag.AvailabilityReplicas[$serverObject.NetName].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointProtocol,'TCP')
+                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( $FailureConditionLevel -ne $ag.FailureConditionLevel )
+                if ( ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $ag.FailureConditionLevel ) )
                 {
-                    $ag.AutomatedBackupPreference = $FailureConditionLevel
+                    $ag.FailureConditionLevel = $FailureConditionLevel
                     Update-AvailabilityGroup -AvailabilityGroup $ag
                 }
 
-                if ( $FailoverMode -ne $ag.AvailabilityReplicas[$serverObject.NetName].FailoverMode )
+                if ( $FailoverMode -ne $ag.AvailabilityReplicas[$serverObject.Name].FailoverMode )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.NetName].AvailabilityMode = $FailoverMode
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.NetName]
+                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $FailoverMode
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
                 }
                 
                 if ( $HealthCheckTimeout -ne $ag.HealthCheckTimeout )
                 {
-                    $ag.AutomatedBackupPreference = $HealthCheckTimeout
+                    $ag.HealthCheckTimeout = $HealthCheckTimeout
                     Update-AvailabilityGroup -AvailabilityGroup $ag
                 }
             }
@@ -489,7 +496,7 @@ function Set-TargetResource
     Specifies the replica availability mode. Default is 'AsynchronousCommit'.
 
     .PARAMETER BackupPriority
-    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup.
+    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 
     .PARAMETER BasicAvailabilityGroup
     Specifies the type of availability group.
@@ -507,7 +514,7 @@ function Set-TargetResource
     Specifies the automatic failover behavior of the availability group.
 
     .PARAMETER HealthCheckTimeout
-    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy.
+    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
 #>
 function Test-TargetResource
 {
@@ -545,7 +552,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateRange(0,100)]
         [UInt32]
-        $BackupPriority,
+        $BackupPriority = 50,
 
         [Parameter()]
         [bool]
@@ -577,7 +584,7 @@ function Test-TargetResource
 
         [Parameter()]
         [UInt32]
-        $HealthCheckTimeout
+        $HealthCheckTimeout = 30000
     )
 
     $parameters = @{
@@ -682,11 +689,17 @@ function Update-AvailabilityGroup
 
     try
     {
+        $originalErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Stop'
         $AvailabilityGroup.Alter()
     }
     catch
     {
         throw New-TerminatingError -ErrorType AlterAvailabilityGroupFailed -FormatArgs $AvailabilityGroup.Name -ErrorCategory OperationStopped
+    }
+    finally
+    {
+        $ErrorActionPreference = $originalErrorActionPreference
     }
 }
 
@@ -708,11 +721,17 @@ function Update-AvailabilityGroupReplica
 
     try
     {
+        $originalErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Stop'
         $AvailabilityGroupReplica.Alter()
     }
     catch
     {
         throw New-TerminatingError -ErrorType AlterAvailabilityGroupReplicaFailed -FormatArgs $AvailabilityGroupReplica.Name -ErrorCategory OperationStopped
+    }
+    finally
+    {
+        $ErrorActionPreference = $originalErrorActionPreference
     }
 }
 
