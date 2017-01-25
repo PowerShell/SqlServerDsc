@@ -1,8 +1,15 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Write-Verbose -Message "CurrentPath: $currentPath"
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
 
-# Load Common Code
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
+<#
+    .SYNOPSIS
+    This function gets the min and max memory of server configuration option.
+
+    .PARAMETER SQLServer
+    The host name of the SQL Server to be configured.
+
+    .PARAMETER SQLInstanceName
+    The name of the SQL instance to be configured.
+#>
 
 function Get-TargetResource
 {
@@ -10,243 +17,248 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $Ensure,
+        $SQLInstanceName,
 
         [parameter(Mandatory = $true)]
-        [System.Boolean]
-        $DynamicAlloc,
-
-        [System.Int32]
-        $MinMemory = -1,
-
-        [System.Int32]
-        $MaxMemory,
-
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
-
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $SQLInstanceName
+        $SQLServer
     )
 
-        if(!$SQL)
-        {
-            $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-        }
+    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-        if($SQL)
-        {
-            $GetMinMemory = $sql.Configuration.MinServerMemory.ConfigValue
-            $GetMaxMemory = $sql.Configuration.MaxServerMemory.ConfigValue
-        }
+    if ($sqlServerObject)
+    {
+        Write-Verbose -Message 'Getting the min and max of memory server configuration option'
+        $minMemory = $sqlServerObject.Configuration.MinServerMemory.ConfigValue
+        $maxMemory = $sqlServerObject.Configuration.MaxServerMemory.ConfigValue
+    }
 
-        if ($GetMaxMemory -eq 2147483647)
-        {
-            $Ensure = "Absent"
-        }
-        else
-        {
-            $Ensure = "Present"
-        }
+    $returnValue = @{
+        SQLInstanceName = $SQLInstanceName
+        SQLServer       = $SQLServer
+        MinMemory       = $minMemory
+        MaxMemory       = $maxMemory
+    }
 
-        $returnValue = @{
-                DynamicAlloc = $DynamicAlloc
-                MinMemory = $MinMemory
-                MaxMemory = $MaxMemory
-                Ensure = $Ensure
-                }
-        $returnValue
+    $returnValue
 }
 
+<#
+    .SYNOPSIS
+    This function sets the min and max memory of server configuration option.
 
+    .PARAMETER SQLServer
+    The host name of the SQL Server to be configured.
+
+    .PARAMETER SQLInstanceName
+    The name of the SQL instance to be configured.
+    
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the min and max memory should be configured.
+
+    .PARAMETER DynamicAlloc
+    If set to $true then max memory will be dynamically configured.
+    When this is set parameter is set to $true, the parameter MaxMemory and MinMemory must be set to $null or not be configured.
+
+    .PARAMETER MinMemory
+    This is the minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
+
+    .PARAMETER MaxMemory
+    This is the maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
     param
     (
-        [ValidateSet("Present","Absent")]
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $Ensure,
+        $SQLInstanceName,
 
         [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLServer,
+
+        [ValidateSet('Present','Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
         [System.Boolean]
-        $DynamicAlloc,
+        $DynamicAlloc = $false,
 
         [System.Int32]
-        $MinMemory = -1,
+        $MinMemory,
 
         [System.Int32]
-        $MaxMemory,
-
-        [System.String]
-        $SQLServer = $env:COMPUTERNAME,
-
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $SQLInstanceName
+        $MaxMemory
     )
 
-    if(!$SQL)
+    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    
+    if ($sqlServerObject)
     {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
-
-    If($SQL)
-    {
-        $serverMem = $sql.PhysicalMemory
-        switch($Ensure)
+        Write-Verbose -Message 'Setting the min and max of memory server configuration option'
+        switch ($Ensure)
         {
-            "Absent"
+            'Present'
             {
-                   $MaxMemory = 2147483647
-                   $MinMemory = 128
-            }
-            "Present"
-            {       
                 if ($DynamicAlloc)
                 {
-                    if ($serverMem -ge 128000) 
+                    if ($MinMemory -and $MaxMemory)
                     {
-                        #Server mem - 10GB
-                        $MaxMemory = $serverMem - 10000 
+                        throw New-TerminatingError -ErrorType 'MinMaxMemoryParamMustBeNull' `
+                                                   -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                                   -ErrorCategory InvalidArgument  
                     }
-                    elseif ($serverMem -ge 32000 -and $serverMem -lt 128000) 
-                    {
-                        #Server mem - 4GB 
-                        $MaxMemory = $serverMem - 4000
-                    }
-                    elseif ($serverMem -ge 16000)
-                    {
-                        #Server mem - 2GB 
-                        $MaxMemory = $serverMem - 2000
-                    }
-                    else
-                    {
-                        #Server mem - 1GB 
-                        $MaxMemory = $serverMem - 1000
-                    }
+
+                    $MaxMemory = Get-SqlDscDynamicMaxMemory
+                    $MinMemory = 128
+                    New-VerboseMessage -Message "Dynamic MaxMemory is $MaxMemory."
                 }
                 else
                 {
-                    if  (-not $MaxMemory -or $MinMemory -lt 0) {
-                        throw "Dynamic Allocation is not set. Valid values were not supplied for MaxMemory or MinMemory."
-                    }
-
-                    if ($MinMemory -gt $MaxMemory) {
-                        throw "Provided MinMemory value is greater than MaxMemory."
+                    if (-not $MaxMemory)
+                    {
+                        throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNotNull' `
+                                                   -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                                   -ErrorCategory InvalidArgument  
                     }
                 }
             }
-        }
-        try
-        {            
-            $sql.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
-            if($MinMemory -ge 0)
+            
+            'Absent'
             {
-                Write-Verbose -message "MinMem will be set to $MinMemory."
-                $sql.Configuration.MinServerMemory.ConfigValue = $MinMemory
+                $MaxMemory = 2147483647
+                $MinMemory = 0
+                New-VerboseMessage -Message 'Ensure is absent - Min and Max Memory reset to default value'
             }
-            $sql.alter()
-            New-VerboseMessage -Message "SQL Server Memory has been capped to $MaxMemory."
+        }
+
+        try
+        {
+            $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
+            $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
+            $sqlServerObject.Alter()
+            New-VerboseMessage -Message "SQL Server Memory has been capped to $MaxMemory. MinMemory set to $MinMemory."
         }
         catch
         {
-            New-VerboseMessage -Message "Failed setting Min and Max SQL Memory"
+            throw New-TerminatingError -ErrorType ServerMemorySetError `
+                                       -FormatArgs @($SQLServer,$SQLInstanceName) `
+                                       -ErrorCategory InvalidOperation `
+                                       -InnerException $_.Exception
         }
     }
 }
 
+<#
+    .SYNOPSIS
+    This function tests the min and max memory of server configuration option.
 
+    .PARAMETER SQLServer
+    The host name of the SQL Server to be configured.
+
+    .PARAMETER SQLInstanceName
+    The name of the SQL instance to be configured.
+    
+    .PARAMETER Ensure
+    This is The Ensure Set to 'present' to specificy that the min and max memory should be configured.
+
+    .PARAMETER DynamicAlloc
+    If set to $true then max memory will be dynamically configured.
+    When this is set parameter is set to $true, the parameter MaxMemory and MinMemory must be set to $null or not be configured.
+
+    .PARAMETER MinMemory
+    This is the minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
+
+    .PARAMETER MaxMemory
+    This is the maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
     (
-        [ValidateSet("Present","Absent")]
-        [System.String]
-        $Ensure,
-
         [parameter(Mandatory = $true)]
-        [System.Boolean]
-        $DynamicAlloc,
-
-        [System.Int32]
-        $MinMemory = -1,
-
-        [System.Int32]
-        $MaxMemory,
+        [System.String]
+        $SQLInstanceName,
 
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
-        
-        [parameter(Mandatory = $true)]
+
+        [ValidateSet("Present","Absent")]
         [System.String]
-        $SQLInstanceName
+        $Ensure = 'Present',
+
+        [System.Boolean]
+        $DynamicAlloc = $false,
+
+        [System.Int32]
+        $MinMemory,
+
+        [System.Int32]
+        $MaxMemory
     )
 
-    if(!$SQL)
-    {
-        $SQL = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
-
-    if($SQL)
-    {
-        $GetMinMemory = $sql.Configuration.MinServerMemory.ConfigValue
-        $GetMaxMemory = $sql.Configuration.MaxServerMemory.ConfigValue
-    }
+    Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'     
+    $currentValues = Get-TargetResource @PSBoundParameters
+    $getMinMemory = $currentValues.MinMemory
+    $getMaxMemory = $currentValues.MaxMemory
 
     switch($Ensure)
     {
-        "Absent"
+        'Absent'
         {
-            if ($GetMaxMemory  -eq 2147483647)
+            if ($getMaxMemory -ne 2147483647)
             {
-                New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
-                return $true
+                New-VerboseMessage -Message "Current Max Memory is $getMaxMemory. Expected 2147483647"
+                return $false
             }
-            else 
+
+            if ($getMinMemory -ne 0)
             {
-                New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
+                New-VerboseMessage -Message "Current Min Memory is $getMinMemory. Expected 0"
                 return $false
             }
         }
-        "Present"
-        {      
-       
-             If ($DynamicAlloc)
-             {
-                 if ($GetMaxMemory  -eq 2147483647)
-                 {
-                     New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
-                     return $false
-                 }
-                 else 
-                 {
-                     New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
-                     return $true
-                 }
-             }
-             else
-             {
-                 If(($MinMemory -ge 0 -and $MinMemory -ne $GetMinMemory) -or $MaxMemory -ne $GetMaxMemory)
-                 {
-                    New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
-                    return $false
-                 }
-                 else
-                 {
-                    New-VerboseMessage -Message "Current Max Memory is $GetMaxMemory. Min Memory is $GetMinMemory"
-                    return $true
-                 }
-             }
+
+        'Present'
+        {
+            if ($DynamicAlloc)
+            {
+                if ($MinMemory -and $MaxMemory)
+                {
+                    throw New-TerminatingError -ErrorType 'MinMaxMemoryParamMustBeNull' `
+                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                                -ErrorCategory InvalidArgument  
+                }
+
+                $MaxMemory = Get-SqlDscDynamicMaxMemory
+                $MinMemory = 128
+            }
+
+            if ($MaxMemory -ne $getMaxMemory)
+            {
+                New-VerboseMessage -Message "Current Max Memory is $getMaxMemory, expected $MaxMemory"
+                return $false
+            }
+
+            if ($MinMemory -ne $getMinMemory)
+            {
+                New-VerboseMessage -Message "Current Min Memory is $getMinMemory, expected $MinMemory"
+                return $false
+            }
         }
     }
+
+    $true
 }
 
-
 Export-ModuleMember -Function *-TargetResource
-
