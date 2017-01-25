@@ -588,7 +588,15 @@ None.
 
 ### xSQLServerMemory
 
-No description.
+This resource set the min server memory and max server memory configuration option.
+The default setting for min server memory is 0, and the default setting for max server memory is 2147483647 MB.
+Read more about  min server memory and max server memory in this article [Server Memory Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms178067.aspx)
+
+#### Formula for dynamically allocating max memory
+SQL Max Memory = TotalPhyMem - (NumOfSQLThreads * ThreadStackSize) - (1GB * CEILING(NumOfCores/4)) - OS Reserved
+NumOfSQLThreads = 256 + (NumOfProcessors*- 4) * 8 (* If NumOfProcessors > 4, else 0)
+ThreadStackSize = 1MB on x86 or 2MB on x64 or 4 MB on 64-bit (IA64)
+OS Reserved = 20% of total ram for under if system has 15GB. 12.5% for over 20GB
 
 #### Requirements
 
@@ -597,16 +605,18 @@ No description.
 
 #### Parameters
 
-* **[String] SQLInstance** _(Key)_: The SQL instance for the database
-* **[Boolean] DyamicAlloc** _(Key)_: Flag to indicate if Memory is dynamically configured
-* **[String] Ensure** _(Write)_: An enumerated value that describes if Min and Max memory is configured. { *Present* | Absent }.
-* **[Sint32] MinMemory** _(Write)_: Minimum memory value to set SQL Server memory to
-* **[Sint32] MaxMemory** _(Write)_: Maximum memory value to set SQL Server memory to
-* **[String] SQLServer** _(Write)_: The SQL Server for the database
+* **[String] SQLInstance** _(Key)_: The name of the SQL instance to be configured.
+* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured.
+* **[Boolean] DyamicAlloc** _(Write)_: If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory and MinMemory must be set to $null or not be configured.
+* **[String] Ensure** _(Write)_: When set to 'Present' then min and max memory will be set to either the value in parameter MinMemory and MaxMemory or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' min and max memory will be set to default value. { *Present* | Absent }.
+* **[Sint32] MinMemory** _(Write)_: Minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
+* **[Sint32] MaxMemory** _(Write)_: Maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
 
 #### Examples
 
-None.
+* [Set SQLServerMaxMemory to 12GB](/Examples/Resources/xSQLServerMemory/1-SetMaxMemoryTo12GB.ps1)
+* [Set SQLServerMaxMemory to Auto](/Examples/Resources/xSQLServerMemory/2-SetMaxMemoryToAuto.ps1)
+* [Set SQLServerMaxMemory to Default](/Examples/Resources/xSQLServerMemory/3-SetMaxMemoryToDefault.ps1)
 
 ### xSQLServerNetwork
 
