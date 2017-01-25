@@ -110,15 +110,14 @@ function Set-TargetResource
             {
                 if ($DynamicAlloc)
                 {
-                    if ($MinMemory -and $MaxMemory)
+                    if ($MaxMemory)
                     {
-                        throw New-TerminatingError -ErrorType 'MinMaxMemoryParamMustBeNull' `
+                        throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNull' `
                                                    -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                    -ErrorCategory InvalidArgument  
                     }
 
                     $MaxMemory = Get-SqlDscDynamicMaxMemory
-                    $MinMemory = 128
                     New-VerboseMessage -Message "Dynamic MaxMemory is $MaxMemory."
                 }
                 else
@@ -136,7 +135,7 @@ function Set-TargetResource
             {
                 $MaxMemory = 2147483647
                 $MinMemory = 0
-                New-VerboseMessage -Message 'Ensure is absent - Min and Max Memory reset to default value'
+                New-VerboseMessage -Message 'Ensure is absent - Minimum and maximum server memory reset to default value'
             }
         }
 
@@ -145,7 +144,7 @@ function Set-TargetResource
             $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
             $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
             $sqlServerObject.Alter()
-            New-VerboseMessage -Message "SQL Server Memory has been capped to $MaxMemory. MinMemory set to $MinMemory."
+            New-VerboseMessage -Message "SQL Server Memory has been capped to $MaxMemory. Minimum server memory set to $MinMemory."
         }
         catch
         {
@@ -210,8 +209,15 @@ function Test-TargetResource
         $MaxMemory
     )
 
-    Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'  
-    $currentValues = Get-TargetResource @PSBoundParameters
+    Write-Verbose -Message 'Testing the min and max of memory server configuration option'  
+
+    $parameters = @{
+        SQLInstanceName = $PSBoundParameters.SQLInstanceName
+        SQLServer = $PSBoundParameters.SQLServer
+    }
+
+    $currentValues = Get-TargetResource @parameters
+    
     $getMinMemory = $currentValues.MinMemory
     $getMaxMemory = $currentValues.MaxMemory
     $isServerMemoryInDesiredState = $true
@@ -222,13 +228,13 @@ function Test-TargetResource
         {
             if ($getMaxMemory -ne 2147483647)
             {
-                New-VerboseMessage -Message "Current Max Memory is $getMaxMemory. Expected 2147483647"
+                New-VerboseMessage -Message "Current maximum server memory is $getMaxMemory. Expected 2147483647"
                 $isServerMemoryInDesiredState = $false
             }
 
             if ($getMinMemory -ne 0)
             {
-                New-VerboseMessage -Message "Current Min Memory is $getMinMemory. Expected 0"
+                New-VerboseMessage -Message "Current minimum server memory is $getMinMemory. Expected 0"
                 $isServerMemoryInDesiredState = $false
             }
         }
@@ -239,24 +245,24 @@ function Test-TargetResource
             {
                 if ($MinMemory -and $MaxMemory)
                 {
-                    throw New-TerminatingError -ErrorType 'MinMaxMemoryParamMustBeNull' `
+                    throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNull' `
                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                -ErrorCategory InvalidArgument  
                 }
 
                 $MaxMemory = Get-SqlDscDynamicMaxMemory
-                $MinMemory = 128
+                New-VerboseMessage -Message "Dynamic MaxMemory is $MaxMemory."
             }
 
             if ($MaxMemory -ne $getMaxMemory)
             {
-                New-VerboseMessage -Message "Current Max Memory is $getMaxMemory, expected $MaxMemory"
+                New-VerboseMessage -Message "Current maximum server memory is $getMaxMemory, expected $MaxMemory"
                 $isServerMemoryInDesiredState = $false
             }
 
             if ($MinMemory -ne $getMinMemory)
             {
-                New-VerboseMessage -Message "Current Min Memory is $getMinMemory, expected $MinMemory"
+                New-VerboseMessage -Message "Current minimum server memory is $getMinMemory, expected $MinMemory"
                 $isServerMemoryInDesiredState = $false
             }
         }
