@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
-    This example shows how to set max degree of parallelism server
-    configuration option with the value equal to 1.
+    This example shows how to set max degree of parallelism server 
+    configuration option with the default configuration.
 #>
 Configuration Example
 {
@@ -17,11 +17,9 @@ Configuration Example
 
     node localhost
     {
-        xSQLServerMaxDop Set_SQLServerMaxDop_ToOne
+        xSQLServerMaxDop Set_SQLServerMaxDop_ToDefault
         {
-            Ensure = 'Present'
-            DynamicAlloc = $false
-            MaxDop = 1
+            Ensure = 'Absent'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
