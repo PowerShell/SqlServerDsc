@@ -590,13 +590,14 @@ None.
 
 This resource set the min server memory and max server memory configuration option.
 The default setting for min server memory is 0, and the default setting for max server memory is 2147483647 MB.
-Read more about  min server memory and max server memory in this article [Server Memory Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms178067.aspx)
+Read more about  min server memory and max server memory in this article [Server Memory Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms178067.aspx).
 
 #### Formula for dynamically allocating max memory
-SQL Max Memory = TotalPhyMem - (NumOfSQLThreads * ThreadStackSize) - (1GB * CEILING(NumOfCores/4)) - OS Reserved
-NumOfSQLThreads = 256 + (NumOfProcessors*- 4) * 8 (* If NumOfProcessors > 4, else 0)
-ThreadStackSize = 1MB on x86 or 2MB on x64 or 4 MB on 64-bit (IA64)
-OS Reserved = 20% of total ram for under if system has 15GB. 12.5% for over 20GB
+
+* SQL Max Memory = TotalPhyMem - (NumOfSQLThreads * ThreadStackSize) - (1GB * CEILING(NumOfCores/4)) - OS Reserved.
+* NumOfSQLThreads = 256 + (NumOfProcessors*- 4) * 8 (* If NumOfProcessors > 4, else 0).
+* ThreadStackSize = 1MB on x86 or 2MB on x64 or 4 MB on 64-bit (IA64).
+* OS Reserved = 20% of total ram for under if system has 15GB. 12.5% for over 20GB.
 
 #### Requirements
 

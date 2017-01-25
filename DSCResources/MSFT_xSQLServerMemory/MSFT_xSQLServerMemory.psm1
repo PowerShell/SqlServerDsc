@@ -210,10 +210,11 @@ function Test-TargetResource
         $MaxMemory
     )
 
-    Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'     
+    Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'  
     $currentValues = Get-TargetResource @PSBoundParameters
     $getMinMemory = $currentValues.MinMemory
     $getMaxMemory = $currentValues.MaxMemory
+    $isServerMemoryInDesiredState = $true
 
     switch ($Ensure)
     {
@@ -222,13 +223,13 @@ function Test-TargetResource
             if ($getMaxMemory -ne 2147483647)
             {
                 New-VerboseMessage -Message "Current Max Memory is $getMaxMemory. Expected 2147483647"
-                return $false
+                $isServerMemoryInDesiredState = $false
             }
 
             if ($getMinMemory -ne 0)
             {
                 New-VerboseMessage -Message "Current Min Memory is $getMinMemory. Expected 0"
-                return $false
+                $isServerMemoryInDesiredState = $false
             }
         }
 
@@ -250,18 +251,18 @@ function Test-TargetResource
             if ($MaxMemory -ne $getMaxMemory)
             {
                 New-VerboseMessage -Message "Current Max Memory is $getMaxMemory, expected $MaxMemory"
-                return $false
+                $isServerMemoryInDesiredState = $false
             }
 
             if ($MinMemory -ne $getMinMemory)
             {
                 New-VerboseMessage -Message "Current Min Memory is $getMinMemory, expected $MinMemory"
-                return $false
+                $isServerMemoryInDesiredState = $false
             }
         }
     }
 
-    $true
+    return $isServerMemoryInDesiredState
 }
 
 Export-ModuleMember -Function *-TargetResource
