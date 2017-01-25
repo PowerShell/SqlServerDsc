@@ -1,0 +1,9 @@
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAlwaysOnAvailabilityGroup")]
+class MSFT_xSQLServerAlwaysOnAvailabilityGroupReplica : OMI_BaseResource
+{
+    [Key, Description("The name of the availability group replica.")] String Name;
+    [Key, Description("The name of the availability group.")] String AvailabilityGroupName;
+    [Key, Description("Hostname of the SQL Server to be configured.")] String SQLServer;
+    [Key, Description("Name of the SQL instance to be configued.")] String SQLInstanceName;
+    [Write, Description("Specifies if the availability group should be present or absent. Default is Present."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+};
