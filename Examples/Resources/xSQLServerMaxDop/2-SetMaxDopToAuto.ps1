@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
-    This example shows how to set max degree of parallelism Server Configuration Option
-    with the automatic configuration.
+    This example shows how to set max degree of parallelism server 
+    configuration option with the automatic configuration.
 #>
 Configuration Example
 {
