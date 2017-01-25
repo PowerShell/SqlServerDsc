@@ -1742,49 +1742,58 @@ function Remove-SqlDatabasePermission
 #>
 function Get-SqlDscDynamicMaxMemory
 {
-    $physicalMemory = Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object -Process {
-        "{0:N2}" -f ([Math]::round($_.Sum / 1MB))
-    }
-    
-    # Find how much to save for OS: 20% of total ram for under 15GB / 12.5% for over 20GB
-    if ($physicalMemory -ge 20480)
+    try
     {
-        $osMemReserved = [Math]::round((0.125 * $physicalMemory))
-    }
-    else
-    {
-        $osMemReserved = [Math]::round((0.2 * $physicalMemory))
-    }
+        $physicalMemory = Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object -Process {
+            "{0:N2}" -f ([Math]::round($_.Sum / 1MB))
+        }
+        
+        # Find how much to save for OS: 20% of total ram for under 15GB / 12.5% for over 20GB
+        if ($physicalMemory -ge 20480)
+        {
+            $osMemReserved = [Math]::round((0.125 * $physicalMemory))
+        }
+        else
+        {
+            $osMemReserved = [Math]::round((0.2 * $physicalMemory))
+        }
 
-    $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
-    $numLogicalCpu = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
+        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
+        $numLogicalCpu = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
 
-    # Find Number of SQL Threads = 256 + (NumofProcesors - 4) * 8
-    if ($numLogicalCpu -ge 4)
-    {
-        $numOfSQLThreads = 256 + ($numLogicalCpu - 4) * 8
-    }
-    else
-    {
-        $numOfSQLThreads = 0
-    }
+        # Find Number of SQL Threads = 256 + (NumofProcesors - 4) * 8
+        if ($numLogicalCpu -ge 4)
+        {
+            $numOfSQLThreads = 256 + ($numLogicalCpu - 4) * 8
+        }
+        else
+        {
+            $numOfSQLThreads = 0
+        }
 
-    # Find ThreadStackSize 1MB x86/ 2MB x64/ 4MB IA64
-    $osArchitecture = (Get-CimInstance Win32_operatingsystem).OSArchitecture
-    if ($osArchitecture -eq '32-bit')
-    {
-        $ThreadStackSize = 1
-    }
-    elseif ($osArchitecture -eq '64-bit')
-    {
-        $ThreadStackSize = 2
-    }
-    else
-    {
-        $ThreadStackSize = 4
-    }
+        # Find ThreadStackSize 1MB x86/ 2MB x64/ 4MB IA64
+        $osArchitecture = (Get-CimInstance Win32_operatingsystem).OSArchitecture
+        if ($osArchitecture -eq '32-bit')
+        {
+            $ThreadStackSize = 1
+        }
+        elseif ($osArchitecture -eq '64-bit')
+        {
+            $ThreadStackSize = 2
+        }
+        else
+        {
+            $ThreadStackSize = 4
+        }
 
-    $maxMemory = $physicalMemory - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numLogicalCpu / 4))
+        $maxMemory = $physicalMemory - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numLogicalCpu / 4))
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxMemory' `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
+    }
 
     $maxMemory
 }
