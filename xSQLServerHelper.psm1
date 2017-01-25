@@ -1812,6 +1812,4 @@ function Invoke-Query
             throw New-TerminatingError -ErrorType ExecuteNonQueryFailed -FormatArgs $Database -ErrorCategory NotSpecified
         }
     }
-
-    return $result
 }
