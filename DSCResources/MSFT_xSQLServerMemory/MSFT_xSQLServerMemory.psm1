@@ -187,11 +187,14 @@ function Test-TargetResource
     param
     (
         [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $SQLServer,
 
         [ValidateSet("Present","Absent")]
         [System.String]
@@ -212,7 +215,7 @@ function Test-TargetResource
     $getMinMemory = $currentValues.MinMemory
     $getMaxMemory = $currentValues.MaxMemory
 
-    switch($Ensure)
+    switch ($Ensure)
     {
         'Absent'
         {
@@ -236,8 +239,8 @@ function Test-TargetResource
                 if ($MinMemory -and $MaxMemory)
                 {
                     throw New-TerminatingError -ErrorType 'MinMaxMemoryParamMustBeNull' `
-                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
-                                                -ErrorCategory InvalidArgument  
+                                               -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                               -ErrorCategory InvalidArgument  
                 }
 
                 $MaxMemory = Get-SqlDscDynamicMaxMemory
