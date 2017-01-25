@@ -3,22 +3,23 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -Force
 <#
     .SYNOPSIS
-    This function gets the max degree of parallelism Server Configuration Option
+    This function gets the max degree of parallelism server configuration option.
 
     .PARAMETER SQLServer
-    This is a the SQL Server for the database
+    The host name of the SQL Server to be configured.
 
     .PARAMETER SQLInstanceName
-    This is a the SQL instance for the database
+    The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
     This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
 
     .PARAMETER DynamicAlloc
-    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+    If set to $true then max degree of parallelism will be dynamically configured.
+    When this is set parameter is set to $true, the parameter MaxDop must be set to $null or not be configured.
 
-    .PARAMETER DynamicAlloc
-    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
+    .PARAMETER MaxDop
+    A numeric value to limit the number of processors used in parallel plan execution.
 #>
 function Get-TargetResource
 {
@@ -48,24 +49,23 @@ function Get-TargetResource
         $MaxDop
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if ($sql)
+    if ($sqlServerObject)
     {
-        Write-Verbose -Message 'Getting the max degree of parallelism Server Configuration Option'
-        $currentMaxDop = $sql.Configuration.MaxDegreeOfParallelism.ConfigValue
+        Write-Verbose -Message 'Getting the max degree of parallelism server configuration option'
+        $currentMaxDop = $sqlServerObject.Configuration.MaxDegreeOfParallelism.ConfigValue
 
         if ($DynamicAlloc)
         {
             if ($MaxDop)
             {
-                Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
-                throw New-TerminatingError -ErrorType ParameterConflict `
+                throw New-TerminatingError -ErrorType 'MaxDopParamMustBeNull' `
                                            -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                            -ErrorCategory InvalidArgument  
             }
 
-            $dynamicMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
+            $dynamicMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sqlServerObject
             New-VerboseMessage -Message "Dynamic MaxDop is $dynamicMaxDop."
 
             if ($currentMaxDop -eq $dynamicMaxDop)
@@ -111,22 +111,23 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    This function sets the max degree of parallelism Server Configuration Option
+    This function sets the max degree of parallelism server configuration option.
 
     .PARAMETER SQLServer
-    This is a the SQL Server for the database
+    The host name of the SQL Server to be configured.
 
     .PARAMETER SQLInstanceName
-    This is a the SQL instance for the database
+    The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
     This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
 
     .PARAMETER DynamicAlloc
-    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+    If set to $true then max degree of parallelism will be dynamically configured.
+    When this is set parameter is set to $true, the parameter MaxDop must be set to $null or not be configured.
 
-    .PARAMETER DynamicAlloc
-    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
+    .PARAMETER MaxDop
+    A numeric value to limit the number of processors used in parallel plan execution.
 #>
 function Set-TargetResource
 {
@@ -155,26 +156,25 @@ function Set-TargetResource
         $MaxDop
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if ($sql)
+    if ($sqlServerObject)
     {
-        Write-Verbose -Message 'Setting the max degree of parallelism Server Configuration Option'
+        Write-Verbose -Message 'Setting the max degree of parallelism server configuration option'
         switch ($Ensure)
         {
-            "Present"
+            'Present'
             {
                 if ($DynamicAlloc)
                 {
                     if ($MaxDop)
                     {
-                        Write-Warning -Message 'MaxDop paramater must be null if DynamicAlloc set to true'
-                        throw New-TerminatingError -ErrorType ParameterConflict `
+                        throw New-TerminatingError -ErrorType 'MaxDopParamMustBeNull' `
                                                    -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                    -ErrorCategory InvalidArgument  
                     }
 
-                    $targetMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sql
+                    $targetMaxDop = Get-SqlDscDynamicMaxDop -SqlServerObject $sqlServerObject
                     New-VerboseMessage -Message "Dynamic MaxDop is $targetMaxDop."
                 }
                 else
@@ -183,7 +183,7 @@ function Set-TargetResource
                 }
             }
             
-            "Absent"
+            'Absent'
             {
                 $targetMaxDop = 0
                 New-VerboseMessage -Message 'Ensure is absent - MAXDOP reset to default value'
@@ -192,13 +192,13 @@ function Set-TargetResource
 
         try
         {
-            $sql.Configuration.MaxDegreeOfParallelism.ConfigValue = $targetMaxDop
-            $sql.Alter()
+            $sqlServerObject.Configuration.MaxDegreeOfParallelism.ConfigValue = $targetMaxDop
+            $sqlServerObject.Alter()
             New-VerboseMessage -Message "Set MaxDop to $targetMaxDop"
         }
         catch
         {
-            throw New-TerminatingError -ErrorType MaxDopGetError `
+            throw New-TerminatingError -ErrorType MaxDopSetError `
                                        -FormatArgs @($SQLServer,$SQLInstanceName,$targetMaxDop) `
                                        -ErrorCategory InvalidOperation `
                                        -InnerException $_.Exception
@@ -208,22 +208,23 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    This function tests the max degree of parallelism Server Configuration Option
+    This function tests the max degree of parallelism server configuration option.
 
     .PARAMETER SQLServer
-    This is a the SQL Server for the database
+    The host name of the SQL Server to be configured.
 
     .PARAMETER SQLInstanceName
-    This is a the SQL instance for the database
+    The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
     This is The Ensure Set to 'present' to specificy that the MAXDOP should be configured.
 
     .PARAMETER DynamicAlloc
-    This is the boolean DynamicAlloc to configure automatically the MAXDOP configuration option
+    If set to $true then max degree of parallelism will be dynamically configured.
+    When this is set parameter is set to $true, the parameter MaxDop must be set to $null or not be configured.
 
-    .PARAMETER DynamicAlloc
-    This is the numeric MaxDop to specify the value of the MAXDOP configuration option
+    .PARAMETER MaxDop
+    A numeric value to limit the number of processors used in parallel plan execution.
 #>
 function Test-TargetResource
 {
@@ -253,7 +254,7 @@ function Test-TargetResource
         $MaxDop
     )
 
-    Write-Verbose -Message 'Testing the max degree of parallelism Server Configuration Option'
+    Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'
      
     $currentValues = Get-TargetResource @PSBoundParameters
     $PSBoundParameters.Ensure = $Ensure
