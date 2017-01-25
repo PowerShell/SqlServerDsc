@@ -594,8 +594,8 @@ Read more about  min server memory and max server memory in this article [Server
 
 #### Formula for dynamically allocating max memory
 
-* SQL Max Memory = TotalPhyMem - (NumOfSQLThreads * ThreadStackSize) - (1GB * CEILING(NumOfCores/4)) - OS Reserved.
-* NumOfSQLThreads = 256 + (NumOfProcessors*- 4) * 8 (* If NumOfProcessors > 4, else 0).
+* SQL Max Memory = TotalPhyMem - (NumOfSQLThreads x ThreadStackSize) - (1GB x CEILING(NumOfCores/4)) - OS Reserved.
+* NumOfSQLThreads = 256 + (NumOfCores - 4) x 8 (If NumOfCores > 4, else NumOfSQLThreads = 0).
 * ThreadStackSize = 1MB on x86 or 2MB on x64 or 4 MB on 64-bit (IA64).
 * OS Reserved = 20% of total ram for under if system has 15GB. 12.5% for over 20GB.
 
