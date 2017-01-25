@@ -788,6 +788,14 @@ function Set-TargetResource
         }
     }
 
+    # Add the failover cluster network name if the action is either installing or completing a cluster
+    if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
+    {
+        $setupArguments += @{
+            FailoverClusterNetworkName = $FailoverClusterNetworkName
+        };
+    }
+
     # Perform disk mapping for specific cluster installation types
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
@@ -855,7 +863,7 @@ function Set-TargetResource
                     if (Test-IPAddress -IPAddress $address -NetworkID $network.Address -SubnetMask $network.AddressMask)
                     {
                         # Add the formatted string to our array
-                        $clusterIPAddresses += "IPv4; $address; $($network.Name); $($network.AddressMask)"
+                        $clusterIPAddresses += "IPv4;$address;$($network.Name);$($network.AddressMask)"
                     }
                 }
             }
