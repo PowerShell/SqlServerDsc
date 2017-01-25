@@ -594,6 +594,7 @@ Read more about max degree of parallelism in this article [Configure the max deg
 
 * [Set SQLServerMaxDop to 1](/Examples/Resources/xSQLServerMaxDop/1-SetMaxDopToOne.ps1)
 * [Set SQLServerMaxDop to Auto](/Examples/Resources/xSQLServerMaxDop/2-SetMaxDopToAuto.ps1)
+* [Set SQLServerMaxDop to Default](/Examples/Resources/xSQLServerMaxDop/3-SetMaxDopToDefault.ps1)
 
 ### xSQLServerMemory
 
