@@ -777,7 +777,7 @@ function Set-TargetResource
 
     $setupArguments = @{}
 
-    if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
+    if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster'))
     {
         # Set the group name for this clustered instance.
         $setupArguments += @{ 
@@ -840,7 +840,7 @@ function Set-TargetResource
     }
 
     # Determine network mapping for specific cluster installation types
-    if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
+    if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
         $clusterIPAddresses = @()
 
@@ -907,6 +907,19 @@ function Set-TargetResource
     if ($null -ne $BrowserSvcStartupType)
     {
         $argumentVars += 'BrowserSvcStartupType'
+    }
+
+    if ($Action -eq "AddNode")
+    {
+        if ($PSBoundParameters.ContainsKey('SQLSvcAccount'))
+        {
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $SQLSvcAccount -ServiceType 'SQL')
+        }
+
+        if($PSBoundParameters.ContainsKey('AgtSvcAccount'))
+        {
+            $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $AgtSvcAccount -ServiceType 'AGT')
+        }
     }
 
     if ($Features.Contains('SQLENGINE'))
@@ -1066,7 +1079,7 @@ function Set-TargetResource
         Path = $pathToSetupExecutable
         Arguments = $arguments
     };
-    if ($Action -in @('InstallFailoverCluster'))
+    if ($Action -in @('InstallFailoverCluster','AddNode'))
     {
         $processArgs.Add('Credential',$SetupCredential);
     }

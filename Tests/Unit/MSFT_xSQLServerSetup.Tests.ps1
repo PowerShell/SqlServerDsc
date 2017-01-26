@@ -101,7 +101,11 @@ try
         $mockSetupCredential = New-Object System.Management.Automation.PSCredential( $mockmockSetupCredentialUserName, $mockmockSetupCredentialPassword )
 
         $mockSqlServiceAccount = 'COMPANY\SqlAccount'
+        $mockSqlServicePassword = 'Sqls3v!c3P@ssw0rd';
+        $mockSQLServiceCredential = new-object System.Management.Automation.PSCredential($mockSqlServiceAccount,($mockSQLServicePassword | Convertto-SecureString -AsPlainText -Force));
         $mockAgentServiceAccount = 'COMPANY\AgentAccount'
+        $mockAgentServicePassword = 'Ag3ntP@ssw0rd';
+        $mockSQLAgentCredential = new-object System.Management.Automation.PSCredential($mockAgentServiceAccount,($mockAgentServicePassword | Convertto-SecureString -AsPlainText -Force));
 
         $mockClusterNodes = @($env:COMPUTERNAME,'SQL01','SQL02')
 
@@ -726,7 +730,6 @@ try
 
             foreach ($argumentKey in $mockStartWin32ProcessExpectedArgument.Keys)
             {
-                New-VerboseMessage "Testing Parameter [$argumentKey]"
                 $argumentPassed = $argumentHashTable.ContainsKey($argumentKey)
                 $argumentPassed | Should Be $true
 
@@ -3046,6 +3049,77 @@ try
                     }
                 }
 
+                # For testing AddNode action
+                Context "When SQL Server version is $mockSQLMajorVersion and the system is not in the desired state and the action is AddNode" {
+                    BeforeAll {
+                        $testParameters = $mockDefaultClusterParameters.Clone()
+
+                        $testParameters += @{
+                            InstanceName = 'MSSQLSERVER'
+                            SourcePath = $mockSourcePath
+                            Action = 'AddNode'
+                            AgtSvcAccount = $mockSQLAgentCredential
+                            SqlSvcAccount = $mockSQLServiceCredential
+                        }
+
+                        $testParameters.Remove("Features");
+                        $testParameters.Remove("SQLUserDBDir");
+                        $testParameters.Remove("SQLUserDBLogDir");
+                        $testParameters.Remove("SQLTempDbDir");
+                        $testParameters.Remove("SQLTempDBlogDir");
+
+                    }
+
+                    BeforeAll {
+                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResourceGroup_AvailableStorage -ParameterFilter {
+                            $Filter -eq "Name = 'Available Storage'"
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_ResourceGroupToResource -ParameterFilter { 
+                            ($Association -eq 'MSCluster_ResourceGroupToResource') -and ($ResultClassName -eq 'MSCluster_Resource')
+                        } -Verfiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_ResourceToPossibleOwner -ParameterFilter {
+                            $Association -eq 'MSCluster_ResourceToPossibleOwner'
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSCluster_DiskPartition -ParameterFilter {
+                            $ResultClassName -eq 'MSCluster_DiskPartition'
+                        } -Verifiable
+
+                        Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
+                            ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
+                        } -Verifiable
+                    }
+
+                    It 'Should pass proper parameters to setup' {
+                        $mockStartWin32ProcessExpectedArgument = @{
+                            IAcceptSQLServerLicenseTerms = 'True'
+                            Quiet = 'True'
+                            Action = 'AddNode'
+                            InstanceName = 'MSSQLSERVER'
+                            AgtSvcAccount = $mockAgentServiceAccount
+                            AgtSvcPassword = $mockSqlAgentCredential.GetNetworkCredential().Password
+                            SqlSvcAccount = $mockSqlServiceAccount
+                            SqlSvcPassword = $mockSQLServiceCredential.GetNetworkCredential().Password
+
+                        }
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+
+                    It 'Should pass the SetupCredential object to the StartWin32Process function' {
+                        $mockStartWin32Process_SetupCredential = {
+                            $Credential | Should Not Be $null;
+                            return "Process started.";
+                        }
+
+                        Mock -CommandName StartWin32Process -MockWith $mockStartWin32Process_SetupCredential;
+
+                        { Set-TargetResource @testParameters } | Should Not Throw
+                    }
+                }
+                
                 # For testing InstallFailoverCluster action
                 Context "When SQL Server version is $mockSQLMajorVersion and the system is not in the desired state and the action is InstallFailoverCluster" {
                     BeforeAll {
