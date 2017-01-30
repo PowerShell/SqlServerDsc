@@ -700,16 +700,16 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
             }
             
-            It 'Should throw the correct error, CreateAgReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 12' {
+            It 'Should throw the correct error, CreateAvailabilityGroupReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 12' {
                 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
-                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAgReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAvailabilityGroupReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $absentAg.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAgReplicaFailed'
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -722,16 +722,16 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
             }
 
-            It 'Should throw the correct error, CreateAgReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 13' {
+            It 'Should throw the correct error, CreateAvailabilityGroupReplicaFailed, when Ensure is set to Present, but the Availability Group Replica failed to create and the SQL version is 13' {
                 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
-                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAgReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAvailabilityGroupReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $absentAg.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAgReplicaFailed'
+                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
