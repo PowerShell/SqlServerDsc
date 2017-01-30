@@ -375,16 +375,7 @@ function Test-TargetResource
                     }
                     
                     if ( $getTargetResourceResult.($psBoundParameter.Key) -ne $psBoundParameter.Value )
-                    {
-                        if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
-                        {                          
-                            # Move on to the next property if the instance is not at least SQL Server 2016
-                            if ( $getTargetResourceResult.Version -lt 13 )
-                            {
-                                continue
-                            }
-                        }
-                        
+                    {                        
                         New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($getTargetResourceResult.($psBoundParameter.Key))'"
                         
                         $result = $False
