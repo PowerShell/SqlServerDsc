@@ -58,9 +58,10 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
+* [**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent
 * [**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases
-* [**xSQLServerAlwaysOnAvailabilityGroup**](xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
+* [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
 * [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server
 * [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener) Create or remove an availability group listener.
 * [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
@@ -90,6 +91,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 ### xSQLAOGroupEnsure
 
 No description.
+
+**This resource is deprecated.** The functionality of this resource has been replaced with * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup). Please do not use this resource for new development efforts.
 
 #### Requirements
 
@@ -170,20 +173,34 @@ No description.
 
 ### xSQLServerAlwaysOnAvailabilityGroup
 
-* **Name**: (key) The name of the availability group.
-* **SQLServer**: (key) Hostname of the SQL Server to be configured.
-* **SQLInstanceName**: (key) Name of the SQL instance to be configued.
-* **Ensure**: Specifies if the availability group should be present or absent. Default is Present.
-* **AutomatedBackupPreference**: Specifies the automated backup preference for the availability group. (Primary, SecondaryOnly, Secondary, None)
-* **AvailabilityMode**: Specifies the replica availability mode. Default is 'AsynchronousCommit'. (AsynchronousCommit, SynchronousCommit)
-* **BackupPriority**: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
-* **BasicAvailabilityGroup**: Specifies the type of availability group.
-* **ConnectionModeInPrimaryRole**: Specifies how the availability replica handles connections when in the primary role. (AllowAllConnections, AllowReadWriteConnections)
-* **ConnectionModeInSecondaryRole**: Specifies how the availability replica handles connections when in the secondary role. (AllowNoConnections, AllowReadIntentConnectionsOnly, AllowAllConnections)
-* **EndpointHostName**: Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
-* **FailureConditionLevel**: Specifies the automatic failover behavior of the availability group. (OnServerDown, OnServerUnresponsive, OnCriticalServerErrors, OnModerateServerErrors, OnAnyQualifiedFailureCondition)
-* **FailoverMode**: Specifies the failover mode. Default is 'Manual'. (Automatic, Manual"}, Values{"Automatic","Manual"}] String FailoverMode)
-* **HealthCheckTimeout**: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
+This resource is used to create, remove, and update an Always On Availability Group. It will also manage the Availability Group replica on the specified node.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2.
+* Target machine must be running SQL Server Database Engine 2012 or later.
+
+#### Parameters
+
+* **Name**: _(Key)_ The name of the availability group.
+* **SQLServer**: _(Required)_ Hostname of the SQL Server to be configured.
+* **SQLInstanceName**: _(Key)_ Name of the SQL instance to be configued.
+* **Ensure** _(Write)_: Specifies if the availability group should be present or absent. Default is Present. { *Present* | Absent }
+* **AutomatedBackupPreference** _(Write)_: Specifies the automated backup preference for the availability group. Default is None { Primary | SecondaryOnly | Secondary | *None* }
+* **AvailabilityMode** _(Write)_: Specifies the replica availability mode. Default is 'AsynchronousCommit'. { *AsynchronousCommit* | SynchronousCommit }
+* **BackupPriority** _(Write)_: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+* **BasicAvailabilityGroup** _(Write)_: Specifies the type of availability group is Basic. This is only available is SQL Server 2016 and later and is ignored when applied to previous versions.
+* **ConnectionModeInPrimaryRole** _(Write)_: Specifies how the availability replica handles connections when in the primary role. { AllowAllConnections | AllowReadWriteConnections }
+* **ConnectionModeInSecondaryRole** _(Write)_: Specifies how the availability replica handles connections when in the secondary role. { AllowNoConnections | AllowReadIntentConnectionsOnly | AllowAllConnections }
+* **EndpointHostName** _(Write)_: Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+* **FailureConditionLevel** _(Write)_: Specifies the automatic failover behavior of the availability group. { OnServerDown | OnServerUnresponsive | OnCriticalServerErrors | OnModerateServerErrors | OnAnyQualifiedFailureCondition }
+* **FailoverMode** _(Write)_: Specifies the failover mode. Default is 'Manual'. { Automatic | *Manual* }
+* **HealthCheckTimeout** _(Write)_: Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30000.
+
+#### Examples
+
+* [Add a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/1-CreateAvailabilityGroup.ps1)
+* [Remove a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/2-RemoveAvailabilityGroup.ps1)
 
 ### xSQLServerAlwaysOnService
 
