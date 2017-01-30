@@ -265,61 +265,45 @@ function Set-TargetResource
                 WithResults = $true
             }
 
-            # Using the clusSvc is preferred, so check for it first
-            if ( $serverObject.Logins[$clusterServiceName] -and -not $clusterPermissionsPresent )
+            foreach ( $loginName in @( $clusterServiceName, $ntAuthoritySystemName ) )
             {
-                # Get the effective permissions of the cluster service
-                $queryToGetEffectivePermissionsForClusterServiceAccount = "
-                    EXECUTE AS LOGIN = '$clusterServiceName'
-                    SELECT DISTINCT permission_name
-                    FROM fn_my_permissions(null,'SERVER')
-                    REVERT
-                "
-                $clusterServiceEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForClusterServiceAccount
-                $clusterServiceEffectivePermissions = $clusterServiceEffectivePermissionsResult.Tables.Rows.permission_name
+                if ( $serverObject.Logins[$loginName] -and -not $clusterPermissionsPresent )
+                {
+                    $queryToGetEffectivePermissionsForLogin = "
+                        EXECUTE AS LOGIN = '$loginName'
+                        SELECT DISTINCT permission_name
+                        FROM fn_my_permissions(null,'SERVER')
+                        REVERT
+                    "
 
-                if ( $null -ne $clusterServiceEffectivePermissions )
-                {
-                    $clusterServiceMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $clusterServiceEffectivePermissions | 
-                        Where-Object { $_.SideIndicator -ne '=>' } |
-                        Select-Object -ExpandProperty InputObject 
-                    
-                    if ( $clusterServiceMissingPermissions.Count -eq 0 )
+                    $loginEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForLogin
+                    $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
+
+                    if ( $null -ne $loginEffectivePermissions )
                     {
-                        $clusterPermissionsPresent = $true
-                    }
-                    else
-                    {
-                        New-VerboseMessage -Message "The recommended account '$clusterServiceName' is missing the following permissions: $( $clusterServiceMissingPermissions -join ', ' ). Trying with 'NT AUTHORITY\SYSTEM'."
-                    }
-                }
-            }
-            
-            # If the ClusSvc is not permissioned properly, fall back to NT AUTHORITY\SYSTEM.
-            if ( $serverObject.Logins[$ntAuthoritySystemName] -and -not $clusterPermissionsPresent )
-            {
-                # Get the effective permissions of NT AUTHORITY\SYSTEM
-                $clusterServiceEffictivePermissionsQueryNtAuthoritySystem = "
-                    EXECUTE AS LOGIN = '$ntAuthoritySystemName'
-                    SELECT DISTINCT permission_name
-                    FROM fn_my_permissions(null,'SERVER')
-                    REVERT
-                "
-                $ntAuthoritySystemEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $clusterServiceEffictivePermissionsQueryNtAuthoritySystem
-                $ntAuthoritySystemEffectivePermissions = $ntAuthoritySystemEffectivePermissionsResult.Tables.Rows.permission_name
-                if ( $null -ne $ntAuthoritySystemEffectivePermissions )
-                {
-                    $ntAuthoritySystemServiceMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $ntAuthoritySystemEffectivePermissions | 
-                                                Where-Object { $_.SideIndicator -ne '=>' } |
-                                                Select-Object -ExpandProperty InputObject 
-                    
-                    if ( $ntAuthoritySystemServiceMissingPermissions.Count -eq 0 )
-                    {
-                        $clusterPermissionsPresent = $true
-                    }
-                    else
-                    {
-                        New-VerboseMessage -Message "'$ntAuthoritySystemName' is missing the following permissions: $( $ntAuthoritySystemServiceMissingPermissions -join ', ' )"
+                        $loginMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $loginEffectivePermissions | 
+                            Where-Object { $_.SideIndicator -ne '=>' } |
+                            Select-Object -ExpandProperty InputObject 
+                        
+                        if ( $loginMissingPermissions.Count -eq 0 )
+                        {
+                            $clusterPermissionsPresent = $true
+                        }
+                        else
+                        {
+                            switch ( $loginName )
+                            {
+                                $clusterServiceName
+                                {
+                                    New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
+                                }
+
+                                $ntAuthoritySystemName
+                                {
+                                    New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                }
+                            }
+                        }
                     }
                 }
             }
