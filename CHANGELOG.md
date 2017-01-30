@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added new resources
+  - xSQLServerAlwaysOnAvailabilityGroup
+
 ## 5.0.0.0
 
 - Improvements how tests are initiated in AppVeyor
@@ -109,8 +112,6 @@
   - Removed the globally defined `$VerbosePreference = 'Continue'` from xSQLServerHelper.
   - Fixed a typo in a variable name in the function New-ListenerADObject.
   - Now Restart-SqlService will correctly show the services it restarts. Also fixed PSSA warnings.
-- Added new resources
-  - xSQLServerAlwaysOnAvailabilityGroup
 
 ## 4.0.0.0
 
