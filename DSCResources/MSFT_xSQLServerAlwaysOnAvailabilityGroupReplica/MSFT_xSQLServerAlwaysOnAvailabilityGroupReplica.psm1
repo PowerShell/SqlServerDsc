@@ -320,6 +320,114 @@ function Test-TargetResource
         [String[]]
         $ReadOnlyRoutingList
     )
+
+    $getTargetResourceParameters = @{
+        SQLInstanceName = $SQLInstanceName
+        SQLServer = $SQLServer
+        Name = $Name
+        AvailabilityGroupName = $AvailabilityGroupName
+    }
+    
+    # Assume this will pass. We will determine otherwise later
+    $result = $true
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    switch ($Ensure)
+    {
+        'Absent'
+        {
+            if ( $getTargetResourceResult.Ensure -eq 'Absent' )
+            {
+                $result = $true
+            }
+            else
+            {
+                $result = $false    
+            }
+        }
+
+        'Present'
+        {
+            $parametersToCheck = @(
+                'Name',
+                'AvailabilityGroupName',
+                'SQLServer',
+                'SQLInstanceName',
+                'Ensure',
+                'AvailabilityMode',
+                'BackupPriority',
+                'ConnectionModeInPrimaryRole',
+                'ConnectionModeInSecondaryRole',
+                'FailoverMode',
+                'ReadOnlyRoutingUrl',
+                'ReadOnlyRoutingList'
+            )
+            
+            if ( $getTargetResourceResult.Ensure -eq 'Present' )
+            {
+                foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
+                {
+                    # Make sure we don't try to validate a common parameter
+                    if ( $parametersToCheck -notcontains $psBoundParameter.Key )
+                    {
+                        continue
+                    }
+                    
+                    if ( $getTargetResourceResult.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+                    {
+                        if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
+                        {                          
+                            # Move on to the next property if the instance is not at least SQL Server 2016
+                            if ( $getTargetResourceResult.Version -lt 13 )
+                            {
+                                continue
+                            }
+                        }
+                        
+                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($getTargetResourceResult.($psBoundParameter.Key))'"
+                        
+                        $result = $False
+                    }
+                }
+
+                # Get the Endpoint URL properties
+                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $getTargetResourceResult.EndpointUrl.Replace('//','').Split(':')
+
+                if ( -not $EndpointHostName )
+                {
+                    $EndpointHostName = $getTargetResourceResult.SQLServerNetName
+                }
+                
+                # Verify the hostname in the endpoint URL is correct
+                if ( $EndpointHostName -ne $currentEndpointHostName )
+                {
+                    New-VerboseMessage -Message "'EndpointHostName' should be '$EndpointHostName' but is '$currentEndpointHostName'"
+                    $result = $false
+                }
+
+                # Verify the protocol in the endpoint URL is correct
+                if ( 'TCP' -ne $currentEndpointProtocol )
+                {
+                    New-VerboseMessage -Message "'EndpointProtocol' should be 'TCP' but is '$currentEndpointProtocol'"
+                    $result = $false
+                }
+
+                # Verify the port in the endpoint URL is correct
+                if ( $getTargetResourceResult.EndpointPort -ne $currentEndpointPort )
+                {
+                    New-VerboseMessage -Message "'EndpointPort' should be '$($getTargetResourceResult.EndpointPort)' but is '$currentEndpointPort'"
+                    $result = $false
+                }
+            }
+            else
+            {
+                $result = $false
+            }
+        }
+    }
+
+    return $result
 }
 
 Export-ModuleMember -Function *-TargetResource
