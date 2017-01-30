@@ -44,7 +44,7 @@ function Get-TargetResource
         $endpointPort = $endpoint.Protocol.Tcp.ListenerPort
     }
     
-    # Get the AG
+    # Get the Availability Group
     $availabilityGroup = $serverObject.AvailabilityGroups[$Name]
 
     if ( $availabilityGroup )
@@ -77,7 +77,7 @@ function Get-TargetResource
     }
     else 
     {
-        # Return the minimum amount of properties showing that the AG is absent
+        # Return the minimum amount of properties showing that the Availabilty Group is absent
         $alwaysOnAvailabilityGroupResource = @{
             Name = $Name
             SQLServer = $SQLServer
@@ -361,7 +361,7 @@ function Set-TargetResource
                 }
                 catch
                 {
-                    throw New-TerminatingError -ErrorType CreateAgReplicaFailed -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory OperationStopped
+                    throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory OperationStopped
                 }
 
                 # Set up the parameters for the new availability group
@@ -401,7 +401,7 @@ function Set-TargetResource
                     throw New-TerminatingError -ErrorType CreateAvailabilityGroupFailed -FormatArgs $Name,$_.Exception -ErrorCategory OperationStopped
                 }
             }
-            # Otherwise let's check each of the parameters passed and update the AG accordingly
+            # Otherwise let's check each of the parameters passed and update the Availability Group accordingly
             else
             {                
                 # Make sure we're communicating with the primary replica
@@ -435,12 +435,14 @@ function Set-TargetResource
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
+                # Make sure ConnectionModeInPrimaryRole has a value in order to avoid false positive matches when the parameter is not defined
                 if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
+                # Make sure ConnectionModeInSecondaryRole has a value in order to avoid false positive matches when the parameter is not defined
                 if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
@@ -471,6 +473,7 @@ function Set-TargetResource
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
+                # Make sure FailureConditionLevel has a value in order to avoid false positive matches when the parameter is not defined
                 if ( ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $availabilityGroup.FailureConditionLevel ) )
                 {
                     $availabilityGroup.FailureConditionLevel = $FailureConditionLevel

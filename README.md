@@ -177,15 +177,17 @@ This resource is used to create, remove, and update an Always On Availability Gr
 
 #### Requirements
 
+* Target machine must be running Windows Server 2008 R2.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' must have the 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' permissions.
 
 #### Parameters
 
-* **Name**: _(Key)_ The name of the availability group.
-* **SQLServer**: _(Required)_ Hostname of the SQL Server to be configured.
-* **SQLInstanceName**: _(Key)_ Name of the SQL instance to be configued.
+* **Name** _(Key)_: The name of the availability group.
+* **SQLServer** _(Required)_: Hostname of the SQL Server to be configured.
+* **SQLInstanceName** _(Key)_: Name of the SQL instance to be configued.
 * **Ensure** _(Write)_: Specifies if the availability group should be present or absent. Default is Present. { *Present* | Absent }
-* **AutomatedBackupPreference** _(Write)_: Specifies the automated backup preference for the availability group. Default is None { Primary | SecondaryOnly | Secondary | *None* }
+* **AutomatedBackupPreference** _(Write)_: Specifies the automated backup preference for the availability group. Default is None. { Primary | SecondaryOnly | Secondary | *None* }
 * **AvailabilityMode** _(Write)_: Specifies the replica availability mode. Default is 'AsynchronousCommit'. { *AsynchronousCommit* | SynchronousCommit }
 * **BackupPriority** _(Write)_: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 * **BasicAvailabilityGroup** _(Write)_: Specifies the type of availability group is Basic. This is only available is SQL Server 2016 and later and is ignored when applied to previous versions.

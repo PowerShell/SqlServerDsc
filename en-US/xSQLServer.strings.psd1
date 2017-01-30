@@ -21,8 +21,8 @@ FeatureNotSupported = '{0}' is not a valid value for setting 'FEATURES'.  Refer 
 # AvailabilityGroupListener
 AvailabilityGroupListenerNotFound = Trying to make a change to a listener that does not exist.
 AvailabilityGroupListenerErrorVerifyExist = Unexpected result when trying to verify existence of listener '{0}'.
-AvailabilityGroupListenerIPChangeError = IP-address configuration mismatch. Expecting '{0}' found '{1}'. Resource does not support changing IP-address. Listener needs to be removed and then created Availability Groupain.
-AvailabilityGroupListenerDHCPChangeError = IP-address configuration mismatch. Expecting '{0}' found '{1}'. Resource does not support changing between static IP and DHCP. Listener needs to be removed and then created Availability Groupain.
+AvailabilityGroupListenerIPChangeError = IP-address configuration mismatch. Expecting '{0}' found '{1}'. Resource does not support changing IP-address. Listener needs to be removed and then created again.
+AvailabilityGroupListenerDHCPChangeError = IP-address configuration mismatch. Expecting '{0}' found '{1}'. Resource does not support changing between static IP and DHCP. Listener needs to be removed and then created again.
 
 # Endpoint
 EndpointNotFound = Endpoint '{0}' does not exist
@@ -59,11 +59,10 @@ FailoverClusterIPAddressNotValid = Unable to map the specified IP Address(es) to
 FailoverClusterResourceNotFound = Could not locate a SQL Server cluster resource for instance {0}.
 
 # AlwaysOnAvailabilityGroup
-Availability GroupPropertiesNotSet = The properties on the Availability Group do not match the desired state.
 AlterAvailabilityGroupFailed = Failed to alter the availability group '{0}'.
 AlterAvailabilityGroupReplicaFailed = Failed to alter the avilability group replica '{0}'.
-ClusterPermissionsMissing = The cluster does not have permissions to manAvailability Groupe the Availability Group on '{0}\\{1}'. Grant 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' to either 'NT SERVICE\\ClusSvc' or 'NT AUTHORITY\\SYSTEM'.
-CreateAvailability GroupReplicaFailed = Creating the Availability Group Replica failed.
+ClusterPermissionsMissing = The cluster does not have permissions to manage the Availability Group on '{0}\\{1}'. Grant 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' to either 'NT SERVICE\\ClusSvc' or 'NT AUTHORITY\\SYSTEM'.
+CreateAvailabilityGroupReplicaFailed = Creating the Availability Group Replica failed.
 CreateAvailabilityGroupFailed = Creating the availability group '{0}' failed with the error '{1}'.
 DatabaseMirroringEndpointNotFound = No database mirroring endpoint was found on '{0}\{1}'.
 HadrNotEnabled = HADR is not enabled.
@@ -71,6 +70,6 @@ InstanceNotPrimaryReplica = The instance '{0}' is not the primary replica for th
 RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' from the '{1}' instance.
 
 # SQLServerHelper
-ExecuteQueryWithResultsFailed=Executing query with results failed on database '{0}'
-ExecuteNonQueryFailed=Executing non-query failed on database '{0}'
+ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
+ExecuteNonQueryFailed = Executing non-query failed on database '{0}'.
 '@

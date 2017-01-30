@@ -3,7 +3,7 @@
     This example shows how to ensure that the Availability Group 'TestAG' exists.
 #>
 
-$CreateAvailabilityGroupConfigData = @{
+$ConfigurationData = @{
     AllNodes = @(
         @{
             NodeName= '*'
