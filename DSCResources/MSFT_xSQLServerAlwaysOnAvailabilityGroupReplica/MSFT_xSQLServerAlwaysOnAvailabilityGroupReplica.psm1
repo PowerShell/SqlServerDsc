@@ -211,6 +211,12 @@ function Set-TargetResource
     
     # Connect to the instance
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+
+    # Determine if HADR is enabled on the instance. If not, throw an error
+    if ( -not $serverObject.IsHadrEnabled )
+    {
+        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory NotImplemented
+    }
 }
 
 <#
