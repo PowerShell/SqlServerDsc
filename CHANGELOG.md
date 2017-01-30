@@ -109,7 +109,8 @@
   - Removed the globally defined `$VerbosePreference = 'Continue'` from xSQLServerHelper.
   - Fixed a typo in a variable name in the function New-ListenerADObject.
   - Now Restart-SqlService will correctly show the services it restarts. Also fixed PSSA warnings.
-- Added xSQLServerAlwaysOnAvailabilityGroup
+- Added new resources
+  - xSQLServerAlwaysOnAvailabilityGroup
 
 ## 4.0.0.0
 
