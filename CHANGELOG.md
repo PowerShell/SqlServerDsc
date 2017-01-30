@@ -4,6 +4,8 @@
 
 - Changes to xSQLServerRole
   - xSQLServerRole now correctly reports that the desired state is present when the login is already a member of the server roles
+- Added new resources
+  - xSQLServerAlwaysOnAvailabilityGroup
 
 ## 5.0.0.0
 
@@ -112,8 +114,6 @@
   - Removed the globally defined `$VerbosePreference = 'Continue'` from xSQLServerHelper.
   - Fixed a typo in a variable name in the function New-ListenerADObject.
   - Now Restart-SqlService will correctly show the services it restarts. Also fixed PSSA warnings.
-- Added new resources
-  - xSQLServerAlwaysOnAvailabilityGroup
 
 ## 4.0.0.0
 

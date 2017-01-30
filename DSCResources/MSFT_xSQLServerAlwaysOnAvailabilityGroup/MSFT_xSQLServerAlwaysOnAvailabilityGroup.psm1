@@ -4,16 +4,16 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
 <#
     .SYNOPSIS
-    Gets the specified Availabilty Group.
+        Gets the specified Availabilty Group.
     
     .PARAMETER Name
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
 #>
 function Get-TargetResource
 {
@@ -45,25 +45,25 @@ function Get-TargetResource
     }
     
     # Get the AG
-    $ag = $serverObject.AvailabilityGroups[$Name]
+    $availabilityGroup = $serverObject.AvailabilityGroups[$Name]
 
-    if ( $ag )
+    if ( $availabilityGroup )
     {
         # Get all of the properties that can be set using this resource
-        $return = @{
+        $alwaysOnAvailabilityGroupResource = @{
             Name = $Name
             SQLServer = $SQLServer
             SQLInstanceName = $SQLInstanceName
             Ensure = 'Present'
-            AutomatedBackupPreference = $ag.AutomatedBackupPreference
-            AvailabilityMode = $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode
-            BackupPriority = $ag.AvailabilityReplicas[$serverObject.Name].BackupPriority
-            ConnectionModeInPrimaryRole = $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole
-            ConnectionModeInSecondaryRole = $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole
-            FailureConditionLevel = $ag.FailureConditionLevel
-            FailoverMode = $ag.AvailabilityReplicas[$serverObject.Name].FailoverMode
-            HealthCheckTimeout = $ag.HealthCheckTimeout
-            EndpointURL = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl
+            AutomatedBackupPreference = $availabilityGroup.AutomatedBackupPreference
+            AvailabilityMode = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode
+            BackupPriority = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].BackupPriority
+            ConnectionModeInPrimaryRole = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole
+            ConnectionModeInSecondaryRole = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole
+            FailureConditionLevel = $availabilityGroup.FailureConditionLevel
+            FailoverMode = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].FailoverMode
+            HealthCheckTimeout = $availabilityGroup.HealthCheckTimeout
+            EndpointURL = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl
             EndpointPort = $endpointPort
             SQLServerNetName = $serverObject.NetName
             Version = $serverObject.Version.Major
@@ -72,13 +72,13 @@ function Get-TargetResource
         # Add properties that are only present in SQL 2016 or newer
         if ( $serverObject.Version.Major -ge 13 )
         {
-            $return.Add('BasicAvailabilityGroup', $ag.BasicAvailabilityGroup)
+            $alwaysOnAvailabilityGroupResource.Add('BasicAvailabilityGroup', $availabilityGroup.BasicAvailabilityGroup)
         }
     }
     else 
     {
         # Return the minimum amount of properties showing that the AG is absent
-        $return = @{
+        $alwaysOnAvailabilityGroupResource = @{
             Name = $Name
             SQLServer = $SQLServer
             SQLInstanceName = $SQLInstanceName
@@ -86,51 +86,51 @@ function Get-TargetResource
         }
     }
 
-    return $return
+    return $alwaysOnAvailabilityGroupResource
 }
 
 <#
     .SYNOPSIS
-    Creates or removes the availability group to in accordance with the desired state.
+        Creates or removes the availability group to in accordance with the desired state.
     
     .PARAMETER Name
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group should be present or absent. Default is Present.
+        Specifies if the availability group should be present or absent. Default is Present.
 
     .PARAMETER AutomatedBackupPreference
-    Specifies the automated backup preference for the availability group.
+        Specifies the automated backup preference for the availability group.
 
     .PARAMETER AvailabilityMode
-    Specifies the replica availability mode. Default is 'AsynchronousCommit'.
+        Specifies the replica availability mode. Default is 'AsynchronousCommit'.
 
     .PARAMETER BackupPriority
-    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+        Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 
     .PARAMETER BasicAvailabilityGroup
-    Specifies the type of availability group.
+        Specifies the type of availability group is Basic. This is only available is SQL Server 2016 and later and is ignored when applied to previous versions.
 
     .PARAMETER ConnectionModeInPrimaryRole
-    Specifies how the availability replica handles connections when in the primary role.
+        Specifies how the availability replica handles connections when in the primary role.
 
     .PARAMETER ConnectionModeInSecondaryRole
-    Specifies how the availability replica handles connections when in the secondary role.
+        Specifies how the availability replica handles connections when in the secondary role.
 
     .PARAMETER EndpointHostName
-    Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
 
     .PARAMETER FailureConditionLevel
-    Specifies the automatic failover behavior of the availability group.
+        Specifies the automatic failover behavior of the availability group.
 
     .PARAMETER HealthCheckTimeout
-    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
+        Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
 #>
 function Set-TargetResource
 {
@@ -222,40 +222,40 @@ function Set-TargetResource
     $version = $serverObject.Version.Major
 
     # Get the Availabilty Group if it exists
-    $ag = $serverObject.AvailabilityGroups[$Name]
+    $availabilityGroup = $serverObject.AvailabilityGroups[$Name]
 
     switch ($Ensure)
     {
         Absent
         {
             # If the AG exists
-            if ( $ag )
+            if ( $availabilityGroup )
             {
                 # If the primary replica is currently on this instance
-                if ( $ag.PrimaryReplicaServerName -eq $serverObject.Name )
+                if ( $availabilityGroup.PrimaryReplicaServerName -eq $serverObject.Name )
                 {
                     try
                     {
-                        Remove-SqlAvailabilityGroup -InputObject $ag -ErrorAction Stop
+                        Remove-SqlAvailabilityGroup -InputObject $availabilityGroup -ErrorAction Stop
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupFailed -FormatArgs $ag.Name,$SQLInstanceName -ErrorCategory ResourceUnavailable
+                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupFailed -FormatArgs $availabilityGroup.Name,$SQLInstanceName -ErrorCategory ResourceUnavailable
                     }
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType InstanceNotPrimaryReplica -FormatArgs $SQLInstanceName,$ag.Name -ErrorCategory ResourceUnavailable
+                    throw New-TerminatingError -ErrorType InstanceNotPrimaryReplica -FormatArgs $SQLInstanceName,$availabilityGroup.Name -ErrorCategory ResourceUnavailable
                 }
             }
         }
 
         Present
         {
-            $clusSvcName = 'NT SERVICE\ClusSvc'
+            $clusterServiceName = 'NT SERVICE\ClusSvc'
             $ntAuthoritySystemName = 'NT AUTHORITY\SYSTEM'
-            $agManagementRoleName = 'AG_Management'
-            $agManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
+            $availabilityGroupManagementRoleName = 'AG_Management'
+            $availabilityGroupManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
             $clusterPermissionsPresent = $false
 
             $permissionsParams = @{
@@ -266,31 +266,31 @@ function Set-TargetResource
             }
 
             # Using the clusSvc is preferred, so check for it first
-            if ( $serverObject.Logins[$clusSvcName] -and -not $clusterPermissionsPresent )
+            if ( $serverObject.Logins[$clusterServiceName] -and -not $clusterPermissionsPresent )
             {
                 # Get the effective permissions of the cluster service
-                $clusSvcEffectPermsQueryClusSvc = "
-                    EXECUTE AS LOGIN = '$clusSvcName'
+                $queryToGetEffectivePermissionsForClusterServiceAccount = "
+                    EXECUTE AS LOGIN = '$clusterServiceName'
                     SELECT DISTINCT permission_name
                     FROM fn_my_permissions(null,'SERVER')
                     REVERT
                 "
-                $clusSvcEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQueryClusSvc
-                $clusSvcEffectPerms = $clusSvcEffectPermsResult.Tables.Rows.permission_name
+                $clusterServiceEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForClusterServiceAccount
+                $clusterServiceEffectivePermissions = $clusterServiceEffectivePermissionsResult.Tables.Rows.permission_name
 
-                if ( $null -ne $clusSvcEffectPerms )
+                if ( $null -ne $clusterServiceEffectivePermissions )
                 {
-                    $clusSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $clusSvcEffectPerms | 
+                    $clusterServiceMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $clusterServiceEffectivePermissions | 
                         Where-Object { $_.SideIndicator -ne '=>' } |
                         Select-Object -ExpandProperty InputObject 
                     
-                    if ( $clusSvcMissingPerms.Count -eq 0 )
+                    if ( $clusterServiceMissingPermissions.Count -eq 0 )
                     {
                         $clusterPermissionsPresent = $true
                     }
                     else
                     {
-                        New-VerboseMessage -Message "'$clusSvcName' is missing the following permissions: $( $clusSvcMissingPerms -join ', ' )"
+                        New-VerboseMessage -Message "The recommended account '$clusterServiceName' is missing the following permissions: $( $clusterServiceMissingPermissions -join ', ' ). Trying with 'NT AUTHORITY\SYSTEM'."
                     }
                 }
             }
@@ -299,27 +299,27 @@ function Set-TargetResource
             if ( $serverObject.Logins[$ntAuthoritySystemName] -and -not $clusterPermissionsPresent )
             {
                 # Get the effective permissions of NT AUTHORITY\SYSTEM
-                $clusSvcEffectPermsQuerySystem = "
+                $clusterServiceEffictivePermissionsQueryNtAuthoritySystem = "
                     EXECUTE AS LOGIN = '$ntAuthoritySystemName'
                     SELECT DISTINCT permission_name
                     FROM fn_my_permissions(null,'SERVER')
                     REVERT
                 "
-                $systemEffectPermsResult = Invoke-Query @permissionsParams -Query $clusSvcEffectPermsQuerySystem
-                $systemEffectPerms = $systemEffectPermsResult.Tables.Rows.permission_name
-                if ( $null -ne $systemEffectPerms )
+                $ntAuthoritySystemEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $clusterServiceEffictivePermissionsQueryNtAuthoritySystem
+                $ntAuthoritySystemEffectivePermissions = $ntAuthoritySystemEffectivePermissionsResult.Tables.Rows.permission_name
+                if ( $null -ne $ntAuthoritySystemEffectivePermissions )
                 {
-                    $systemSvcMissingPerms = Compare-Object -ReferenceObject $agManagementPerms -DifferenceObject $systemEffectPerms | 
+                    $ntAuthoritySystemServiceMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $ntAuthoritySystemEffectivePermissions | 
                                                 Where-Object { $_.SideIndicator -ne '=>' } |
                                                 Select-Object -ExpandProperty InputObject 
                     
-                    if ( $systemSvcMissingPerms.Count -eq 0 )
+                    if ( $ntAuthoritySystemServiceMissingPermissions.Count -eq 0 )
                     {
                         $clusterPermissionsPresent = $true
                     }
                     else
                     {
-                        New-VerboseMessage -Message "'$ntAuthoritySystemName' is missing the following permissions: $( $systemSvcMissingPerms -join ', ' )"
+                        New-VerboseMessage -Message "'$ntAuthoritySystemName' is missing the following permissions: $( $ntAuthoritySystemServiceMissingPermissions -join ', ' )"
                     }
                 }
             }
@@ -342,7 +342,7 @@ function Set-TargetResource
             }
             
             # If the availability group does not exist, create it
-            if ( -not $ag )
+            if ( -not $availabilityGroup )
             {
 
                 # Set up the parameters to create the AG Replica
@@ -355,9 +355,20 @@ function Set-TargetResource
                     FailoverMode = $FailoverMode
                 }
 
-                if ( $BackupPriority ) { $newReplicaParams.Add('BackupPriority',$BackupPriority) }
-                if ( $ConnectionModeInPrimaryRole ) { $newReplicaParams.Add('ConnectionModeInPrimaryRole',$ConnectionModeInPrimaryRole) }
-                if ( $ConnectionModeInSecondaryRole ) { $newReplicaParams.Add('ConnectionModeInSecondaryRole',$ConnectionModeInSecondaryRole) }
+                if ( $BackupPriority )
+                {
+                    $newReplicaParams.Add('BackupPriority',$BackupPriority)
+                }
+
+                if ( $ConnectionModeInPrimaryRole )
+                {
+                    $newReplicaParams.Add('ConnectionModeInPrimaryRole',$ConnectionModeInPrimaryRole)
+                }
+                
+                if ( $ConnectionModeInSecondaryRole )
+                {
+                    $newReplicaParams.Add('ConnectionModeInSecondaryRole',$ConnectionModeInSecondaryRole)
+                }
 
                 # Create the new replica object
                 try
@@ -376,10 +387,25 @@ function Set-TargetResource
                     AvailabilityReplica = $primaryReplica
                 }
 
-                if ( $AutomatedBackupPreference ) { $newAvailabilityGroupParams.Add('AutomatedBackupPreference',$AutomatedBackupPreference) }
-                if ( $BasicAvailabilityGroup -and ( $version -ge 13 ) ) { $newAvailabilityGroupParams.Add('BasicAvailabilityGroup',$BasicAvailabilityGroup) }
-                if ( $FailureConditionLevel ) { $newAvailabilityGroupParams.Add('FailureConditionLevel',$FailureConditionLevel) }
-                if ( $HealthCheckTimeout ) { $newAvailabilityGroupParams.Add('HealthCheckTimeout',$HealthCheckTimeout) }
+                if ( $AutomatedBackupPreference )
+                {
+                    $newAvailabilityGroupParams.Add('AutomatedBackupPreference',$AutomatedBackupPreference)
+                }
+                
+                if ( $BasicAvailabilityGroup -and ( $version -ge 13 ) )
+                {
+                    $newAvailabilityGroupParams.Add('BasicAvailabilityGroup',$BasicAvailabilityGroup)
+                }
+                
+                if ( $FailureConditionLevel )
+                {
+                    $newAvailabilityGroupParams.Add('FailureConditionLevel',$FailureConditionLevel)
+                }
+                
+                if ( $HealthCheckTimeout )
+                {
+                    $newAvailabilityGroupParams.Add('HealthCheckTimeout',$HealthCheckTimeout)
+                }
                 
                 # Create the Availabilty Group
                 try 
@@ -395,88 +421,88 @@ function Set-TargetResource
             else
             {                
                 # Make sure we're communicating with the primary replica
-                if ( $ag.LocalReplicaRole -ne 'Primary' )
+                if ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
                 {
-                    $primaryServerObject = Connect-SQL -SQLServer $ag.PrimaryReplicaServerName
-                    $ag = $primaryServerObject.AvailabilityGroups[$Name]
+                    $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
+                    $availabilityGroup = $primaryServerObject.AvailabilityGroups[$Name]
                 }
                 
-                if ( $AutomatedBackupPreference -ne $ag.AutomatedBackupPreference )
+                if ( $AutomatedBackupPreference -ne $availabilityGroup.AutomatedBackupPreference )
                 {
-                    $ag.AutomatedBackupPreference = $AutomatedBackupPreference
-                    Update-AvailabilityGroup -AvailabilityGroup $ag
+                    $availabilityGroup.AutomatedBackupPreference = $AutomatedBackupPreference
+                    Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( $AvailabilityMode -ne $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode )
+                if ( $AvailabilityMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $AvailabilityMode
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $AvailabilityMode
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( $BackupPriority -ne $ag.AvailabilityReplicas[$serverObject.Name].BackupPriority )
+                if ( $BackupPriority -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].BackupPriority )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $BackupPriority
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $BackupPriority
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( $BasicAvailabilityGroup -and ( $version -ge 13 ) -and ( $BasicAvailabilityGroup -ne $ag.BasicAvailabilityGroup ) ) 
+                if ( $BasicAvailabilityGroup -and ( $version -ge 13 ) -and ( $BasicAvailabilityGroup -ne $availabilityGroup.BasicAvailabilityGroup ) ) 
                 {
-                    $ag.BasicAvailabilityGroup = $BasicAvailabilityGroup
-                    Update-AvailabilityGroup -AvailabilityGroup $ag
+                    $availabilityGroup.BasicAvailabilityGroup = $BasicAvailabilityGroup
+                    Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole ) )
+                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole ) )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole ) )
+                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole ) )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
                 
                 # Break out the EndpointUrl properties
-                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace('//','').Split(':')
+                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace('//','').Split(':')
 
                 if ( $endpoint.Protocol.Tcp.ListenerPort -ne $currentEndpointPort )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
-                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $newEndpointUrl = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
                 if ( $EndpointHostName -ne $currentEndpointHostName )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointHostName,$EndpointHostName)
-                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $newEndpointUrl = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointHostName,$EndpointHostName)
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
                 if ( $currentEndpointProtocol -ne 'TCP' )
                 {
-                    $newEndpointUrl = $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointProtocol,'TCP')
-                    $ag.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $newEndpointUrl = $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl.Replace($currentEndpointProtocol,'TCP')
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].EndpointUrl = $newEndpointUrl
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 
-                if ( ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $ag.FailureConditionLevel ) )
+                if ( ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $availabilityGroup.FailureConditionLevel ) )
                 {
-                    $ag.FailureConditionLevel = $FailureConditionLevel
-                    Update-AvailabilityGroup -AvailabilityGroup $ag
+                    $availabilityGroup.FailureConditionLevel = $FailureConditionLevel
+                    Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( $FailoverMode -ne $ag.AvailabilityReplicas[$serverObject.Name].FailoverMode )
+                if ( $FailoverMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].FailoverMode )
                 {
-                    $ag.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $FailoverMode
-                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $ag.AvailabilityReplicas[$serverObject.Name]
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $FailoverMode
+                    Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
                 
-                if ( $HealthCheckTimeout -ne $ag.HealthCheckTimeout )
+                if ( $HealthCheckTimeout -ne $availabilityGroup.HealthCheckTimeout )
                 {
-                    $ag.HealthCheckTimeout = $HealthCheckTimeout
-                    Update-AvailabilityGroup -AvailabilityGroup $ag
+                    $availabilityGroup.HealthCheckTimeout = $HealthCheckTimeout
+                    Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
             }
         }
@@ -485,46 +511,46 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Determines if the availability group is in the desired state.
+        Determines if the availability group is in the desired state.
     
     .PARAMETER Name
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group should be present or absent. Default is Present.
+        Specifies if the availability group should be present or absent. Default is Present.
 
     .PARAMETER AutomatedBackupPreference
-    Specifies the automated backup preference for the availability group.
+        Specifies the automated backup preference for the availability group.
 
     .PARAMETER AvailabilityMode
-    Specifies the replica availability mode. Default is 'AsynchronousCommit'.
+        Specifies the replica availability mode. Default is 'AsynchronousCommit'.
 
     .PARAMETER BackupPriority
-    Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+        Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
 
     .PARAMETER BasicAvailabilityGroup
-    Specifies the type of availability group.
+        Specifies the type of availability group is Basic. This is only available is SQL Server 2016 and later and is ignored when applied to previous versions.
 
     .PARAMETER ConnectionModeInPrimaryRole
-    Specifies how the availability replica handles connections when in the primary role.
+        Specifies how the availability replica handles connections when in the primary role.
 
     .PARAMETER ConnectionModeInSecondaryRole
-    Specifies how the availability replica handles connections when in the secondary role.
+        Specifies how the availability replica handles connections when in the secondary role.
 
     .PARAMETER EndpointHostName
-    Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
 
     .PARAMETER FailureConditionLevel
-    Specifies the automatic failover behavior of the availability group.
+        Specifies the automatic failover behavior of the availability group.
 
     .PARAMETER HealthCheckTimeout
-    Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
+        Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
 #>
 function Test-TargetResource
 {
@@ -597,7 +623,7 @@ function Test-TargetResource
         $HealthCheckTimeout = 30000
     )
 
-    $parameters = @{
+    $getTargetResourceParameters = @{
         SQLInstanceName = $SQLInstanceName
         SQLServer = $SQLServer
         Name = $Name
@@ -606,13 +632,13 @@ function Test-TargetResource
     # Assume this will pass. We will determine otherwise later
     $result = $true
 
-    $state = Get-TargetResource @parameters
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
     switch ($Ensure)
     {
         'Absent'
         {
-            if ( $state.Ensure -eq 'Absent' )
+            if ( $getTargetResourceResult.Ensure -eq 'Absent' )
             {
                 $result = $true
             }
@@ -640,7 +666,7 @@ function Test-TargetResource
                 'HealthCheckTimeout'
             )
             
-            if ( $state.Ensure -eq 'Present' )
+            if ( $getTargetResourceResult.Ensure -eq 'Present' )
             {
                 foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
                 {
@@ -650,29 +676,29 @@ function Test-TargetResource
                         continue
                     }
                     
-                    if ( $state.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+                    if ( $getTargetResourceResult.($psBoundParameter.Key) -ne $psBoundParameter.Value )
                     {
                         if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
                         {                          
                             # Move on to the next property if the instance is not at least SQL Server 2016
-                            if ( $state.Version -lt 13 )
+                            if ( $getTargetResourceResult.Version -lt 13 )
                             {
                                 continue
                             }
                         }
                         
-                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($state.($psBoundParameter.Key))'"
+                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($getTargetResourceResult.($psBoundParameter.Key))'"
                         
                         $result = $False
                     }
                 }
 
                 # Get the Endpoint URL properties
-                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $state.EndpointUrl.Replace('//','').Split(':')
+                $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $getTargetResourceResult.EndpointUrl.Replace('//','').Split(':')
 
                 if ( -not $EndpointHostName )
                 {
-                    $EndpointHostName = $state.SQLServerNetName
+                    $EndpointHostName = $getTargetResourceResult.SQLServerNetName
                 }
                 
                 # Verify the hostname in the endpoint URL is correct
@@ -690,9 +716,9 @@ function Test-TargetResource
                 }
 
                 # Verify the port in the endpoint URL is correct
-                if ( $state.EndpointPort -ne $currentEndpointPort )
+                if ( $getTargetResourceResult.EndpointPort -ne $currentEndpointPort )
                 {
-                    New-VerboseMessage -Message "'EndpointPort' should be '$($state.EndpointPort)' but is '$currentEndpointPort'"
+                    New-VerboseMessage -Message "'EndpointPort' should be '$($getTargetResourceResult.EndpointPort)' but is '$currentEndpointPort'"
                     $result = $false
                 }
             }
@@ -708,10 +734,10 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-    Executes the alter method on an Availability Group object.
+        Executes the alter method on an Availability Group object.
     
     .PARAMETER AvailabilityGroup
-    The Availabilty Group object that must be altered.
+        The Availabilty Group object that must be altered.
 #>
 function Update-AvailabilityGroup
 {
@@ -740,10 +766,10 @@ function Update-AvailabilityGroup
 
 <#
     .SYNOPSIS
-    Executes the alter method on an Availability Group Replica object.
+        Executes the alter method on an Availability Group Replica object.
     
     .PARAMETER AvailabilityGroupReplica
-    The Availabilty Group Replica object that must be altered.
+        The Availabilty Group Replica object that must be altered.
 #>
 function Update-AvailabilityGroupReplica
 {

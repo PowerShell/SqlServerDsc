@@ -177,8 +177,7 @@ This resource is used to create, remove, and update an Always On Availability Gr
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2.
-* Target machine must be running SQL Server Database Engine 2012 or later.
+* 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' must have the 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' permissions.
 
 #### Parameters
 

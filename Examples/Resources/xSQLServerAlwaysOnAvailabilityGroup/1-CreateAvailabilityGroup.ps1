@@ -1,6 +1,6 @@
 <#
 .EXAMPLE
-This example shows how to ensure that the Windows user 'CONTOSO\WindowsUser' exists. 
+    This example shows how to ensure that the Availability Group 'TestAG' exists.
 #>
 
 $ConfigData = @{
