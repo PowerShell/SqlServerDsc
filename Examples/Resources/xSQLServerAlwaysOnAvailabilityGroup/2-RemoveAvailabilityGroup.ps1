@@ -3,7 +3,7 @@
 This example shows how to ensure that the Availability Group 'TestAG' does not exist.
 #>
 
-$ConfigData = @{
+$RemoveAvailabilityGroupConfigData = @{
     AllNodes = @(
         @{
             NodeName= '*'
