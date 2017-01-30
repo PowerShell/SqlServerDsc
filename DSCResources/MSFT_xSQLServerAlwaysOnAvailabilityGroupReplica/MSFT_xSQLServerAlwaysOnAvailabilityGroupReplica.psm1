@@ -43,6 +43,61 @@ function Get-TargetResource
     
     # Connect to the instance
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+
+     # Get the endpoint properties
+    $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
+    if ( $endpoint )
+    {
+        $endpointPort = $endpoint.Protocol.Tcp.ListenerPort
+    }
+
+    # Create the return object
+    $alwaysOnAvailabilityGroupReplicaResource = @{
+        Ensure = 'Absent'
+        Name = ''
+        AvailabilityGroupName = ''
+        AvailabilityMode = ''
+        BackupPriority = ''
+        ConnectionModeInPrimaryRole = ''
+        ConnectionModeInSecondaryRole = ''
+        FailoverMode = ''
+        EndpointUrl = ''
+        ReadOnlyConnectionUrl = ''
+        ReadOnlyRoutingList = @()
+        SQLServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        EndpointPort = $endpointPort
+        SQLServerNetName = $serverObject.NetName
+    }
+
+    # Get the availability group
+    $availabilityGroup = $serverObject.AvailabilityGroups[$AvailabilityGroupName]
+    
+    if ( $availabilityGroup )
+    {
+        # Add the Availability Group name to the results
+        $alwaysOnAvailabilityGroupReplicaResource.AvailabilityGroupName = $availabilityGroup.Name
+        
+        # Try to find the replica
+        $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+
+        if ( $availabilityGroupReplica )
+        {
+            # Add the Availability Group Replica properties to the results
+            $alwaysOnAvailabilityGroupReplicaResource.Ensure = 'Present'
+            $alwaysOnAvailabilityGroupReplicaResource.Name = $availabilityGroupReplica.Name
+            $alwaysOnAvailabilityGroupReplicaResource.AvailabilityMode = $availabilityGroupReplica.AvailabilityMode
+            $alwaysOnAvailabilityGroupReplicaResource.BackupPriority = $availabilityGroupReplica.BackupPriority
+            $alwaysOnAvailabilityGroupReplicaResource.ConnectionModeInPrimaryRole = $availabilityGroupReplica.ConnectionModeInPrimaryRole
+            $alwaysOnAvailabilityGroupReplicaResource.ConnectionModeInSecondaryRole = $availabilityGroupReplica.ConnectionModeInSecondaryRole
+            $alwaysOnAvailabilityGroupReplicaResource.FailoverMode = $availabilityGroupReplica.FailoverMode
+            $alwaysOnAvailabilityGroupReplicaResource.EndpointUrl = $availabilityGroupReplica.EndpointUrl
+            $alwaysOnAvailabilityGroupReplicaResource.ReadOnlyConnectionUrl = $availabilityGroupReplica.ReadOnlyConnectionUrl
+            $alwaysOnAvailabilityGroupReplicaResource.ReadOnlyRoutingList = $availabilityGroupReplica.ReadOnlyRoutingList
+        }
+    }
+
+    return $alwaysOnAvailabilityGroupReplicaResource
 }
 
 <#
@@ -62,7 +117,31 @@ function Get-TargetResource
     Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group replica should be present or absent. Default is Present.
+        Specifies if the availability group should be present or absent. Default is Present.
+
+    .PARAMETER AvailabilityMode
+        Specifies the replica availability mode. Default is 'AsynchronousCommit'.
+
+    .PARAMETER BackupPriority
+        Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+
+    .PARAMETER ConnectionModeInPrimaryRole
+        Specifies how the availability replica handles connections when in the primary role.
+
+    .PARAMETER ConnectionModeInSecondaryRole
+        Specifies how the availability replica handles connections when in the secondary role.
+
+    .PARAMETER EndpointHostName
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+
+    .PARAMETER FailoverMode
+        Specifies the failover mode. Default is Manual.
+    
+    .PARAMETER ReadOnlyRoutingUrl
+        Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.
+
+    .PARAMETER ReadOnlyRoutingList
+        Specifies an ordered list of replica server names that represent the probe sequence for connection director to use when redirecting read-only connections through this availability replica. This parameter applies if the availability replica is the current primary replica of the availability group.
 #>
 function Set-TargetResource
 {
@@ -88,7 +167,44 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Present','Absent')]
         [String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateSet('AsynchronousCommit','SynchronousCommit')]
+        [String]
+        $AvailabilityMode = 'AsynchronousCommit',
+
+        [Parameter()]
+        [ValidateRange(0,100)]
+        [UInt32]
+        $BackupPriority = 50,
+
+        [Parameter()]
+        [ValidateSet('AllowAllConnections','AllowReadWriteConnections')]
+        [String]
+        $ConnectionModeInPrimaryRole,
+
+        [Parameter()]
+        [ValidateSet('AllowNoConnections','AllowReadIntentConnectionsOnly','AllowAllConnections')]
+        [String]
+        $ConnectionModeInSecondaryRole,
+
+        [Parameter()]
+        [String]
+        $EndpointHostName,
+
+        [Parameter()]
+        [ValidateSet('Automatic','Manual')]
+        [String]
+        $FailoverMode = 'Manual',
+
+        [Parameter()]
+        [String]
+        $ReadOnlyRoutingUrl,
+
+        [Parameter()]
+        [String[]]
+        $ReadOnlyRoutingList
     )
     
     Import-SQLPSModule
@@ -99,22 +215,46 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Determines if the availability group replica is in the desired state.
+        Determines if the availability group replica is in the desired state.
     
     .PARAMETER Name
-    The name of the availability group replica.
+        The name of the availability group replica.
 
     .PARAMETER AvailabilityGroupName
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
 
     .PARAMETER Ensure
-    Specifies if the availability group should be present or absent. Default is Present.
+        Specifies if the availability group should be present or absent. Default is Present.
+
+    .PARAMETER AvailabilityMode
+        Specifies the replica availability mode. Default is 'AsynchronousCommit'.
+
+    .PARAMETER BackupPriority
+        Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+
+    .PARAMETER ConnectionModeInPrimaryRole
+        Specifies how the availability replica handles connections when in the primary role.
+
+    .PARAMETER ConnectionModeInSecondaryRole
+        Specifies how the availability replica handles connections when in the secondary role.
+
+    .PARAMETER EndpointHostName
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+
+    .PARAMETER FailoverMode
+        Specifies the failover mode. Default is Manual.
+    
+    .PARAMETER ReadOnlyRoutingUrl
+        Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.
+
+    .PARAMETER ReadOnlyRoutingList
+        Specifies an ordered list of replica server names that represent the probe sequence for connection director to use when redirecting read-only connections through this availability replica. This parameter applies if the availability replica is the current primary replica of the availability group.
 #>
 function Test-TargetResource
 {
@@ -141,7 +281,44 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Present','Absent')]
         [String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateSet('AsynchronousCommit','SynchronousCommit')]
+        [String]
+        $AvailabilityMode = 'AsynchronousCommit',
+
+        [Parameter()]
+        [ValidateRange(0,100)]
+        [UInt32]
+        $BackupPriority = 50,
+
+        [Parameter()]
+        [ValidateSet('AllowAllConnections','AllowReadWriteConnections')]
+        [String]
+        $ConnectionModeInPrimaryRole,
+
+        [Parameter()]
+        [ValidateSet('AllowNoConnections','AllowReadIntentConnectionsOnly','AllowAllConnections')]
+        [String]
+        $ConnectionModeInSecondaryRole,
+
+        [Parameter()]
+        [String]
+        $EndpointHostName,
+
+        [Parameter()]
+        [ValidateSet('Automatic','Manual')]
+        [String]
+        $FailoverMode = 'Manual',
+
+        [Parameter()]
+        [String]
+        $ReadOnlyRoutingUrl,
+
+        [Parameter()]
+        [String[]]
+        $ReadOnlyRoutingList
     )
 }
 
