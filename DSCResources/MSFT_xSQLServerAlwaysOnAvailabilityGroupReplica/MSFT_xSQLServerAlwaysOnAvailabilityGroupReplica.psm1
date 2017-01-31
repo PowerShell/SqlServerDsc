@@ -282,42 +282,60 @@ function Set-TargetResource
 
             foreach ( $loginName in @( $clusterServiceName, $ntAuthoritySystemName ) )
             {
-                if ( $serverObject.Logins[$loginName] -and -not $clusterPermissionsPresent )
+                if ( $serverObject.Logins[$loginName] )
                 {
-                    $queryToGetEffectivePermissionsForLogin = "
-                        EXECUTE AS LOGIN = '$loginName'
-                        SELECT DISTINCT permission_name
-                        FROM fn_my_permissions(null,'SERVER')
-                        REVERT
-                    "
-
-                    $loginEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForLogin
-                    $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
-
-                    if ( $null -ne $loginEffectivePermissions )
+                    if ( -not $clusterPermissionsPresent )
                     {
-                        $loginMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $loginEffectivePermissions | 
-                            Where-Object { $_.SideIndicator -ne '=>' } |
-                            Select-Object -ExpandProperty InputObject 
-                        
-                        if ( $loginMissingPermissions.Count -eq 0 )
-                        {
-                            $clusterPermissionsPresent = $true
-                        }
-                        else
-                        {
-                            switch ( $loginName )
-                            {
-                                $clusterServiceName
-                                {
-                                    New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
-                                }
+                        $queryToGetEffectivePermissionsForLogin = "
+                            EXECUTE AS LOGIN = '$loginName'
+                            SELECT DISTINCT permission_name
+                            FROM fn_my_permissions(null,'SERVER')
+                            REVERT
+                        "
 
-                                $ntAuthoritySystemName
+                        $loginEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForLogin
+                        $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
+
+                        if ( $null -ne $loginEffectivePermissions )
+                        {
+                            $loginMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $loginEffectivePermissions | 
+                                Where-Object { $_.SideIndicator -ne '=>' } |
+                                Select-Object -ExpandProperty InputObject 
+                            
+                            if ( $loginMissingPermissions.Count -eq 0 )
+                            {
+                                $clusterPermissionsPresent = $true
+                            }
+                            else
+                            {
+                                switch ( $loginName )
                                 {
-                                    New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                    $clusterServiceName
+                                    {
+                                        New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
+                                    }
+
+                                    $ntAuthoritySystemName
+                                    {
+                                        New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                    }
                                 }
                             }
+                        }
+                    }
+                }
+                else
+                {
+                    switch ( $loginName )
+                    {
+                        $clusterServiceName
+                        {
+                            New-VerboseMessage -Message "The recommended login '$loginName' does not exist. Trying with '$ntAuthoritySystemName'."
+                        }
+
+                        $ntAuthoritySystemName
+                        {
+                            New-VerboseMessage -Message "The login '$loginName' does not exist."
                         }
                     }
                 }
@@ -346,10 +364,76 @@ function Set-TargetResource
             if ( $availabilityGroup )
             {
                 # Make sure the replia exists on the instance. If the availability group exists, the replica should exist.
-                $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+                $availabilityGroupReplica = $availabilityGroup.AvailabilityReplicas[$Name]
                 if ( $availabilityGroupReplica )
                 {
-                    # Update all of the settings
+                    if ( $AvailabilityMode -ne $availabilityGroupReplica.AvailabilityMode )
+                    {
+                        $availabilityGroupReplica.AvailabilityMode = $AvailabilityMode
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $BackupPriority -ne $availabilityGroupReplica.BackupPriority )
+                    {
+                        $availabilityGroupReplica.BackupPriority = $BackupPriority
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    # Make sure ConnectionModeInPrimaryRole has a value in order to avoid false positive matches when the parameter is not defined
+                    if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $availabilityGroupReplica.ConnectionModeInPrimaryRole ) )
+                    {
+                        $availabilityGroupReplica.ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    # Make sure ConnectionModeInSecondaryRole has a value in order to avoid false positive matches when the parameter is not defined
+                    if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $availabilityGroupReplica.ConnectionModeInSecondaryRole ) )
+                    {
+                        $availabilityGroupReplica.ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    # Break out the EndpointUrl properties
+                    $currentEndpointProtocol, $currentEndpointHostName, $currentEndpointPort = $availabilityGroupReplica.EndpointUrl.Replace('//','').Split(':')
+
+                    if ( $endpoint.Protocol.Tcp.ListenerPort -ne $currentEndpointPort )
+                    {
+                        $newEndpointUrl = availabilityGroupReplica.EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
+                        $availabilityGroupReplica.EndpointUrl = $newEndpointUrl
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $EndpointHostName -ne $currentEndpointHostName )
+                    {
+                        $newEndpointUrl = $availabilityGroupReplica.EndpointUrl.Replace($currentEndpointHostName,$EndpointHostName)
+                        $availabilityGroupReplica.EndpointUrl = $newEndpointUrl
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $currentEndpointProtocol -ne 'TCP' )
+                    {
+                        $newEndpointUrl = $availabilityGroupReplica.EndpointUrl.Replace($currentEndpointProtocol,'TCP')
+                        $availabilityGroupReplica.EndpointUrl = $newEndpointUrl
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $FailoverMode -ne $availabilityGroupReplica.FailoverMode )
+                    {
+                        $availabilityGroupReplica.FailoverMode = $FailoverMode
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $ReadOnlyRoutingConnectionUrl -ne $availabilityGroupReplica.ReadOnlyRoutingConnectionUrl )
+                    {
+                        $availabilityGroupReplica.ReadOnlyRoutingConnectionUrl = $ReadOnlyRoutingConnectionUrl
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
+
+                    if ( $ReadOnlyRoutingList -ne $availabilityGroupReplica.ReadOnlyRoutingList )
+                    {
+                        $availabilityGroupReplica.ReadOnlyRoutingList = $ReadOnlyRoutingList
+                        Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
+                    }
                 }
                 else
                 {
@@ -664,6 +748,38 @@ function Test-TargetResource
     }
 
     return $result
+}
+
+<#
+    .SYNOPSIS
+        Executes the alter method on an Availability Group Replica object.
+    
+    .PARAMETER AvailabilityGroupReplica
+        The Availabilty Group Replica object that must be altered.
+#>
+function Update-AvailabilityGroupReplica
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.AvailabilityReplica]
+        $AvailabilityGroupReplica
+    )
+
+    try
+    {
+        $originalErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Stop'
+        $AvailabilityGroupReplica.Alter()
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType AlterAvailabilityGroupReplicaFailed -FormatArgs $AvailabilityGroupReplica.Name -ErrorCategory OperationStopped
+    }
+    finally
+    {
+        $ErrorActionPreference = $originalErrorActionPreference
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
