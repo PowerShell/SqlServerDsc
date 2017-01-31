@@ -11,10 +11,9 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 Import-Module (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'xSQLServerHelper.psm1') -Scope Global -Force
-Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
 # Loading mocked classes
-Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
+Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
 # Begin Testing
 InModuleScope $script:moduleName {
@@ -528,66 +527,53 @@ InModuleScope $script:moduleName {
     }
     
     Describe 'Testing Invoke-Query' {
-        Mock -CommandName Connect-SQL -MockWith {
-            $mock = New-Object PSObject -Property @{
-                Databases = @{
-                    'master' = @{
-                        Name = 'master'
-                    }
-                }
-                NetName = 'Server1'
-            }
+        $mockExpectedQuery = ''
 
-            # Add the ExecuteNonQuery method
-            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteNonQuery -Value {
-                param
+        $mockConnectSql = {
+            return @(
                 (
-                    [Parameter(Mandatory = $true)]
-                    [String]
-                    $Query
-                )
+                    New-Object -TypeName PSObject -Property @{
+                        Databases = @{
+                            'master' = (
+                                New-Object -TypeName PSObject -Property @{ Name = 'master' } |
+                                    Add-Member -MemberType ScriptMethod -Name ExecuteNonQuery -Value {
+                                        param
+                                        (
+                                            [Parameter()]
+                                            [string]
+                                            $sqlCommand
+                                        )
 
-                if ( $Query -eq 'BadQuery' )
-                {
-                    throw
-                }
-            }
-            
-            # Add the ExecuteWithResults method
-            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
-                param
-                (
-                    [Parameter(Mandatory = $true)]
-                    [String]
-                    $Query
-                )
+                                        if ( $sqlCommand -ne $mockExpectedQuery )
+                                        {
+                                            throw
+                                        }
+                                    } -PassThru |
+                                    Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
+                                        param
+                                        (
+                                            [Parameter()]
+                                            [string]
+                                            $sqlCommand
+                                        )
 
-                if ( $Query -eq 'BadQuery' )
-                {
-                    throw
-                }
-                else
-                {
-                    return New-Object PSObject -Property @{
-                        Tables = @{
-                            Rows = @{
-                                permission_name = @(
-                                    'master',
-                                    'model',
-                                    'msdb',
-                                    'tempdb'
-                                )
-                            }
+                                        if ( $sqlCommand -ne $mockExpectedQuery )
+                                        {
+                                            throw
+                                        }
+
+                                        return New-Object System.Data.DataSet
+                                    } -PassThru
+                            )
                         }
                     }
-                }
-            }
-
-            # Type the mock as a server object
-            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
-
-            return $mock
-        } -ModuleName $script:DSCResourceName -Verifiable
+                )
+            )
+        }
+        
+        BeforeEach {
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSql -ModuleName $script:DSCResourceName -Verifiable
+        }
         Mock -CommandName New-TerminatingError -MockWith { $ErrorType } -ModuleName $script:DSCResourceName
 
         $queryParams = @{
@@ -600,6 +586,7 @@ InModuleScope $script:moduleName {
         Context 'Execute a query with no results' {
             It 'Should execute the query silently' {
                 $queryParams.Query = "EXEC sp_configure 'show advanced option', '1'"
+                $mockExpectedQuery = $queryParams.Query.Clone()
                 
                 { Invoke-Query @queryParams } | Should Not Throw
 
@@ -620,6 +607,7 @@ InModuleScope $script:moduleName {
         Context 'Execute a query with results' {
             It 'Should execute the query and return a result set' {
                 $queryParams.Query = 'SELECT name FROM sys.databases'
+                $mockExpectedQuery = $queryParams.Query.Clone()
                 
                 Invoke-Query @queryParams -WithResults | Should Not BeNullOrEmpty
 
