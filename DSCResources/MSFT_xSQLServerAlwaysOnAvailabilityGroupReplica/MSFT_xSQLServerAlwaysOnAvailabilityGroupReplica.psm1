@@ -4,19 +4,19 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
 <#
     .SYNOPSIS
-    Gets the specified Availabilty Group Replica from the specified Availabilty Group.
+        Gets the specified Availabilty Group Replica from the specified Availabilty Group.
     
     .PARAMETER Name
-    The name of the availability group replica.
+        The name of the availability group replica.
 
     .PARAMETER AvailabilityGroupName
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
 #>
 function Get-TargetResource
 {
@@ -79,7 +79,7 @@ function Get-TargetResource
         $alwaysOnAvailabilityGroupReplicaResource.AvailabilityGroupName = $availabilityGroup.Name
         
         # Try to find the replica
-        $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+        $availabilityGroupReplica = $availabilityGroup.AvailabilityReplicas[$Name]
 
         if ( $availabilityGroupReplica )
         {
@@ -102,19 +102,25 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Creates or removes the availability group replica in accordance with the desired state.
+        Creates or removes the availability group replica in accordance with the desired state.
     
     .PARAMETER Name
-    The name of the availability group replica.
+        The name of the availability group replica.
 
     .PARAMETER AvailabilityGroupName
-    The name of the availability group.
+        The name of the availability group.
 
     .PARAMETER SQLServer
-    Hostname of the SQL Server to be configured.
+        Hostname of the SQL Server to be configured.
     
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued.
+        Name of the SQL instance to be configued.
+
+    .PARAMETER PrimaryReplicaSQLServer
+        Hostname of the SQL Server where the primary replica lives.
+    
+    .PARAMETER PrimaryReplicaSQLInstanceName
+        Name of the SQL instance where the primary replica lives.
 
     .PARAMETER Ensure
         Specifies if the availability group should be present or absent. Default is Present.
@@ -137,7 +143,7 @@ function Get-TargetResource
     .PARAMETER FailoverMode
         Specifies the failover mode. Default is Manual.
     
-    .PARAMETER ReadOnlyRoutingUrl
+    .PARAMETER ReadOnlyRoutingConnectionUrl
         Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.
 
     .PARAMETER ReadOnlyRoutingList
@@ -163,6 +169,14 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName,
+
+        [Parameter()]
+        [String]
+        $PrimaryReplicaSQLServer,
+
+        [Parameter()]
+        [String]
+        $PrimaryReplicaSQLInstanceName,
 
         [Parameter()]
         [ValidateSet('Present','Absent')]
@@ -200,7 +214,7 @@ function Set-TargetResource
 
         [Parameter()]
         [String]
-        $ReadOnlyRoutingUrl,
+        $ReadOnlyRoutingConnectionUrl,
 
         [Parameter()]
         [String[]]
@@ -216,6 +230,213 @@ function Set-TargetResource
     if ( -not $serverObject.IsHadrEnabled )
     {
         throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure,$SQLInstanceName -ErrorCategory NotImplemented
+    }
+
+    # Get the Availabilty Group if it exists
+    $availabilityGroup = $serverObject.AvailabilityGroups[$AvailabilityGroupName]
+
+    switch ( $Ensure )
+    {
+        Absent
+        {
+            if ( $availabilityGroup )
+            {
+                $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+
+                if ( $availabilityGroupReplica )
+                {
+                    # Make sure the primary replica is not the replica we're trying to remove
+                    if ( $availabilityGroup.PrimaryReplicaServerName -ne $Name )
+                    {
+                        try
+                        {
+                            Remove-SqlAvailabilityReplica -InputObject $availabilityGroupReplica -Confirm:$true -ErrorAction Stop
+                        }
+                        catch
+                        {
+                            throw New-TerminatingError -ErrorType RemoveAvailabilityGroupReplicaFailed -FormatArgs $Name, $SQLInstanceName -ErrorCategory ResourceUnavailable
+                        }
+                    }
+                    else
+                    {
+                        throw New-TerminatingError -ErrorType InstanceIsPrimaryReplica -FormatArgs $Name, $SQLInstanceName -ErrorCategory ResourceUnavailable
+                    }
+                }
+            }
+        }
+
+        Present
+        {
+            $clusterServiceName = 'NT SERVICE\ClusSvc'
+            $ntAuthoritySystemName = 'NT AUTHORITY\SYSTEM'
+            $availabilityGroupManagementRoleName = 'AG_Management'
+            $availabilityGroupManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
+            $clusterPermissionsPresent = $false
+
+            $permissionsParams = @{
+                SQLServer = $SQLServer
+                SQLInstanceName = $SQLInstanceName
+                Database = 'master'
+                WithResults = $true
+            }
+
+            foreach ( $loginName in @( $clusterServiceName, $ntAuthoritySystemName ) )
+            {
+                if ( $serverObject.Logins[$loginName] -and -not $clusterPermissionsPresent )
+                {
+                    $queryToGetEffectivePermissionsForLogin = "
+                        EXECUTE AS LOGIN = '$loginName'
+                        SELECT DISTINCT permission_name
+                        FROM fn_my_permissions(null,'SERVER')
+                        REVERT
+                    "
+
+                    $loginEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForLogin
+                    $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
+
+                    if ( $null -ne $loginEffectivePermissions )
+                    {
+                        $loginMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $loginEffectivePermissions | 
+                            Where-Object { $_.SideIndicator -ne '=>' } |
+                            Select-Object -ExpandProperty InputObject 
+                        
+                        if ( $loginMissingPermissions.Count -eq 0 )
+                        {
+                            $clusterPermissionsPresent = $true
+                        }
+                        else
+                        {
+                            switch ( $loginName )
+                            {
+                                $clusterServiceName
+                                {
+                                    New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
+                                }
+
+                                $ntAuthoritySystemName
+                                {
+                                    New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            # If neither 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' have the required permissions, throw an error.
+            if ( -not $clusterPermissionsPresent )
+            {
+                throw New-TerminatingError -ErrorType ClusterPermissionsMissing -FormatArgs $SQLServer,$SQLInstanceName -ErrorCategory SecurityError
+            }
+
+            # Make sure a database mirroring endpoint exists.
+            $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
+            if ( -not $endpoint )
+            {
+                throw New-TerminatingError -ErrorType DatabaseMirroringEndpointNotFound -FormatArgs $SQLServer,$SQLInstanceName -ErrorCategory ObjectNotFound
+            }
+
+            # If a hostname for the endpoint was not specified, define it now.
+            if ( -not $EndpointHostName )
+            {
+                $EndpointHostName = $serverObject.NetName
+            }
+            
+            # Determine if the Availabilty Group exists on the instance
+            if ( $availabilityGroup )
+            {
+                # Make sure the replia exists on the instance. If the availability group exists, the replica should exist.
+                $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+                if ( $availabilityGroupReplica )
+                {
+                    # Update all of the settings
+                }
+                else
+                {
+                    throw New-TerminatingError -ErrorType ReplicaNotFound -FormatArgs $Name,$SQLInstanceName -ErrorCategory ResourceUnavailable
+                }
+            }
+            else
+            {
+                # Connect to the instance that is supposed to house the primary replica
+                $primaryReplicaServerObject = Connect-SQL -SQLServer $PrimaryReplicaSQLServer -SQLInstanceName $PrimaryReplicaSQLInstanceName
+
+                # Verify the Availability Group exists on the supplied primary replica
+                $primaryReplicaAvailabilityGroup = $primaryReplicaServerObject.AvailabilityGroups[$AvailabilityGroupName]
+                if ( $primaryReplicaAvailabilityGroup )
+                {
+                    # Make sure the instance defined as the primary replica in the parameters is actually the primary replica
+                    if ( $primaryReplicaAvailabilityGroup.LocalReplicaRole -ne 'Primary' )
+                    {
+                        New-VerboseMessage -Message "The instance '$PrimaryReplicaSQLInstanceName' is not currently the primary replica. Connecting to '$($primaryReplicaAvailabilityGroup.PrimaryReplicaServerName)'."
+                        
+                        $primaryReplicaServerObject = Connect-SQL -SQLServer $primaryReplicaAvailabilityGroup.PrimaryReplicaServerName
+                        $primaryReplicaAvailabilityGroup = $primaryReplicaServerObject.AvailabilityGroups[$AvailabilityGroupName]
+                    }
+
+                    ################# EndpointUrl ########################
+
+                    $newAvailabilityGroupReplicaParams = @{
+                        Name = $Name
+                        InputObject = $primaryReplicaAvailabilityGroup
+                        AvailabilityMode = $AvailabilityMode
+                        EndpointUrl = $EndpointUrl
+                        FailoverMode = $FailoverMode
+                        Verbose = $false
+                    }
+
+                    if ( $BackupPriority )
+                    {
+                        $newAvailabilityGroupReplicaParams.Add('BackupPriority',$BackupPriority)
+                    }
+
+                    if ( $ConnectionModeInPrimaryRole )
+                    {
+                        $newAvailabilityGroupReplicaParams.Add('ConnectionModeInPrimaryRole',$ConnectionModeInPrimaryRole)
+                    }
+
+                    if ( $ConnectionModeInSecondaryRole )
+                    {
+                        $newAvailabilityGroupReplicaParams.Add('ConnectionModeInSecondaryRole',$ConnectionModeInSecondaryRole)
+                    }
+                    
+                    if ( $ReadOnlyRoutingConnectionUrl )
+                    {
+                        $newAvailabilityGroupReplicaParams.Add('ReadOnlyConnectionUrl',$ReadOnlyRoutingConnectionUrl)
+                    }
+
+                    if ( $ReadOnlyRoutingList )
+                    {
+                        $newAvailabilityGroupReplicaParams.Add('ReadOnlyRoutingList',$ReadOnlyRoutingList)
+                    }
+                    
+                    # Create the Availability Group Replica
+                    try
+                    {
+                        $availabilityGroupReplica = New-SqlAvailabilityReplica @newAvailabilityReplicaParams
+                    }
+                    catch
+                    {
+                        throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $Name,$SQLInstanceName -ErrorCategory OperationStopped
+                    }
+
+                    # Join the Availability Group Replica to the Availability Group
+                    try
+                    {
+                        $joinAvailabilityGroupResults = Join-SqlAvailabilityGroup -Name $Name -InputObject $serverObject
+                    }
+                    catch
+                    {
+                        throw New-TerminatingError -ErrorType JoinAvailabilityGroupFailed -FormatArgs $Name,$SQLInstanceName -ErrorCategory OperationStopped
+                    }
+                }
+                # The Availability Group doesn't exist on the primary replica
+                else
+                {
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs $Name,$PrimaryReplicaSQLInstanceName -ErrorCategory ResourceUnavailable
+                }
+            }
+        }
     }
 }
 
@@ -234,6 +455,12 @@ function Set-TargetResource
     
     .PARAMETER SQLInstanceName
         Name of the SQL instance to be configued.
+    
+    .PARAMETER PrimaryReplicaSQLServer
+        Hostname of the SQL Server where the primary replica lives.
+    
+    .PARAMETER PrimaryReplicaSQLInstanceName
+        Name of the SQL instance where the primary replica lives.
 
     .PARAMETER Ensure
         Specifies if the availability group should be present or absent. Default is Present.
@@ -256,7 +483,7 @@ function Set-TargetResource
     .PARAMETER FailoverMode
         Specifies the failover mode. Default is Manual.
     
-    .PARAMETER ReadOnlyRoutingUrl
+    .PARAMETER ReadOnlyRoutingConnectionUrl
         Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.
 
     .PARAMETER ReadOnlyRoutingList
@@ -285,6 +512,14 @@ function Test-TargetResource
         $SQLInstanceName,
 
         [Parameter()]
+        [String]
+        $PrimaryReplicaSQLServer,
+
+        [Parameter()]
+        [String]
+        $PrimaryReplicaSQLInstanceName,
+
+        [Parameter()]
         [ValidateSet('Present','Absent')]
         [String]
         $Ensure = 'Present',
@@ -320,7 +555,7 @@ function Test-TargetResource
 
         [Parameter()]
         [String]
-        $ReadOnlyRoutingUrl,
+        $ReadOnlyRoutingConnectionUrl,
 
         [Parameter()]
         [String[]]
@@ -366,23 +601,27 @@ function Test-TargetResource
                 'ConnectionModeInPrimaryRole',
                 'ConnectionModeInSecondaryRole',
                 'FailoverMode',
-                'ReadOnlyRoutingUrl',
+                'ReadOnlyRoutingConnectionUrl',
                 'ReadOnlyRoutingList'
             )
             
             if ( $getTargetResourceResult.Ensure -eq 'Present' )
             {
-                foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
+                # PsBoundParameters won't work here because it doesn't account for default values
+                foreach ( $parameter in $MyInvocation.MyCommand.Parameters.GetEnumerator() )
                 {
+                    $parameterName = $parameter.Key
+                    $parameterValue = Get-Variable -Name $parameterName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value
+                                        
                     # Make sure we don't try to validate a common parameter
-                    if ( $parametersToCheck -notcontains $psBoundParameter.Key )
+                    if ( $parametersToCheck -notcontains $parameterName )
                     {
                         continue
                     }
-                    
-                    if ( $getTargetResourceResult.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+                   
+                    if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
                     {                        
-                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($getTargetResourceResult.($psBoundParameter.Key))'"
+                        New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
                         
                         $result = $False
                     }
