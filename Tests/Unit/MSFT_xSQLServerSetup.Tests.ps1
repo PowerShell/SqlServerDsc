@@ -117,6 +117,14 @@ try
             SQLBackup = 'O:'
         }
 
+        $mockCSVClusterDiskMap = @{
+            UserData = 'C:\ClusterStorage\SQLData'
+            UserLogs = 'C:\ClusterStorage\SQLLogs'
+            TempDbData = 'C:\ClusterStorage\TempDBData'
+            TempDbLogs = 'C:\ClusterStorage\TempDBLogs'
+            SQLBackup = 'C:\ClusterStorage\SQLBackup'
+        }
+
         $mockClusterSites = @(
             @{
                 Name = 'SiteA'
@@ -595,6 +603,51 @@ try
                         Add-Member -MemberType NoteProperty -Name 'Name' -Value 'Available Storage' -PassThru -Force
                 )
             )
+        }
+
+        $mockGetClusterSharedVolume = {
+            return @(
+                (
+                    New-Object PSObject -Property @{
+                        Name = 'Cluster Virtual Disk (SQL Data Disk)'
+                        SharedVolumeInfo = (New-Object PSObject -Property @{
+                            FriendlyVolumeName = 'C:\ClusterStorage\SQLData'
+                        })
+                    }
+                ),
+                (
+                    New-Object PSObject -Property @{
+                        Name = 'Cluster Virtual Disk (SQL Log Disk)'
+                        SharedVolumeInfo = (New-Object PSObject -Property @{
+                            FriendlyVolumeName = 'C:\ClusterStorage\SQLLog'
+                        })
+                    }
+                ),
+                (
+                    New-Object PSObject -Property @{
+                        Name = 'Cluster Virtual Disk (SQL TempDBData Disk)'
+                        SharedVolumeInfo = (New-Object PSObject -Property @{
+                            FriendlyVolumeName = 'C:\ClusterStorage\TempDBData'
+                        })
+                    }
+                ),
+                (
+                    New-Object PSObject -Property @{
+                        Name = 'Cluster Virtual Disk (SQL TempDBLog Disk)'
+                        SharedVolumeInfo = (New-Object PSObject -Property @{
+                            FriendlyVolumeName = 'C:\ClusterStorage\TempDBLog'
+                        })
+                    }
+                ),
+                (
+                    New-Object PSObject -Property @{
+                        Name = 'Cluster Virtual Disk (Backup)'
+                        SharedVolumeInfo = (New-Object PSObject -Property @{
+                            FriendlyVolumeName = 'C:\ClusterStorage\SQLBackup'
+                        })
+                    }
+                )
+            );
         }
 
         $mockGetCimInstance_MSClusterNetwork = {
@@ -3090,6 +3143,8 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
                             ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
                         } -Verifiable
+
+                        Mock -CommandName Get-ClusterSharedVolume -MockWith $mockGetClusterSharedVolume;
                     }
 
                     It 'Should pass proper parameters to setup' {
@@ -3156,6 +3211,8 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
                             ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
                         } -Verifiable
+
+                        Mock -CommandName Get-ClusterSharedVolume -MockWith $mockGetClusterSharedVolume;
                     }
 
                     It 'Should pass proper parameters to setup' {
@@ -3301,9 +3358,70 @@ try
                         { Set-TargetResource @multiSubnetParameters } | Should Not Throw
                     }
 
+                    It 'Should pass proper parameters to setup when Cluster Shared volumes are specified' {
+                        $csvTestParameters = $testParameters.Clone();
+                        
+                        $csvTestParameters["SQLUserDBDir"] = $mockCSVClusterDiskMap["UserData"];
+                        $csvTestParameters["SQLUserDBLogDir"] = $mockCSVClusterDiskMap["UserLogs"];
+                        $csvTestParameters["SQLTempDBDir"] = $mockCSVClusterDiskMap["TempDBData"];
+                        $csvTestParameters["SQLTempDBLogDir"] = $mockCSVClusterDiskMap["TempDBLogs"];
+                        
+                        $mockStartWin32ProcessExpectedArgument = @{
+                            IAcceptSQLServerLicenseTerms = 'True'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Quiet = 'True'
+                            SQLSysAdminAccounts = 'COMPANY\sqladmin'
+                            Action = 'InstallFailoverCluster'
+                            InstanceName = 'MSSQLSERVER'
+                            Features = 'SQLEngine'
+                            FailoverClusterDisks = 'Cluster Virtual Disk (SQL Data Disk); Cluster Virtual Disk (SQL Log Disk); Cluster Virtual Disk (SQL TempDBData Disk); Cluster Virtual Disk (SQL TempDBLog Disk)'
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_SingleSite
+                            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'C:\ClusterStorage\SQLData'
+                            SQLUserDBLogDir = 'C:\ClusterStorage\SQLLogs'
+                            SQLTempDBDir = 'C:\ClusterStorage\TempDBData'
+                            SQLTempDBLogDir = 'C:\ClusterStorage\TempDBLogs'
+                        }
+
+                        { Set-TargetResource @csvTestParameters } | Should Not Throw
+                    }
+
+                    It 'Should pass proper parameters to setup when Cluster Shared volumes are specified and are the same for one or more parameter values' {
+                        $csvTestParameters = $testParameters.Clone();
+                        
+                        $csvTestParameters["SQLUserDBDir"] = $mockCSVClusterDiskMap["UserData"] + '\Data';
+                        $csvTestParameters["SQLUserDBLogDir"] = $mockCSVClusterDiskMap["UserData"] + '\Logs';
+                        $csvTestParameters["SQLTempDBDir"] = $mockCSVClusterDiskMap["UserData"] + '\TEMPDB';
+                        $csvTestParameters["SQLTempDBLogDir"] = $mockCSVClusterDiskMap["UserData"] + '\TEMPDBLOG';
+                        $csvTestParameters["SQLBackupDir"] = "C:\ClusterStorage\SQLBackup\Backup";
+                        
+                        $mockStartWin32ProcessExpectedArgument = @{
+                            IAcceptSQLServerLicenseTerms = 'True'
+                            SkipRules = 'Cluster_VerifyForErrors'
+                            Quiet = 'True'
+                            SQLSysAdminAccounts = 'COMPANY\sqladmin'
+                            Action = 'InstallFailoverCluster'
+                            InstanceName = 'MSSQLSERVER'
+                            Features = 'SQLEngine'
+                            FailoverClusterDisks = 'Cluster Virtual Disk (Backup); Cluster Virtual Disk (SQL Data Disk)'
+                            FailoverClusterIPAddresses = $mockDefaultInstance_FailoverClusterIPAddressParameter_SingleSite
+                            FailoverClusterGroup = 'SQL Server (MSSQLSERVER)'
+                            FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            SQLUserDBDir = 'C:\ClusterStorage\SQLData\Data'
+                            SQLUserDBLogDir = 'C:\ClusterStorage\SQLData\Logs'
+                            SQLTempDBDir = 'C:\ClusterStorage\SQLData\TEMPDB'
+                            SQLTempDBLogDir = 'C:\ClusterStorage\SQLData\TEMPDBLOG'
+                            SQLBackupDir = 'C:\ClusterStorage\SQLBackup\Backup'
+                        }
+
+                        { Set-TargetResource @csvTestParameters } | Should Not Throw
+                    }
+
 
                 }
-                
+
+               
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state and the action is PrepareFailoverCluster" {
                     BeforeAll {
                         $testParameters = $mockDefaultParameters.Clone()
@@ -3352,6 +3470,8 @@ try
                         Mock -CommandName Get-CimInstance -MockWith {} -ParameterFilter { 
                             ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
                         } -Verifiable
+
+                        Mock -CommandName Get-ClusterSharedVolume -MockWith $mockGetClusterSharedVolume;
                     }
 
                     It 'Should add the SkipRules parameter to the installation arguments' {
@@ -3431,6 +3551,8 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterNetwork -ParameterFilter { 
                             ($Namespace -eq 'root/MSCluster') -and ($ClassName -eq 'MSCluster_Network') -and ($Filter -eq 'Role >= 2')
                         } -Verifiable
+
+                        Mock -CommandName Get-ClusterSharedVolume -MockWith $mockGetClusterSharedVolume;
                     }
 
                     It 'Should throw an error when one or more paths are not resolved to clustered storage' {

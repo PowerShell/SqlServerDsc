@@ -802,12 +802,14 @@ function Set-TargetResource
         $failoverClusterDisks = @()
 
         # Get a required lising of drives based on user parameters
-        $requiredDrives = Get-Variable -Name 'SQL*Dir' -ValueOnly | Where-Object { -not [String]::IsNullOrEmpty($_) } | Split-Path -Qualifier | Sort-Object -Unique
+        $requiredDrives = Get-Variable -Name 'SQL*Dir' -ValueOnly | Where-Object { -not [String]::IsNullOrEmpty($_) } | Sort-Object -Unique | Add-Member -MemberType NoteProperty -Name IsMapped -Value $false -PassThru;
 
         # Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_ResourceGroup' -Filter "Name = 'Available Storage'" |
-                                Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource
+                                Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource | `
+                                Add-Member -MemberType NoteProperty -Name "IsPossibleOwner" -Value $false -PassThru;
 
+        # First map regular cluster volumes
         foreach ($diskResource in $availableStorage)
         {
             # Determine whether the current node is a possible owner of the disk resource
@@ -815,10 +817,51 @@ function Set-TargetResource
 
             if ($possibleOwners -icontains $env:COMPUTERNAME)
             {
-                # Determine whether this disk contains one of our required partitions
-                if ($requiredDrives -icontains ($diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select-Object -ExpandProperty Path))
+                
+                $diskResource.IsPossibleOwner = $true;
+            }
+        }
+
+        foreach ($requiredDrive in $requiredDrives)
+        {
+            foreach ($diskResource in ($availableStorage | Where-Object {$_.IsPossibleOwner -eq $true}))
+            {
+                $partitions = $diskResource | Get-CimAssociatedInstance -ResultClassName 'MSCluster_DiskPartition' | Select-Object -ExpandProperty Path;
+                foreach ($partition in $partitions)
                 {
-                    $failoverClusterDisks += $diskResource.Name
+                    if ($requiredDrive -imatch $partition.Replace('\','\\'))
+                    {
+                        $requiredDrive.IsMapped = $true;
+                        $failoverClusterDisks += $diskResource.Name;
+                        break;
+                    }
+                    if ($requiredDrive.IsMapped)
+                    {
+                        break;
+                    }
+                }
+                if ($requiredDrive.IsMapped)
+                {
+                    break;
+                }
+            }
+        }
+
+        # Now we handle cluster shared volumes
+        $clusterSharedVolumes = Get-ClusterSharedVolume;
+
+        foreach ($clusterSharedVolume in $clusterSharedVolumes)
+        {
+            foreach ($requiredDrive in ($requiredDrives | Where-Object {$_.IsMapped -eq $false}))
+            {
+                foreach ($volume in $clusterSharedVolume.SharedVolumeInfo)
+                {
+                    if ($requiredDrive -imatch $volume.FriendlyVolumeName.Replace('\','\\'))
+                    {
+                        $failoverClusterDisks += $clusterSharedVolume.Name;
+                        $requiredDrive.IsMapped = $true;
+                        break;
+                    }
                 }
             }
         }
@@ -827,10 +870,8 @@ function Set-TargetResource
         $failoverClusterDisks = $failoverClusterDisks | Sort-Object -Unique
 
         # Ensure we mapped all required drives
-        $requiredDriveCount = $requiredDrives.Count
-        $mappedDriveCount = $failoverClusterDisks.Count
-
-        if ($mappedDriveCount -ne $requiredDriveCount)
+        $unMappedRequiredDrives = $requiredDrives | Where-Object {$_.IsMapped -eq $false} | Measure-Object;
+        if ($unMappedRequiredDrives.Count -gt 0)
         {
             throw New-TerminatingError -ErrorType FailoverClusterDiskMappingError -FormatArgs ($failoverClusterDisks -join '; ') -ErrorCategory InvalidResult
         }
