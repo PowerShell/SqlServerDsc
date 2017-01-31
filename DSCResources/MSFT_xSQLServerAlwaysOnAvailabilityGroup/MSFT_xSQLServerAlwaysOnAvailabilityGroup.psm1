@@ -655,17 +655,21 @@ function Test-TargetResource
             
             if ( $getTargetResourceResult.Ensure -eq 'Present' )
             {
-                foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() )
+                # PsBoundParameters won't work here because it doesn't account for default values
+                foreach ( $parameter in $MyInvocation.MyCommand.Parameters.GetEnumerator() )
                 {
+                    $parameterName = $parameter.Key
+                    $parameterValue = Get-Variable -Name $parameterName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value
+                    
                     # Make sure we don't try to validate a common parameter
-                    if ( $parametersToCheck -notcontains $psBoundParameter.Key )
+                    if ( $parametersToCheck -notcontains $parameterName )
                     {
                         continue
                     }
                     
-                    if ( $getTargetResourceResult.($psBoundParameter.Key) -ne $psBoundParameter.Value )
+                    if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
                     {
-                        if ( $psBoundParameter.Key -eq 'BasicAvailabilityGroup' )
+                        if ( $parameterName -eq 'BasicAvailabilityGroup' )
                         {                          
                             # Move on to the next property if the instance is not at least SQL Server 2016
                             if ( $getTargetResourceResult.Version -lt 13 )
@@ -674,7 +678,7 @@ function Test-TargetResource
                             }
                         }
                         
-                        New-VerboseMessage -Message "'$($psBoundParameter.Key)' should be '$($psBoundParameter.Value)' but is '$($getTargetResourceResult.($psBoundParameter.Key))'"
+                        New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
                         
                         $result = $False
                     }
