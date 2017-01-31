@@ -1077,7 +1077,7 @@ try
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly -ParameterFilter { $SQLServer -eq 'Server2' }
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 0 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
