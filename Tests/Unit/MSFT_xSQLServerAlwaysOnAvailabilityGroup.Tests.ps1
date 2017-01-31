@@ -19,7 +19,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force
 Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
-$absentAg = @{
+$defaultAbsentParameters = @{
     Name = 'AbsentAG'
     SQLInstanceName = 'MSSQLSERVER'
     SQLServer = 'Server1'
@@ -36,7 +36,7 @@ $absentAg = @{
     EndpointHostName = 'Server1'
 }
 
-$presentAg = @{
+$defaultPresentParameters = @{
     Name = 'PresentAG'
     SQLInstanceName = 'MSSQLSERVER'
     SQLServer = 'Server1'
@@ -382,14 +382,14 @@ try
         
         Context 'When the Availability Group is Absent'{
 
-            It 'Should not return an Availability Group when Ensure is Present and the version is 12' {
+            It 'Should not return an Availability Group when Ensure is set to Present and the version is 12' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $getParams = @{
-                    Name = $absentAg.Name
-                    SQLServer = $absentAg.SQLServer
-                    SQLInstanceName = $absentAg.SQLInstanceName
+                    Name = $defaultAbsentParameters.Name
+                    SQLServer = $defaultAbsentParameters.SQLServer
+                    SQLInstanceName = $defaultAbsentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
@@ -400,14 +400,14 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should not return an Availability Group when Ensure is Present and the version is 13' {
+            It 'Should not return an Availability Group when Ensure is set to Present and the version is 13' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $getParams = @{
-                    Name = $absentAg.Name
-                    SQLServer = $absentAg.SQLServer
-                    SQLInstanceName = $absentAg.SQLInstanceName
+                    Name = $defaultAbsentParameters.Name
+                    SQLServer = $defaultAbsentParameters.SQLServer
+                    SQLInstanceName = $defaultAbsentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
@@ -421,22 +421,22 @@ try
 
         Context 'When the Availability Group is Present'{
 
-            It 'Should return the Availability Group properties when Ensure is Present and the SQL version is 12' {
+            It 'Should return the correct Availability Group properties when Ensure is set to Present and the SQL version is 12' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
                 $getParams = @{
-                    Name = $presentAg.Name
-                    SQLServer = $presentAg.SQLServer
-                    SQLInstanceName = $presentAg.SQLInstanceName
+                    Name = $defaultPresentParameters.Name
+                    SQLServer = $defaultPresentParameters.SQLServer
+                    SQLInstanceName = $defaultPresentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $presentAg.Name
-                $result.SQLServer | Should Be $presentAg.SQLServer
-                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Name | Should Be $defaultPresentParameters.Name
+                $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
+                $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -451,22 +451,22 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should return the Availability Group properties when Ensure is Absent and the SQL version is 12' {
+            It 'Should return the correct Availability Group properties when Ensure is set to Absent and the SQL version is 12' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $getParams = @{
-                    Name = $presentAg.Name
-                    SQLServer = $presentAg.SQLServer
-                    SQLInstanceName = $presentAg.SQLInstanceName
+                    Name = $defaultPresentParameters.Name
+                    SQLServer = $defaultPresentParameters.SQLServer
+                    SQLInstanceName = $defaultPresentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $presentAg.Name
-                $result.SQLServer | Should Be $presentAg.SQLServer
-                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Name | Should Be $defaultPresentParameters.Name
+                $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
+                $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -481,22 +481,22 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should return the Availability Group properties when Ensure is Present and the SQL version is 13' {
+            It 'Should return the correct Availability Group properties when Ensure is set to Present and the SQL version is 13' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
                 $getParams = @{
-                    Name = $presentAg.Name
-                    SQLServer = $presentAg.SQLServer
-                    SQLInstanceName = $presentAg.SQLInstanceName
+                    Name = $defaultPresentParameters.Name
+                    SQLServer = $defaultPresentParameters.SQLServer
+                    SQLInstanceName = $defaultPresentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $presentAg.Name
-                $result.SQLServer | Should Be $presentAg.SQLServer
-                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Name | Should Be $defaultPresentParameters.Name
+                $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
+                $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -511,22 +511,22 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
-            It 'Should return the Availability Group properties when Ensure is Absent and the SQL version is 13' {
+            It 'Should return the correct Availability Group properties when Ensure is set to Absent and the SQL version is 13' {
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
                 $getParams = @{
-                    Name = $presentAg.Name
-                    SQLServer = $presentAg.SQLServer
-                    SQLInstanceName = $presentAg.SQLInstanceName
+                    Name = $defaultPresentParameters.Name
+                    SQLServer = $defaultPresentParameters.SQLServer
+                    SQLInstanceName = $defaultPresentParameters.SQLInstanceName
                 }
                 
                 # Get the current state
                 $result = Get-TargetResource @getParams
 
-                $result.Name | Should Be $presentAg.Name
-                $result.SQLServer | Should Be $presentAg.SQLServer
-                $result.SQLInstanceName | Should Be $presentAg.SQLInstanceName
+                $result.Name | Should Be $defaultPresentParameters.Name
+                $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
+                $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                 $result.Ensure | Should Be 'Present'
                 $result.AutomatedBackupPreference | Should Not Be $null
                 $result.AvailabilityMode | Should Not Be $null
@@ -562,9 +562,9 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
 
-                { Set-TargetResource @absentAg } | Should Not Throw
+                { Set-TargetResource @defaultAbsentParameters } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -584,10 +584,10 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
-                $absentAg.BasicAvailabilityGroup = $true
+                $defaultAbsentParameters.Ensure = 'Present'
+                $defaultAbsentParameters.BasicAvailabilityGroup = $true
 
-                { Set-TargetResource @absentAg } | Should Not Throw
+                { Set-TargetResource @defaultAbsentParameters } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -610,9 +610,9 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'HadrNotEnabled'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'HadrNotEnabled'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -633,12 +633,13 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
 
-                { Set-TargetResource @absentAg } | Should Not Throw
+                { Set-TargetResource @defaultAbsentParameters } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT AUTHORITY\\SYSTEM' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
@@ -655,12 +656,13 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'ClusterPermissionsMissing'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'ClusterPermissionsMissing'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT AUTHORITY\\SYSTEM' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
@@ -685,12 +687,12 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'DatabaseMirroringEndpointNotFound'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'DatabaseMirroringEndpointNotFound'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
@@ -707,12 +709,12 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAvailabilityGroupReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
@@ -729,12 +731,12 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith { throw 'CreateAvailabilityGroupReplicaFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'CreateAvailabilityGroupReplicaFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
@@ -752,12 +754,12 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup { throw 'CreateAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupFailed'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'CreateAvailabilityGroupFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
@@ -775,12 +777,12 @@ try
                 Mock -CommandName New-SqlAvailabilityGroup { throw 'CreateAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Test-TargetResource -MockWith {$false} -ModuleName $script:DSCResourceName -Scope It
                 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
 
-                { Set-TargetResource @absentAg } | Should Throw 'CreateAvailabilityGroupFailed'
+                { Set-TargetResource @defaultAbsentParameters } | Should Throw 'CreateAvailabilityGroupFailed'
                 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
@@ -803,9 +805,9 @@ try
                 Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 
-                { Set-TargetResource @presentAg } | Should Not Throw
+                { Set-TargetResource @defaultPresentParameters } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -824,9 +826,9 @@ try
                 Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 
-                { Set-TargetResource @presentAg } | Should Not Throw
+                { Set-TargetResource @defaultPresentParameters } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -866,12 +868,13 @@ try
                         NetName = 'Server2'
                     }
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It
+                
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Mock -CommandName Remove-SqlAvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 
-                { Set-TargetResource @presentAg } | Should Throw 'InstanceNotPrimaryReplica'
+                { Set-TargetResource @defaultPresentParameters } | Should Throw 'InstanceNotPrimaryReplica'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -890,9 +893,9 @@ try
                 Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Remove-SqlAvailabilityGroup -MockWith { throw 'RemoveAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 
-                { Set-TargetResource @presentAg } | Should Throw 'RemoveAvailabilityGroupFailed'
+                { Set-TargetResource @defaultPresentParameters } | Should Throw 'RemoveAvailabilityGroupFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -911,9 +914,9 @@ try
                 Mock -CommandName Invoke-Query -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Remove-SqlAvailabilityGroup -MockWith { throw 'RemoveAvailabilityGroupFailed' } -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 
-                { Set-TargetResource @presentAg } | Should Throw 'RemoveAvailabilityGroupFailed'
+                { Set-TargetResource @defaultPresentParameters } | Should Throw 'RemoveAvailabilityGroupFailed'
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 0 -Exactly
@@ -996,6 +999,7 @@ try
 
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
+                
                 Mock -CommandName Connect-SQL -MockWith {
                     $mock = New-Object PSObject -Property @{
                         AvailabilityGroups = @{
@@ -1064,14 +1068,16 @@ try
 
                     return $mock
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server2' }
+                
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 2 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly -ParameterFilter { $SQLServer -eq 'Server2' }
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
@@ -1087,11 +1093,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.AutomatedBackupPreference = 'Primary'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.AutomatedBackupPreference = 'Primary'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1109,11 +1115,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.AvailabilityMode = 'SynchronousCommit'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.AvailabilityMode = 'SynchronousCommit'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1131,11 +1137,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.BackupPriority = 42
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.BackupPriority = 42
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1153,11 +1159,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.BasicAvailabilityGroup = $true
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.BasicAvailabilityGroup = $true
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1175,11 +1181,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.ConnectionModeInPrimaryRole = 'AllowReadWriteConnections'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.ConnectionModeInPrimaryRole = 'AllowReadWriteConnections'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1197,11 +1203,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.ConnectionModeInSecondaryRole = 'AllowReadIntentConnectionsOnly'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.ConnectionModeInSecondaryRole = 'AllowReadIntentConnectionsOnly'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1286,10 +1292,10 @@ try
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1307,11 +1313,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.EndpointHostName = 'TestServer.Contoso.com'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.EndpointHostName = 'TestServer.Contoso.com'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1396,11 +1402,11 @@ try
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.Remove('EndpointHostName')
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.Remove('EndpointHostName')
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1413,7 +1419,7 @@ try
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
             }
 
-            It 'Should set the EndpointUrl to the desired state when the endpoint protocal is changed' {
+            It 'Should set the EndpointUrl to the desired state when the endpoint protocol is changed' {
 
                 Mock -CommandName Connect-SQL -MockWith {
                     $mock = New-Object PSObject -Property @{
@@ -1485,10 +1491,10 @@ try
                 } -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1506,11 +1512,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.FailureConditionLevel = 'OnAnyQualifiedFailureCondition'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.FailureConditionLevel = 'OnAnyQualifiedFailureCondition'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1528,11 +1534,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It -ParameterFilter { $SQLServer -eq 'Server1' }
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.FailoverMode = 'Automatic'
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.FailoverMode = 'Automatic'
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1550,11 +1556,11 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServiceCorrectPermissions -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $Query -match 'NT SERVICE\\ClusSvc' }
                 
-                $presentAgIncorrectProperties = $presentAg.Clone()
-                $presentAgIncorrectProperties.Ensure = 'Present'
-                $presentAgIncorrectProperties.HealthCheckTimeout = 42
+                $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $defaultPresentParametersIncorrectProperties.HealthCheckTimeout = 42
                 
-                { Set-TargetResource @presentAgIncorrectProperties } | Should Not Throw
+                { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Invoke-Query -Scope It -Times 1 -Exactly
@@ -1575,40 +1581,40 @@ try
 
             It 'Should be $false when the desired state is Present and the SQL version is 12' {
 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @absentAg | Should Be $false
+                Test-TargetResource @defaultAbsentParameters | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $true when the desired state is Absent and the SQL version is 12' {
 
-                $absentAg.Ensure = 'Absent'
+                $defaultAbsentParameters.Ensure = 'Absent'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                Test-TargetResource @absentAg | Should Be $true
+                Test-TargetResource @defaultAbsentParameters | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $false when the desired state is Present and the SQL version is 13' {
 
-                $absentAg.Ensure = 'Present'
+                $defaultAbsentParameters.Ensure = 'Present'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @absentAg | Should Be $false
+                Test-TargetResource @defaultAbsentParameters | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $true when the desired state is Absent and the SQL version is 13' {
 
-                $absentAg.Ensure = 'Absent'
+                $defaultAbsentParameters.Ensure = 'Absent'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                Test-TargetResource @absentAg | Should Be $true
+                Test-TargetResource @defaultAbsentParameters | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1618,20 +1624,20 @@ try
 
             It 'Should be $false when the desired state is Absent and the SQL version is 12' {
 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @presentAg | Should Be $false
+                Test-TargetResource @defaultPresentParameters | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $true when the desired state is Present and the SQL version is 12' {
                 
-                $presentAg.Ensure = 'Present'
+                $defaultPresentParameters.Ensure = 'Present'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @presentAg | Should Be $true
+                Test-TargetResource @defaultPresentParameters | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1640,31 +1646,31 @@ try
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                $presentAgIncorrectParameter = $presentAg.Clone()
-                $presentAgIncorrectParameter.Ensure = 'Present'
-                $presentAgIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
+                $defaultPresentParametersIncorrectParameter = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectParameter.Ensure = 'Present'
+                $defaultPresentParametersIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
                 
-                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+                Test-TargetResource @defaultPresentParametersIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $false when the desired state is Absent and the SQL version is 13' {
 
-                $presentAg.Ensure = 'Absent'
+                $defaultPresentParameters.Ensure = 'Absent'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @presentAg | Should Be $false
+                Test-TargetResource @defaultPresentParameters | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $true when the desired state is Present and the SQL version is 13' {
                 
-                $presentAg.Ensure = 'Present'
+                $defaultPresentParameters.Ensure = 'Present'
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @presentAg | Should Be $true
+                Test-TargetResource @defaultPresentParameters | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1673,23 +1679,23 @@ try
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion13 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                $presentAgIncorrectParameter = $presentAg.Clone()
-                $presentAgIncorrectParameter.Ensure = 'Present'
-                $presentAgIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
-                $presentAgIncorrectParameter.BasicAvailabilityGroup = $true
+                $defaultPresentParametersIncorrectParameter = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectParameter.Ensure = 'Present'
+                $defaultPresentParametersIncorrectParameter.AvailabilityMode = 'SynchronousCommit'
+                $defaultPresentParametersIncorrectParameter.BasicAvailabilityGroup = $true
                 
-                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+                Test-TargetResource @defaultPresentParametersIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
 
             It 'Should be $true when the desired state is Present and the Endpoint Host Name is not specified' {
-                $presentAgEndpointHostNameNotSpecified = $presentAg.Clone()
-                $presentAgEndpointHostNameNotSpecified.Ensure = 'Present'
-                $presentAgEndpointHostNameNotSpecified.Remove('EndpointHostName')
+                $defaultPresentParametersEndpointHostNameNotSpecified = $defaultPresentParameters.Clone()
+                $defaultPresentParametersEndpointHostNameNotSpecified.Ensure = 'Present'
+                $defaultPresentParametersEndpointHostNameNotSpecified.Remove('EndpointHostName')
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
                 
-                Test-TargetResource @presentAgEndpointHostNameNotSpecified | Should Be $true
+                Test-TargetResource @defaultPresentParametersEndpointHostNameNotSpecified | Should Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1697,11 +1703,11 @@ try
             It 'Should be $false when the desired state is Present and the Endpoint Hostname is incorrectly configured' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                $presentAgIncorrectParameter = $presentAg.Clone()
-                $presentAgIncorrectParameter.Ensure = 'Present'
-                $presentAgIncorrectParameter.EndpointHostName = 'server1.contoso.com'
+                $defaultPresentParametersIncorrectParameter = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectParameter.Ensure = 'Present'
+                $defaultPresentParametersIncorrectParameter.EndpointHostName = 'server1.contoso.com'
                 
-                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+                Test-TargetResource @defaultPresentParametersIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1709,10 +1715,10 @@ try
             It 'Should be $false when the desired state is Present and the Endpoint Protocol is incorrectly configured' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12IncorrectEndpointProtocol -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                $presentAgIncorrectParameter = $presentAg.Clone()
-                $presentAgIncorrectParameter.Ensure = 'Present'
+                $defaultPresentParametersIncorrectParameter = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectParameter.Ensure = 'Present'
                 
-                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+                Test-TargetResource @defaultPresentParametersIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
@@ -1720,10 +1726,10 @@ try
             It 'Should be $false when the desired state is Present and the Endpoint Port is incorrectly configured' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12IncorrectEndpointPort -ModuleName $script:DSCResourceName -Verifiable -Scope It
 
-                $presentAgIncorrectParameter = $presentAg.Clone()
-                $presentAgIncorrectParameter.Ensure = 'Present'
+                $defaultPresentParametersIncorrectParameter = $defaultPresentParameters.Clone()
+                $defaultPresentParametersIncorrectParameter.Ensure = 'Present'
                 
-                Test-TargetResource @presentAgIncorrectParameter | Should Be $false
+                Test-TargetResource @defaultPresentParametersIncorrectParameter | Should Be $false
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
             }
