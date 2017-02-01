@@ -363,6 +363,13 @@ function Set-TargetResource
             # Determine if the Availabilty Group exists on the instance
             if ( $availabilityGroup )
             {
+                # Make sure we're communicating with the primary replica in order to make changes to the replica
+                if ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
+                {
+                    $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
+                    $availabilityGroup = $primaryServerObject.AvailabilityGroups[$Name]
+                }
+                
                 # Make sure the replia exists on the instance. If the availability group exists, the replica should exist.
                 $availabilityGroupReplica = $availabilityGroup.AvailabilityReplicas[$Name]
                 if ( $availabilityGroupReplica )
