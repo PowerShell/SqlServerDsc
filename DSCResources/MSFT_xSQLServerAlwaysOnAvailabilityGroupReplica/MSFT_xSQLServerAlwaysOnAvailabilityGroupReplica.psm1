@@ -359,6 +359,9 @@ function Set-TargetResource
             {
                 $EndpointHostName = $serverObject.NetName
             }
+
+            # Get the endpoint port
+            $endpointPort = $endpoint.Protocol.Tcp.ListenerPort
             
             # Determine if the Availabilty Group exists on the instance
             if ( $availabilityGroup )
@@ -465,13 +468,14 @@ function Set-TargetResource
                         $primaryReplicaAvailabilityGroup = $primaryReplicaServerObject.AvailabilityGroups[$AvailabilityGroupName]
                     }
 
-                    ################# EndpointUrl ########################
+                    # Build the endpoint URL
+                    $endpointUrl = "TCP://$($EndpointHostName):$($endpointPort)"
 
                     $newAvailabilityGroupReplicaParams = @{
                         Name = $Name
                         InputObject = $primaryReplicaAvailabilityGroup
                         AvailabilityMode = $AvailabilityMode
-                        EndpointUrl = $EndpointUrl
+                        EndpointUrl = $endpointUrl
                         FailoverMode = $FailoverMode
                         Verbose = $false
                     }
@@ -504,7 +508,7 @@ function Set-TargetResource
                     # Create the Availability Group Replica
                     try
                     {
-                        $availabilityGroupReplica = New-SqlAvailabilityReplica @newAvailabilityReplicaParams
+                        $availabilityGroupReplica = New-SqlAvailabilityReplica @newAvailabilityGroupReplicaParams
                     }
                     catch
                     {
@@ -514,7 +518,7 @@ function Set-TargetResource
                     # Join the Availability Group Replica to the Availability Group
                     try
                     {
-                        $joinAvailabilityGroupResults = Join-SqlAvailabilityGroup -Name $Name -InputObject $serverObject
+                        $joinAvailabilityGroupResults = Join-SqlAvailabilityGroup -Name $AvailabilityGroupName -InputObject $serverObject
                     }
                     catch
                     {
