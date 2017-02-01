@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Changes to xSQLServerRole
+  - xSQLServerRole now correctly reports that the desired state is present when the login is already a member of the server roles
+
+## 5.0.0.0
+
 - Improvements how tests are initiated in AppVeyor
   - Removed previous workaround (issue #201) from unit tests.
   - Changes in appveyor.yml so that SQL modules are removed before common test is run.
@@ -35,6 +40,7 @@
       - Function `ResolvePath` has been replaced with `[Environment]::ExpandEnvironmentVariables($SourcePath)` so that environment variables still can be used in Source Path.
       - Function `NetUse` has been replaced with `New-SmbMapping` and `Remove-SmbMapping`.
   - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`.
+  - BREAKING CHANGE: Renamed parameter PID to ProductKey to avoid collision with automatic variable $PID
 - Changes to xSQLServerScript
   - All credential parameters now also has the type [System.Management.Automation.Credential()] to better work with PowerShell 4.0.
   - It is now possible to configure two instances on the same node, with the same script.

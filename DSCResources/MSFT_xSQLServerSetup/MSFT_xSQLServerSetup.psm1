@@ -387,7 +387,7 @@ function Get-TargetResource
     .PARAMETER InstanceID
         SQL instance ID, if different from InstanceName.
 
-    .PARAMETER PID
+    .PARAMETER ProductKey
         Product key for licensed installations.
 
     .PARAMETER UpdateEnabled
@@ -530,7 +530,7 @@ function Set-TargetResource
         $InstanceID,
 
         [System.String]
-        $PID,
+        $ProductKey,
 
         [System.String]
         $UpdateEnabled,
@@ -937,7 +937,7 @@ function Set-TargetResource
         'UpdateEnabled',
         'UpdateSource',
         'Features',
-        'PID',
+        'ProductKey',
         'SQMReporting',
         'ErrorReporting',
         'InstallSharedDir',
@@ -1054,7 +1054,14 @@ function Set-TargetResource
     # Automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
-        $setupArguments += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
+        if($argument -eq 'ProductKey') 
+        {
+            $setupArguments += @{ 'PID' = (Get-Variable -Name $argument -ValueOnly) }
+        }
+        else
+        {
+            $setupArguments += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
+        }
     }
 
     # Build the argument string to be passed to setup
@@ -1099,9 +1106,9 @@ function Set-TargetResource
         $log = $log.Replace($SAPwd.GetNetworkCredential().Password,"********")
     }
 
-    if ($PID -ne "")
+    if ($ProductKey -ne "")
     {
-        $log = $log.Replace($PID,"*****-*****-*****-*****-*****")
+        $log = $log.Replace($ProductKey,"*****-*****-*****-*****-*****")
     }
 
     $logVars = @('AgtSvcAccount', 'SQLSvcAccount', 'FTSvcAccount', 'RSSvcAccount', 'ASSvcAccount','ISSvcAccount')
@@ -1185,7 +1192,7 @@ function Set-TargetResource
     .PARAMETER InstanceID
         SQL instance ID, if different from InstanceName.
 
-    .PARAMETER PID
+    .PARAMETER ProductKey
         Product key for licensed installations.
 
     .PARAMETER UpdateEnabled
@@ -1327,7 +1334,7 @@ function Test-TargetResource
         $InstanceID,
 
         [System.String]
-        $PID,
+        $ProductKey,
 
         [System.String]
         $UpdateEnabled,

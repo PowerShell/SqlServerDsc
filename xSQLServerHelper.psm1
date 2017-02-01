@@ -1050,14 +1050,14 @@ function Confirm-SqlServerRoleMember
             if ($sqlRole[$currentServerRole])
             {
                 $membersInRole = $sqlRole[$currentServerRole].EnumMemberNames()
-                if ($membersInRole.Contains($Name))
+                if ($membersInRole.Contains($LoginName))
                 {
                     $confirmServerRole = $true
-                    New-VerboseMessage -Message "$Name is present in SQL role name $currentServerRole"
+                    New-VerboseMessage -Message "$LoginName is present in SQL role name $currentServerRole"
                 }
                 else
                 {
-                    New-VerboseMessage -Message "$Name is absent in SQL role name $currentServerRole"
+                    New-VerboseMessage -Message "$LoginName is absent in SQL role name $currentServerRole"
                     $confirmServerRole = $false
                 }
             }

@@ -10,7 +10,7 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Write, Description("SQL features to be installed.")] String Features;
     [Key, Description("Name of the SQL instance to be installed.")] String InstanceName;
     [Write, Description("SQL instance ID, if different from InstanceName.")] String InstanceID;
-    [Write, Description("Product key for licensed installations.")] String PID;
+    [Write, Description("Product key for licensed installations.")] String ProductKey;
     [Write, Description("Enabled updates during installation.")] String UpdateEnabled;
     [Write, Description("Path to the source of updates to be applied during installation.")] String UpdateSource;
     [Write, Description("Enable customer experience reporting.")] String SQMReporting;

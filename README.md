@@ -797,7 +797,7 @@ Installs SQL Server on the target node.
 * **[Boolean] ForceReboot** _(Write)_: Forces reboot.
 * **[String] Features** _(Write)_: SQL features to be installed.
 * **[String] InstanceID** _(Write)_: SQL instance ID, if different from InstanceName.
-* **[String] PID** _(Write)_: Product key for licensed installations.
+* **[String] ProductKey** _(Write)_: Product key for licensed installations.
 * **[String] UpdateEnabled** _(Write)_: Enabled updates during installation.
 * **[String] UpdateSource** _(Write)_: Path to the source of updates to be applied during installation.
 * **[String] SQMReporting** _(Write)_: Enable customer experience reporting.
