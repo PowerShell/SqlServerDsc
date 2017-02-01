@@ -425,7 +425,7 @@ function Set-TargetResource
 
                 if ( $BackupPriority -ne $availabilityGroup.AvailabilityReplicas[$serverObject.Name].BackupPriority )
                 {
-                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].AvailabilityMode = $BackupPriority
+                    $availabilityGroup.AvailabilityReplicas[$serverObject.Name].BackupPriority = $BackupPriority
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.Name]
                 }
 

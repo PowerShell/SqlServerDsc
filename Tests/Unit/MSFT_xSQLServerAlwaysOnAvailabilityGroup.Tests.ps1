@@ -375,6 +375,50 @@ $mockInvokeQueryClusterServiceMissingPermissions = {
     }
 }
 
+$global:mockAvailabilityGroupProperty = '' # Set dynamically during runtime
+$global:mockAvailabilityGroupPropertyValue = '' # Set dynamically during runtime
+
+$mockUpdateAvailabilityGroup = {
+    Param
+    (
+        [Parameter()]
+        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        $AvailabilityGroup
+    )
+  
+    if ( [string]::IsNullOrEmpty($global:mockAvailabilityGroupProperty) -and [string]::IsNullOrEmpty($global:mockAvailabilityGroupPropertyValue) )
+    {
+        return
+    }
+    
+    if ( $global:mockAvailabilityGroupPropertyValue -ne $AvailabilityGroup.$global:mockAvailabilityGroupProperty )
+    {
+        throw
+    }
+}
+
+$global:mockAvailabilityGroupReplicaProperty = '' # Set dynamically during runtime
+$global:mockAvailabilityGroupReplicaPropertyValue = '' # Set dynamically during runtime
+
+$mockUpdateAvailabilityGroupReplica = {
+    Param
+    (
+        [Parameter()]
+        [Microsoft.SqlServer.Management.Smo.AvailabilityReplica]
+        $AvailabilityGroupReplica
+    )
+
+    if ( [string]::IsNullOrEmpty($global:mockAvailabilityGroupReplicaProperty) -and [string]::IsNullOrEmpty($global:mockAvailabilityGroupReplicaPropertyValue) )
+    {
+        return
+    }
+
+    if ( $global:mockAvailabilityGroupReplicaPropertyValue -ne $AvailabilityGroupReplica.$global:mockAvailabilityGroupReplicaProperty )
+    {
+        throw
+    }
+}
+
 # Begin Testing
 try
 {
@@ -794,10 +838,12 @@ try
         }
 
         Context 'When the Availability Group is Present' {
-            Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
-            Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable -Scope Context
-            Mock -CommandName Update-AvailabilityGroup -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
-            Mock -CommandName Update-AvailabilityGroupReplica -MockWith {} -ModuleName $script:DSCResourceName -Verifiable -Scope Context
+            BeforeEach {
+                Mock -CommandName New-SqlAvailabilityGroup {} -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Update-AvailabilityGroup -MockWith $mockUpdateAvailabilityGroup -ModuleName $script:DSCResourceName -Verifiable
+                Mock -CommandName Update-AvailabilityGroupReplica -MockWith $mockUpdateAvailabilityGroupReplica -ModuleName $script:DSCResourceName -Verifiable
+            }
             
             It 'Should remove the Availability Group when Ensure is set to Absent and the SQL version is 12' {
 
@@ -1073,6 +1119,8 @@ try
                 
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $global:mockAvailabilityGroupReplicaProperty = ''
+                $global:mockAvailabilityGroupReplicaPropertyValue = ''
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1096,6 +1144,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.AutomatedBackupPreference = 'Primary'
+                $global:mockAvailabilityGroupProperty = 'AutomatedBackupPreference'
+                $global:mockAvailabilityGroupPropertyValue = 'Primary'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1118,6 +1168,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.AvailabilityMode = 'SynchronousCommit'
+                $global:mockAvailabilityGroupReplicaProperty = 'AvailabilityMode'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'SynchronousCommit'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1140,6 +1192,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.BackupPriority = 42
+                $global:mockAvailabilityGroupReplicaProperty = 'BackupPriority'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 42
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1162,6 +1216,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.BasicAvailabilityGroup = $true
+                $global:mockAvailabilityGroupProperty = 'BasicAvailabilityGroup'
+                $global:mockAvailabilityGroupPropertyValue = $true
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1184,6 +1240,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.ConnectionModeInPrimaryRole = 'AllowReadWriteConnections'
+                $global:mockAvailabilityGroupReplicaProperty = 'ConnectionModeInPrimaryRole'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'AllowReadWriteConnections'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1206,6 +1264,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.ConnectionModeInSecondaryRole = 'AllowReadIntentConnectionsOnly'
+                $global:mockAvailabilityGroupReplicaProperty = 'ConnectionModeInSecondaryRole'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'AllowReadIntentConnectionsOnly'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1294,6 +1354,8 @@ try
                 
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $global:mockAvailabilityGroupReplicaProperty = 'EndpointUrl'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'TCP://Server1:5022'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1316,6 +1378,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.EndpointHostName = 'TestServer.Contoso.com'
+                $global:mockAvailabilityGroupReplicaProperty = 'EndpointUrl'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'TCP://TestServer.Contoso.com:5022'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1405,6 +1469,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.Remove('EndpointHostName')
+                $global:mockAvailabilityGroupReplicaProperty = 'EndpointUrl'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'TCP://Server1:5022'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1493,6 +1559,8 @@ try
                 
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
+                $global:mockAvailabilityGroupReplicaProperty = 'EndpointUrl'
+                $global:mockAvailabilityGroupReplicaPropertyValue = 'TCP://Server1:5022'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1515,6 +1583,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.FailureConditionLevel = 'OnAnyQualifiedFailureCondition'
+                $global:mockAvailabilityGroupProperty = 'FailureConditionLevel'
+                $global:mockAvailabilityGroupPropertyValue = 'OnAnyQualifiedFailureCondition'
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1559,6 +1629,8 @@ try
                 $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                 $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                 $defaultPresentParametersIncorrectProperties.HealthCheckTimeout = 42
+                $global:mockAvailabilityGroupProperty = 'HealthCheckTimeout'
+                $global:mockAvailabilityGroupPropertyValue = 42
                 
                 { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
