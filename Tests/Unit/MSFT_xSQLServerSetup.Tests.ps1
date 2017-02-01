@@ -2357,6 +2357,34 @@ try
                     Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
                     Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 3 -Scope It
                 }
+
+                It 'Should not return false after a clustered install due to the presence of a variable called "FailoverClusterDisks"' {
+                    $mockCurrentInstanceName = $mockDefaultInstance_InstanceName
+
+                    Mock -CommandName Connect-SQL -MockWith $mockConnectSQLCluster -Verifiable
+
+                    Mock -CommandName Get-CimInstance -MockWith $mockGetCimInstance_MSClusterResource -Verifiable -ParameterFilter { 
+                        $Filter -eq "Type = 'SQL Server'"
+                    }
+
+                    Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSClusterResourceGroup_DefaultInstance -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
+
+                    Mock -CommandName Get-CimAssociatedInstance -MockWith $mockGetCimAssociatedInstance_MSClusterResource_DefaultInstance -Verifiable -ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
+
+                    $testClusterParameters = $testParameters.Clone()
+
+                    $testClusterParameters += @{
+                        FailoverClusterGroupName = $mockDefaultInstance_FailoverClusterGroupName
+                        FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
+                        FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                    }
+
+                    New-Variable -Name "FailoverClusterDisks" -Value $mockClusterDiskMap["UserData"];
+                    
+                    $result = Test-TargetResource @testClusterParameters
+
+                    $result | Should Be $true
+                }
             }
 
             Assert-VerifiableMocks
