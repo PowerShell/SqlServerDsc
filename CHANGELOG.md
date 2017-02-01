@@ -4,6 +4,8 @@
 
 - Changes to xSQLServerRole
   - xSQLServerRole now correctly reports that the desired state is present when the login is already a member of the server roles
+- Changes to xSQLServerSetup
+  - xSQLServerSetup should now function correctly for the InstallFailoverCluster action, and also supports cluster shared volumes. Note that the AddNode action is not currently working.
 
 ## 5.0.0.0
 
