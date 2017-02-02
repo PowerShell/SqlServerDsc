@@ -848,20 +848,20 @@ function Set-TargetResource
         }
 
         # Now we handle cluster shared volumes
-        $clusterSharedVolumes = Get-ClusterSharedVolume;
+        $clusterSharedVolumes = Get-CimInstance -ClassName "MSCluster_ClusterSharedVolume" -Namespace "root/MSCluster";
 
         foreach ($clusterSharedVolume in $clusterSharedVolumes)
         {
             foreach ($requiredDrive in ($requiredDrives | Where-Object {$_.IsMapped -eq $false}))
             {
-                foreach ($volume in $clusterSharedVolume.SharedVolumeInfo)
+                if ($requiredDrive -imatch $clusterSharedVolume.Name.Replace('\','\\'))
                 {
-                    if ($requiredDrive -imatch $volume.FriendlyVolumeName.Replace('\','\\'))
-                    {
-                        $failoverClusterDisks += $clusterSharedVolume.Name;
-                        $requiredDrive.IsMapped = $true;
-                        break;
-                    }
+                    $diskName = Get-CimInstance -ClassName "MSCluster_ClusterSharedVolumeToResource" -Namespace "root/MSCluster" | `
+                        Where-Object {$_.GroupComponent.Name -eq $clusterSharedVolume.Name} | `
+                        Select-Object -ExpandProperty PartComponent | `
+                        Select-Object -ExpandProperty Name;
+                    $failoverClusterDisks += $diskName;
+                    $requiredDrive.IsMapped = $true;
                 }
             }
         }
