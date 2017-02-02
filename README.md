@@ -585,7 +585,7 @@ Read more about max degree of parallelism in this article [Configure the max deg
 #### Parameters
 
 * **[String] SQLInstance** (Key): The name of the SQL instance to be configured.
-* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured.
+* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is *env:COMPUTERNAME*.
 * **[String] Ensure** _(Write)_: When set to 'Present' then max degree of parallelism will be set to either the value in parameter MaxDop or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' max degree of parallelism will be set to 0 which means no limit in number of processors used in parallel plan execution. { *Present* | Absent }.
 * **[Boolean] DynamicAlloc** _(Write)_: If set to $true then max degree of parallelism will be dynamically configured. When this is set parameter is set to $true, the parameter MaxDop must be set to $null or not be configured.
 * **[Sint32] MaxDop** _(Write)_: A numeric value to limit the number of processors used in parallel plan execution.

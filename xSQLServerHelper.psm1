@@ -1739,36 +1739,34 @@ function Remove-SqlDatabasePermission
 <#
     .SYNOPSIS
     This cmdlet is used to return the dynamic max degree of parallelism
-    
-    .PARAMETER SqlServerObject
-    This is the SQL Server object returned by Connect-SQL
 #>
 function Get-SqlDscDynamicMaxDop
 {
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()] 
-        [System.Object]
-        $SqlServerObject
-    )
+    try
+    {
+        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
+        $numProcs = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
+        $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
 
-    $numCores = $SqlServerObject.Processors
-    $numProcs = (Measure-Object -InputObject $SqlServerObject.AffinityInfo -Property NumaNodes).Count
-
-    if ($numProcs -eq 1)
-    {
-        $dynamicMaxDop = ($numCores / 2)
-        $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [System.MidpointRounding]::AwayFromZero)
+        if ($numProcs -eq 1)
+        {
+            $dynamicMaxDop = ($numCores / 2)
+            $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [System.MidpointRounding]::AwayFromZero)
+        }
+        elseif ($numCores -ge 8)
+        {
+            $dynamicMaxDop = 8
+        }
+        else
+        {
+            $dynamicMaxDop = $numCores
+        }
     }
-    elseif ($numCores -ge 8)
+    catch
     {
-        $dynamicMaxDop = 8
-    }
-    else
-    {
-        $dynamicMaxDop = $numCores
+        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxDop' `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
     }
 
     $dynamicMaxDop

@@ -14,9 +14,7 @@
     - 3-SetMaxDopToDefault.ps1
 - Added tests for resources
   - xSQLServerMaxDop
-- Changes to xSQLServerMaxDop
-  - BREAKING CHANGE: The mandatory parameters now include SQLServer, and SQLInstanceName.
-  
+
 ## 5.0.0.0
 
 - Improvements how tests are initiated in AppVeyor
