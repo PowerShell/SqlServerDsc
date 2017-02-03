@@ -202,7 +202,65 @@ try
             $mockGetCimInstance 
         } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
 
-        Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
+        Context 'When the system is not in the desired state, DynamicAlloc is set to true and NumberOfLogicalProcessors = 4' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc = $true
+            }      
+
+            It 'Should return the state as true when desired MaxDop is the correct value' {
+                $result = Test-TargetResource @testParameters
+                $result | Should Be $false
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstance = [PSCustomObject]@{
+                NumberOfLogicalProcessors = 1
+                NumberOfCores             = 2
+            }
+            
+            $mockGetCimInstance 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context 'When the system is not in the desired state, DynamicAlloc is set to true and NumberOfLogicalProcessors = 1' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc = $true
+            }      
+
+            It 'Should return the state as true when desired MaxDop is the correct value' {
+                $result = Test-TargetResource @testParameters
+                $result | Should Be $false
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstance = [PSCustomObject]@{
+                NumberOfLogicalProcessors = 4
+                NumberOfCores             = 8
+            }
+            
+            $mockGetCimInstance 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context 'When the system is not in the desired state, DynamicAlloc is set to true and NumberOfCores = 8' {
             $testParameters = $defaultParameters
             $testParameters += @{
                 DynamicAlloc = $true
@@ -389,6 +447,49 @@ try
 
             It 'Should call the mock function Get-CimInstance' {
                 Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [PSCustomObject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MaxDegreeOfParallelism = @{
+                        DisplayName = 'max degree of parallelism'
+                        Description = 'maximum degree of parallelism'
+                        RunValue    = 4
+                        ConfigValue = 4
+                    }
+                }
+            }
+            
+            # Add the Alter method
+            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {
+                throw "Mock Alter Method was called with invalid operation."
+            }
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context 'When the desired MaxDop parameter is not set' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                MaxDop          = 1
+                DynamicAlloc    = $false
+                Ensure          = 'Present'
+            }
+
+            It 'Should Throw when Alter Method was called with invalid operation' {
+                $throwInvalidOperation = ('Unexpected result when trying to configure the max degree of parallelism ' + `
+                                          'server configuration option. InnerException: Exception calling "Alter" ' + `
+                                          'with "0" argument(s): "Mock Alter Method was called with invalid operation."')
+                
+                { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation 
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 

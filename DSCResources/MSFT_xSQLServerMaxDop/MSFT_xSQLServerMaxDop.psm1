@@ -217,8 +217,8 @@ function Test-TargetResource
                 if ($MaxDop)
                 {
                     throw New-TerminatingError -ErrorType MaxDopParamMustBeNull `
-                                            -FormatArgs @( $SQLServer,$SQLInstanceName ) `
-                                            -ErrorCategory InvalidArgument  
+                                               -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                               -ErrorCategory InvalidArgument  
                 }
 
                 $dynamicMaxDop = Get-SqlDscDynamicMaxDop
@@ -250,31 +250,21 @@ function Test-TargetResource
 #>
 function Get-SqlDscDynamicMaxDop
 {
-    try
-    {
-        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
-        $numProcs = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
-        $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
+    $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
+    $numProcs = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
+    $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
 
-        if ($numProcs -eq 1)
-        {
-            $dynamicMaxDop = ($numCores / 2)
-            $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [System.MidpointRounding]::AwayFromZero)
-        }
-        elseif ($numCores -ge 8)
-        {
-            $dynamicMaxDop = 8
-        }
-        else
-        {
-            $dynamicMaxDop = $numCores
-        }
-    }
-    catch
+    if ($numProcs -eq 1)
     {
-        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxDop' `
-                                   -ErrorCategory InvalidOperation `
-                                   -InnerException $_.Exception
+        $dynamicMaxDop = [Math]::Round($numCores / 2, [System.MidpointRounding]::AwayFromZero)
+    }
+    elseif ($numCores -ge 8)
+    {
+        $dynamicMaxDop = 8
+    }
+    else
+    {
+        $dynamicMaxDop = $numCores
     }
 
     $dynamicMaxDop
