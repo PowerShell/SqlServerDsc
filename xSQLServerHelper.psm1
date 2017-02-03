@@ -1735,6 +1735,7 @@ function Remove-SqlDatabasePermission
                                    -ErrorCategory InvalidResult
     }
 }
+<<<<<<< HEAD
 
 <#
     .SYNOPSIS
