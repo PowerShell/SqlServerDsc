@@ -271,4 +271,68 @@ function Test-TargetResource
     return $isServerMemoryInDesiredState
 }
 
+<#
+    .SYNOPSIS
+    This cmdlet is used to return the Dynamic MaxMemory of a SQL Instance
+#>
+function Get-SqlDscDynamicMaxMemory
+{
+    try
+    {
+        $cimInstanceMem = Get-CimInstance -ClassName Win32_PhysicalMemory 
+        $physicalMemory = Measure-Object -InputObject $cimInstanceMem -Property Capacity -Sum | ForEach-Object -Process {
+            "{0:N2}" -f ([Math]::round($_.Sum / 1MB))
+        }
+        
+        # Find how much to save for OS: 20% of total ram for under 15GB / 12.5% for over 20GB
+        if ($physicalMemory -ge 20480)
+        {
+            $osMemReserved = [Math]::round((0.125 * $physicalMemory))
+        }
+        else
+        {
+            $osMemReserved = [Math]::round((0.2 * $physicalMemory))
+        }
+
+        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
+        $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
+
+        # Find Number of SQL Threads = 256 + (NumofProcesors - 4) * 8
+        if ($numCores -ge 4)
+        {
+            $numOfSQLThreads = 256 + ($numCores - 4) * 8
+        }
+        else
+        {
+            $numOfSQLThreads = 0
+        }
+
+        $osArchitecture = (Get-CimInstance -ClassName Win32_operatingsystem).OSArchitecture
+        
+        # Find ThreadStackSize 1MB x86/ 2MB x64/ 4MB IA64
+        if ($osArchitecture -eq '32-bit')
+        {
+            $ThreadStackSize = 1
+        }
+        elseif ($osArchitecture -eq '64-bit')
+        {
+            $ThreadStackSize = 2
+        }
+        else
+        {
+            $ThreadStackSize = 4
+        }
+
+        $maxMemory = $physicalMemory - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numCores / 4))
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxMemory' `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
+    }
+
+    $maxMemory
+}
+
 Export-ModuleMember -Function *-TargetResource
