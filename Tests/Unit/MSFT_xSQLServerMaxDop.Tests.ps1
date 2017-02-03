@@ -121,9 +121,14 @@ try
             $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
 
-        Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
-            return 4
-        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstance = [PSCustomObject]@{
+                NumberOfLogicalProcessors = 4
+                NumberOfCores             = 4
+            }
+            
+            $mockGetCimInstance 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the system is not in the desired state and DynamicAlloc is set to false' {
             $testParameters = $defaultParameters
@@ -143,7 +148,7 @@ try
             }
 
             It 'Should not call the mock function Get-SqlDscDynamicMaxDop' {
-                Assert-MockCalled Get-SqlDscDynamicMaxDop -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -163,8 +168,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxDop' {
-                Assert-MockCalled Get-SqlDscDynamicMaxDop -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -183,14 +188,19 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-SqlDscDynamicMaxDop' {
-                Assert-MockCalled Get-SqlDscDynamicMaxDop -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
-        Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
-            return 8
-        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstance = [PSCustomObject]@{
+                NumberOfLogicalProcessors = 4
+                NumberOfCores             = 2
+            }
+            
+            $mockGetCimInstance 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
             $testParameters = $defaultParameters
@@ -207,8 +217,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-SqlDscDynamicMaxDop' {
-                Assert-MockCalled Get-SqlDscDynamicMaxDop -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -304,9 +314,14 @@ try
             $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
 
-        Mock -CommandName Get-SqlDscDynamicMaxDop -MockWith {
-            return 4
-        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstance = [PSCustomObject]@{
+                NumberOfLogicalProcessors = 4
+                NumberOfCores             = 2
+            }
+            
+            $mockGetCimInstance 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the MaxDop parameter is not null and DynamicAlloc set to true' {
             $testParameters = $defaultParameters
@@ -372,8 +387,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-SqlDscDynamicMaxDop' {
-                Assert-MockCalled Get-SqlDscDynamicMaxDop -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
