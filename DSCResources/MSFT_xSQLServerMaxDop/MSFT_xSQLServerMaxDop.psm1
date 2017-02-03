@@ -244,4 +244,40 @@ function Test-TargetResource
     $isMaxDopInDesiredState 
 }
 
+<#
+    .SYNOPSIS
+    This cmdlet is used to return the dynamic max degree of parallelism
+#>
+function Get-SqlDscDynamicMaxDop
+{
+    try
+    {
+        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
+        $numProcs = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfLogicalProcessors -Sum).Sum
+        $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
+
+        if ($numProcs -eq 1)
+        {
+            $dynamicMaxDop = ($numCores / 2)
+            $dynamicMaxDop = [Math]::Round($dynamicMaxDop, [System.MidpointRounding]::AwayFromZero)
+        }
+        elseif ($numCores -ge 8)
+        {
+            $dynamicMaxDop = 8
+        }
+        else
+        {
+            $dynamicMaxDop = $numCores
+        }
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxDop' `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
+    }
+
+    $dynamicMaxDop
+}
+
 Export-ModuleMember -Function *-TargetResource
