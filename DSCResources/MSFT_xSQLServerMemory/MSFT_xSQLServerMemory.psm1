@@ -148,7 +148,7 @@ function Set-TargetResource
         }
         catch
         {
-            throw New-TerminatingError -ErrorType ServerMemorySetError `
+            throw New-TerminatingError -ErrorType 'ServerMemorySetError' `
                                        -FormatArgs @($SQLServer,$SQLInstanceName) `
                                        -ErrorCategory InvalidOperation `
                                        -InnerException $_.Exception
@@ -243,7 +243,7 @@ function Test-TargetResource
         {
             if ($DynamicAlloc)
             {
-                if ($MinMemory -and $MaxMemory)
+                if ($MaxMemory)
                 {
                     throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNull' `
                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
@@ -279,19 +279,17 @@ function Get-SqlDscDynamicMaxMemory
 {
     try
     {
-        $cimInstanceMem = Get-CimInstance -ClassName Win32_PhysicalMemory 
-        $physicalMemory = Measure-Object -InputObject $cimInstanceMem -Property Capacity -Sum | ForEach-Object -Process {
-            "{0:N2}" -f ([Math]::round($_.Sum / 1MB))
-        }
+        $physicalMemory = ((Get-CimInstance -ClassName Win32_PhysicalMemory).Capacity | Measure-Object -Sum).Sum
+        $physicalMemoryMB = [Math]::round($physicalMemory / 1MB)
         
         # Find how much to save for OS: 20% of total ram for under 15GB / 12.5% for over 20GB
-        if ($physicalMemory -ge 20480)
+        if ($physicalMemoryMB -ge 20480)
         {
-            $osMemReserved = [Math]::round((0.125 * $physicalMemory))
+            $osMemReserved = [Math]::round((0.125 * $physicalMemoryMB))
         }
         else
         {
-            $osMemReserved = [Math]::round((0.2 * $physicalMemory))
+            $osMemReserved = [Math]::round((0.2 * $physicalMemoryMB))
         }
 
         $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
@@ -323,7 +321,7 @@ function Get-SqlDscDynamicMaxMemory
             $ThreadStackSize = 4
         }
 
-        $maxMemory = $physicalMemory - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numCores / 4))
+        $maxMemory = $physicalMemoryMB - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numCores / 4))
     }
     catch
     {
