@@ -58,9 +58,6 @@ try
                     }
                 }
             }
-            
-            # Add the Alter method
-            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
 
             $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
@@ -134,16 +131,43 @@ try
                     }
                 }
             }
-            
-            # Add the Alter method
-            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
 
             $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
 
-        Mock -CommandName Get-SqlDscDynamicMaxMemory -MockWith {
-            return 10300
-        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceMem = @()
+
+            $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
+                Name = 'Physical Memory'
+                Tag = 'Physical Memory 0'
+                Capacity = 8589934592
+            }
+            
+            $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
+                Name = 'Physical Memory'
+                Tag = 'Physical Memory 1'
+                Capacity = 8589934592
+            }  
+            
+            $mockGetCimInstanceMem 
+        } -ParameterFilter { $ClassName -eq 'Win32_PhysicalMemory' } -ModuleName $script:DSCResourceName -Verifiable  
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceProc = [PSCustomObject]@{
+                NumberOfCores = 2
+            }
+            
+            $mockGetCimInstanceProc 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable        
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceOS = [PSCustomObject]@{
+                OSArchitecture = '64-bit'
+            }
+            
+            $mockGetCimInstanceOS 
+        } -ParameterFilter { $ClassName -eq 'Win32_operatingsystem' } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the system is not in the desired state and DynamicAlloc is set to false' {
             $testParameters = $defaultParameters
@@ -163,8 +187,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -186,10 +210,75 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
+
+        Context 'When the MaxMemory paramater is not null and DynamicAlloc set to true' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                MaxMemory       = 8192
+                DynamicAlloc    = $true
+                Ensure          = 'Present'
+            }
+
+            It 'Should Throw when MaxMemory paramater not null if DynamicAlloc set to true' {
+                { Test-TargetResource @testParameters } | Should Throw
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+                        
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+        
+        Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                Ensure          = 'Present'
+                DynamicAlloc    = $true
+            }      
+
+            It 'Should return the state as false when desired MinMemory and MaxMemory are not present' {
+                $result = Test-TargetResource @testParameters
+                $result | Should Be $false
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MinServerMemory = @{
+                        DisplayName = 'min server memory (MB)'
+                        Description = 'Minimum size of server memory (MB)'
+                        RunValue    = 0
+                        ConfigValue = 0
+                    }
+                    MaxServerMemory = @{
+                        DisplayName = 'max server memory (MB)'
+                        Description = 'Maximum size of server memory (MB)'
+                        RunValue    = 12083
+                        ConfigValue = 12083
+                    }
+                }
+            }
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'When the system is in the desired state and DynamicAlloc is set to true' {
             $testParameters = $defaultParameters
@@ -207,35 +296,33 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
-        Mock -CommandName Get-SqlDscDynamicMaxMemory -MockWith {
-            return 8192
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MinServerMemory = @{
+                        DisplayName = 'min server memory (MB)'
+                        Description = 'Minimum size of server memory (MB)'
+                        RunValue    = 1024
+                        ConfigValue = 1024
+                    }
+                    MaxServerMemory = @{
+                        DisplayName = 'max server memory (MB)'
+                        Description = 'Maximum size of server memory (MB)'
+                        RunValue    = 8192
+                        ConfigValue = 8192
+                    }
+                }
+            }
+
+            $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
-
-        Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
-            $testParameters = $defaultParameters
-            $testParameters += @{
-                Ensure          = 'Present'
-                DynamicAlloc    = $true
-            }      
-
-            It 'Should return the state as false when desired MinMemory and MaxMemory are not present' {
-                $result = Test-TargetResource @testParameters
-                $result | Should Be $false
-            }
-
-            It 'Should call the mock function Connect-SQL' {
-                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
-            }
-
-            It 'Should call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
-            }
-        }
 
         Context 'When the system is not in the desired state and Ensure is set to Absent' {
             $testParameters = $defaultParameters
@@ -252,8 +339,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -298,8 +385,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -333,9 +420,39 @@ try
             $mockSqlServerObject
         } -ModuleName $script:DSCResourceName -Verifiable
 
-        Mock -CommandName Get-SqlDscDynamicMaxMemory -MockWith {
-            return 10300
-        } -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceMem = @()
+
+            $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
+                Name = 'Physical Memory'
+                Tag = 'Physical Memory 0'
+                Capacity = 8589934592
+            }
+            
+            $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
+                Name = 'Physical Memory'
+                Tag = 'Physical Memory 1'
+                Capacity = 8589934592
+            }  
+            
+            $mockGetCimInstanceMem 
+        } -ParameterFilter { $ClassName -eq 'Win32_PhysicalMemory' } -ModuleName $script:DSCResourceName -Verifiable  
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceProc = [PSCustomObject]@{
+                NumberOfCores = 2
+            }
+            
+            $mockGetCimInstanceProc 
+        } -ParameterFilter { $ClassName -eq 'Win32_Processor' } -ModuleName $script:DSCResourceName -Verifiable        
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceOS = [PSCustomObject]@{
+                OSArchitecture = '64-bit'
+            }
+            
+            $mockGetCimInstanceOS 
+        } -ParameterFilter { $ClassName -eq 'Win32_operatingsystem' } -ModuleName $script:DSCResourceName -Verifiable   
 
         Context 'When the MaxMemory paramater is not null and DynamicAlloc set to true' {
             $testParameters = $defaultParameters
@@ -353,8 +470,28 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
                         
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Context 'When the MaxMemory paramater is null and DynamicAlloc set to false' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc    = $false
+                Ensure          = 'Present'
+            }
+
+            It 'Should Throw when MaxMemory paramater not null if DynamicAlloc set to true' {
+                { Set-TargetResource @testParameters } | Should Throw
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+                        
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -372,8 +509,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
             
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -394,8 +531,8 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should not call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -414,8 +551,58 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-SqlDscDynamicMaxMemory' {
-                Assert-MockCalled Get-SqlDscDynamicMaxMemory -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Connect-SQL -MockWith {
+            $mockSqlServerObject = [pscustomobject]@{
+                InstanceName                = $instanceName
+                ComputerNamePhysicalNetBIOS = $serverName
+                Configuration = @{
+                    MinServerMemory = @{
+                        DisplayName = 'min server memory (MB)'
+                        Description = 'Minimum size of server memory (MB)'
+                        RunValue    = 0
+                        ConfigValue = 0
+                    }
+                    MaxServerMemory = @{
+                        DisplayName = 'max server memory (MB)'
+                        Description = 'Maximum size of server memory (MB)'
+                        RunValue    = 10300
+                        ConfigValue = 10300
+                    }
+                }
+            }
+            
+            # Add the Alter method
+            $mockSqlServerObject | Add-Member -MemberType ScriptMethod -Name Alter -Value {
+                throw "Mock Alter Method was called with invalid operation."
+            }
+
+            $mockSqlServerObject
+        } -ModuleName $script:DSCResourceName -Verifiable
+
+        Context 'When the desired MinMemory and MaxMemory parameter are not set' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                MaxMemory       = 8192
+                MinMemory       = 1024
+                DynamicAlloc    = $false
+                Ensure          = 'Present'
+            }
+
+            It 'Should Throw when Alter Method was called with invalid operation' {                
+                { Set-TargetResource @testParameters } | Should Throw 
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
