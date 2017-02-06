@@ -391,12 +391,7 @@ try
                 [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
                 $AvailabilityGroup
             )
-        
-            if ( [string]::IsNullOrEmpty($mockAvailabilityGroupProperty) -and [string]::IsNullOrEmpty($mockAvailabilityGroupPropertyValue) )
-            {
-                return
-            }
-            
+
             if ( $mockAvailabilityGroupPropertyValue -ne $AvailabilityGroup.$mockAvailabilityGroupProperty )
             {
                 throw
