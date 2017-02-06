@@ -480,14 +480,14 @@ try
                     $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
                     $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                     $result.Ensure | Should Be 'Present'
-                    $result.AutomatedBackupPreference | Should Not Be $null
-                    $result.AvailabilityMode | Should Not Be $null
-                    $result.BackupPriority | Should Not Be $null
-                    $result.ConnectionModeInPrimaryRole | Should Not Be $null
-                    $result.ConnectionModeInSecondaryRole | Should Not Be $null
-                    $result.FailureConditionLevel | Should Not Be $null
-                    $result.FailoverMode | Should Not Be $null
-                    $result.HealthCheckTimeout | Should Not Be $null
+                    $result.AutomatedBackupPreference | Should Be 'Secondary'
+                    $result.AvailabilityMode | Should Be 'AsynchronousCommit'
+                    $result.BackupPriority | Should Be 50
+                    $result.ConnectionModeInPrimaryRole | Should Be 'AllowAllConnections'
+                    $result.ConnectionModeInSecondaryRole | Should Be 'AllowNoConnections'
+                    $result.FailureConditionLevel | Should Be 'OnServerDown'
+                    $result.FailoverMode | Should Be 'Manual'
+                    $result.HealthCheckTimeout | Should Be 30000
                     $result.BasicAvailabilityGroup | Should Be $null
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -510,14 +510,14 @@ try
                     $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
                     $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                     $result.Ensure | Should Be 'Present'
-                    $result.AutomatedBackupPreference | Should Not Be $null
-                    $result.AvailabilityMode | Should Not Be $null
-                    $result.BackupPriority | Should Not Be $null
-                    $result.ConnectionModeInPrimaryRole | Should Not Be $null
-                    $result.ConnectionModeInSecondaryRole | Should Not Be $null
-                    $result.FailureConditionLevel | Should Not Be $null
-                    $result.FailoverMode | Should Not Be $null
-                    $result.HealthCheckTimeout | Should Not Be $null
+                    $result.AutomatedBackupPreference | Should Be 'Secondary'
+                    $result.AvailabilityMode | Should Be 'AsynchronousCommit'
+                    $result.BackupPriority | Should Be 50
+                    $result.ConnectionModeInPrimaryRole | Should Be 'AllowAllConnections'
+                    $result.ConnectionModeInSecondaryRole | Should Be 'AllowNoConnections'
+                    $result.FailureConditionLevel | Should Be 'OnServerDown'
+                    $result.FailoverMode | Should Be 'Manual'
+                    $result.HealthCheckTimeout | Should Be 30000
                     $result.BasicAvailabilityGroup | Should Be $null
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -540,15 +540,15 @@ try
                     $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
                     $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                     $result.Ensure | Should Be 'Present'
-                    $result.AutomatedBackupPreference | Should Not Be $null
-                    $result.AvailabilityMode | Should Not Be $null
-                    $result.BackupPriority | Should Not Be $null
-                    $result.ConnectionModeInPrimaryRole | Should Not Be $null
-                    $result.ConnectionModeInSecondaryRole | Should Not Be $null
-                    $result.FailureConditionLevel | Should Not Be $null
-                    $result.FailoverMode | Should Not Be $null
-                    $result.HealthCheckTimeout | Should Not Be $null
-                    $result.BasicAvailabilityGroup | Should Not Be $null
+                    $result.AutomatedBackupPreference | Should Be 'Secondary'
+                    $result.AvailabilityMode | Should Be 'AsynchronousCommit'
+                    $result.BackupPriority | Should Be 50
+                    $result.ConnectionModeInPrimaryRole | Should Be 'AllowAllConnections'
+                    $result.ConnectionModeInSecondaryRole | Should Be 'AllowNoConnections'
+                    $result.FailureConditionLevel | Should Be 'OnServerDown'
+                    $result.FailoverMode | Should Be 'Manual'
+                    $result.HealthCheckTimeout | Should Be 30000
+                    $result.BasicAvailabilityGroup | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
@@ -570,15 +570,15 @@ try
                     $result.SQLServer | Should Be $defaultPresentParameters.SQLServer
                     $result.SQLInstanceName | Should Be $defaultPresentParameters.SQLInstanceName
                     $result.Ensure | Should Be 'Present'
-                    $result.AutomatedBackupPreference | Should Not Be $null
-                    $result.AvailabilityMode | Should Not Be $null
-                    $result.BackupPriority | Should Not Be $null
-                    $result.ConnectionModeInPrimaryRole | Should Not Be $null
-                    $result.ConnectionModeInSecondaryRole | Should Not Be $null
-                    $result.FailureConditionLevel | Should Not Be $null
-                    $result.FailoverMode | Should Not Be $null
-                    $result.HealthCheckTimeout | Should Not Be $null
-                    $result.BasicAvailabilityGroup | Should Not Be $null
+                    $result.AutomatedBackupPreference | Should Be 'Secondary'
+                    $result.AvailabilityMode | Should Be 'AsynchronousCommit'
+                    $result.BackupPriority | Should Be 50
+                    $result.ConnectionModeInPrimaryRole | Should Be 'AllowAllConnections'
+                    $result.ConnectionModeInSecondaryRole | Should Be 'AllowNoConnections'
+                    $result.FailureConditionLevel | Should Be 'OnServerDown'
+                    $result.FailoverMode | Should Be 'Manual'
+                    $result.HealthCheckTimeout | Should Be 30000
+                    $result.BasicAvailabilityGroup | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
