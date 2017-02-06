@@ -2,9 +2,9 @@
 class MSFT_xSQLServerMemory : OMI_BaseResource
 {
     [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
-    [Required, Description("The host name of the SQL Server to be configured.")] String SQLServer;
-    [Write, Description("An enumerated value that describes if Min and Max memory is configured"), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Write, Description("Flag to Dynamically allocate SQL memory based on Best Practices")] Boolean DynamicAlloc;
-    [Write, Description("Minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server")] Sint32 MinMemory;
-    [Write, Description("Maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server")] Sint32 MaxMemory;
+    [Write, Description("The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String SQLServer;
+    [Write, Description("When set to 'Present' then min and max memory will be set to either the value in parameter MinMemory and MaxMemory or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' min and max memory will be set to default values. Default value is Present."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Write, Description("If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory must be set to $null or not be configured. Default value is $false.")] Boolean DynamicAlloc;
+    [Write, Description("Minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.")] Sint32 MinMemory;
+    [Write, Description("Maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.")] Sint32 MaxMemory;
 };
