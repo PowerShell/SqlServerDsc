@@ -588,16 +588,25 @@ None.
 
 ### xSQLServerMemory
 
-This resource set the min server memory and max server memory configuration option.
-The default setting for min server memory is 0, and the default setting for max server memory is 2147483647 MB.
-Read more about  min server memory and max server memory in this article [Server Memory Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms178067.aspx).
+This resource sets the minimum server memory and maximum server memory configuration option.
+That means it sets the minimum and the maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server
+The default setting for minimum server memory is 0, and the default setting for maximum server memory is 2147483647 MB.
+Read more about minimum server memory and maximum server memory in this article [Server Memory Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms178067.aspx).
 
-#### Formula for dynamically allocating max memory
+#### Formula for dynamically allocating maximum memory
 
-* SQL Max Memory = TotalPhyMem - (NumOfSQLThreads x ThreadStackSize) - (1GB x CEILING(NumOfCores/4)) - OS Reserved.
-* NumOfSQLThreads = 256 + (NumOfCores - 4) x 8 (If NumOfCores > 4, else NumOfSQLThreads = 0).
-* ThreadStackSize = 1MB on x86 or 2MB on x64 or 4 MB on 64-bit (IA64).
-* OS Reserved = 20% of total ram for under if system has 15GB. 12.5% for over 20GB.
+* The dynamic maximum memory (in MB) is calculate with this formula:   
+SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads x ThreadStackSize) - (1024 x CEILING(NumOfCores/4)) - OSReservedMemory.
+* **NumOfSQLThreads**
+* If the number of cores is less than and equal to 4, the number of Sql threads is the number of cores minus 4 multiply by 8, plus 256.
+* If the number of cores is greater than 4, the number of Sql threads is equal to 0.
+* **ThreadStackSize**
+* If the architecture of windows server is x86, the size of thread stack is 1MB.
+* If the architecture of windows server is x64, the size of thread stack is 2MB.
+* If the architecture of windows server is IA64, the size of thread stack is 4MB.
+* **OSReservedMemory**
+* If the total physical memory is under 20 GB, the percentage of reserved memory for OS is 20% of total physical memory.
+* If the total physical memory is upper 20 GB, the percentage of reserved memory for OS is 12.5% of total physical memory. 
 
 #### Requirements
 
@@ -607,9 +616,9 @@ Read more about  min server memory and max server memory in this article [Server
 #### Parameters
 
 * **[String] SQLInstance** _(Key)_: The name of the SQL instance to be configured.
-* **[String] SQLServer** _(Required)_: The host name of the SQL Server to be configured.
-* **[Boolean] DyamicAlloc** _(Write)_: If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory and MinMemory must be set to $null or not be configured.
-* **[String] Ensure** _(Write)_: When set to 'Present' then min and max memory will be set to either the value in parameter MinMemory and MaxMemory or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' min and max memory will be set to default value. { *Present* | Absent }.
+* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is *$env:COMPUTERNAME*.
+* **[Boolean] DyamicAlloc** _(Write)_: If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory must be set to $null or not be configured. Default value is *$false*.
+* **[String] Ensure** _(Write)_: When set to 'Present' then min and max memory will be set to either the value in parameter MinMemory and MaxMemory or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' min and max memory will be set to default values. { *Present* | Absent }.
 * **[Sint32] MinMemory** _(Write)_: Minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
 * **[Sint32] MaxMemory** _(Write)_: Maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
 
