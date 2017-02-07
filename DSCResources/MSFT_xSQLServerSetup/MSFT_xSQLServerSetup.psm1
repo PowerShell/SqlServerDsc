@@ -925,7 +925,7 @@ function Set-TargetResource
         }
 
         $setupArguments += @{ SQLSysAdminAccounts =  @($SetupCredential.UserName) }
-        if ($PSBoundParameters -icontains 'SQLSysAdminAccounts')
+        if ($PSBoundParameters.ContainsKey('SQLSysAdminAccounts'))
         {
             $setupArguments['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
         }
