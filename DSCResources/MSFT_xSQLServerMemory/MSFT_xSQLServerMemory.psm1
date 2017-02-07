@@ -245,7 +245,7 @@ function Test-TargetResource
 
             if ($currentMinMemory -ne 0)
             {
-                New-VerboseMessage -Message "Current minimum server memory is $currentMinMemory. Expected 0"
+                New-VerboseMessage -Message "Current minimum server memory used by the instance is $($currentMinMemory)MB. Expected 0MB."
                 $isServerMemoryInDesiredState = $false
             }
         }
@@ -262,19 +262,32 @@ function Test-TargetResource
                 }
 
                 $MaxMemory = Get-SqlDscDynamicMaxMemory
-                New-VerboseMessage -Message "Dynamic MaxMemory is $MaxMemory."
+                New-VerboseMessage -Message "Dynamic maximum memory has been calculated to $($MaxMemory)MB."
+            }
+            else
+            {
+                if (-not $MaxMemory)
+                {
+                    throw New-TerminatingError -ErrorType 'MaxMemoryParamMustNotBeNull' `
+                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                                -ErrorCategory InvalidArgument  
+                }
+                if ($MaxMemory -ne $currentMaxMemory)
+                {
+                    New-VerboseMessage -Message ("Current maximum server memory used by the instance ") + `
+                                                ("is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
+                    $isServerMemoryInDesiredState = $false
+                }
             }
 
-            if ($MaxMemory -ne $currentMaxMemory)
+            if ($MinMemory)
             {
-                New-VerboseMessage -Message "Current maximum server memory is $currentMaxMemory, expected $MaxMemory"
-                $isServerMemoryInDesiredState = $false
-            }
-
-            if ($MinMemory -ne $currentMinMemory)
-            {
-                New-VerboseMessage -Message "Current minimum server memory is $currentMinMemory, expected $MinMemory"
-                $isServerMemoryInDesiredState = $false
+               if ($MinMemory -ne $currentMinMemory)
+                {
+                    New-VerboseMessage -Message ("Current minimum server memory used by the instance ") + `
+                                                ("is $($currentMinMemory)MB. Expected $($MinMemory)MB.")
+                    $isServerMemoryInDesiredState = $false
+                }
             }
         }
     }
@@ -291,48 +304,47 @@ function Get-SqlDscDynamicMaxMemory
     try
     {
         $physicalMemory = ((Get-CimInstance -ClassName Win32_PhysicalMemory).Capacity | Measure-Object -Sum).Sum
-        $physicalMemoryMB = [Math]::round($physicalMemory / 1MB)
+        $physicalMemoryInMegaBytes = [Math]::Round($physicalMemory / 1MB)
         
         # Find how much to save for OS: 20% of total ram for under 15GB / 12.5% for over 20GB
-        if ($physicalMemoryMB -ge 20480)
+        if ($physicalMemoryInMegaBytes -ge 20480)
         {
-            $osMemReserved = [Math]::round((0.125 * $physicalMemoryMB))
+            $reservedOperatingSystemMemory = [Math]::Round((0.125 * $physicalMemoryInMegaBytes))
         }
         else
         {
-            $osMemReserved = [Math]::round((0.2 * $physicalMemoryMB))
+            $reservedOperatingSystemMemory = [Math]::Round((0.2 * $physicalMemoryInMegaBytes))
         }
 
-        $cimInstanceProc = Get-CimInstance -ClassName Win32_Processor
-        $numCores = (Measure-Object -InputObject $cimInstanceProc -Property NumberOfCores -Sum).Sum
+        $numberOfCores = (Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property NumberOfCores -Sum).Sum
 
-        # Find Number of SQL Threads = 256 + (NumofProcesors - 4) * 8
-        if ($numCores -ge 4)
+        # Find Number of SQL Threads = 256 + (numberOfCores - 4) * 8
+        if ($numberOfCores -ge 4)
         {
-            $numOfSQLThreads = 256 + ($numCores - 4) * 8
+            $numOfSQLThreads = 256 + ($numberOfCores - 4) * 8
         }
         else
         {
             $numOfSQLThreads = 0
         }
 
-        $osArchitecture = (Get-CimInstance -ClassName Win32_operatingsystem).OSArchitecture
+        $operatingSystemArchitecture = (Get-CimInstance -ClassName Win32_operatingsystem).OSArchitecture
         
-        # Find ThreadStackSize 1MB x86/ 2MB x64/ 4MB IA64
-        if ($osArchitecture -eq '32-bit')
+        # Find threadStackSize 1MB x86/ 2MB x64/ 4MB IA64
+        if ($operatingSystemArchitecture -eq '32-bit')
         {
-            $ThreadStackSize = 1
+            $threadStackSize = 1
         }
-        elseif ($osArchitecture -eq '64-bit')
+        elseif ($operatingSystemArchitecture -eq '64-bit')
         {
-            $ThreadStackSize = 2
+            $threadStackSize = 2
         }
         else
         {
-            $ThreadStackSize = 4
+            $threadStackSize = 4
         }
 
-        $maxMemory = $physicalMemoryMB - $osMemReserved - ($numOfSQLThreads * $ThreadStackSize) - (1024 * [System.Math]::Ceiling($numCores / 4))
+        $maxMemory = $physicalMemoryInMegaBytes - $reservedOperatingSystemMemory - ($numOfSQLThreads * $threadStackSize) - (1024 * [System.Math]::Ceiling($numberOfCores / 4))
     }
     catch
     {
