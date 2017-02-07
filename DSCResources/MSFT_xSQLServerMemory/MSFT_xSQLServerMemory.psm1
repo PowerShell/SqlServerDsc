@@ -140,8 +140,8 @@ function Set-TargetResource
             {
                 $MaxMemory = 2147483647
                 $MinMemory = 0
-                New-VerboseMessage -Message ('Ensure is set to absent. so minimum and maximum server memory') + `
-                                            ('values used by the instance are reset to the default values.')
+                New-VerboseMessage -Message ('Ensure is set to absent. so minimum and maximum server memory' + `
+                                             'values used by the instance are reset to the default values.')
             }
         }
 
@@ -272,20 +272,21 @@ function Test-TargetResource
                                                 -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                 -ErrorCategory InvalidArgument  
                 }
-                if ($MaxMemory -ne $currentMaxMemory)
-                {
-                    New-VerboseMessage -Message ("Current maximum server memory used by the instance ") + `
-                                                ("is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
-                    $isServerMemoryInDesiredState = $false
-                }
+            }
+
+            if ($MaxMemory -ne $currentMaxMemory)
+            {
+                New-VerboseMessage -Message ("Current maximum server memory used by the instance " + `
+                                                "is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
+                $isServerMemoryInDesiredState = $false
             }
 
             if ($MinMemory)
             {
                if ($MinMemory -ne $currentMinMemory)
                 {
-                    New-VerboseMessage -Message ("Current minimum server memory used by the instance ") + `
-                                                ("is $($currentMinMemory)MB. Expected $($MinMemory)MB.")
+                    New-VerboseMessage -Message ("Current minimum server memory used by the instance " + `
+                                                 "is $($currentMinMemory)MB. Expected $($MinMemory)MB.")
                     $isServerMemoryInDesiredState = $false
                 }
             }
