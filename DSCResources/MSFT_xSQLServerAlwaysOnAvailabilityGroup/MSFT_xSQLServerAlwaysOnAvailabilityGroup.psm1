@@ -755,36 +755,4 @@ function Update-AvailabilityGroup
     }
 }
 
-<#
-    .SYNOPSIS
-        Executes the alter method on an Availability Group Replica object.
-    
-    .PARAMETER AvailabilityGroupReplica
-        The Availabilty Group Replica object that must be altered.
-#>
-function Update-AvailabilityGroupReplica
-{
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [Microsoft.SqlServer.Management.Smo.AvailabilityReplica]
-        $AvailabilityGroupReplica
-    )
-
-    try
-    {
-        $originalErrorActionPreference = $ErrorActionPreference
-        $ErrorActionPreference = 'Stop'
-        $AvailabilityGroupReplica.Alter()
-    }
-    catch
-    {
-        throw New-TerminatingError -ErrorType AlterAvailabilityGroupReplicaFailed -FormatArgs $AvailabilityGroupReplica.Name -ErrorCategory OperationStopped
-    }
-    finally
-    {
-        $ErrorActionPreference = $originalErrorActionPreference
-    }
-}
-
 Export-ModuleMember -Function *-TargetResource

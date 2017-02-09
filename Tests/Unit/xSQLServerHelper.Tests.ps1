@@ -750,4 +750,27 @@ InModuleScope $script:moduleName {
             }
         }
     }
+
+    Describe "Testing Update-AvailabilityGroupReplica" {
+            Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
+
+            Context 'When the Availability Group Replica is altered' {
+                It 'Should silently alter the Availability Group Replica' {
+                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                    
+                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Not Throw
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+                }
+
+                It 'Should throw the correct error, AlterAvailabilityGroupReplicaFailed, when altering the Availaiblity Group Replica fails' {
+                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                    $availabilityReplica.Name = 'AlterFailed'
+                    
+                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Throw 'AlterAvailabilityGroupReplicaFailed'
+
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                }
+            }
+        }
 }
