@@ -1,3 +1,4 @@
+
 # Change log for xSQLServer
 
 ## Unreleased
@@ -47,6 +48,7 @@
       - Function `NetUse` has been replaced with `New-SmbMapping` and `Remove-SmbMapping`.
   - Renamed function `GetSQLVersion` to `Get-SqlMajorVersion`.
   - BREAKING CHANGE: Renamed parameter PID to ProductKey to avoid collision with automatic variable $PID
+  - Properly checks for use of SQLSysAdminAccounts parameter in $PSBoundParameters
 - Changes to xSQLServerScript
   - All credential parameters now also has the type [System.Management.Automation.Credential()] to better work with PowerShell 4.0.
   - It is now possible to configure two instances on the same node, with the same script.
