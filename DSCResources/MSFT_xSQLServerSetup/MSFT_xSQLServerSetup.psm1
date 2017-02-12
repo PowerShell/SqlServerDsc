@@ -121,10 +121,10 @@ function Get-TargetResource
         }
 
         $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
+        $registryClientComponentsFullFeatureList = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
 
-        New-VerboseMessage -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
-        $isClientConnectivityToolsInstalled = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
-        if ($isClientConnectivityToolsInstalled -like '*Connectivity_FNS=3*')
+        Write-Debug -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
+        if ($registryClientComponentsFullFeatureList -like '*Connectivity_FNS=3*')
         {
             New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
             $features += 'CONN,'
@@ -134,9 +134,8 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Client Connectivity Tools feature not detected'
         }
 
-        New-VerboseMessage -Message "Detecting Client Connectivity Backwards Compatibility Tools feature ($clientComponentsFullRegistryPath)"
-        $isClientConnectivityBackwardsCompatibilityToolsInstalled = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
-        if ($isClientConnectivityBackwardsCompatibilityToolsInstalled -like '*Tools_Legacy_FNS=3*')
+        Write-Debug -Message "Detecting Client Connectivity Backwards Compatibility Tools feature ($clientComponentsFullRegistryPath)"
+        if ($registryClientComponentsFullFeatureList -like '*Tools_Legacy_FNS=3*')
         {
             New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
             $features += 'BC,'

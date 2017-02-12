@@ -372,6 +372,15 @@ try
             )
         }
 
+        $mockGetItemProperty_ClientComponentsFull_FeatureList = {
+            return @(
+                (
+                    New-Object Object |
+                        Add-Member -MemberType NoteProperty -Name 'FeatureList' -Value 'Connectivity_Full=3 SQL_SSMS_Full=3 Tools_Legacy_Full=3 Connectivity_FNS=3 SQL_Tools_Standard_FNS=3 Tools_Legacy_FNS=3' -PassThru -Force
+                )
+            )
+        }
+
         $mockGetItemProperty_SQL = {
             return @(
                 (
@@ -747,8 +756,11 @@ try
         # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
             SetupCredential = $mockSetupCredential
-            # These are written with both lower-case and upper-case to make sure we support that.
-            Features = 'SQLEngine,Replication,FullText,Rs,Is,As'
+            <#
+                These are written with both lower-case and upper-case to make sure we support that.
+                The feature list must be written in the order it is returned by the function Get-TargerResource.
+            #>
+            Features = 'SQLEngine,Replication,Conn,Bc,FullText,Rs,As,Is,Ssms,Adv_Ssms'
         }
 
         $mockDefaultClusterParameters = @{
@@ -815,6 +827,10 @@ try
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
+
+                Mock -CommandName Get-ItemProperty -ParameterFilter {
+                    $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                } -MockWith $mockGetItemProperty_ClientComponentsFull_FeatureList -Verifiable
             }
 
             $testProductVersion | ForEach-Object -Process {
@@ -884,6 +900,10 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
+                        } -Exactly -Times 0 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
                         } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
@@ -992,6 +1012,10 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
+                        } -Exactly -Times 0 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
                         } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
@@ -1140,6 +1164,10 @@ try
                         } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -Exactly -Times 1 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
                         } -Exactly -Times 1 -Scope It
 
@@ -1198,10 +1226,12 @@ try
 
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
-                        if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
+                        if ($mockSqlMajorVersion -eq 13)
+                        {
+                            $featuresForSqlServer2016 = (($mockDefaultParameters.Features.ToUpper()) -replace 'SSMS,','') -replace ',ADV_SSMS',''
+                            $result.Features | Should Be $featuresForSqlServer2016
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be $mockDefaultParameters.Features.ToUpper()
                         }
                     }
 
@@ -1330,6 +1360,10 @@ try
                         } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -Exactly -Times 1 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
                         } -Exactly -Times 1 -Scope It
 
@@ -1388,10 +1422,12 @@ try
 
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
-                        if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
+                        if ($mockSqlMajorVersion -eq 13)
+                        {
+                            $featuresForSqlServer2016 = (($mockDefaultParameters.Features.ToUpper()) -replace 'SSMS,','') -replace ',ADV_SSMS',''
+                            $result.Features | Should Be $featuresForSqlServer2016
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be $mockDefaultParameters.Features.ToUpper()
                         }
                     }
 
@@ -1485,6 +1521,10 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\ConfigurationState"
+                        } -Exactly -Times 0 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
                         } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
@@ -1629,6 +1669,10 @@ try
                         } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -Exactly -Times 1 -Scope It
+
+                        Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
                         } -Exactly -Times 1 -Scope It
 
@@ -1687,10 +1731,12 @@ try
 
                     It 'Should return correct names of installed features' {
                         $result = Get-TargetResource @testParameters
-                        if ($mockSqlMajorVersion -eq 13) {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
+                        if ($mockSqlMajorVersion -eq 13)
+                        {
+                            $featuresForSqlServer2016 = (($mockDefaultParameters.Features.ToUpper()) -replace 'SSMS,','') -replace ',ADV_SSMS',''
+                            $result.Features | Should Be $featuresForSqlServer2016
                         } else {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be $mockDefaultParameters.Features.ToUpper()
                         }
                     }
 
@@ -1865,7 +1911,7 @@ try
                 } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
             }
 
-            # For this test we only need to test one SQL Server version
+            # For this test we only need to test one SQL Server version. Mocking SQL Server 2016 for the 'not in the desired state' test.
             $mockSqlMajorVersion = 13
 
             $mockDefaultInstance_InstanceId = "$($mockSqlDatabaseEngineName)$($mockSqlMajorVersion).$($mockDefaultInstance_InstanceName)"
@@ -2149,6 +2195,9 @@ try
                 }
             }
 
+            # For this test we only need to test one SQL Server version. Mocking SQL Server 2014 for the 'in the desired state' test.
+            $mockSqlMajorVersion = 12
+
             Context "When the system is in the desired state" {
                 BeforeEach {
                     $testParameters = $mockDefaultParameters
@@ -2157,6 +2206,16 @@ try
                         SourceCredential = $null
                         SourcePath = $mockSourcePath
                     }
+
+                    # Mock all SSMS products.
+                    Mock -CommandName Get-ItemProperty -ParameterFilter {
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber) -or
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2012_ProductIdentifyingNumber) -or
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2014_ProductIdentifyingNumber) -or
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2008R2_ProductIdentifyingNumber) -or
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2012_ProductIdentifyingNumber) -or
+                        $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2014_ProductIdentifyingNumber)
+                    } -MockWith $mockGetItemProperty_UninstallProducts -Verifiable
 
                     Mock -CommandName Get-ItemProperty -ParameterFilter {
                         $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber) -or
@@ -2215,6 +2274,10 @@ try
                     Mock -CommandName Get-ItemProperty -ParameterFilter {
                         $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
                     } -MockWith $mockGetItemProperty_ConfigurationState -Verifiable
+
+                    Mock -CommandName Get-ItemProperty -ParameterFilter {
+                        $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                    } -MockWith $mockGetItemProperty_ClientComponentsFull_FeatureList -Verifiable
 
                     Mock -CommandName Get-ItemProperty -ParameterFilter {
                         $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -2397,6 +2460,10 @@ try
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
 
+                Mock -CommandName Get-ItemProperty -ParameterFilter {
+                    $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                } -MockWith $mockGetItemProperty_ClientComponentsFull_FeatureList -Verifiable
+
                 Mock -CommandName StartWin32Process -MockWith $mockStartWin32Process -Verifiable
                 Mock -CommandName WaitForWin32ProcessEnd -Verifiable
                 Mock -CommandName Test-TargetResource -MockWith {
@@ -2418,13 +2485,18 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $null
                             SourcePath = $mockSourcePath
                             ProductKey = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
                             SQLSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
+                        }
+
+                        if ( $mockSqlMajorVersion -eq 13 )
+                        {
+                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
                         }
 
                         Mock -CommandName New-SmbMapping -Verifiable
@@ -2453,7 +2525,7 @@ try
                             Action = 'Install'
                             AGTSVCSTARTUPTYPE = 'Automatic'
                             InstanceName = 'MSSQLSERVER'
-                            Features = 'SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS'
+                            Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                             ASSysAdminAccounts = 'COMPANY\sqladmin'
                             PID = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
@@ -2583,11 +2655,16 @@ try
 
                 Context "When using SourceCredential parameter, and using a UNC path with a leaf, and SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $mockSetupCredential
                             SourcePath = $mockSourcePathUNC
+                        }
+
+                        if ( $mockSqlMajorVersion -eq 13 )
+                        {
+                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
                         }
 
                         Mock -CommandName New-SmbMapping -Verifiable
@@ -2616,7 +2693,7 @@ try
                             Action = 'Install'
                             AgtSvcStartupType = 'Automatic'
                             InstanceName = 'MSSQLSERVER'
-                            Features = 'SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS'
+                            Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin'
                             ASSysAdminAccounts = 'COMPANY\sqladmin'
                         }
@@ -2743,11 +2820,16 @@ try
 
                 Context "When using SourceCredential parameter, and using a UNC path without a leaf, and SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
                             SourceCredential = $mockSetupCredential
                             SourcePath = $mockSourcePathUNCWithoutLeaf
+                        }
+
+                        if ( $mockSqlMajorVersion -eq 13 )
+                        {
+                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
                         }
 
                         Mock -CommandName New-SmbMapping -Verifiable
@@ -2775,7 +2857,7 @@ try
                             Action = 'Install'
                             AGTSVCSTARTUPTYPE = 'Automatic'
                             InstanceName = 'MSSQLSERVER'
-                            Features = 'SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS'
+                            Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin'
                             ASSysAdminAccounts = 'COMPANY\sqladmin'
                         }
@@ -2911,11 +2993,16 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a named instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters
+                        $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockNamedInstance_InstanceName
                             SourceCredential = $null
                             SourcePath = $mockSourcePath
+                        }
+
+                        if ( $mockSqlMajorVersion -eq 13 )
+                        {
+                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
                         }
 
                         Mock -CommandName Get-ItemProperty -ParameterFilter {
@@ -2938,7 +3025,7 @@ try
                             Action = 'Install'
                             AGTSVCSTARTUPTYPE = 'Automatic'
                             InstanceName = 'TEST'
-                            Features = 'SQLENGINE,REPLICATION,FULLTEXT,RS,IS,AS'
+                            Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin'
                             ASSysAdminAccounts = 'COMPANY\sqladmin'
                         }
