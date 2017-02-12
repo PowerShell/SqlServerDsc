@@ -122,7 +122,7 @@ function Get-TargetResource
 
         $featuresVersion = $sqlVersion + "0"
         New-VerboseMessage -Message "Detecting Client Connectivity Tools feature (HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full)"
-        $isClientConnectivityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full").FeatureList
+        $isClientConnectivityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full" -ErrorAction SilentlyContinue).FeatureList
         if ($isClientConnectivityToolsInstalled -like '*Connectivity_FNS=3*')
         {
             New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
@@ -134,7 +134,7 @@ function Get-TargetResource
         }
 
         New-VerboseMessage -Message "Detecting Client Connectivity Backwards Compatibility Tools feature (HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full)"
-        $isClientConnectivityBackwardsCompatibilityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full").FeatureList
+        $isClientConnectivityBackwardsCompatibilityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full" -ErrorAction SilentlyContinue).FeatureList
         if ($isClientConnectivityBackwardsCompatibilityToolsInstalled -like '*Tools_Legacy_FNS=3*')
         {
             New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
