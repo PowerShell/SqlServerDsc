@@ -11,6 +11,7 @@
   - xSQLServerAlwaysOnAvailabilityGroup
 - Changes to xSQLServerSetup
   - Properly checks for use of SQLSysAdminAccounts parameter in $PSBoundParameters. The test now also properly evaluates the setup argument for SQLSysAdminAccounts.
+  - It now detects that feature Client Connectivity Tools (CONN) and Client Connectivity Backwards Compatibility Tools (BC) is installed.
 - Enables CodeCov.io code coverage reporting
 
 ## 5.0.0.0

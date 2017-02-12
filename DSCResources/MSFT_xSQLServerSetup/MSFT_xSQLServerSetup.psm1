@@ -113,11 +113,36 @@ function Get-TargetResource
         if ($isReplicationInstalled -eq 1)
         {
             New-VerboseMessage -Message 'Replication feature detected'
-            $Features += 'REPLICATION,'
+            $features += 'REPLICATION,'
         }
         else
         {
             New-VerboseMessage -Message 'Replication feature not detected'
+        }
+
+        $featuresVersion = $sqlVersion + "0"
+        New-VerboseMessage -Message "Detecting Client Connectivity Tools feature (HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full)"
+        $isClientConnectivityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full").FeatureList
+        if ($isClientConnectivityToolsInstalled -like '*Connectivity_FNS=3*')
+        {
+            New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
+            $features += 'CONN,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Client Connectivity Tools feature not detected'
+        }
+
+        New-VerboseMessage -Message "Detecting Client Connectivity Backwards Compatibility Tools feature (HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full)"
+        $isClientConnectivityBackwardsCompatibilityToolsInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tooss\Setup\Client_Components_Full").FeatureList
+        if ($isClientConnectivityBackwardsCompatibilityToolsInstalled -like '*Tools_Legacy_FNS=3*')
+        {
+            New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
+            $features += 'BC,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
         }
 
         $instanceId = $fullInstanceId.Split('.')[1]
@@ -168,7 +193,7 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Clustered SQL Server resource located'
 
             $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
-            $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource | 
+            $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
                 Where-Object { $_.Type -eq "Network Name" }
 
             $clusteredSqlIPAddress = ($clusteredSqlNetworkName | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
@@ -178,7 +203,7 @@ function Get-TargetResource
             $clusteredSqlGroupName = $clusteredSqlGroup.Name
             $clusteredSqlHostname = $clusteredSqlNetworkName.PrivateProperties.DnsName
         }
-        else 
+        else
         {
             New-VerboseMessage -Message 'Clustered instance not detected'
         }
@@ -780,7 +805,7 @@ function Set-TargetResource
     if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','AddNode'))
     {
         # Set the group name for this clustered instance.
-        $setupArguments += @{ 
+        $setupArguments += @{
             FailoverClusterGroup = $FailoverClusterGroupName
 
             # This was brought over from the old module. Should be removed (breaking change).
@@ -929,7 +954,7 @@ function Set-TargetResource
         {
             $setupArguments['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
         }
-        
+
         if ($SecurityMode -eq 'SQL')
         {
             $setupArguments += @{ SAPwd = $SAPwd.GetNetworkCredential().Password }
@@ -989,7 +1014,7 @@ function Set-TargetResource
     # Automatically include any additional arguments
     foreach ($argument in $argumentVars)
     {
-        if($argument -eq 'ProductKey') 
+        if($argument -eq 'ProductKey')
         {
             $setupArguments += @{ 'PID' = (Get-Variable -Name $argument -ValueOnly) }
         }
@@ -1023,7 +1048,7 @@ function Set-TargetResource
                 {
                     $setupArgumentValue = $currentSetupArgument.Value
                 }
-                else 
+                else
                 {
                     $setupArgumentValue = '"{0}"' -f $currentSetupArgument.Value
                 }
@@ -1232,7 +1257,7 @@ function Test-TargetResource
     (
         [ValidateSet('Install','InstallFailoverCluster','AddNode','PrepareFailoverCluster','CompleteFailoverCluster')]
         [System.String]
-        $Action = 'Install', 
+        $Action = 'Install',
 
         [System.String]
         $SourcePath,
@@ -1397,7 +1422,7 @@ function Test-TargetResource
             }
         }
     }
-    
+
     if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
     {
         New-VerboseMessage -Message "Clustered install, checking parameters."
@@ -1587,14 +1612,14 @@ function ConvertTo-Decimal
         [System.Net.IPAddress]
         $IPAddress
     )
- 
+
     $i = 3
     $DecimalIP = 0
     $IPAddress.GetAddressBytes() | ForEach-Object {
         $DecimalIP += $_ * [Math]::Pow(256,$i)
         $i--
     }
- 
+
     return [UInt32]$DecimalIP
 }
 
@@ -1628,7 +1653,7 @@ function Test-IPAddress
         [System.Net.IPAddress]
         $SubnetMask
     )
-    
+
     # Convert all values to decimal
     $IPAddressDecimal = ConvertTo-Decimal -IPAddress $IPAddress
     $NetworkDecimal = ConvertTo-Decimal -IPAddress $NetworkID
@@ -1646,7 +1671,7 @@ function Test-IPAddress
         Credential for the service account
 
     .PARAMETER ServiceType
-        Type of service account 
+        Type of service account
 #>
 function Get-ServiceAccountParameters
 {
