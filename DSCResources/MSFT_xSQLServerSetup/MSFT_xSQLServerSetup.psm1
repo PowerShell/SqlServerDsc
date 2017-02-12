@@ -120,8 +120,8 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Replication feature not detected'
         }
 
-        $featuresVersion = $sqlVersion + "0"
-        $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$featuresVersion\Tools\Setup\Client_Components_Full"
+        $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
+
         New-VerboseMessage -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
         $isClientConnectivityToolsInstalled = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
         if ($isClientConnectivityToolsInstalled -like '*Connectivity_FNS=3*')
