@@ -605,6 +605,8 @@ namespace Microsoft.SqlServer.Management.Smo
         public string EndpointUrl;
         public string FailoverMode;
         public string Name;
+        public string ReadOnlyRoutingConnectionUrl;
+        public string[] ReadOnlyRoutingList;
         
         public void Alter()
         {

@@ -273,13 +273,6 @@ function Set-TargetResource
             $availabilityGroupManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
             $clusterPermissionsPresent = $false
 
-            $permissionsParams = @{
-                SQLServer = $SQLServer
-                SQLInstanceName = $SQLInstanceName
-                Database = 'master'
-                WithResults = $true
-            }
-
             foreach ( $loginName in @( $clusterServiceName, $ntAuthoritySystemName ) )
             {
                 if ( $serverObject.Logins[$loginName] -and -not $clusterPermissionsPresent )
