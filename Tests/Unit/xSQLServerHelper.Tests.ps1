@@ -752,25 +752,95 @@ InModuleScope $script:moduleName {
     }
 
     Describe "Testing Update-AvailabilityGroupReplica" {
-            Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
+        Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
 
-            Context 'When the Availability Group Replica is altered' {
-                It 'Should silently alter the Availability Group Replica' {
-                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
-                    
-                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Not Throw
+        Context 'When the Availability Group Replica is altered' {
+            It 'Should silently alter the Availability Group Replica' {
+                $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                
+                { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Not Throw
 
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
-                }
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
+            }
 
-                It 'Should throw the correct error, AlterAvailabilityGroupReplicaFailed, when altering the Availaiblity Group Replica fails' {
-                    $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
-                    $availabilityReplica.Name = 'AlterFailed'
-                    
-                    { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Throw 'AlterAvailabilityGroupReplicaFailed'
+            It 'Should throw the correct error, AlterAvailabilityGroupReplicaFailed, when altering the Availaiblity Group Replica fails' {
+                $availabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+                $availabilityReplica.Name = 'AlterFailed'
+                
+                { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } | Should Throw 'AlterAvailabilityGroupReplicaFailed'
 
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+            }
+        }
+    }
+
+    Describe "Testing Test-LoginEffectivePermissions" {
+
+        $mockAllPermissionsPresent = @(
+            'Connect SQL',
+            'Alter Any Availability Group',
+            'View Server State'
+        )
+
+        $mockPermissionsMissing = @(
+            'Connect SQL',
+            'View Server State'
+        )
+
+        $mockInvokeQueryClusterServicePermissionsSet = @() # Will be set dynamically in the check
+
+        $mockInvokeQueryClusterServicePermissionsResult = {
+            return New-Object PSObject -Property @{
+                Tables = @{
+                    Rows = @{
+                        permission_name = $mockInvokeQueryClusterServicePermissionsSet
+                    }
                 }
             }
         }
+
+        $testLoginEffectivePermissionsParams = @{
+            SQLServer = 'Server1'
+            SQLInstanceName = 'MSSQLSERVER'
+            Login = 'NT SERVICE\ClusSvc'
+            Permissions = @()
+        }
+
+        BeforeEach {
+            Mock -CommandName Invoke-Query -MockWith $mockInvokeQueryClusterServicePermissionsResult -Verifiable
+        }
+        
+        Context 'When all of the permissions are present' {
+            
+            It 'Should return $true when the desired permissions are present' {
+                $mockInvokeQueryClusterServicePermissionsSet = $mockAllPermissionsPresent.Clone()
+                $testLoginEffectivePermissionsParams.Permissions = $mockAllPermissionsPresent.Clone()
+
+                Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams | Should Be $true
+
+                Assert-MockCalled -CommandName Invoke-Query -Times 1 -Exactly
+            }
+        }
+
+        Context 'When a permission is missing' {
+            
+            It 'Should return $false when the desired permissions are not present' {
+                $mockInvokeQueryClusterServicePermissionsSet = $mockPermissionsMissing.Clone()
+                $testLoginEffectivePermissionsParams.Permissions = $mockAllPermissionsPresent.Clone()
+
+                Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams | Should Be $false
+
+                Assert-MockCalled -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+            }
+
+            It 'Should return $false when the specified login has no permissions assigned' {
+                $mockInvokeQueryClusterServicePermissionsSet = @()
+                $testLoginEffectivePermissionsParams.Permissions = $mockAllPermissionsPresent.Clone()
+
+                Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams | Should Be $false
+
+                Assert-MockCalled -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+            }
+        }
+    }
 }

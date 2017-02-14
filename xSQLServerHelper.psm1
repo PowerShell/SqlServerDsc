@@ -1498,3 +1498,62 @@ function Update-AvailabilityGroupReplica
         $ErrorActionPreference = $originalErrorActionPreference
     }
 }
+
+function Test-LoginEffectivePermissions
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SQLServer,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLInstanceName,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $LoginName,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]
+        $Permissions
+    )
+
+    # Assume the permissions are not present
+    $permissionsPresent = $false
+
+    $invokeQueryParams = @{
+        SQLServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        Database = 'master'
+        WithResults = $true
+    }
+    
+    $queryToGetEffectivePermissionsForLogin = "
+        EXECUTE AS LOGIN = '$LoginName'
+        SELECT DISTINCT permission_name
+        FROM fn_my_permissions(null,'SERVER')
+        REVERT
+    "
+
+    New-VerboseMessage -Message "Getting the effective permissions for the login '$LoginName' on '$sqlInstanceName'."
+
+    $loginEffectivePermissionsResult = Invoke-Query @invokeQueryParams -Query $queryToGetEffectivePermissionsForLogin
+    $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
+
+    if ( $null -ne $loginEffectivePermissions )
+    {
+        $loginMissingPermissions = Compare-Object -ReferenceObject $Permissions -DifferenceObject $loginEffectivePermissions | 
+            Where-Object { $_.SideIndicator -ne '=>' } |
+            Select-Object -ExpandProperty InputObject 
+        
+        if ( $loginMissingPermissions.Count -eq 0 )
+        {
+            $permissionsPresent = $true
+        }
+    }
+
+    return $permissionsPresent
+}
