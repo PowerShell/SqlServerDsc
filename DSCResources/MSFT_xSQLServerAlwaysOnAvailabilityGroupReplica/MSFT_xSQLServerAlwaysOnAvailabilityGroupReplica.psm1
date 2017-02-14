@@ -282,60 +282,30 @@ function Set-TargetResource
 
             foreach ( $loginName in @( $clusterServiceName, $ntAuthoritySystemName ) )
             {
-                if ( $serverObject.Logins[$loginName] )
+                if ( $serverObject.Logins[$loginName] -and -not $clusterPermissionsPresent )
                 {
+                    $testLoginEffectivePermissionsParams = @{
+                        SQLServer = $SQLServer
+                        SQLInstanceName = $SQLInstanceName
+                        LoginName = $loginName
+                        Permissions = $availabilityGroupManagementPerms
+                    }
+                    
+                    $clusterPermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
+                    
                     if ( -not $clusterPermissionsPresent )
                     {
-                        $queryToGetEffectivePermissionsForLogin = "
-                            EXECUTE AS LOGIN = '$loginName'
-                            SELECT DISTINCT permission_name
-                            FROM fn_my_permissions(null,'SERVER')
-                            REVERT
-                        "
-
-                        $loginEffectivePermissionsResult = Invoke-Query @permissionsParams -Query $queryToGetEffectivePermissionsForLogin
-                        $loginEffectivePermissions = $loginEffectivePermissionsResult.Tables.Rows.permission_name
-
-                        if ( $null -ne $loginEffectivePermissions )
+                        switch ( $loginName )
                         {
-                            $loginMissingPermissions = Compare-Object -ReferenceObject $availabilityGroupManagementPerms -DifferenceObject $loginEffectivePermissions | 
-                                Where-Object { $_.SideIndicator -ne '=>' } |
-                                Select-Object -ExpandProperty InputObject 
-                            
-                            if ( $loginMissingPermissions.Count -eq 0 )
+                            $clusterServiceName
                             {
-                                $clusterPermissionsPresent = $true
+                                New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
                             }
-                            else
+
+                            $ntAuthoritySystemName
                             {
-                                switch ( $loginName )
-                                {
-                                    $clusterServiceName
-                                    {
-                                        New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
-                                    }
-
-                                    $ntAuthoritySystemName
-                                    {
-                                        New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
-                                    }
-                                }
+                                New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
                             }
-                        }
-                    }
-                }
-                else
-                {
-                    switch ( $loginName )
-                    {
-                        $clusterServiceName
-                        {
-                            New-VerboseMessage -Message "The recommended login '$loginName' does not exist. Trying with '$ntAuthoritySystemName'."
-                        }
-
-                        $ntAuthoritySystemName
-                        {
-                            New-VerboseMessage -Message "The login '$loginName' does not exist."
                         }
                     }
                 }
