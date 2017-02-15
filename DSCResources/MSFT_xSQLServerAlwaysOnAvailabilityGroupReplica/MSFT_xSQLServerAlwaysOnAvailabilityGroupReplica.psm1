@@ -676,6 +676,12 @@ function Test-TargetResource
                     {
                         continue
                     }
+
+                    # If the parameter is Null, a value wasn't provided
+                    if ( [string]::IsNullOrEmpty($parameterValue) )
+                    {
+                        continue
+                    }
                    
                     if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
                     {                        
