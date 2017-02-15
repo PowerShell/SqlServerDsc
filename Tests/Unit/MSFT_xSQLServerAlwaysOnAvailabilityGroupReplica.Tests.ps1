@@ -37,8 +37,11 @@ try
         
         $mockSqlServer = 'Server2'
         $mockSqlInstanceName = 'MSSQLSERVER'
+        $mockPrimaryReplicaSQLServer = 'Server1'
+        $mockPrimaryReplicaSQLInstanceName = 'MSSQLSERVER'
         $mockAvailabilityGroupName = 'AvailabilityGroup1'
-        $mockAvailabilityGroupReplicaName = $mockSqlServer
+        $mockAbsentAvailabilityGroupName = 'AvailabilityGroup2'
+        $mockAvailabilityGroupReplicaName = $mockPrimaryReplicaSQLServer
         $mockEnsure = 'Present'
         $mockAvailabilityMode = 'AsynchronousCommit'
         $mockBackupPriority = 50
@@ -51,8 +54,6 @@ try
         $mockFailoverMode = 'Manual'
         $mockIsHadrEnabled = $true
         $mockLocalReplicaRole = 'Secondary'
-        $mockPrimaryReplicaSQLServer = 'Server1'
-        $mockPrimaryReplicaSQLInstanceName = 'MSSQLSERVER'
         $mockReadOnlyRoutingConnectionUrl = ''
         $mockReadOnlyRoutingList = @()
 
@@ -78,7 +79,9 @@ try
 
         #endregion
 
-        $mockDatabaseMirroringEndpointMissing = @()
+        #region Endpoint mocks
+
+        $mockDatabaseMirroringEndpointAbsent = @()
 
         $mockDatabaseMirroringEndpointPresent = @(
             (
@@ -92,7 +95,7 @@ try
                                         return @(
                                             (
                                                 New-Object Object |
-                                                    Add-Member -MemberType NoteProperty -Value $mockEndpointPort -PassThru -Force
+                                                    Add-Member -MemberType NoteProperty -Name ListenerPort -Value $mockEndpointPort -PassThru -Force
                                             )
                                         )
                                     } -PassThru -Force
@@ -101,6 +104,44 @@ try
                     } -PassThru -Force
             )
         )
+
+        #endregion
+
+        #region Availability Group Replica mocks
+
+        $mockAvailabilityGroupReplica = @{}
+
+        $mockAvailabilityGroupReplicaPrimaryObject = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+        $mockAvailabilityGroupReplicaPrimaryObject.AvailabilityMode = $mockAvailabilityMode
+        $mockAvailabilityGroupReplicaPrimaryObject.BackupPriority = $mockBackupPriority
+        $mockAvailabilityGroupReplicaPrimaryObject.ConnectionModeInPrimaryRole = $mockConnectionModeInPrimaryRole
+        $mockAvailabilityGroupReplicaPrimaryObject.ConnectionModeInSecondaryRole = $mockConnectionModeInSecondaryRole
+        $mockAvailabilityGroupReplicaPrimaryObject.EndpointUrl = $mockEndpointUrl
+        $mockAvailabilityGroupReplicaPrimaryObject.FailoverMode = $mockFailoverMode
+        $mockAvailabilityGroupReplicaPrimaryObject.Name = $mockAvailabilityGroupReplicaName
+        $mockAvailabilityGroupReplicaPrimaryObject.ReadOnlyRoutingConnectionUrl = $mockReadOnlyRoutingConnectionUrl
+        $mockAvailabilityGroupReplicaPrimaryObject.ReadOnlyRoutingList = $mockReadOnlyRoutingList
+
+        $mockAvailabilityGroupReplicasPrimary = @{
+            $mockAvailabilityGroupReplicaName = $mockAvailabilityGroupReplicaPrimaryObject
+        }
+
+        $mockAvailabilityGroupReplicaSecondaryObject = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+        $mockAvailabilityGroupReplicaSecondaryObject.AvailabilityMode = $mockAvailabilityMode
+        $mockAvailabilityGroupReplicaSecondaryObject.BackupPriority = $mockBackupPriority
+        $mockAvailabilityGroupReplicaSecondaryObject.ConnectionModeInPrimaryRole = $mockConnectionModeInPrimaryRole
+        $mockAvailabilityGroupReplicaSecondaryObject.ConnectionModeInSecondaryRole = $mockConnectionModeInSecondaryRole
+        $mockAvailabilityGroupReplicaSecondaryObject.EndpointUrl = $mockEndpointUrl
+        $mockAvailabilityGroupReplicaSecondaryObject.FailoverMode = $mockFailoverMode
+        $mockAvailabilityGroupReplicaSecondaryObject.Name = $mockSqlServer
+        $mockAvailabilityGroupReplicaSecondaryObject.ReadOnlyRoutingConnectionUrl = $mockReadOnlyRoutingConnectionUrl
+        $mockAvailabilityGroupReplicaSecondaryObject.ReadOnlyRoutingList = $mockReadOnlyRoutingList
+
+        $mockAvailabilityGroupReplicasAll = $mockAvailabilityGroupReplicasPrimary.Clone()
+        $mockAvailabilityGroupReplicasAll.Add($mockSqlServer,$mockAvailabilityGroupReplicaSecondaryObject)
+        $mockAvailabilityGroupReplicasAll.Name = $mockSqlServer
+
+        #endregion
         
         #region Function mocks
 
@@ -125,20 +166,7 @@ try
                                     Add-Member -MemberType NoteProperty -Name 'PrimaryReplicaServerName' -Value $mockPrimaryReplicaSQLInstanceName -PassThru |
                                     Add-Member -MemberType NoteProperty -Name 'LocalReplicaRole' -Value $mockLocalReplicaRole -PassThru |
                                     Add-Member ScriptProperty AvailabilityReplicas {
-                                        $mockAvailabilityGroupReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
-                                        $mockAvailabilityGroupReplica.AvailabilityMode = $mockAvailabilityMode
-                                        $mockAvailabilityGroupReplica.BackupPriority = $mockBackupPriority
-                                        $mockAvailabilityGroupReplica.ConnectionModeInPrimaryRole = $mockConnectionModeInPrimaryRole
-                                        $mockAvailabilityGroupReplica.ConnectionModeInSecondaryRole = $mockConnectionModeInSecondaryRole
-                                        $mockAvailabilityGroupReplica.EndpointUrl = $mockEndpointUrl
-                                        $mockAvailabilityGroupReplica.FailoverMode = $mockFailoverMode
-                                        $mockAvailabilityGroupReplica.Name = $mockAvailabilityGroupReplicaName
-                                        $mockAvailabilityGroupReplica.ReadOnlyRoutingConnectionUrl = $mockReadOnlyRoutingConnectionUrl
-                                        $mockAvailabilityGroupReplica.ReadOnlyRoutingList = $mockReadOnlyRoutingList
-
-                                        return @{
-                                            $mockAvailabilityGroupReplicaName = $mockAvailabilityGroupReplica
-                                        }
+                                        return $mockAvailabilityGroupReplica
                                     } -PassThru -Force
                                 )
                             }
@@ -159,32 +187,114 @@ try
 
         Describe 'xSQLServerAlwaysOnAvailabilityGroupReplica\Get-TargetResource' {
             BeforeEach {
-                $mockLogins = @{} # Reset the logins
+                # Reset mock variables
+                $mockAvailabilityGroupReplica = @{}
+                $mockEndpoint = @()
+                $mockLogins = @{}
+
+                $mockAvailabilityGroupName = 'AvailabilityGroup1'
+                $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+
+                $getTargetResourceParameters = @{
+                    Name = $mockSqlServer
+                    AvailabilityGroupName = $mockAvailabilityGroupName
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockSqlInstanceName
+                }
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
 
-            Context 'Context-description' {
-                BeforeEach {
-                    # per-test-initialization
+            Context 'When the Availability Group Replica is absent' {
+
+                $mockEnsure = 'Absent'
+
+                It 'Should not return an Availability Group Replica, but the Database Mirroring Endpoint is present' {
+                    
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    $mockAvailabilityGroupName = $mockAbsentAvailabilityGroupName
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasPrimary
+                    $getTargetResourceParameters.AvailabilityGroupName = $mockAbsentAvailabilityGroupName
+                    
+                    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                    $getTargetResourceResult.AvailabilityGroupName | Should Be $mockAvailabilityGroupName
+                    $getTargetResourceResult.AvailabilityMode | Should BeNullOrEmpty
+                    $getTargetResourceResult.BackupPriority | Should BeNullOrEmpty
+                    $getTargetResourceResult.ConnectionModeInPrimaryRole | Should BeNullOrEmpty
+                    $getTargetResourceResult.ConnectionModeInSecondaryRole | Should BeNullOrEmpty
+                    $getTargetResourceResult.EndpointUrl | Should BeNullOrEmpty
+                    $getTargetResourceResult.EndpointPort | Should Be 5022
+                    $getTargetResourceResult.Ensure | Should Be $mockEnsure
+                    $getTargetResourceResult.FailoverMode | Should BeNullOrEmpty
+                    $getTargetResourceResult.Name | Should BeNullOrEmpty
+                    $getTargetResourceResult.ReadOnlyConnectionUrl | Should BeNullOrEmpty
+                    $getTargetResourceResult.ReadOnlyRoutingList | Should BeNullOrEmpty
+                    $getTargetResourceResult.SQLServer | Should Be $mockSqlServer
+                    $getTargetResourceResult.SQLInstanceName | Should Be $mockSqlInstanceName
+                    $getTargetResourceResult.SQLServerNetName | Should Be $mockSqlServer
+                    
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
 
-                AfterEach {
-                    # per-test-cleanup
-                }
+                It 'Should not return an Availability Group Replica, but the Database Mirroring Endpoint is absent' {
+                    
+                    $mockEndpoint = $mockDatabaseMirroringEndpointAbsent
+                    $mockAvailabilityGroupName = $mockAbsentAvailabilityGroupName
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasPrimary
+                    $getTargetResourceParameters.AvailabilityGroupName = $mockAbsentAvailabilityGroupName
+                    
+                    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
-                It 'Should...test-description' {
-                    # test-code
-                }
+                    $getTargetResourceResult.AvailabilityGroupName | Should Be $mockAvailabilityGroupName
+                    $getTargetResourceResult.AvailabilityMode | Should BeNullOrEmpty
+                    $getTargetResourceResult.BackupPriority | Should BeNullOrEmpty
+                    $getTargetResourceResult.ConnectionModeInPrimaryRole | Should BeNullOrEmpty
+                    $getTargetResourceResult.ConnectionModeInSecondaryRole | Should BeNullOrEmpty
+                    $getTargetResourceResult.EndpointUrl | Should BeNullOrEmpty
+                    $getTargetResourceResult.EndpointPort | Should BeNullOrEmpty
+                    $getTargetResourceResult.Ensure | Should Be $mockEnsure
+                    $getTargetResourceResult.FailoverMode | Should BeNullOrEmpty
+                    $getTargetResourceResult.Name | Should BeNullOrEmpty
+                    $getTargetResourceResult.ReadOnlyConnectionUrl | Should BeNullOrEmpty
+                    $getTargetResourceResult.ReadOnlyRoutingList | Should BeNullOrEmpty
+                    $getTargetResourceResult.SQLServer | Should Be $mockSqlServer
+                    $getTargetResourceResult.SQLInstanceName | Should Be $mockSqlInstanceName
+                    $getTargetResourceResult.SQLServerNetName | Should Be $mockSqlServer
+                    
 
-                It 'Should...test-description' {
-                    # test-code
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
             }
 
-            Context 'Context-description' {
-                It 'Should ....test-description' {
-                    # test-code
+            Context 'When the Availability Group Replica is present' {
+
+                $mockEnsure = 'Present'
+
+                It 'Should return an Availability Group Replica' {
+                    
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    
+                    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                    $getTargetResourceResult.AvailabilityGroupName | Should Be $mockAvailabilityGroupName
+                    $getTargetResourceResult.AvailabilityMode | Should Be $mockAvailabilityMode
+                    $getTargetResourceResult.BackupPriority | Should Be $mockBackupPriority
+                    $getTargetResourceResult.ConnectionModeInPrimaryRole | Should Be $mockConnectionModeInPrimaryRole
+                    $getTargetResourceResult.ConnectionModeInSecondaryRole | Should Be $mockConnectionModeInSecondaryRole
+                    $getTargetResourceResult.EndpointUrl | Should Be $mockEndpointUrl
+                    $getTargetResourceResult.EndpointPort | Should Be $mockEndpointPort
+                    $getTargetResourceResult.Ensure | Should Be $mockEnsure
+                    $getTargetResourceResult.FailoverMode | Should Be $mockFailoverMode
+                    $getTargetResourceResult.Name | Should Be $mockSqlServer
+                    $getTargetResourceResult.ReadOnlyConnectionUrl | Should BeNullOrEmpty
+                    $getTargetResourceResult.ReadOnlyRoutingList | Should BeNullOrEmpty
+                    $getTargetResourceResult.SQLServer | Should Be $mockSqlServer
+                    $getTargetResourceResult.SQLInstanceName | Should Be $mockSqlInstanceName
+                    $getTargetResourceResult.SQLServerNetName | Should Be $mockSqlServer
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
             }
         }
