@@ -50,7 +50,9 @@ try
         $mockEndpointHostName = $mockSqlServer
         $mockEndpointPort = 5022
         $mockEndpointProtocol = 'TCP'
+        $mockEndpointProtocolIncorrect = 'UDP'
         $mockEndpointUrl = "$($mockEndpointProtocol)://$($mockSqlServer):$($mockEndpointPort)"
+        $mockEndpointUrlIncorrectProtocol = "$($mockEndpointProtocolIncorrect)://$($mockSqlServer):$($mockEndpointPort)"
         $mockFailoverMode = 'Manual'
         $mockIsHadrEnabled = $true
         $mockLocalReplicaRole = 'Secondary'
@@ -139,7 +141,20 @@ try
 
         $mockAvailabilityGroupReplicasAll = $mockAvailabilityGroupReplicasPrimary.Clone()
         $mockAvailabilityGroupReplicasAll.Add($mockSqlServer,$mockAvailabilityGroupReplicaSecondaryObject)
-        $mockAvailabilityGroupReplicasAll.Name = $mockSqlServer
+
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.AvailabilityMode = $mockAvailabilityMode
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.BackupPriority = $mockBackupPriority
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.ConnectionModeInPrimaryRole = $mockConnectionModeInPrimaryRole
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.ConnectionModeInSecondaryRole = $mockConnectionModeInSecondaryRole
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.EndpointUrl = $mockEndpointUrlIncorrectProtocol
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.FailoverMode = $mockFailoverMode
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.Name = $mockSqlServer
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.ReadOnlyRoutingConnectionUrl = $mockReadOnlyRoutingConnectionUrl
+        $mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl.ReadOnlyRoutingList = $mockReadOnlyRoutingList
+
+        $mockAvailabilityGroupReplicasAllIncorrectProtocolInEndpointUrl = $mockAvailabilityGroupReplicasPrimary.Clone()
+        $mockAvailabilityGroupReplicasAllIncorrectProtocolInEndpointUrl.Add($mockSqlServer,$mockAvailabilityGroupReplicasIncorrectProtocolInEndpointUrl)
 
         #endregion
         
@@ -308,9 +323,117 @@ try
         }
 
         Describe 'xSQLServerAlwaysOnAvailabilityGroupReplica\Test-TargetResource' {
-            Context '<Context-description>' {
-                It 'Should ...test-description' {
-                    # test-code
+
+            BeforeEach {            
+                $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                
+                $testTargetResourceParameters = @{
+                    Name = $mockSqlServer
+                    AvailabilityGroupName = $mockAvailabilityGroupName
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockSqlInstanceName
+                    PrimaryReplicaSQLServer = $mockPrimaryReplicaSQLServer
+                    PrimaryReplicaSQLInstanceName = $mockPrimaryReplicaSQLInstanceName
+                    Ensure = $mockEnsure
+                    AvailabilityMode = $mockAvailabilityMode
+                    BackupPriority = $mockBackupPriority
+                    ConnectionModeInPrimaryRole = $mockConnectionModeInPrimaryRole
+                    ConnectionModeInSecondaryRole = $mockConnectionModeInSecondaryRole
+                    EndpointHostName = $mockEndpointHostName
+                    FailoverMode = $mockFailoverMode
+                    ReadOnlyRoutingConnectionUrl = $mockReadOnlyRoutingConnectionUrl
+                    ReadOnlyRoutingList = $mockReadOnlyRoutingList
+                }
+
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+            }
+
+            Context 'When the desired state is absent' {
+
+                It 'Should return $true when the Availability Replica is absent' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasPrimary
+                    $testTargetResourceParameters.Ensure = 'Absent'
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $false when the Availability Replica is present' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                    $testTargetResourceParameters.Ensure = 'Absent'
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+            }
+
+            Context 'When the desired state is present' {
+
+                It 'Should return $false when the Availability Replica is absent' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasPrimary
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $true when the Availability Replica is present' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $false when the Availability Replica is present and the Availabiltiy Mode is not in the desired state' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    $testTargetResourceParameters.AvailabilityMode = 'SynchronousCommit'
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $true when the Availability Replica is present and the Endpoint Hostname is not specified' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    $testTargetResourceParameters.EndpointHostName = ''
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $false when the Availability Replica is present and the Endpoint Hostname is not in the desired state' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    $testTargetResourceParameters.EndpointHostName = 'OtherHostName'
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should return $false when the Availability Replica is present and the Endpoint Protocol is not in the desired state' {
+
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAllIncorrectProtocolInEndpointUrl
+                    $mockEndpoint = $mockDatabaseMirroringEndpointPresentIncorrectProtocol
+                    
+                    Test-TargetResource @testTargetResourceParameters | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
             }
         }
