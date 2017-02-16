@@ -16,7 +16,8 @@
   - xSQLServerMemory
     - 1-SetMaxMemoryTo12GB.ps1
     - 2-SetMaxMemoryToAuto.ps1
-    - 3-SetMaxMemoryToDefault.ps1
+    - 3-SetMinMaxMemoryToAuto.ps1
+    - 4-SetMaxMemoryToDefault.ps1
 - Added tests for resources
   - xSQLServerMemory
 - Changes to xSQLServerMemory

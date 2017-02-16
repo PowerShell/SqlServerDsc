@@ -17,12 +17,13 @@ Configuration Example
 
     node localhost
     {
-        xSQLServerMemory Set_SQLServerMaxMemory_ToAuto
+        xSQLServerMemory Set_SQLServerMinAndMaxMemory_ToAuto
         {
             Ensure = 'Present'
             DynamicAlloc = $true
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
+            MinMemory = 2048
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
