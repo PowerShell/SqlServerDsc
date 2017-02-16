@@ -117,7 +117,7 @@ function Set-TargetResource
                 {
                     if ($MaxMemory)
                     {
-                        throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNull' `
+                        throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
                                                    -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                    -ErrorCategory InvalidArgument  
                     }
@@ -129,7 +129,7 @@ function Set-TargetResource
                 {
                     if (-not $MaxMemory)
                     {
-                        throw New-TerminatingError -ErrorType 'MaxMemoryParamMustNotBeNull' `
+                        throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
                                                    -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                    -ErrorCategory InvalidArgument  
                     }
@@ -154,7 +154,7 @@ function Set-TargetResource
         }
         catch
         {
-            throw New-TerminatingError -ErrorType 'ServerMemorySetError' `
+            throw New-TerminatingError -ErrorType AlterServerMemoryFailed `
                                        -FormatArgs @($SQLServer,$SQLInstanceName) `
                                        -ErrorCategory InvalidOperation `
                                        -InnerException $_.Exception
@@ -256,7 +256,7 @@ function Test-TargetResource
             {
                 if ($MaxMemory)
                 {
-                    throw New-TerminatingError -ErrorType 'MaxMemoryParamMustBeNull' `
+                    throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
                                                -ErrorCategory InvalidArgument  
                 }
@@ -268,16 +268,16 @@ function Test-TargetResource
             {
                 if (-not $MaxMemory)
                 {
-                    throw New-TerminatingError -ErrorType 'MaxMemoryParamMustNotBeNull' `
-                                                -FormatArgs @( $SQLServer,$SQLInstanceName ) `
-                                                -ErrorCategory InvalidArgument  
+                    throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
+                                               -FormatArgs @( $SQLServer,$SQLInstanceName ) `
+                                               -ErrorCategory InvalidArgument  
                 }
             }
 
             if ($MaxMemory -ne $currentMaxMemory)
             {
                 New-VerboseMessage -Message ("Current maximum server memory used by the instance " + `
-                                                "is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
+                                             "is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
                 $isServerMemoryInDesiredState = $false
             }
 
@@ -322,11 +322,11 @@ function Get-SqlDscDynamicMaxMemory
         # Find Number of SQL Threads = 256 + (numberOfCores - 4) * 8
         if ($numberOfCores -ge 4)
         {
-            $numOfSQLThreads = 256 + ($numberOfCores - 4) * 8
+            $numberOfSqlThreads = 256 + ($numberOfCores - 4) * 8
         }
         else
         {
-            $numOfSQLThreads = 0
+            $numberOfSqlThreads = 0
         }
 
         $operatingSystemArchitecture = (Get-CimInstance -ClassName Win32_operatingsystem).OSArchitecture
@@ -345,11 +345,11 @@ function Get-SqlDscDynamicMaxMemory
             $threadStackSize = 4
         }
 
-        $maxMemory = $physicalMemoryInMegaBytes - $reservedOperatingSystemMemory - ($numOfSQLThreads * $threadStackSize) - (1024 * [System.Math]::Ceiling($numberOfCores / 4))
+        $maxMemory = $physicalMemoryInMegaBytes - $reservedOperatingSystemMemory - ($numberOfSqlThreads * $threadStackSize) - (1024 * [System.Math]::Ceiling($numberOfCores / 4))
     }
     catch
     {
-        throw New-TerminatingError -ErrorType 'ErrorGetDynamicMaxMemory' `
+        throw New-TerminatingError -ErrorType ErrorGetDynamicMaxMemory `
                                    -ErrorCategory InvalidOperation `
                                    -InnerException $_.Exception
     }

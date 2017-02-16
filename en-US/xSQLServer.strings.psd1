@@ -72,4 +72,10 @@ RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' fro
 # SQLServerHelper
 ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
 ExecuteNonQueryFailed = Executing non-query failed on database '{0}'.
+
+# Server Memory
+MaxMemoryParamMustBeNull = The parameter MaxMemory must be null when DynamicAlloc is set to true.
+MaxMemoryParamMustNotBeNull = The parameter MaxMemory must not be null when DynamicAlloc is set to false.
+AlterServerMemoryFailed = Failed to alter the server configuration memory for {0}\\{1}.
+ErrorGetDynamicMaxMemory = Failed to calculate dynamically the maximum memory.
 '@

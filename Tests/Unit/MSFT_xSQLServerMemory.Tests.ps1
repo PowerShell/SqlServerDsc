@@ -222,8 +222,28 @@ try
                 Ensure          = 'Present'
             }
 
-            It 'Should Throw when MaxMemory parameter not null if DynamicAlloc set to true' {
-                { Test-TargetResource @testParameters } | Should Throw
+            It 'Should throw the correct error' {
+                { Test-TargetResource @testParameters } | Should Throw 'The parameter MaxMemory must be null when DynamicAlloc is set to true.'
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+                        
+            It 'Should not call the mock function Get-CimInstance' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Context 'When the MaxMemory parameter is null and DynamicAlloc is set to false' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc    = $false
+                Ensure          = 'Present'
+            }
+
+            It 'Should throw the correct error' {
+                {Test-TargetResource @testParameters } | Should Throw 'The parameter MaxMemory must not be null when DynamicAlloc is set to false.'
             }
 
             It 'Should call the mock function Connect-SQL' {
@@ -251,8 +271,22 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-CimInstance' {
-                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_PhysicalMemory' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_PhysicalMemory'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_Processor' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_Processor'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_operatingsystem' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_operatingsystem'
+                } -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -295,8 +329,22 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-CimInstance' {
-                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_PhysicalMemory' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_PhysicalMemory'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_Processor' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_Processor'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_operatingsystem' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_operatingsystem'
+                } -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -461,8 +509,8 @@ try
                 Ensure          = 'Present'
             }
 
-            It 'Should Throw when MaxMemory parameter is not null if DynamicAlloc is set to true' {
-                { Set-TargetResource @testParameters } | Should Throw
+            It 'Should throw the correct error' {
+                { Set-TargetResource @testParameters } | Should Throw 'The parameter MaxMemory must be null when DynamicAlloc is set to true.'
             }
 
             It 'Should call the mock function Connect-SQL' {
@@ -481,8 +529,8 @@ try
                 Ensure          = 'Present'
             }
 
-            It 'Should Throw when MaxMemory parameter is null if DynamicAlloc is set to false' {
-                { Set-TargetResource @testParameters } | Should Throw
+            It 'Should throw the correct error' {
+                { Set-TargetResource @testParameters } | Should Throw 'The parameter MaxMemory must not be null when DynamicAlloc is set to false.'
             }
 
             It 'Should call the mock function Connect-SQL' {
@@ -535,7 +583,7 @@ try
             }
         }
 
-        Context 'When the system is not in the desired state and Ensure is set to Present, and DynamicAlloc is set to true' {
+        Context 'When the system (OS IA64-bit) is not in the desired state and Ensure is set to Present, and DynamicAlloc is set to true' {
             $testParameters = $defaultParameters
             $testParameters += @{
                 DynamicAlloc    = $true
@@ -550,8 +598,64 @@ try
                 Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
             }
 
-            It 'Should call the mock function Get-CimInstance' {
-                Assert-MockCalled Get-CimInstance -Exactly -Times 3 -ModuleName $script:DSCResourceName -Scope Context
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_PhysicalMemory' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_PhysicalMemory'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_Processor' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_Processor'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_operatingsystem' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_operatingsystem'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            $mockGetCimInstanceOS = [PSCustomObject]@{
+                OSArchitecture = '32-bit'
+            }
+            
+            $mockGetCimInstanceOS 
+        } -ParameterFilter { $ClassName -eq 'Win32_operatingsystem' } -ModuleName $script:DSCResourceName -Verifiable   
+        
+        Context 'When the system (OS 32-bit) is not in the desired state and Ensure is set to Present, and DynamicAlloc is set to true' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc    = $true
+                Ensure          = 'Present'
+            }      
+
+            It 'Should set the MaxMemory to the correct values when Ensure parameter is set to Present and DynamicAlloc is set to true' {
+                { Set-TargetResource @testParameters } | Should Not Throw
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_PhysicalMemory' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_PhysicalMemory'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_Processor' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_Processor'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_operatingsystem' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_operatingsystem'
+                } -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
@@ -592,8 +696,8 @@ try
                 Ensure          = 'Present'
             }
 
-            It 'Should throw when Alter method was called with an invalid operation' {                
-                { Set-TargetResource @testParameters } | Should Throw
+            It 'Should throw the correct error' {                
+                { Set-TargetResource @testParameters } | Should Throw ("Failed to alter the server configuration memory for $serverName" + "\" +`                                                                       "$instanceName. InnerException: Exception calling ""Alter"" with ""0"" argument(s): " + `                                                                       """Mock Alter Method was called with invalid operation.""")
             }
 
             It 'Should call the mock function Connect-SQL' {
@@ -602,6 +706,44 @@ try
 
             It 'Should not call the mock function Get-CimInstance' {
                 Assert-MockCalled Get-CimInstance -Exactly -Times 0 -ModuleName $script:DSCResourceName -Scope Context
+            }
+        }
+
+        Mock -CommandName Get-CimInstance -MockWith {
+            throw
+        } -ParameterFilter { $ClassName -eq 'Win32_operatingsystem' } -ModuleName $script:DSCResourceName -Verifiable  
+        
+        Context 'When the Get-SqlDscDynamicMaxMemory fails to calculate the MaxMemory' {
+            $testParameters = $defaultParameters
+            $testParameters += @{
+                DynamicAlloc    = $true
+                Ensure          = 'Present'
+            }
+
+            It 'Should throw the correct error' {                
+                { Set-TargetResource @testParameters } | Should Throw 'Failed to calculate dynamically the maximum memory.'
+            }
+
+            It 'Should call the mock function Connect-SQL' {
+                Assert-MockCalled Connect-SQL -Exactly -Times 1 -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_PhysicalMemory' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_PhysicalMemory'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_Processor' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_Processor'
+                } -ModuleName $script:DSCResourceName -Scope Context
+            }
+
+            It 'Should call the mock function Get-CimInstance with ClassName equal to Win32_operatingsystem' {
+                Assert-MockCalled Get-CimInstance -Exactly -Times 1 -ParameterFilter { 
+                    $ClassName -eq 'Win32_operatingsystem'
+                } -ModuleName $script:DSCResourceName -Scope Context
             }
         }
 
