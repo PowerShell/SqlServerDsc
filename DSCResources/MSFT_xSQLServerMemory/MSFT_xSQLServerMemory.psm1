@@ -134,12 +134,14 @@ function Set-TargetResource
                                                    -ErrorCategory InvalidArgument  
                     }
                 }
+                $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
+                New-VerboseMessage -Message "Maximum memory used by the instance has been limited to $($MaxMemory)MB."
             }
             
             'Absent'
             {
-                $MaxMemory = 2147483647
-                $MinMemory = 0
+                $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = 2147483647
+                $sqlServerObject.Configuration.MinServerMemory.ConfigValue = 0
                 New-VerboseMessage -Message ('Ensure is set to absent. so minimum and maximum server memory' + `
                                              'values used by the instance are reset to the default values.')
             }
@@ -147,14 +149,12 @@ function Set-TargetResource
 
         try
         {
-            $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
             if ($MinMemory)
             {
                 $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
                 New-VerboseMessage -Message "Minimum memory used by the instance is set to $($MinMemory)MB."
             }
             $sqlServerObject.Alter()
-            New-VerboseMessage -Message "Maximum memory used by the instance has been limited to $($MaxMemory)MB."
         }
         catch
         {
