@@ -25,5 +25,15 @@ Configuration Example
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
+
+        xSQLServerMemory Set_SQLServerMinAndMaxMemory_ToAuto
+        {
+            Ensure = 'Present'
+            DynamicAlloc = $true
+            SQLServer = 'SQLServer'
+            SQLInstanceName = 'DSC'
+            MinMemory = 2048
+            PsDscRunAsCredential = $SysAdminAccount
+        }
     }
 }

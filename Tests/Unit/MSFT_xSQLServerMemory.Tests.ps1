@@ -588,7 +588,8 @@ try
             $testParameters += @{
                 DynamicAlloc    = $true
                 Ensure          = 'Present'
-            }      
+                MinMemory       = 2048
+            }
 
             It 'Should set the MaxMemory to the correct values when Ensure parameter is set to Present and DynamicAlloc is set to true' {
                 { Set-TargetResource @testParameters } | Should Not Throw

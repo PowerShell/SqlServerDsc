@@ -123,7 +123,7 @@ function Set-TargetResource
                     }
 
                     $MaxMemory = Get-SqlDscDynamicMaxMemory
-                    New-VerboseMessage -Message "Dynamic MaxMemory is $MaxMemory."
+                    New-VerboseMessage -Message "Dynamic maximum memory has been calculated to $($MaxMemory)MB."
                 }
                 else
                 {
@@ -148,9 +148,13 @@ function Set-TargetResource
         try
         {
             $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
-            $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
+            if ($MinMemory)
+            {
+                $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
+                New-VerboseMessage -Message "Minimum memory used by the instance is set to $($MinMemory)MB."
+            }
             $sqlServerObject.Alter()
-            New-VerboseMessage -Message "SQL Server Memory has been capped to $MaxMemory. Minimum server memory set to $MinMemory."
+            New-VerboseMessage -Message "Maximum memory used by the instance has been limited to $($MaxMemory)MB."
         }
         catch
         {
@@ -164,7 +168,7 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    This function tests the value for the min and max memory server configuration option.
+    This function tests the value of the min and max memory server configuration option.
 
     .PARAMETER SQLServer
     The host name of the SQL Server to be configured.
@@ -220,7 +224,7 @@ function Test-TargetResource
         $MaxMemory
     )
 
-    Write-Verbose -Message 'Testing the min and max of memory server configuration option'  
+    Write-Verbose -Message 'Testing the values of the minimum and maximum memory server configuration option set to be used by the instance.'  
 
     $getTargetResourceParameters = @{
         SQLInstanceName = $PSBoundParameters.SQLInstanceName
