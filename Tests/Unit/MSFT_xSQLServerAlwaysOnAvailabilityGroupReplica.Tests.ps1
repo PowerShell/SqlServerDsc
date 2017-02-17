@@ -204,11 +204,8 @@ try
             BeforeEach {
                 # Reset mock variables
                 $mockAvailabilityGroupReplica = @{}
-                $mockEndpoint = @()
                 $mockLogins = @{}
-
                 $mockAvailabilityGroupName = 'AvailabilityGroup1'
-                $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
 
                 $getTargetResourceParameters = @{
                     Name = $mockSqlServer
@@ -224,7 +221,7 @@ try
 
                 $mockEnsure = 'Absent'
 
-                It 'Should not return an Availability Group Replica, but the Database Mirroring Endpoint is present' {
+                It 'Should not return an Availability Group Replica' {
                     
                     $mockEndpoint = $mockDatabaseMirroringEndpointPresent
                     $mockAvailabilityGroupName = $mockAbsentAvailabilityGroupName
@@ -248,36 +245,6 @@ try
                     $getTargetResourceResult.SQLServer | Should Be $mockSqlServer
                     $getTargetResourceResult.SQLInstanceName | Should Be $mockSqlInstanceName
                     $getTargetResourceResult.SQLServerNetName | Should Be $mockSqlServer
-                    
-
-                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                }
-
-                It 'Should not return an Availability Group Replica, but the Database Mirroring Endpoint is absent' {
-                    
-                    $mockEndpoint = $mockDatabaseMirroringEndpointAbsent
-                    $mockAvailabilityGroupName = $mockAbsentAvailabilityGroupName
-                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasPrimary
-                    $getTargetResourceParameters.AvailabilityGroupName = $mockAbsentAvailabilityGroupName
-                    
-                    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
-
-                    $getTargetResourceResult.AvailabilityGroupName | Should Be $mockAvailabilityGroupName
-                    $getTargetResourceResult.AvailabilityMode | Should BeNullOrEmpty
-                    $getTargetResourceResult.BackupPriority | Should BeNullOrEmpty
-                    $getTargetResourceResult.ConnectionModeInPrimaryRole | Should BeNullOrEmpty
-                    $getTargetResourceResult.ConnectionModeInSecondaryRole | Should BeNullOrEmpty
-                    $getTargetResourceResult.EndpointUrl | Should BeNullOrEmpty
-                    $getTargetResourceResult.EndpointPort | Should BeNullOrEmpty
-                    $getTargetResourceResult.Ensure | Should Be $mockEnsure
-                    $getTargetResourceResult.FailoverMode | Should BeNullOrEmpty
-                    $getTargetResourceResult.Name | Should BeNullOrEmpty
-                    $getTargetResourceResult.ReadOnlyConnectionUrl | Should BeNullOrEmpty
-                    $getTargetResourceResult.ReadOnlyRoutingList | Should BeNullOrEmpty
-                    $getTargetResourceResult.SQLServer | Should Be $mockSqlServer
-                    $getTargetResourceResult.SQLInstanceName | Should Be $mockSqlInstanceName
-                    $getTargetResourceResult.SQLServerNetName | Should Be $mockSqlServer
-                    
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
@@ -290,6 +257,7 @@ try
                 It 'Should return an Availability Group Replica' {
                     
                     $mockEndpoint = $mockDatabaseMirroringEndpointPresent
+                    $mockAvailabilityGroupReplica = $mockAvailabilityGroupReplicasAll
                     
                     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
