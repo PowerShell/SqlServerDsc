@@ -381,6 +381,15 @@ try
             )
         }
 
+        $mockGetItemProperty_ClientComponentsFull_EmptyFeatureList = {
+            return @(
+                (
+                    New-Object Object |
+                        Add-Member -MemberType NoteProperty -Name 'FeatureList' -Value '' -PassThru -Force
+                )
+            )
+        }
+
         $mockGetItemProperty_SQL = {
             return @(
                 (
@@ -1066,6 +1075,102 @@ try
                         $result.ASTempDir | Should BeNullOrEmpty
                         $result.ASConfigDir | Should BeNullOrEmpty
                         $result.ISSvcAccountUsername | Should BeNullOrEmpty
+                    }
+                }
+
+                Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for features 'CONN' and 'BC'" {
+                    BeforeEach {
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters.Remove('Features')
+                        $testParameters += @{
+                            InstanceName = $mockDefaultInstance_InstanceName
+                            SourceCredential = $null
+                            SourcePath = $mockSourcePath
+                        }
+
+                        if ($mockSqlMajorVersion -eq 10) {
+                            Mock -CommandName Get-ItemProperty -ParameterFilter {
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2008R2_ProductIdentifyingNumber) -or
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2008R2_ProductIdentifyingNumber)
+                            } -MockWith $mockGetItemProperty_UninstallProducts2008R2 -Verifiable
+                        }
+
+                        if ($mockSqlMajorVersion -eq 11) {
+                            Mock -CommandName Get-ItemProperty -ParameterFilter {
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2012_ProductIdentifyingNumber) -or
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2012_ProductIdentifyingNumber)
+                            } -MockWith $mockGetItemProperty_UninstallProducts2012 -Verifiable
+                        }
+
+                        if ($mockSqlMajorVersion -eq 12) {
+                            Mock -CommandName Get-ItemProperty -ParameterFilter {
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudio2014_ProductIdentifyingNumber) -or
+                                $Path -eq (Join-Path -Path $mockRegistryUninstallProductsPath -ChildPath $mockSqlServerManagementStudioAdvanced2014_ProductIdentifyingNumber)
+                            } -MockWith $mockGetItemProperty_UninstallProducts2014 -Verifiable
+                        }
+
+                        Mock -CommandName New-SmbMapping -Verifiable
+                        Mock -CommandName Remove-SmbMapping -Verifiable
+                        Mock -CommandName Get-Service -MockWith $mockGetService_DefaultInstance -Verifiable
+
+                        #region Mock Get-CimInstance
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$mockDefaultInstance_DatabaseServiceName'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_DatabaseService -Verifiable
+
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$mockDefaultInstance_AgentServiceName'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_AgentService -Verifiable
+
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$mockDefaultInstance_FullTextServiceName'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_FullTextService -Verifiable
+
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$mockDefaultInstance_ReportingServiceName'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_ReportingService -Verifiable
+
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$(($mockDefaultInstance_IntegrationServiceName -f $mockSqlMajorVersion))'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_IntegrationService -Verifiable
+
+                        Mock -CommandName Get-CimInstance -ParameterFilter {
+                            $ClassName -eq 'Win32_Service' -and
+                            $Filter -eq "Name = '$mockDefaultInstance_AnalysisServiceName'"
+                        } -MockWith $mockGetCimInstance_DefaultInstance_AnalysisService -Verifiable
+
+                        # If Get-CimInstance is used in any other way than those mocks with a ParameterFilter, then throw and error
+                        Mock -CommandName Get-CimInstance -MockWith {
+                            throw "Mock Get-CimInstance was called with unexpected parameters. ClassName=$ClassName, Filter=$Filter"
+                        } -Verifiable
+                        #endregion Mock Get-CimInstance
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
+                        } -MockWith $mockGetItemProperty_ConfigurationState -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
+                        } -MockWith $mockGetItemProperty_Setup -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -MockWith $mockGetItemProperty_ClientComponentsFull_EmptyFeatureList -Verifiable
+                    }
+
+                    It 'Should return correct names of installed features' {
+                        $result = Get-TargetResource @testParameters
+                        if ($mockSqlMajorVersion -eq 13)
+                        {
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS'
+                        } else {
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                        }
                     }
                 }
 
