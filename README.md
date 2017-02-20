@@ -630,19 +630,20 @@ Read more about minimum server memory and maximum server memory in this article 
 
 #### Formula for dynamically allocating maximum memory
 
+The formula is based on the [SQL Max Memory Calculator](http://sqlmax.chuvash.eu/) website. The website code is in the sql-max GitHub repository maintained by [@mirontoli](https://github.com/mirontoli).
 The dynamic maximum memory (in MB) is calculate with this formula:
 SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) - (1024\*CEILING(NumOfCores/4)) - OSReservedMemory.
 
 * **NumOfSQLThreads**
   * If the number of cores is less than and equal to 4, the number of Sql threads is the number of cores minus 4 multiply by 8, plus 256.
-  * If the number of cores is greater than 4, the number of Sql threads is equal to 0.
+  * If the number of cores is greater than 4, the number of SQL threads is set to: 0 (zero).
 * **ThreadStackSize**
   * If the architecture of windows server is x86, the size of thread stack is 1MB.
   * If the architecture of windows server is x64, the size of thread stack is 2MB.
   * If the architecture of windows server is IA64, the size of thread stack is 4MB.
 * **OSReservedMemory**
-  * If the total physical memory is under 20 GB, the percentage of reserved memory for OS is 20% of total physical memory.
-  * If the total physical memory is upper 20 GB, the percentage of reserved memory for OS is 12.5% of total physical memory.
+  * If the total physical memory is less than or equal to 20GB, the percentage of reserved memory for OS is 20% of total physical memory.
+  * If the total physical memory is greater than 20GB, the percentage of reserved memory for OS is 12.5% of total physical memory.
 
 #### Requirements
 
@@ -662,6 +663,7 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) - (102
 
 * [Set SQLServerMaxMemory to 12GB](/Examples/Resources/xSQLServerMemory/1-SetMaxMemoryTo12GB.ps1)
 * [Set SQLServerMaxMemory to Auto](/Examples/Resources/xSQLServerMemory/2-SetMaxMemoryToAuto.ps1)
+* [Set SQLServerMinMemory to 2GB and SQLServerMaxMemory to Auto](/Examples/Resources/xSQLServerMemory/3-SetMinMemoryToFixedValueAndMaxMemoryToAuto.ps1)
 * [Set SQLServerMaxMemory to Default](/Examples/Resources/xSQLServerMemory/3-SetMaxMemoryToDefault.ps1)
 
 ### xSQLServerNetwork

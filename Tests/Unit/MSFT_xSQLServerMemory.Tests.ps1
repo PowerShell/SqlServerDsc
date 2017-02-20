@@ -124,6 +124,10 @@ try
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
             Mock -CommandName Get-CimInstance -MockWith {
+                throw 'Mocked function Get-CimInstance was called with the wrong set of parameter filters.'
+            }
+
+            Mock -CommandName Get-CimInstance -MockWith {
                 $mockGetCimInstanceMem = @()
 
                 $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
@@ -399,6 +403,10 @@ try
             $mockMaxServerMemory = 2147483647
 
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+
+            Mock -CommandName Get-CimInstance -MockWith {
+                throw 'Mocked function Get-CimInstance was called with the wrong set of parameter filters.'
+            }
 
             Mock -CommandName Get-CimInstance -MockWith {
                 $mockGetCimInstanceMem = @()

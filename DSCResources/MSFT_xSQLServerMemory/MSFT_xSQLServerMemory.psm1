@@ -134,6 +134,7 @@ function Set-TargetResource
                                                    -ErrorCategory InvalidArgument  
                     }
                 }
+
                 $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
                 New-VerboseMessage -Message "Maximum memory used by the instance has been limited to $($MaxMemory)MB."
             }
@@ -142,7 +143,7 @@ function Set-TargetResource
             {
                 $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = 2147483647
                 $sqlServerObject.Configuration.MinServerMemory.ConfigValue = 0
-                New-VerboseMessage -Message ('Ensure is set to absent. so minimum and maximum server memory' + `
+                New-VerboseMessage -Message ('Ensure is set to absent. Minimum and maximum server memory' + `
                                              'values used by the instance are reset to the default values.')
             }
         }
@@ -154,6 +155,7 @@ function Set-TargetResource
                 $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
                 New-VerboseMessage -Message "Minimum memory used by the instance is set to $($MinMemory)MB."
             }
+
             $sqlServerObject.Alter()
         }
         catch
@@ -243,7 +245,7 @@ function Test-TargetResource
         {
             if ($currentMaxMemory -ne 2147483647)
             {
-                New-VerboseMessage -Message "Current maximum server memory is $currentMaxMemory. Expected 2147483647"
+                New-VerboseMessage -Message "Current maximum server memory used by the instance is $($currentMaxMemory)MB. Expected 2147483647MB."
                 $isServerMemoryInDesiredState = $false
             }
 
@@ -323,7 +325,7 @@ function Get-SqlDscDynamicMaxMemory
 
         $numberOfCores = (Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property NumberOfCores -Sum).Sum
 
-        # Find Number of SQL Threads = 256 + (numberOfCores - 4) * 8
+        # Get the number of SQL threads.
         if ($numberOfCores -ge 4)
         {
             $numberOfSqlThreads = 256 + ($numberOfCores - 4) * 8

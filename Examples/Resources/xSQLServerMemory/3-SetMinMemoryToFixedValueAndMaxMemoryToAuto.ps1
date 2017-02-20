@@ -1,6 +1,6 @@
 <#
 .EXAMPLE
-    This example shows how to set the maximum memory
+    This example shows how to set the minimum memory to 2GB and the maximum memory
     configuration option with the automatic configuration.
 #>
 Configuration Example
