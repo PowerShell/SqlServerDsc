@@ -635,7 +635,7 @@ The dynamic maximum memory (in MB) is calculate with this formula:
 SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) - (1024\*CEILING(NumOfCores/4)) - OSReservedMemory.
 
 * **NumOfSQLThreads**
-  * If the number of cores is less than and equal to 4, the number of Sql threads is the number of cores minus 4 multiply by 8, plus 256.
+  * If the number of cores is less than or equal to 4, the number of SQL threads is set to: 256 + (NumberOfCores - 4) \* 8.
   * If the number of cores is greater than 4, the number of SQL threads is set to: 0 (zero).
 * **ThreadStackSize**
   * If the architecture of windows server is x86, the size of thread stack is 1MB.
