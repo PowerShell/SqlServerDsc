@@ -366,7 +366,8 @@ Read more about recovery model in this article [View or Change the Recovery Mode
 
 ### xSQLServerDatabaseRole
 
-No description.
+This resource is used to add or remove role for a login in a database.
+Read more about database role in this article [CREATE ROLE (Transact-SQL)](https://msdn.microsoft.com/en-us/library/ms187936.aspx)
 
 #### Requirements
 
@@ -376,15 +377,16 @@ No description.
 #### Parameters
 
 * **[String] Name** _(Key)_: The name of the login that will become a member, or removed as a member, of the role(s).
-* **[String] SQLServer** _(Key)_: The SQL server on which the instance exist.
-* **[String] SQLInstanceName** _(Key)_: The SQL instance in which the database exist.
+* **[String] SQLServer** _(Key)_: The host name of the SQL Server to be configured.
+* **[String] SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **[String] Database** _(Key)_: The database in which the login (user) and role(s) exist.
 * **[String] Ensure** _(Write)_: If 'Present' (the default value) then the login (user) will be added to the role(s). If 'Absent' then the login (user) will be removed from the role(s). { *Present* | Absent }.
 * **[String[]] Role**_(Required): One or more roles to which the login (user) will be added or removed.
 
 #### Examples
 
-None.
+* [Add Role of a database](/Examples/Resources/xSQLServerDatabaseRole/1-AddDatabaseRole.ps1)
+* [Remove Role of a database](/Examples/Resources/xSQLServerDatabaseRole/2-RemoveDatabaseRole.ps1)
 
 ### xSQLServerEndpoint
 
