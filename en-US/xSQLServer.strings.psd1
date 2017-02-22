@@ -18,6 +18,10 @@ LoginNotFound = Login '{0}' does not exist on SQL server '{1}\\{2}'."
 FailedLogin = Creating a login of type 'SqlLogin' requires LoginCredential
 FeatureNotSupported = '{0}' is not a valid value for setting 'FEATURES'.  Refer to SQL Help for more information.
 
+# Database Role
+AddLoginDatabaseSetError = Failed adding the login {2} as a user of the database {3}, on the instance {0}\\{1}.
+DropMemberDatabaseSetError = Failed removing the login {2} from the role {3} on the database {4}, on the instance {0}\\{1}.
+
 # AvailabilityGroupListener
 AvailabilityGroupListenerNotFound = Trying to make a change to a listener that does not exist.
 AvailabilityGroupListenerErrorVerifyExist = Unexpected result when trying to verify existence of listener '{0}'.
