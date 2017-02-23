@@ -69,7 +69,7 @@ function Get-TargetResource
     if ($sqlServerObject)
     {
         # Check database exists
-        if ( !($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
+        if ( -NOT($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
         {
             throw New-TerminatingError -ErrorType NoDatabase `
                                        -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
@@ -79,7 +79,7 @@ function Get-TargetResource
         # Check role exists
         foreach ($currentRole in $Role)
         {
-            if( !($sqlDatabaseObject.Roles[$currentRole]) )
+            if( -NOT($sqlDatabaseObject.Roles[$currentRole]) )
             {
                 throw New-TerminatingError -ErrorType RoleNotFound `
                                            -FormatArgs @($currentRole, $Database, $SQLServer, $SQLInstanceName) `
@@ -88,7 +88,7 @@ function Get-TargetResource
         }
 
         # Check login exists
-        if ( !($sqlServerObject.Logins[$Name]) )
+        if ( -NOT($sqlServerObject.Logins[$Name]) )
         {
             throw New-TerminatingError -ErrorType LoginNotFound `
                                        -FormatArgs @($Name, $SQLServer, $SQLInstanceName) `
@@ -116,7 +116,7 @@ function Get-TargetResource
                 }
             }
 
-            if ( !(Compare-Object -ReferenceObject $Role -DifferenceObject $grantedRole) )
+            if ( -NOT(Compare-Object -ReferenceObject $Role -DifferenceObject $grantedRole) )
             {
                 $Ensure = 'Present'
             }
@@ -126,12 +126,6 @@ function Get-TargetResource
             New-VerboseMessage -Message ("The login '$Name' is not a user of the database " + `
                                          "'$Database' on the instance $SQLServer\$SQLInstanceName")
         }
-    }
-    else
-    {
-        throw New-TerminatingError -ErrorType NotConnectedToInstance `
-                                   -FormatArgs @($SQLServer, $SQLInstanceName) `
-                                   -ErrorCategory InvalidResult
     }
 
     $returnValue = @{
@@ -221,7 +215,7 @@ function Set-TargetResource
             'Present'
             {
                 # Adding database user if it does not exist.
-                if ( !($sqlDatabaseObject.Users[$Name]) )
+                if ( -NOT($sqlDatabaseObject.Users[$Name]) )
                 {
                     try
                     {
@@ -359,7 +353,7 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Absent')
             {
-                New-VerboseMessage -Message "Ensure is set to Absent. The role for $Name should be dropped"
+                New-VerboseMessage -Message "Ensure is set to Absent. The existing role for $Name should be dropped"
                 $isDatabaseRoleInDesiredState = $false
             }
         }
@@ -368,7 +362,7 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Present')
             {
-                New-VerboseMessage -Message "Ensure is set to Present. The role for $Name should be added"
+                New-VerboseMessage -Message "Ensure is set to Present. The missing role for $Name should be added"
                 $isDatabaseRoleInDesiredState = $false
             }
         }
