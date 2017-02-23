@@ -1,5 +1,5 @@
 $script:DSCModuleName      = 'xSQLServer'
-$script:DSCResourceName    = 'MSFT_xSQLServerDatabaseRole'
+$script:DSCResourceName    = 'MSFT_xSQLServerRole'
 
 #region HEADER
 
@@ -21,8 +21,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 #endregion HEADER
 
 function Invoke-TestSetup {
-    # Loading mocked classes
-    Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 }
 
 function Invoke-TestCleanup {
@@ -35,23 +33,17 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockSqlServerName                          = 'localhost'
-        $mockSqlServerInstanceName                  = 'MSSQLSERVER'
-        $mockSqlDatabaseName                        = 'AdventureWorks'
-        $mockSqlServerLogin                         = 'John'
-        $mockSqlServerLoginOne                      = 'CONTOSO\KingJulian'
-        $mockSqlServerLoginTwo                      = 'CONTOSO\SQLAdmin'
-        $mockSqlServerLoginType                     = 'WindowsUser'
-        $mockSqlDatabaseRole                        = 'MyRole'
-        $mockSqlDatabaseRoleSecond                  = 'MySecondRole'
-        $mockExpectedSqlDatabaseRole                = 'MyRole'
-        $mockInvalidOperationForAddMemberMethod     = $false
-        $mockInvalidOperationForDropMemberMethod    = $false
-        $mockInvalidOperationForCreateMethod        = $false
-        $mockExpectedForAddMemberMethod             = 'MySecondRole'
-        $mockExpectedForDropMemberMethod            = 'MyRole'
-        $mockExpectedForCreateMethod                = 'John'
-        
+        $mockSqlServerName                      = 'localhost'
+        $mockSqlServerInstanceName              = 'MSSQLSERVER'
+        $mockSqlServerRole                      = 'AdminSqlforBI'
+        $mockSqlServerLoginOne                  = 'CONTOSO\John'
+        $mockSqlServerLoginTwo                  = 'CONTOSO\Kelly'
+        $mockSqlServerLoginTree                 = 'CONTOSO\Lucy'
+        $mockSqlServerLoginFour                 = 'CONTOSO\Steve'
+        $mockEnumMemberNames                    = @($mockSqlServerLoginOne,$mockSqlServerLoginTwo)
+        $mockSqlServerLoginType                 = 'WindowsUser'
+        $mockExpectedServerRoleToDrop           = 'ServerRoleToDrop'
+
         # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
             SQLInstanceName = $mockSqlServerInstanceName
@@ -59,120 +51,67 @@ try
         }
         
         #region Function mocks
+        
         $mockConnectSQL = {
             return @(
                 (
                     New-Object Object |
                         Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockSqlServerInstanceName -PassThru |
                         Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockSqlServerName -PassThru |
-                        Add-Member -MemberType ScriptProperty -Name Databases -Value {
+                        Add-Member -MemberType ScriptProperty -Name Roles -Value {
                             return @{
-                                $mockSqlDatabaseName = @(( 
-                                    New-Object Object | 
-                                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlDatabaseName -PassThru |
-                                        Add-Member -MemberType ScriptProperty -Name Users -Value {
-                                            return @{
-                                                $mockSqlServerLoginOne = @(( 
-                                                    New-Object Object |
-                                                        Add-Member -MemberType ScriptMethod -Name IsMember -Value {
-                                                            param( 
-                                                                [String]
-                                                                $mockSqlDatabaseRole 
-                                                            )
-                                                            if ( $mockSqlDatabaseRole -eq $mockExpectedSqlDatabaseRole ) 
-                                                            {
-                                                                return $true
-                                                            } 
-                                                            else
-                                                            {
-                                                                return $false
-                                                            }
-                                                        } -PassThru 
-                                                ))
-                                                $mockSqlServerLoginTwo = @(( 
-                                                    New-Object Object |
-                                                        Add-Member -MemberType ScriptMethod -Name IsMember -Value {
-                                                                return $true
-                                                        } -PassThru 
-                                                ))
-                                            }
-                                        } -PassThru |
-                                        Add-Member -MemberType ScriptProperty -Name Roles -Value {
-                                            return @{
-                                                $mockSqlDatabaseRole = @((
-                                                    New-Object Object |
-                                                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlDatabaseRole -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name AddMember -Value {
-                                                            param(
-                                                                [String]
-                                                                $mockSqlServerLogin
-                                                            )
-                                                            if ($mockInvalidOperationForAddMemberMethod)
-                                                            {
-                                                                throw 'Mock AddMember Method was called with invalid operation.'
-                                                            }
-                                                            if ( $this.Name -ne $mockExpectedForAddMemberMethod )
-                                                            {
-                                                                throw "Called mocked AddMember() method without adding the right user. Expected '{0}'. But was '{1}'." `
-                                                                        -f $mockExpectedForAddMemberMethod, $this.Name
-                                                            }
-                                                        } -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name DropMember -Value {
-                                                            param(
-                                                                [String]
-                                                                $mockSqlServerLogin
-                                                            )
-                                                            if ($mockInvalidOperationForDropMemberMethod)
-                                                            {
-                                                                throw 'Mock DropMember Method was called with invalid operation.'
-                                                            }
-                                                            if ( $this.Name -ne $mockExpectedForDropMemberMethod )
-                                                            {
-                                                                throw "Called mocked Drop() method without adding the right user. Expected '{0}'. But was '{1}'." `
-                                                                        -f $mockExpectedForDropMemberMethod, $this.Name
-                                                            }
-                                                        } -PassThru
-                                                ))
-                                                $mockSqlDatabaseRoleSecond = @((
-                                                    New-Object Object |
-                                                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlDatabaseRoleSecond -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name AddMember -Value {
-                                                            param(
-                                                                [String]
-                                                                $mockSqlServerLogin
-                                                            )
-                                                            if ($mockInvalidOperationForAddMemberMethod)
-                                                            {
-                                                                throw 'Mock AddMember Method was called with invalid operation.'
-                                                            }
-                                                            if ( $this.Name -ne $mockExpectedForAddMemberMethod )
-                                                            {
-                                                                throw "Called mocked AddMember() method without adding the right user. Expected '{0}'. But was '{1}'." `
-                                                                        -f $mockExpectedForAddMemberMethod, $this.Name
-                                                            }
-                                                        } -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name DropMember -Value {
-                                                            param(
-                                                                [String]
-                                                                $mockSqlServerLogin
-                                                            )
-                                                            if ($mockInvalidOperationForDropMemberMethod)
-                                                            {
-                                                                throw 'Mock DropMember Method was called with invalid operation.'
-                                                            }
-                                                            if ( $this.Name -ne $mockExpectedForDropMemberMethod )
-                                                            {
-                                                                throw "Called mocked Drop() method without adding the right user. Expected '{0}'. But was '{1}'." `
-                                                                        -f $mockExpectedForDropMemberMethod, $this.Name
-                                                            }
-                                                        } -PassThru
-                                                ))
-                                            }
-                                        }-PassThru -Force
-                                    ))
+                                $mockSqlServerRole = ( New-Object Object | 
+                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlServerRole -PassThru |
+                                    Add-Member -MemberType ScriptMethod -Name EnumMemberNames -Value {
+                                        if ($mockInvalidOperationForEnumMethod)
+                                        {
+                                            throw 'Mock EnumMemberNames Method was called with invalid operation.'
+                                        }
+                                        else
+                                        {
+                                            $mockEnumMemberNames
+                                        }
+                                    } -PassThru |
+                                    Add-Member -MemberType ScriptMethod -Name Drop -Value {
+                                        if ($mockInvalidOperationForDropMethod)
+                                        {
+                                            throw 'Mock Drop Method was called with invalid operation.'
+                                        }
+                            
+                                        if ( $this.Name -ne $mockExpectedServerRoleToDrop )
+                                        {
+                                            throw "Called mocked drop() method without deleting the right server role. Expected '{0}'. But was '{1}'." `
+                                                    -f $mockExpectedServerRoleToDrop, $this.Name
+                                        }
+                                    } -PassThru |
+                                    Add-Member -MemberType ScriptMethod -Name AddMember -Value {
+                                        if ($mockInvalidOperationForAddMemberMethod)
+                                        {
+                                            throw 'Mock AddMember Method was called with invalid operation.'
+                                        }
+                            
+                                        if ( $mockSqlServerLoginToAdd -ne $mockExpectedMemberToAdd )
+                                        {
+                                            throw "Called mocked AddMember() method without adding the right login. Expected '{0}'. But was '{1}'." `
+                                                    -f $mockExpectedMemberToAdd, $mockSqlServerLoginToAdd
+                                        }
+                                    } -PassThru |
+                                    Add-Member -MemberType ScriptMethod -Name DropMember -Value {
+                                        if ($mockInvalidOperationForDropMemberMethod)
+                                        {
+                                            throw 'Mock DropMember Method was called with invalid operation.'
+                                        }
+                            
+                                        if ( $mockSqlServerLoginToDrop -ne $mockExpectedMemberToDrop )
+                                        {
+                                            throw "Called mocked DropMember() method without deleting the right login. Expected '{0}'. But was '{1}'." `
+                                                    -f $mockExpectedMemberToDrop, $mockSqlServerLoginToDrop
+                                        }
+                                    } -PassThru
+                                    )
                                 }
-                            } -PassThru -Force |
-                        Add-Member -MemberType ScriptProperty -Name Logins -Value {
+                            } -PassThru | 
+                            Add-Member -MemberType ScriptProperty -Name Logins -Value {
                             return @{
                                 $mockSqlServerLoginOne = @((
                                     New-Object Object | 
@@ -182,32 +121,35 @@ try
                                     New-Object Object | 
                                         Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru 
                                 ))
-                                $mockSqlServerLogin = @((
+                                $mockSqlServerLoginTree = @((
+                                    New-Object Object | 
+                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru 
+                                ))
+                                $mockSqlServerLoginFour = @((
                                     New-Object Object | 
                                         Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru 
                                 ))
                             }
-                        } -PassThru -Force 
-                                       
+                        } -PassThru -Force                                       
                 )
             )
         }
 
-        $mockNewObjectUser = {
+        $mockNewObjectServerRole = {
             return @(
                 (
                     New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlServerLogin -PassThru |
-                        Add-Member -MemberType NoteProperty -Name Login -Value $mockSqlServerLogin -PassThru |
+                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlServerRoleAdd -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Create -Value {
                             if ($mockInvalidOperationForCreateMethod)
                             {
                                 throw 'Mock Create Method was called with invalid operation.'
                             }
-                            if ( $this.Name -ne $mockExpectedForCreateMethod )
+                            
+                            if ( $this.Name -ne $mockExpectedServerRoleToCreate )
                             {
-                                throw "Called mocked Create() method without adding the right user. Expected '{0}'. But was '{1}'." `
-                                        -f $mockExpectedForCreateMethod, $this.Name
+                                throw "Called mocked Create() method without adding the right server role. Expected '{0}'. But was '{1}'." `
+                                        -f $mockExpectedServerRoleToCreate, $this.Name
                             }
                         } -PassThru -Force
                 )
@@ -215,314 +157,76 @@ try
         }
         #endregion
 
-        Describe "MSFT_xSQLServerDatabaseRole\Get-TargetResource" -Tag 'Get'{
+        Describe "MSFT_xSQLServerRole\Get-TargetResource" -Tag 'Get'{
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
 
-            Context 'When passing values to parameters and database name does not exist' {
-                It 'Should throw the correct error' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = 'unknownDatabaseName'
-                        Role        = $mockSqlDatabaseRole
-                    }
-
-                    $throwInvalidOperation = ("Database 'unknownDatabaseName' does not exist " + `
-                                              "on SQL server 'localhost\MSSQLSERVER'.")
-
-                    { Get-TargetResource @testParameters } | Should Throw $throwInvalidOperation
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When passing values to parameters and role does not exist' {
-                It 'Should throw the correct error' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = 'unknownRoleName'
-                    }
-
-                     $throwInvalidOperation = ("Role 'unknownRoleName' does not exist on database " + `
-                                               "'AdventureWorks' on SQL server 'localhost\MSSQLSERVER'.")
-
-                    { Get-TargetResource @testParameters } | Should Throw $throwInvalidOperation
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When passing values to parameters and multiple values to Role parameter' {
-                It 'Should not throw' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
-                    }
-
-                    { Get-TargetResource @testParameters } | Should Not Throw 
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When passing values to parameters and login does not exist' {
-                It 'Should throw the correct error' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = 'unknownLoginName'
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                    }
-
-                    $throwInvalidOperation = ("Login 'unknownLoginName' does not exist " + `
-                                              "on SQL server 'localhost\MSSQLSERVER'.")
-
-                    { Get-TargetResource @testParameters } | Should Throw $throwInvalidOperation
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is not in the desired state, with one role' {
+            Context 'When the system is either in the desired state or not in the desired state' {
                 It 'Should return the state as absent' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
+                        ServerRoleName = 'UnknownUser'
                     }
 
-                    $result = Get-TargetResource @testParameters                
+                    $result = Get-TargetResource @testParameters
                     $result.Ensure | Should Be 'Absent'
                 }
 
-                It 'Should not return any granted roles' {
-                    $result.Role | Should Be $null
+                It 'Should return the members as null' {
+                    $result.Members | Should Be $null
                 }
 
                 It 'Should return the same values as passed as parameters' {
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.Database | Should Be $testParameters.Database
-                    $result.Name | Should Be $testParameters.Name
+                    $result.ServerRoleName | Should Be $testParameters.ServerRoleName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
             }
-
-            Context 'When the system is not in the desired state, with two roles' {
-                It 'Should return the state as absent' {
+    
+            Context 'When the system is either in the desired state or not in the desired state' {
+                It 'Should return the state as present' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
+                        ServerRoleName = $mockSqlServerRole
                     }
 
-                    $result = Get-TargetResource @testParameters                
-                    $result.Ensure | Should Be 'Absent'
-                }
-
-                It 'Should only return the one granted role' {
-                    $result.Role | Should Be $secondRoleName
-                }
-
-                It 'Should return the same values as passed as parameters' {
-                    $result.SQLServer | Should Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.Database | Should Be $testParameters.Database
-                    $result.Name | Should Be $testParameters.Name
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-        
-            Context 'When the system is not in the desired state, and login is not a member of the database' {
-                It 'Should return the state as absent' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLogin
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                    }
-
-                    $result = Get-TargetResource @testParameters                
-                    $result.Ensure | Should Be 'Absent'
-                }
-
-                It 'Should return the same values as passed as parameters' {
-                    $result.SQLServer | Should Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.Database | Should Be $testParameters.Database
-                    $result.Name | Should Be $testParameters.Name
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is in the desired state for a Windows user' {
-                It 'Should return the state as absent' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                    }
-
-                    $result = Get-TargetResource @testParameters               
+                    $result = Get-TargetResource @testParameters
                     $result.Ensure | Should Be 'Present'
                 }
-
+                
                 It 'Should return the same values as passed as parameters' {
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.Database | Should Be $testParameters.Database
-                    $result.Name | Should Be $testParameters.Name
-                    $result.Role | Should Be $testParameters.Role
+                    $result.ServerRoleName | Should Be $testParameters.ServerRoleName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }        
+                }
             }
 
-            Assert-VerifiableMocks
-        }
+            $mockInvalidOperationForEnumMethod = $true
 
-        Describe "MSFT_xSQLServerDatabaseRole\Test-TargetResource" -Tag 'Test'{
-            BeforeEach {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-            }
-
-            Context 'When the system is not in the desired state and Ensure is set to Present' {
-                It 'Should return the state as false when one desired role is not configured' {
+            Context 'When passing values to parameters and throwing with EnumMemberNames method' {
+                It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
-                        Ensure      = 'Present'
+                        ServerRoleName = $mockSqlServerRole
                     }
+                    
+                    $throwInvalidOperation = ('Failed to enumerate members name of the server role ' + `
+                                              'named AdminSqlforBI on localhost\MSSQLSERVER. InnerException: ' + `
+                                              'Exception calling "EnumMemberNames" with "0" argument(s): ' + `
+                                              '"Mock EnumMemberNames Method was called with invalid operation."')
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $false
+                    { Get-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
-                
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
 
-            Context 'When the system is not in the desired state and Ensure is set to Present' {
-                It 'Should return the state as false when two desired roles are not configured' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
-                        Ensure      = 'Present'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $false
-                }
-                
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is not in the desired state and Ensure is set to Absent' {
-                It 'Should return the state as false when undesired roles are not configured' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginTwo
-                        Database    = $mockSqlDatabaseName
-                        Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
-                        Ensure      = 'Absent'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $false
-                }
-                
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is in the desired state and Ensure is set to Present' {
-                It 'Should return the state as true when one desired role is correctly configured' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                        Ensure      = 'Present'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $true
-                }
-                
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is in the desired state and Ensure is set to Present' {
-                It 'Should return the state as true when two desired role are correctly configured' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginTwo
-                        Database    = $mockSqlDatabaseName
-                        Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
-                        Ensure      = 'Present'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $true
-                }
-                
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When the system is in the desired state and Ensure is set to Absent' {
-                It 'Should return the state as true when two desired role are correctly configured' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name        = $mockSqlServerLoginOne
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
-                        Ensure      = 'Absent'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $true
-                }
-                
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
@@ -531,184 +235,576 @@ try
             Assert-VerifiableMocks
         }
 
-        Describe "MSFT_xSQLServerDatabaseRole\Set-TargetResource" -Tag 'Set'{
+        Describe "MSFT_xSQLServerRole\Test-TargetResource" -Tag 'Test'{
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-                Mock -CommandName New-Object -MockWith $mockNewObjectUser -ParameterFilter {
-                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
-                } -Verifiable
             }
 
-            $mockExpectedForAddMemberMethod    = 'MyRole'
+            $mockInvalidOperationForEnumMethod = $false
 
-            Context 'When the system is not in the desired state, Ensure is set to Present and Login does not exist' {
-                It 'Should Not Throw when Ensure parameter is set to Present' {
+            Context 'When the system is not in the desired state' {            
+                It 'Should return the test as false when desired server role exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLogin
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                        Ensure      = 'Present'
+                        Ensure = 'Absent'
+                        ServerRoleName = $mockSqlServerRole
                     }
 
-                    { Set-TargetResource @testParameters } | Should Not Throw
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
                 }
-                
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
+            Context 'When the system is not in the desired state' {            
+                It 'Should return the test as false when desired server role does not exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = 'newServerRole'
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
+            Context 'When the system is not in the desired state and ensure parameter is set to Present' {            
+                It 'Should return the test as false when desired members are not in desired server role' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = @($mockSqlServerLoginTree,$mockSqlServerLoginFour)
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the system is in the desired state and ensure parameter is set to Absent' {            
+                It 'Should return the test as true when desired server role does not exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                        ServerRoleName = 'newServerRole'
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $true
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
+            Context 'When the system is in the desired state and ensure parameter is set to Present' {            
+                It 'Should return the test as true when desired server role exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = $mockEnumMemberNames
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $true
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToInclude parameter is not null and Members parameter is set - PRESENT' {            
+                It 'Should throw the correct error' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = $mockEnumMemberNames
+                        MembersToInclude = $mockSqlServerLoginTree
+                    }
+
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
+
+                    { Test-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToInclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should return the test as true when desired server role exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = $mockSqlServerLoginTwo
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $true
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToInclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should return the test as false when desired server role does not exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = $mockSqlServerLoginTree
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToExclude parameter is not null and Members parameter is set - PRESENT' {            
+                It 'Should throw the correct error' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = $mockEnumMemberNames
+                        MembersToExclude = $mockSqlServerLoginTwo
+                    }
+
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
+
+                    { Test-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should return the test as true when desired server roled does not exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = $mockSqlServerLoginTree
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $true
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should return the test as false when desired server role exist' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = $mockSqlServerLoginTwo
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Assert-VerifiableMocks
+        }
+
+        Describe "MSFT_xSQLServerRole\Set-TargetResource" -Tag 'Set'{
+            BeforeEach {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+                Mock -CommandName New-Object -MockWith $mockNewObjectServerRole -ParameterFilter {
+                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
+                } 
+            }
+           
+            Context 'When the system is not in the desired state - ABSENT' {
+                It 'Should not thrown when call drop method' {
+                    $mockSqlServerRole = 'ServerRoleToDrop'
+                    $mockExpectedServerRoleToDrop = 'ServerRoleToDrop'
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                        ServerRoleName = $mockSqlServerRole
+                    }
+         
+                    { Set-TargetResource @testParameters } | Should Not Throw
+
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
+            Context 'When the system is not in the desired state - ABSENT' {
+                It 'Should thrown the correct error when call drop method' {
+                    $mockInvalidOperationForDropMethod = $true
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                        ServerRoleName = $mockSqlServerRole
+                    }
+                    
+                    $throwInvalidOperation = ('Failed to drop the server role named AdminSqlforBI on ' + `
+                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `
+                                              '"Drop" with "0" argument(s): "Mock Drop Method ' + `
+                                              'was called with invalid operation."')
+                    
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
+            Context 'When the system is not in the desired state - PRESENT' {
+                It 'Should not thrown when call create method' {
+                    $mockSqlServerRoleAdd = 'ServerRoleToAdd'
+                    $mockExpectedServerRoleToCreate = 'ServerRoleToAdd'
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRoleAdd
+                    }
+         
+                    { Set-TargetResource @testParameters } | Should Not Throw
+
+                }
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
 
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
+                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRoleName' {
                     Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
+                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
                     } -Scope Context
                 }
             }
 
-            $mockInvalidOperationForCreateMethod = $true
-
-            Context 'When the system is not in the desired state, Ensure is set to Present and Login does not exist' {
-                It 'Should Throw the correct error when Ensure parameter is set to Present' {
+            Context 'When the system is not in the desired state - PRESENT' {
+                It 'Should thrown the correct error when call create method' {
+                    $mockSqlServerRoleAdd = 'ServerRoleToAdd'
+                    $mockExpectedServerRoleToCreate = 'ServerRoleToAdd'
+                    $mockInvalidOperationForCreateMethod = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLogin
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
-                        Ensure      = 'Present'
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRoleAdd
                     }
-
-                    $throwInvalidOperation = ('Failed adding the login John as a user of the database AdventureWorks, on ' + `
-                                              'the instance localhost\MSSQLSERVER. InnerException: Exception calling "Create" ' + `
-                                              'with "0" argument(s): "Mock Create Method was called with invalid operation."')
+         
+                    $throwInvalidOperation = ('Failed to create the server role named ServerRoleToAdd on ' + `
+                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `
+                                              '"Create" with "0" argument(s): "Mock Create Method ' + `
+                                              'was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+
                 }
-                
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
 
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
+                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRoleName' {
                     Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
+                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
                     } -Scope Context
                 }
             }
 
-            $mockExpectedForAddMemberMethod    = 'MySecondRole'
-            $mockSqlServerLogin = $mockSqlServerLoginOne
-
-            Context 'When the system is not in the desired state, Ensure is set to Present and Login already exist' {
-                It 'Should Not Throw when Ensure parameter is set to Present' {
+            Context 'When the MembersToInclude parameter is not null and Members parameter is set - PRESENT' {            
+                It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLogin
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
-                        Ensure      = 'Present'
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = $mockEnumMemberNames
+                        MembersToInclude = $mockSqlServerLoginTree
+                    }
+
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersExInclude parameter is not null and Members parameter is set - PRESENT' {            
+                It 'Should throw the correct error' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = $mockEnumMemberNames
+                        MembersToExclude = $mockSqlServerLoginTwo
+                    }
+
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToInclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should not thrown when call AddMember method' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = $mockSqlServerLoginTree
                     }
 
                     { Set-TargetResource @testParameters } | Should Not Throw
                 }
-                
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
-
-                It 'Should not call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
-                    Assert-MockCalled New-Object -Exactly -Times 0 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
-                    } -Scope Context
-                }
+            
             }
 
-            $mockInvalidOperationForAddMemberMethod = $true
-
-            Context 'When the system is not in the desired state, Ensure is set to Present and Login already exist' {
-                It 'Should Throw the correct error when Ensure parameter is set to Present' {
+            Context 'When the MembersToInclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should thrown the correct error when call AddMember method' {
+                    $mockInvalidOperationForAddMemberMethod = $true
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLogin
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRoleSecond
-                        Ensure      = 'Present'
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = $mockSqlServerLoginTree
                     }
 
-                    $throwInvalidOperation = ('Failed adding the login CONTOSO\KingJulian to the role MySecondRole on ' + `
-                                              'the database AdventureWorks, on the instance localhost\MSSQLSERVER. ' + `
-                                              'InnerException: Exception calling "AddMember" with "1" argument(s): ' + `
-                                              '"Mock AddMember Method was called with invalid operation."')
+                    $throwInvalidOperation = ('Failed to add member CONTOSO\Lucy to the server role named AdminSqlforBI ' + `
+                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "AddMember" ' + `
+                                              'with "1" argument(s): "Mock AddMember Method was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
-                
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
-
-                It 'Should not call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
-                    Assert-MockCalled New-Object -Exactly -Times 0 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
-                    } -Scope Context
-                }
+            
             }
 
-            Context 'When the system is not in the desired state, Ensure is set to Absent' {
-                It 'Should not throw the correct error when Ensure parameter is set to Absent' {
+            Context 'When the MembersToInclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should thrown the correct error when login does not exist' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLoginTwo
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                        Ensure      = 'Absent'
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = 'KingJulian'
+                    }
+
+                    $throwInvalidOperation = ("Login 'KingJulian' does not exist on SQL server 'localhost\MSSQLSERVER'.")
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should not thrown when call DropMember method' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTwo
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTwo
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = $mockSqlServerLoginTwo
                     }
 
                     { Set-TargetResource @testParameters } | Should Not Throw
                 }
-                
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
-
-                It 'Should not call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
-                    Assert-MockCalled New-Object -Exactly -Times 0 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
-                    } -Scope Context
-                }
+            
             }
 
-            $mockInvalidOperationForDropMemberMethod = $true
-
-            Context 'When the system is not in the desired state, Ensure is set to Absent' {
-                It 'Should not throw the correct error when Ensure parameter is set to Absent' {
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should thrown the correct error when call DropMember method' {
+                    $mockInvalidOperationForDropMemberMethod = $true
+                    $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+                    $mockSqlServerLoginToDrop = $mockSqlServerLoginTwo
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name        = $mockSqlServerLoginTwo
-                        Database    = $mockSqlDatabaseName
-                        Role        = $mockSqlDatabaseRole
-                        Ensure      = 'Absent'
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = $mockSqlServerLoginTwo
                     }
 
-                    $throwInvalidOperation = ('Failed removing the login CONTOSO\SQLAdmin from the role MyRole on ' + `
-                                              'the database AdventureWorks, on the instance localhost\MSSQLSERVER. ' + `
-                                              'InnerException: Exception calling "DropMember" with "1" argument(s): ' + `
-                                              '"Mock DropMember Method was called with invalid operation."')
+                    $throwInvalidOperation = ('Failed to drop member CONTOSO\Kelly to the server role named AdminSqlforBI ' + `
+                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "DropMember" ' + `
+                                              'with "1" argument(s): "Mock DropMember Method was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
-                
+
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
-
-                It 'Should not call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.User' {
-                    Assert-MockCalled New-Object -Exactly -Times 0 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.User'
-                    } -Scope Context
-                }
+            
             }
 
-            Assert-VerifiableMocks            
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should thrown the correct error when login does not exist' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = 'KingJulian'
+                    }
+
+                    $throwInvalidOperation = ("Login 'KingJulian' does not exist on SQL server 'localhost\MSSQLSERVER'.")
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When Members parameter is set and ensure parameter is set to Present' {            
+                It 'Should thrown the correct error when login does not exist' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = @('KingJulian',$mockSqlServerLoginOne,$mockSqlServerLoginTree)
+                    }
+
+                    $throwInvalidOperation = ("Login 'KingJulian' does not exist on SQL server 'localhost\MSSQLSERVER'.")
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When Members parameter is set and ensure parameter is set to Present' {            
+                It 'Should not thrown when call AddMember and DropMember methods' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+                    $mockSqlServerLoginToDrop = $mockSqlServerLoginTwo
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = @($mockSqlServerLoginOne,$mockSqlServerLoginTree)
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+                Context 'When Members parameter is set and ensure parameter is set to Present' {            
+                It 'Should not thrown when call AddMember and DropMember methods' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+                    $mockSqlServerLoginToDrop = $mockSqlServerLoginTwo
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRoleName = $mockSqlServerRole
+                        Members = @($mockSqlServerLoginOne,$mockSqlServerLoginTree)
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Assert-VerifiableMocks
         }
     }
 }
