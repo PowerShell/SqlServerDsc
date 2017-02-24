@@ -182,6 +182,10 @@ try
                                     New-Object Object | 
                                         Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru 
                                 ))
+                                $mockSqlServerLogin = @((
+                                    New-Object Object | 
+                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru 
+                                ))
                             }
                         } -PassThru -Force 
                                        
@@ -351,6 +355,31 @@ try
                 }
             }
         
+            Context 'When the system is not in the desired state, and login is not a member of the database' {
+                It 'Should return the state as absent' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Name        = $mockSqlServerLogin
+                        Database    = $mockSqlDatabaseName
+                        Role        = $mockSqlDatabaseRole
+                    }
+
+                    $result = Get-TargetResource @testParameters                
+                    $result.Ensure | Should Be 'Absent'
+                }
+
+                It 'Should return the same values as passed as parameters' {
+                    $result.SQLServer | Should Be $testParameters.SQLServer
+                    $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
+                    $result.Database | Should Be $testParameters.Database
+                    $result.Name | Should Be $testParameters.Name
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            }
+
             Context 'When the system is in the desired state for a Windows user' {
                 It 'Should return the state as absent' {
                     $testParameters = $mockDefaultParameters
