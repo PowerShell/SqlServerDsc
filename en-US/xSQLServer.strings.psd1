@@ -87,4 +87,8 @@ MaxMemoryParamMustBeNull = The parameter MaxMemory must be null when DynamicAllo
 MaxMemoryParamMustNotBeNull = The parameter MaxMemory must not be null when DynamicAlloc is set to false.
 AlterServerMemoryFailed = Failed to alter the server configuration memory for {0}\\{1}.
 ErrorGetDynamicMaxMemory = Failed to calculate dynamically the maximum memory.
+
+# SQLServerDatabase
+CreateDatabaseSetError = Failed to create the database named {2} on {0}\\{1}.
+DropDatabaseSetError = Failed to drop the database named {2} on {0}\\{1}.
 '@

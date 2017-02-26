@@ -25,11 +25,21 @@
     - 2-SetMaxMemoryToAuto.ps1
     - 3-SetMinMaxMemoryToAuto.ps1
     - 4-SetMaxMemoryToDefault.ps1
+  - xSQLServerDatabase
+    - 1-CreateDatabase.ps1
+    - 2-DeleteDatabase.ps1
+  - xSQLServerDatabaseRole
+    - 1-AddDatabaseRole.ps1
+    - 2-RemoveDatabaseRole.ps1
 - Added tests for resources
   - xSQLServerMaxDop
   - xSQLServerMemory
 - Changes to xSQLServerMemory
   - BREAKING CHANGE: The mandatory parameter now include SQLInstanceName. The DynamicAlloc parameter is no longer mandatory
+- Changes to xSQLServerDatabase
+  - When the system is not in desired state the Test-TargetResource will now output verbose messages saying so.
+- Changes to xSQLServerDatabaseRole
+  - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
 
 ## 5.0.0.0
 
