@@ -32,6 +32,9 @@
   - xSQLServerDatabase
     - 1-CreateDatabase.ps1
     - 2-DeleteDatabase.ps1
+  - xSQLServerDatabaseRole
+    - 1-AddDatabaseRole.ps1
+    - 2-RemoveDatabaseRole.ps1
 - Added tests for resources
   - xSQLServerMaxDop
   - xSQLServerMemory
@@ -41,6 +44,10 @@
   - When the system is not in desired state the Test-TargetResource will now output verbose messages saying so.
 - Changes to xSQLServerDatabaseOwner
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
+- Changes to xSQLServerRole
+  - BREAKING CHANGE: The mandatory parameters now include SQLServer and ServerRoleName. The new parameter are Members, MembersToInclude and MembersToExclude.
+  - The ServerRole parameter was before an array of server roles, now this parameter is renamed by ServerRoleName and contains only one server role to set.
+  - The new parameter Members, MembersToInclude and MembersToExclude contains one or multiple logins that can be adding or dropping in server role members.
 
 ## 5.0.0.0
 
