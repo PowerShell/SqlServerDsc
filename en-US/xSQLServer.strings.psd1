@@ -95,6 +95,7 @@ FailedToGetOwnerDatabase = Failed to get owner of the database named {0} on {1}\
 FailedToSetOwnerDatabase = Failed to set owner named {0} of the database named {1} on {2}\\{3}.
 
 # SQLServerRole
+EnumMemberNamesServerRoleGetError = Failed to enumerate members name of the server role named {2} on {0}\\{1}.
 MembersToIncludeAndExcludeParamMustBeNull = The parameter MembersToInclude and/or MembersToExclude must be null when Members parameter is set.
 CreateServerRoleSetError = Failed to create the server role named {2} on {0}\\{1}.
 DropServerRoleSetError = Failed to drop the server role named {2} on {0}\\{1}.
