@@ -949,6 +949,9 @@ function Remove-SqlAvailabilityReplica {
         ${InputObject},
 
         [switch]
+        ${Confirm},
+
+        [switch]
         ${Script}
    )
 
