@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
     This example shows how to ensure that the user account CONTOSO\SQLAdmin
-    hasn't the "DeleteRole" SQL database roles.
+    is not member of the "DeleteRole" SQL database role.
 #>
 Configuration Example
 {
@@ -19,7 +19,7 @@ Configuration Example
     {
         xSQLServerDatabaseRole Remove_Database_Role
         {
-            Ensure = 'Present'
+            Ensure = 'Absent'
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             Name = 'CONTOSO\SQLAdmin'

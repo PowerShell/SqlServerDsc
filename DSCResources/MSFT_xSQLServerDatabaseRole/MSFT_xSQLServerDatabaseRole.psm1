@@ -30,12 +30,6 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter()]
-        [ValidateSet('Present','Absent')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Ensure,
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -69,7 +63,7 @@ function Get-TargetResource
     if ($sqlServerObject)
     {
         # Check database exists
-        if ( -NOT($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
+        if ( -not ($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
         {
             throw New-TerminatingError -ErrorType NoDatabase `
                                        -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
@@ -79,7 +73,7 @@ function Get-TargetResource
         # Check role exists
         foreach ($currentRole in $Role)
         {
-            if( -NOT($sqlDatabaseObject.Roles[$currentRole]) )
+            if( -not ($sqlDatabaseObject.Roles[$currentRole]) )
             {
                 throw New-TerminatingError -ErrorType RoleNotFound `
                                            -FormatArgs @($currentRole, $Database, $SQLServer, $SQLInstanceName) `
@@ -88,14 +82,14 @@ function Get-TargetResource
         }
 
         # Check login exists
-        if ( -NOT($sqlServerObject.Logins[$Name]) )
+        if ( -not ($sqlServerObject.Logins[$Name]) )
         {
             throw New-TerminatingError -ErrorType LoginNotFound `
                                        -FormatArgs @($Name, $SQLServer, $SQLInstanceName) `
                                        -ErrorCategory ObjectNotFound
         }
 
-        $Ensure = 'Absent'
+        $ensure = 'Absent'
         $grantedRole = @()
 
         if ($sqlDatabaseUser = $sqlDatabaseObject.Users[$Name] )
@@ -116,9 +110,9 @@ function Get-TargetResource
                 }
             }
 
-            if ( -NOT(Compare-Object -ReferenceObject $Role -DifferenceObject $grantedRole) )
+            if ( -not (Compare-Object -ReferenceObject $Role -DifferenceObject $grantedRole) )
             {
-                $Ensure = 'Present'
+                $ensure = 'Present'
             }
         }
         else
@@ -129,7 +123,7 @@ function Get-TargetResource
     }
 
     $returnValue = @{
-        Ensure          = $Ensure
+        Ensure          = $ensure
         Name            = $Name
         SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
@@ -215,7 +209,7 @@ function Set-TargetResource
             'Present'
             {
                 # Adding database user if it does not exist.
-                if ( -NOT($sqlDatabaseObject.Users[$Name]) )
+                if ( -not ($sqlDatabaseObject.Users[$Name]) )
                 {
                     try
                     {
@@ -343,8 +337,17 @@ function Test-TargetResource
     )
 
     Write-Verbose -Message "Testing SQL Database role for $Name"
+    
+    $getTargetResourceParameters = @{
+        SQLInstanceName = $PSBoundParameters.SQLInstanceName
+        SQLServer       = $PSBoundParameters.SQLServer
+        Role            = $PSBoundParameters.Role
+        Database        = $PSBoundParameters.Database
+        Name            = $PSBoundParameters.Name
+    }
 
-    $getTargetResourceResult = Get-TargetResource @PSBoundParameters
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+    
     $isDatabaseRoleInDesiredState = $true
     
     switch ($Ensure)

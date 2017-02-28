@@ -220,7 +220,7 @@ try
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
 
-            Context 'When passing values to parameters and database name does not exist' {
+            Context 'When database name does not exist' {
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -240,7 +240,7 @@ try
                 }
             }
 
-            Context 'When passing values to parameters and role does not exist' {
+            Context 'When role does not exist' {
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -260,7 +260,7 @@ try
                 }
             }
 
-            Context 'When passing values to parameters and multiple values to Role parameter' {
+            Context 'When passing multiple values to Role parameter' {
                 It 'Should not throw' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -277,7 +277,7 @@ try
                 }
             }
 
-            Context 'When passing values to parameters and login does not exist' {
+            Context 'When login does not exist' {
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -297,7 +297,7 @@ try
                 }
             }
 
-            Context 'When the system is not in the desired state, with one role' {
+            Context 'When the role should be absent and system is in the desired state' {
                 It 'Should return the state as absent' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -326,7 +326,7 @@ try
                 }
             }
 
-            Context 'When the system is not in the desired state, with two roles' {
+            Context 'When two roles should be absent and system is in the desired state' {
                 It 'Should return the state as absent' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
@@ -542,7 +542,7 @@ try
             $mockExpectedForAddMemberMethod    = 'MyRole'
 
             Context 'When the system is not in the desired state, Ensure is set to Present and Login does not exist' {
-                It 'Should Not Throw when Ensure parameter is set to Present' {
+                It 'Should not throw any error when adding login to a role' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLogin
@@ -568,7 +568,7 @@ try
             $mockInvalidOperationForCreateMethod = $true
 
             Context 'When the system is not in the desired state, Ensure is set to Present and Login does not exist' {
-                It 'Should Throw the correct error when Ensure parameter is set to Present' {
+                It 'Should throw the correct error when Ensure parameter is set to Present' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLogin
@@ -599,7 +599,7 @@ try
             $mockSqlServerLogin = $mockSqlServerLoginOne
 
             Context 'When the system is not in the desired state, Ensure is set to Present and Login already exist' {
-                It 'Should Not Throw when Ensure parameter is set to Present' {
+                It 'Should not throw any error when login already is a member of the role' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLogin
@@ -625,7 +625,7 @@ try
             $mockInvalidOperationForAddMemberMethod = $true
 
             Context 'When the system is not in the desired state, Ensure is set to Present and Login already exist' {
-                It 'Should Throw the correct error when Ensure parameter is set to Present' {
+                It 'Should throw the correct error when Ensure parameter is set to Present' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLogin
@@ -654,7 +654,7 @@ try
             }
 
             Context 'When the system is not in the desired state, Ensure is set to Absent' {
-                It 'Should not throw the correct error when Ensure parameter is set to Absent' {
+                It 'Should not throw any error when login is a member of the role' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLoginTwo
@@ -680,7 +680,7 @@ try
             $mockInvalidOperationForDropMemberMethod = $true
 
             Context 'When the system is not in the desired state, Ensure is set to Absent' {
-                It 'Should not throw the correct error when Ensure parameter is set to Absent' {
+                It 'Should throw the correct error when Ensure parameter is set to Absent' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLoginTwo
