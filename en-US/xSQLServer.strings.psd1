@@ -86,4 +86,11 @@ ErrorGetDynamicMaxMemory = Failed to calculate dynamically the maximum memory.
 # SQLServerDatabase
 CreateDatabaseSetError = Failed to create the database named {2} on {0}\\{1}.
 DropDatabaseSetError = Failed to drop the database named {2} on {0}\\{1}.
+
+# SQLServerRole
+MembersToIncludeAndExcludeParamMustBeNull = The parameter MembersToInclude and/or MembersToExclude must be null when Members parameter is set.
+CreateServerRoleSetError = Failed to create the server role named {2} on {0}\\{1}.
+DropServerRoleSetError = Failed to drop the server role named {2} on {0}\\{1}.
+AddMemberServerRoleSetError = Failed to add member {3} to the server role named {2} on {0}\\{1}.
+DropMemberServerRoleSetError = Failed to drop member {3} to the server role named {2} on {0}\\{1}.
 '@
