@@ -44,8 +44,19 @@ function Get-TargetResource
         Write-Verbose -Message "Getting SQL Server role $ServerRole properties."
         if ($sqlServerRoleObject = $sqlServerObject.Roles[$ServerRole])
         {
-            $membersInRole = $sqlServerRoleObject.EnumMemberNames()
-            $ensure = "Present"
+            $ensure = 'Present'
+
+            try
+            {
+                $membersInRole = $sqlServerRoleObject.EnumMemberNames()
+            }
+            catch
+            {
+                throw New-TerminatingError -ErrorType EnumMemberNamesServerRoleGetError `
+                                           -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole) `
+                                           -ErrorCategory InvalidOperation `
+                                           -InnerException $_.Exception
+            }
         }
     }
 
@@ -403,7 +414,7 @@ function Test-TargetResource
                 {
                     foreach ($memberToExclude in $MembersToExclude)
                     {
-                        if ($getTargetResourceResult.Members.Contains($MembersToExclude))
+                        if ($getTargetResourceResult.Members.Contains($memberToExclude))
                         {
                             New-VerboseMessage -Message "The excluded members are present in server role $ServerRole"
                             $isServerRoleInDesiredState = $false
