@@ -62,7 +62,7 @@ function Get-TargetResource
         ConnectionModeInSecondaryRole = ''
         FailoverMode = ''
         EndpointUrl = ''
-        ReadOnlyConnectionUrl = ''
+        ReadOnlyRoutingConnectionUrl = ''
         ReadOnlyRoutingList = @()
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
@@ -92,7 +92,7 @@ function Get-TargetResource
             $alwaysOnAvailabilityGroupReplicaResource.ConnectionModeInSecondaryRole = $availabilityGroupReplica.ConnectionModeInSecondaryRole
             $alwaysOnAvailabilityGroupReplicaResource.FailoverMode = $availabilityGroupReplica.FailoverMode
             $alwaysOnAvailabilityGroupReplicaResource.EndpointUrl = $availabilityGroupReplica.EndpointUrl
-            $alwaysOnAvailabilityGroupReplicaResource.ReadOnlyConnectionUrl = $availabilityGroupReplica.ReadOnlyConnectionUrl
+            $alwaysOnAvailabilityGroupReplicaResource.ReadOnlyRoutingConnectionUrl = $availabilityGroupReplica.ReadOnlyRoutingConnectionUrl
             $alwaysOnAvailabilityGroupReplicaResource.ReadOnlyRoutingList = $availabilityGroupReplica.ReadOnlyRoutingList
         }
     }
@@ -235,31 +235,33 @@ function Set-TargetResource
     # Get the Availabilty Group if it exists
     $availabilityGroup = $serverObject.AvailabilityGroups[$AvailabilityGroupName]
 
+    # Make sure we're communicating with the primary replica in order to make changes to the replica
+    if ( $availabilityGroup )
+    {
+        if ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
+        {
+            $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
+            $availabilityGroup = $primaryServerObject.AvailabilityGroups[$AvailabilityGroupName]
+        }
+    }
+
     switch ( $Ensure )
     {
         Absent
         {
             if ( $availabilityGroup )
             {
-                $availabilityGroupReplica = $availabilityGroup.AvailabilityGroupReplicas[$Name]
+                $availabilityGroupReplica = $availabilityGroup.AvailabilityReplicas[$Name]
 
                 if ( $availabilityGroupReplica )
                 {
-                    # Make sure the primary replica is not the replica we're trying to remove
-                    if ( $availabilityGroup.PrimaryReplicaServerName -ne $Name )
+                    try
                     {
-                        try
-                        {
-                            Remove-SqlAvailabilityReplica -InputObject $availabilityGroupReplica -Confirm:$true -ErrorAction Stop
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType RemoveAvailabilityGroupReplicaFailed -FormatArgs $Name, $SQLInstanceName -ErrorCategory ResourceUnavailable
-                        }
+                        Remove-SqlAvailabilityReplica -InputObject $availabilityGroupReplica -Confirm:$false -ErrorAction Stop
                     }
-                    else
+                    catch
                     {
-                        throw New-TerminatingError -ErrorType InstanceIsPrimaryReplica -FormatArgs $Name, $SQLInstanceName -ErrorCategory ResourceUnavailable
+                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupReplicaFailed -FormatArgs $Name, $_.Exception -ErrorCategory ResourceUnavailable
                     }
                 }
             }
@@ -292,13 +294,28 @@ function Set-TargetResource
                         {
                             $clusterServiceName
                             {
-                                New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
+                                New-VerboseMessage -Message "The recommended account '$loginName' is missing one or more of the following permissions: $( $availabilityGroupManagementPerms -join ', ' ). Trying with '$ntAuthoritySystemName'."
                             }
 
                             $ntAuthoritySystemName
                             {
-                                New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                New-VerboseMessage -Message "'$loginName' is missing one or more of the following permissions: $( $availabilityGroupManagementPerms -join ', ' )"
                             }
+                        }
+                    }
+                }
+                elseif ( -not $clusterPermissionsPresent )
+                {
+                    switch ( $loginName )
+                    {
+                        $clusterServiceName
+                        {
+                            New-VerboseMessage -Message "The recommended login '$loginName' is not present. Trying with '$ntAuthoritySystemName'."
+                        }
+
+                        $ntAuthoritySystemName
+                        {
+                            New-VerboseMessage -Message "The login '$loginName' is not present."
                         }
                     }
                 }
@@ -328,14 +345,7 @@ function Set-TargetResource
             
             # Determine if the Availabilty Group exists on the instance
             if ( $availabilityGroup )
-            {
-                # Make sure we're communicating with the primary replica in order to make changes to the replica
-                if ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
-                {
-                    $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
-                    $availabilityGroup = $primaryServerObject.AvailabilityGroups[$Name]
-                }
-                
+            {                
                 # Make sure the replia exists on the instance. If the availability group exists, the replica should exist.
                 $availabilityGroupReplica = $availabilityGroup.AvailabilityReplicas[$Name]
                 if ( $availabilityGroupReplica )
@@ -425,7 +435,7 @@ function Set-TargetResource
                     # Make sure the instance defined as the primary replica in the parameters is actually the primary replica
                     if ( $primaryReplicaAvailabilityGroup.LocalReplicaRole -ne 'Primary' )
                     {
-                        New-VerboseMessage -Message "The instance '$PrimaryReplicaSQLInstanceName' is not currently the primary replica. Connecting to '$($primaryReplicaAvailabilityGroup.PrimaryReplicaServerName)'."
+                        New-VerboseMessage -Message "The instance '$PrimaryReplicaSQLServer\$PrimaryReplicaSQLInstanceName' is not currently the primary replica. Connecting to '$($primaryReplicaAvailabilityGroup.PrimaryReplicaServerName)'."
                         
                         $primaryReplicaServerObject = Connect-SQL -SQLServer $primaryReplicaAvailabilityGroup.PrimaryReplicaServerName
                         $primaryReplicaAvailabilityGroup = $primaryReplicaServerObject.AvailabilityGroups[$AvailabilityGroupName]
@@ -460,7 +470,7 @@ function Set-TargetResource
                     
                     if ( $ReadOnlyRoutingConnectionUrl )
                     {
-                        $newAvailabilityGroupReplicaParams.Add('ReadOnlyConnectionUrl',$ReadOnlyRoutingConnectionUrl)
+                        $newAvailabilityGroupReplicaParams.Add('ReadOnlyRoutingConnectionUrl',$ReadOnlyRoutingConnectionUrl)
                     }
 
                     if ( $ReadOnlyRoutingList )
@@ -485,7 +495,7 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType JoinAvailabilityGroupFailed -FormatArgs $Name,$SQLInstanceName -ErrorCategory OperationStopped
+                        throw New-TerminatingError -ErrorType JoinAvailabilityGroupFailed -FormatArgs $Name -ErrorCategory OperationStopped
                     }
                 }
                 # The Availability Group doesn't exist on the primary replica

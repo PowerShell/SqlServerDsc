@@ -74,6 +74,11 @@ HadrNotEnabled = HADR is not enabled.
 InstanceNotPrimaryReplica = The instance '{0}' is not the primary replica for the availability group '{1}'.
 RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' from the '{1}' instance.
 
+# AlwaysOnAvailabilityGroupReplica
+AvailabilityGroupNotFound = Unable to locate the availability group '{0}' on the instance '{1}'.
+JoinAvailabilityGroupFailed = Failed to join the availability group replica '{0}'.
+RemoveAvailabilityGroupReplicaFailed = Failed to remove the availability group replica '{0}' with the error '{1}'.
+
 # SQLServerHelper
 ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
 ExecuteNonQueryFailed = Executing non-query failed on database '{0}'.
