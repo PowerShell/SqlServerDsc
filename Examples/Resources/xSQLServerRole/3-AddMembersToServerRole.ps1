@@ -1,7 +1,8 @@
 <#
 .EXAMPLE
     This example shows how to ensure that the server role named 
-    serverRoleToDelete is not present on instance SQLServer\DSC.
+    AdminSqlforBI is present on instance SQLServer\DSC and only logins
+    CONTOSO\SQLAdmin and CONTOSO\SQLAdminBI are members of this role.
 #>
 
 Configuration Example
@@ -15,10 +16,11 @@ Configuration Example
     Import-DscResource -ModuleName xSqlServer
 
     node localhost {
-        xSQLServerRole Remove_ServerRole
+        xSQLServerRole Add_ServerRole_AdminSqlforBI
         {
-            Ensure = 'Absent'
-            ServerRole = "serverRoleToDelete"
+            Ensure = 'Present'
+            ServerRole = 'AdminSqlforBI'
+            Members = "CONTOSO\SQLAdmin","CONTOSO\SQLAdminBI"
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount

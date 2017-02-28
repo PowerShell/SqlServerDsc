@@ -1,7 +1,7 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the user account CONTOSO\SQLAdmin
-    has "dbcreator" and "securityadmin" SQL server roles.
+    This example shows how to ensure that the server role named 
+    AdminSqlforBI is present on instance SQLServer\DSC.
 #>
 
 Configuration Example
@@ -15,22 +15,10 @@ Configuration Example
     Import-DscResource -ModuleName xSqlServer
 
     node localhost {
-        xSQLServerLogin Add_LoginForSQLAdmin
+        xSQLServerRole Add_ServerRole_AdminSqlforBI
         {
             Ensure = 'Present'
-            Name = 'CONTOSO\SQLAdmin'
-            LoginType = 'WindowsUser'
-            SQLServer = 'SQLServer'
-            SQLInstanceName = 'DSC'
-            PsDscRunAsCredential = $SysAdminAccount
-        }
-
-        xSQLServerRole Add_ServerRoleToLogin
-        {
-            DependsOn = '[xSQLServerLogin]Add_LoginForSQLAdmin'
-            Ensure = 'Present'
-            Name = 'CONTOSO\SQLAdmin'
-            ServerRole = "dbcreator","securityadmin"
+            ServerRole = "AdminSqlforBI"
             SQLServer = 'SQLServer'
             SQLInstanceName = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount

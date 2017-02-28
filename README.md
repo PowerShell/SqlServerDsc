@@ -741,28 +741,6 @@ No description.
 
 None.
 
-### xSQLServerRole
-
-No description.
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
-
-#### Parameters
-
-* **[String] SQLInstanceName** _(Key)_: SQL Instance for the login
-* **[String] Name** _(Key)_: Name of the SQL Login to create
-* **[String] SQLServer** _(Required)_: SQL Server where login should be created
-* **[String[]] ServerRole** _(Required)_: Type of SQL role to add. { bulkadmin | dbcreator | diskadmin | processadmin | public | securityadmin | serveradmin | setupadmin | sysadmin }.
-* **[String] Ensure** _(Write)_: If the values should be present or absent. Valid values are 'Present' or 'Absent'. { *Present* | Absent }.
-
-#### Examples
-
-* [Add a server role to a login](/Examples/Resources/xSQLServerRole/1-AddServerRole.ps1)
-* [Remove server role from a login](/Examples/Resources/xSQLServerRole/2-RemoveServerRole.ps1)
-
 ### xSQLServerReplication
 
 No description.
@@ -787,6 +765,36 @@ No description.
 #### Examples
 
 None.
+
+### xSQLServerRole
+
+This resource is used to create or delete a server role and manage members of this role. For more information about server role, please read:
+
+* [Create a Server Role](https://msdn.microsoft.com/en-us/library/ee677627.aspx)
+* [Server-Level Roles](https://msdn.microsoft.com/en-us/library/ms188659.aspx)
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running SQL Server Database Engine 2008 or later.
+
+#### Parameters
+
+* **[String] Ensure** _(Write)_: An enumerated value that describes if the server role is added (Present) or dropped (Absent). { *Present* | Absent }.
+* **[String[]] Members** _(Write)_: The members the server role should have.
+* **[String[]] MembersToInclude** _(Write)_: The members the server role should include.
+* **[String[]] MembersToExclude** _(Write)_: The members the server role should exclude.
+* **[String] ServerRole** _(Key)_: The name of of SQL role to add or remove.
+* **[String] SQLServer** _(Key)_: The host name of the SQL Server to be configured.
+* **[String] SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+
+#### Examples
+
+* [Add server role](/Examples/Resources/xSQLServerRole/1-AddServerRole.ps1)
+* [Remove server role](/Examples/Resources/xSQLServerRole/2-RemoveServerRole.ps1)
+* [Add members to server role](/Examples/Resources/xSQLServerRole/3-AddMembersToServerRole.ps1)
+* [Members to include in server role](/Examples/Resources/xSQLServerRole/4-MembersToIncludeInServerRole.ps1)
+* [Members to exclude from server role](/Examples/Resources/xSQLServerRole/5-MembersToExcludeInServerRole.ps1)
 
 ### xSQLServerRSConfig
 
