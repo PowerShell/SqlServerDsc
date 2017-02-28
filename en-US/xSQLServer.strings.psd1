@@ -88,6 +88,7 @@ CreateDatabaseSetError = Failed to create the database named {2} on {0}\\{1}.
 DropDatabaseSetError = Failed to drop the database named {2} on {0}\\{1}.
 
 # SQLServerRole
+EnumMemberNamesServerRoleGetError = Failed to enumerate members name of the server role named {2} on {0}\\{1}.
 MembersToIncludeAndExcludeParamMustBeNull = The parameter MembersToInclude and/or MembersToExclude must be null when Members parameter is set.
 CreateServerRoleSetError = Failed to create the server role named {2} on {0}\\{1}.
 DropServerRoleSetError = Failed to drop the server role named {2} on {0}\\{1}.
