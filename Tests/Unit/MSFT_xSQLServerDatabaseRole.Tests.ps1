@@ -261,7 +261,7 @@ try
             }
 
             Context 'When passing multiple values to Role parameter' {
-                It 'Should not throw' {
+                It 'Should return the correct values' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLoginOne
