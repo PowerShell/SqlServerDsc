@@ -830,18 +830,15 @@ function Get-SQLAlwaysOnEndpoint
 
 <#
     .SYNOPSIS
-        Add a user to a server role in the SQL Server instance provided.
+    This cmdlet is used to return the owner of a SQL database
 
     .PARAMETER Sql
-        An object returned from Connect-SQL function.
+    This is an object of the SQL server that contains the result of Connect-SQL
 
-    .PARAMETER LoginName
-        String containing the login (user) which should be added as a member to the server role.
-
-    .PARAMETER ServerRole
-        String containing the name of the server role which the user will be added as a member to.
+    .PARAMETER Database
+    This is the SQL database that will be checking
 #>
-function Add-SqlServerRoleMember
+function Get-SqlDatabaseOwner
 {
     [CmdletBinding()]
     param
@@ -852,106 +849,46 @@ function Add-SqlServerRoleMember
 
         [ValidateNotNull()]
         [System.String]
-        $LoginName,
-
-        [ValidateNotNull()]
-        [System.String[]]
-        $ServerRole
-
+        $Database
     )
 
-    $sqlRole = $Sql.Roles
-    if ($sqlRole)
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $Sql.Databases
+    if ($sqlDatabase)
     {
-        try
+        if ($sqlDatabase[$Database])
         {
-            foreach ($currentServerRole in $ServerRole)
-            {
-                New-VerboseMessage -Message "Adding SQL login $LoginName in role $currentServerRole"
-                $sqlRole[$currentServerRole].AddMember($LoginName)
-            }
+            $Name = $sqlDatabase[$Database].Owner
         }
-        catch
+        else
         {
-            New-VerboseMessage -Message "Failed adding SQL login $LoginName in role $currentServerRole"
+            throw New-TerminatingError -ErrorType FailedToGetOwnerDatabase `
+                                       -FormatArgs @($Database) `
+                                       -ErrorCategory InvalidOperation
         }
     }
     else
     {
-        New-VerboseMessage -Message "Failed to getting SQL server roles"
+        Write-Verbose -Message 'Failed getting SQL databases'
     }
+
+    $Name
 }
 
 <#
     .SYNOPSIS
-        Remove a user in a server role in the SQL Server instance provided.
-
-    .PARAMETER Sql
-        An object returned from Connect-SQL function.
-
-    .PARAMETER LoginName
-        String containing the login (user) which should be removed as a member in the server role.
-
-    .PARAMETER ServerRole
-        String containing the name of the server role for which the user will be removed as a member.
-#>
-function Remove-SqlServerRoleMember
-{
-    [CmdletBinding()]
-    param
-    (
-        [ValidateNotNull()]
-        [System.Object]
-        $Sql,
-
-        [ValidateNotNull()]
-        [System.String]
-        $LoginName,
-
-        [ValidateNotNull()]
-        [System.String[]]
-        $ServerRole
-
-    )
-
-    $sqlRole = $Sql.Roles
-    if ($sqlRole)
-    {
-        try
-        {
-            foreach ($currentServerRole in $ServerRole)
-            {
-                New-VerboseMessage -Message "Deleting SQL login $LoginName in role $currentServerRole"
-                $sqlRole[$currentServerRole].DropMember($LoginName)
-            }
-        }
-        catch
-        {
-            New-VerboseMessage -Message "Failed deleting SQL login $LoginName in role $currentServerRole"
-        }
-    }
-    else
-    {
-        New-VerboseMessage -Message "Failed to getting SQL server roles"
-    }
-}
-
-<#
-    .SYNOPSIS
-        This validates if a user is a member of a server role.
-        The function returns $true is the login (user) is a member in the provided server role.
-        It will return $false if the user is not member of the provided server role.
+        This cmdlet is used to configure the owner of a SQL database.
 
     .PARAMETER SQL
-        An object returned from Connect-SQL function.
+        This is an object of the SQL server that contains the result of Connect-SQL.
 
-    .PARAMETER LoginName
-        String containing the login (user) which should be verified as a member in the server role.
+    .PARAMETER Name
+        This is the name of the desired owner for the SQL database.
 
-    .PARAMETER ServerRole
-        String containing the name of the server role which the user will be verified if a member of.
+    .PARAMETER Database
+        This is the SQL database that will be setting.
 #>
-function Confirm-SqlServerRoleMember
+function Set-SqlDatabaseOwner
 {
     [CmdletBinding()]
     param
@@ -962,47 +899,47 @@ function Confirm-SqlServerRoleMember
 
         [ValidateNotNull()]
         [System.String]
-        $LoginName,
+        $Name,
 
         [ValidateNotNull()]
-        [System.String[]]
-        $ServerRole
-
+        [System.String]
+        $Database
     )
 
-    $sqlRole = $Sql.Roles
-    if ($sqlRole)
+    Write-Verbose -Message 'Getting SQL Databases'
+    $sqlDatabase = $Sql.Databases
+    $sqlLogins = $Sql.Logins
+
+    if ($sqlDatabase -and $sqlLogins)
     {
-        foreach ($currentServerRole in $ServerRole)
+        if ($sqlDatabase[$Database])
         {
-            if ($sqlRole[$currentServerRole])
+            if ($sqlLogins[$Name])
             {
-                $membersInRole = $sqlRole[$currentServerRole].EnumMemberNames()
-                if ($membersInRole.Contains($LoginName))
+                try
                 {
-                    $confirmServerRole = $true
-                    New-VerboseMessage -Message "$LoginName is present in SQL role name $currentServerRole"
+                    $sqlDatabase[$Database].SetOwner($Name)
+                    New-VerboseMessage -Message "Owner of SQL Database name $Database is now $Name"
                 }
-                else
+                catch
                 {
-                    New-VerboseMessage -Message "$LoginName is absent in SQL role name $currentServerRole"
-                    $confirmServerRole = $false
+                    throw New-TerminatingError -ErrorType FailedToSetOwnerDatabase -ErrorCategory InvalidOperation -InnerException $_.Exception
                 }
             }
             else
             {
-                New-VerboseMessage -Message "SQL role name $currentServerRole is absent"
-                $confirmServerRole = $false
+                Write-Error -Message "SQL Login name $Name does not exist" -Category InvalidData
             }
+        }
+        else
+        {
+            Write-Error -Message "SQL Database name $Database does not exist" -Category InvalidData
         }
     }
     else
     {
-        New-VerboseMessage -Message "Failed getting SQL roles"
-        $confirmServerRole = $false
+        Write-Verbose -Message 'Failed getting SQL databases and logins'
     }
-
-    return $confirmServerRole
 }
 
 <#
