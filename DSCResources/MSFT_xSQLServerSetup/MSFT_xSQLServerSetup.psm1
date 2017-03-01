@@ -742,6 +742,9 @@ function Set-TargetResource
     $InstanceName = $InstanceName.ToUpper()
 
     $parametersToEvaluateTrailingSlash = @(
+        'InstanceDir',
+        'InstallSharedDir',
+        'InstallSharedWOWDir',       
         'InstallSQLDataDir',
         'SQLUserDBDir',
         'SQLUserDBLogDir',
@@ -761,9 +764,17 @@ function Set-TargetResource
         if ($PSBoundParameters.ContainsKey($parameterName))
         {
             $parameterValue = Get-Variable -Name $parameterName -ValueOnly
-            if ($parameterValue)
+            
+            # Trim backslash, but only if the path contains a full path and not just a qualifier. 
+            if ($parameterValue -and $parameterValue -notmatch '^[a-zA-Z]:\\$')
             {
                 Set-Variable -Name $parameterName -Value $parameterValue.TrimEnd('\')
+            }
+
+            # If the path only contains a qualifier but no backslash ('M:'), then a backslash is added ('M:\'). 
+            if ($parameterValue -match '^[a-zA-Z]:$')
+            {
+                Set-Variable -Name $parameterName -Value "$parameterValue\"
             }
         }
     }
@@ -1267,6 +1278,7 @@ function Set-TargetResource
     $process = StartWin32Process @processArguments
 
     New-VerboseMessage -Message $process
+
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments
 
     if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))

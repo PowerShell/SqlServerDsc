@@ -837,13 +837,15 @@ try
             }
 
             # Start by checking whether we have the same number of parameters
-            Write-Verbose 'Verifying argument count (expected vs actual)' -Verbose
-            $mockStartWin32ProcessExpectedArgument.Keys.Count | Should BeExactly $argumentHashTable.Keys.Count
+            Write-Verbose 'Verifying setup argument count (expected vs actual)' -Verbose
+            
+            $argumentHashTable.Keys.Count | Should BeExactly $mockStartWin32ProcessExpectedArgument.Keys.Count
 
+            Write-Verbose 'Verifying actual setup arguments against expected setup arguments' -Verbose
             foreach ($argumentKey in $mockStartWin32ProcessExpectedArgument.Keys)
             {
-                $argumentPassed = $argumentHashTable.ContainsKey($argumentKey)
-                $argumentPassed | Should Be $true
+                $argumentKeyName = $argumentHashTable.GetEnumerator() | Where-Object { $_.Name -eq $argumentKey } | Select-Object -ExpandProperty Name
+                $argumentKeyName | Should Be $argumentKey
 
                 $argumentValue = $argumentHashTable.$argumentKey
                 $argumentValue | Should Be $mockStartWin32ProcessExpectedArgument.$argumentKey
@@ -2664,27 +2666,8 @@ try
                     $Name -eq 'ImagePath'
                 } -MockWith $mockGetItemProperty_ServicesAnalysis -Verifiable
 
-                # Mocking SharedDirectory
-                Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
-                } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable
-
-                Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
-                } -MockWith $mockGetItem_SharedDirectory -Verifiable
-
-                # Mocking SharedWowDirectory
-                Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
-                } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable
-
-                Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
-                } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
+                # Mocking SharedDirectory and SharedWowDirectory (when not previously installed)
+                Mock -CommandName Get-ItemProperty -Verifiable
 
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
                     $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
@@ -2711,20 +2694,6 @@ try
 
                 Context "When SQL Server version is $mockSqlMajorVersion and the system is not in the desired state for a default instance" {
                     BeforeEach {
-                        $testParameters = $mockDefaultParameters.Clone()
-                        $testParameters += @{
-                            InstanceName = $mockDefaultInstance_InstanceName
-                            SourceCredential = $null
-                            SourcePath = $mockSourcePath
-                            ProductKey = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
-                            SQLSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
-                        }
-
-                        if ( $mockSqlMajorVersion -eq 13 )
-                        {
-                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
-                        }
-
                         Mock -CommandName New-SmbMapping -Verifiable
                         Mock -CommandName Remove-SmbMapping -Verifiable
                         Mock -CommandName Start-Process -Verifiable
@@ -2745,6 +2714,25 @@ try
                     }
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters += @{
+                            InstanceName = $mockDefaultInstance_InstanceName
+                            SourceCredential = $null
+                            SourcePath = $mockSourcePath
+                            ProductKey = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
+                            SQLSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
+                            ASSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
+                            InstanceDir = 'D:'
+                            InstallSQLDataDir = 'E:'
+                            InstallSharedDir = 'C:\Program Files\Microsoft SQL Server'
+                            InstallSharedWOWDir = 'C:\Program Files (x86)\Microsoft SQL Server'
+                        }
+
+                        if ( $mockSqlMajorVersion -eq 13 )
+                        {
+                            $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
+                        }
+
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
@@ -2753,8 +2741,12 @@ try
                             InstanceName = 'MSSQLSERVER'
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
-                            ASSysAdminAccounts = 'COMPANY\sqladmin'
+                            ASSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                             PID = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
+                            InstanceDir = 'D:\'
+                            InstallSQLDataDir = 'E:\'
+                            InstallSharedDir = 'C:\Program Files\Microsoft SQL Server'
+                            InstallSharedWOWDir = 'C:\Program Files (x86)\Microsoft SQL Server'
                         }
 
                         { Set-TargetResource @testParameters } | Should Not Throw
@@ -2789,6 +2781,13 @@ try
 
                     if( $mockSqlMajorVersion -eq 13 ) {
                         It 'Should throw when feature parameter contains ''SSMS'' when installing SQL Server 2016' {
+                            $testParameters = $mockDefaultParameters.Clone()
+                            $testParameters += @{
+                                InstanceName = $mockDefaultInstance_InstanceName
+                                SourceCredential = $null
+                                SourcePath = $mockSourcePath
+                            }
+
                             $testParameters.Features = 'SSMS'
                             $mockStartWin32ProcessExpectedArgument = @{}
 
@@ -2796,6 +2795,13 @@ try
                         }
 
                         It 'Should throw when feature parameter contains ''ADV_SSMS'' when installing SQL Server 2016' {
+                            $testParameters = $mockDefaultParameters.Clone()
+                            $testParameters += @{
+                                InstanceName = $mockDefaultInstance_InstanceName
+                                SourceCredential = $null
+                                SourcePath = $mockSourcePath
+                            }
+
                             $testParameters.Features = 'ADV_SSMS'
                             $mockStartWin32ProcessExpectedArgument = @{}
 
@@ -2803,6 +2809,13 @@ try
                         }
                     } else {
                         It 'Should set the system in the desired state when feature is SSMS' {
+                            $testParameters = $mockDefaultParameters.Clone()
+                            $testParameters += @{
+                                InstanceName = $mockDefaultInstance_InstanceName
+                                SourceCredential = $null
+                                SourcePath = $mockSourcePath
+                            }
+
                             $testParameters.Features = 'SSMS'
 
                             $mockStartWin32ProcessExpectedArgument = @{
@@ -2811,7 +2824,6 @@ try
                                 Action = 'Install'
                                 InstanceName = 'MSSQLSERVER'
                                 Features = 'SSMS'
-                                PID = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
                             }
 
                             { Set-TargetResource @testParameters } | Should Not Throw
@@ -2840,6 +2852,13 @@ try
                         }
 
                         It 'Should set the system in the desired state when feature is ADV_SSMS' {
+                            $testParameters = $mockDefaultParameters.Clone()
+                            $testParameters += @{
+                                InstanceName = $mockDefaultInstance_InstanceName
+                                SourceCredential = $null
+                                SourcePath = $mockSourcePath
+                            }
+
                             $testParameters.Features = 'ADV_SSMS'
 
                             $mockStartWin32ProcessExpectedArgument = @{
@@ -2848,7 +2867,6 @@ try
                                 Action = 'Install'
                                 InstanceName = 'MSSQLSERVER'
                                 Features = 'ADV_SSMS'
-                                PID = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
                             }
 
                             { Set-TargetResource @testParameters } | Should Not Throw
@@ -2892,6 +2910,28 @@ try
                         {
                             $testParameters.Features = $testParameters.Features -replace ',SSMS,ADV_SSMS',''
                         }
+
+                        # Mocking SharedDirectory (when previously installed and should not be installed again).
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
+                        } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable
+
+                        Mock -CommandName Get-Item -ParameterFilter {
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
+                        } -MockWith $mockGetItem_SharedDirectory -Verifiable
+
+                        # Mocking SharedWowDirectory (when previously installed and should not be installed again).
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
+                        } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable
+
+                        Mock -CommandName Get-Item -ParameterFilter {
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
+                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
+                        } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
 
                         Mock -CommandName New-SmbMapping -Verifiable
                         Mock -CommandName Remove-SmbMapping -Verifiable
