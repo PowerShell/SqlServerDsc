@@ -662,7 +662,7 @@ try
             }
 
             Context 'When the system is not in the desired state, Ensure is set to Absent' {
-                It 'Should not throw any error when login is a member of the role' {
+                It 'Should not throw any error when removing login as a member of the role' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name        = $mockSqlServerLoginTwo
