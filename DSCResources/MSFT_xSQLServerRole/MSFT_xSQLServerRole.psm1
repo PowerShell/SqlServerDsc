@@ -171,7 +171,8 @@ function Set-TargetResource
                 {
                     try
                     {
-                        $sqlServerRoleObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $sqlServerObject,$ServerRole
+                        $sqlServerRoleObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.ServerRole `
+                                                                  -ArgumentList $sqlServerObject,$ServerRole
                         if ($sqlServerRoleObjectToCreate)
                         {
                             Write-Verbose -Message "Adding to SQL the server role $ServerRole"
@@ -188,10 +189,10 @@ function Set-TargetResource
                     }
                 }
 
-                $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRole].EnumMemberNames()
-
                 if ($Members)
                 {
+                    $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRole].EnumMemberNames()
+
                     if ($MembersToInclude -or $MembersToExclude)
                     {
                         throw New-TerminatingError -ErrorType MembersToIncludeAndExcludeParamMustBeNull `
@@ -199,30 +200,21 @@ function Set-TargetResource
                                                    -ErrorCategory InvalidArgument  
                     }
 
-                    $missingMembers = (Compare-Object -ReferenceObject $Members -DifferenceObject $memberNamesInRoleObject).InputObject
-
-                    foreach ($missingMember in $missingMembers)
+                    foreach ($memberName in $memberNamesInRoleObject)
                     {
-                        if ( -not ($sqlServerObject.Logins[$missingMember]) )
+                        if ( -not ($Members.Contains($memberName)))
                         {
-                            throw New-TerminatingError -ErrorType LoginNotFound `
-                                                       -FormatArgs @($missingMember, $SQLServer, $SQLInstanceName) `
-                                                       -ErrorCategory ObjectNotFound
+                            Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                          -LoginName $memberName `
+                                                          -ServerRole $ServerRole
                         }
+                    }
 
-                        try
-                        {
-                            Write-Verbose -Message "Adding SQL login $missingMember in role $ServerRole"
-                            $sqlServerObject.Roles[$ServerRole].AddMember($missingMember)
-                            New-VerboseMessage -Message "SQL Role $ServerRole for $missingMember, successfullly added"
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType AddMemberServerRoleSetError `
-                                                        -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$missingMember) `
-                                                        -ErrorCategory InvalidOperation `
-                                                        -InnerException $_.Exception
-                        }
+                    foreach ($memberToAdd in $Members)
+                    {
+                        Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                   -LoginName $memberToAdd `
+                                                   -ServerRole $ServerRole
                     }
                 }
                 
@@ -230,26 +222,9 @@ function Set-TargetResource
                 {
                     foreach ($memberToInclude in $MembersToInclude)
                     {
-                        if ( -not ($sqlServerObject.Logins[$memberToInclude]) )
-                        {
-                            throw New-TerminatingError -ErrorType LoginNotFound `
-                                                       -FormatArgs @($memberToInclude, $SQLServer, $SQLInstanceName) `
-                                                       -ErrorCategory ObjectNotFound
-                        }
-
-                        try
-                        {
-                            Write-Verbose -Message "Adding SQL login $memberToInclude in role $ServerRole"
-                            $sqlServerObject.Roles[$ServerRole].AddMember($memberToInclude)
-                            New-VerboseMessage -Message "SQL Role $ServerRole for $memberToInclude, successfullly added"
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType AddMemberServerRoleSetError `
-                                                        -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$memberToInclude) `
-                                                        -ErrorCategory InvalidOperation `
-                                                        -InnerException $_.Exception
-                        }
+                        Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                   -LoginName $memberToInclude `
+                                                   -ServerRole $ServerRole
                     }
                 }
 
@@ -257,26 +232,9 @@ function Set-TargetResource
                 {
                     foreach ($memberToExclude in $MembersToExclude)
                     {
-                        if ( -not ($sqlServerObject.Logins[$memberToExclude]) )
-                        {
-                            throw New-TerminatingError -ErrorType LoginNotFound `
-                                                       -FormatArgs @($memberToExclude, $SQLServer, $SQLInstanceName) `
-                                                       -ErrorCategory ObjectNotFound
-                        }
-
-                        try
-                        {
-                            Write-Verbose -Message "Deleting SQL login $memberToExclude from role $ServerRole"
-                            $sqlServerObject.Roles[$ServerRole].DropMember($memberToExclude)
-                            New-VerboseMessage -Message "SQL Role $ServerRole for $memberToExclude, successfullly dropped"
-                        }
-                        catch
-                        {
-                            throw New-TerminatingError -ErrorType DropMemberServerRoleSetError `
-                                                        -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$memberToExclude) `
-                                                        -ErrorCategory InvalidOperation `
-                                                        -InnerException $_.Exception
-                        }
+                        Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                      -LoginName $memberToExclude `
+                                                      -ServerRole $ServerRole
                     }
                 }
             }
@@ -426,6 +384,118 @@ function Test-TargetResource
     }
 
     $isServerRoleInDesiredState
+}
+
+<#
+    .SYNOPSIS
+        Add a user to a server role in the SQL Server instance provided.
+
+    .PARAMETER SqlServerObject
+        An object returned from Connect-SQL function.
+
+    .PARAMETER LoginName
+        String containing the login (user) which should be added as a member to the server role.
+
+    .PARAMETER ServerRole
+        String containing the name of the server role which the user will be added as a member to.
+#>
+function Add-SqlDscServerRoleMember
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]
+        $SqlServerObject,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $LoginName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ServerRole
+    )
+
+    if ( -not ($SqlServerObject.Logins[$LoginName]) )
+    {
+        throw New-TerminatingError -ErrorType LoginNotFound `
+                                   -FormatArgs @($LoginName, $SQLServer, $SQLInstanceName) `
+                                   -ErrorCategory ObjectNotFound
+    }
+
+    try
+    {
+        Write-Verbose -Message "Adding SQL login $LoginName in role $ServerRole"
+        $SqlServerObject.Roles[$ServerRole].AddMember($LoginName)
+        New-VerboseMessage -Message "SQL Role $ServerRole for $LoginName, successfullly added"
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType AddMemberServerRoleSetError `
+                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$LoginName) `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
+    }
+}
+
+<#
+    .SYNOPSIS
+        Remove a user in a server role in the SQL Server instance provided.
+
+    .PARAMETER SqlServerObject
+        An object returned from Connect-SQL function.
+
+    .PARAMETER LoginName
+        String containing the login (user) which should be removed as a member in the server role.
+
+    .PARAMETER ServerRole
+        String containing the name of the server role for which the user will be removed as a member.
+#>
+function Remove-SqlDscServerRoleMember
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]
+        $SqlServerObject,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $LoginName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ServerRole
+    )
+
+    if ( -not ($SqlServerObject.Logins[$LoginName]) )
+    {
+        throw New-TerminatingError -ErrorType LoginNotFound `
+                                    -FormatArgs @($LoginName, $SQLServer, $SQLInstanceName) `
+                                    -ErrorCategory ObjectNotFound
+    }
+
+    try
+    {
+        Write-Verbose -Message "Deleting SQL login $LoginName from role $ServerRole"
+        $SqlServerObject.Roles[$ServerRole].DropMember($LoginName)
+        New-VerboseMessage -Message "SQL Role $ServerRole for $LoginName, successfullly dropped"
+    }
+    catch
+    {
+        throw New-TerminatingError -ErrorType DropMemberServerRoleSetError `
+                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$LoginName) `
+                                   -ErrorCategory InvalidOperation `
+                                   -InnerException $_.Exception
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
