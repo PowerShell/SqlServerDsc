@@ -39,7 +39,7 @@ try
         $mockSqlServerLoginOne                  = 'CONTOSO\John'
         $mockSqlServerLoginTwo                  = 'CONTOSO\Kelly'
         $mockSqlServerLoginTree                 = 'CONTOSO\Lucy'
-        $mockSqlServerLoginfour                 = 'CONTOSO\Steve'
+        $mockSqlServerLoginFour                 = 'CONTOSO\Steve'
         $mockEnumMemberNames                    = @($mockSqlServerLoginOne,$mockSqlServerLoginTwo)
         $mockSqlServerLoginType                 = 'WindowsUser'
         $mockExpectedServerRoleToDrop           = 'ServerRoleToDrop'
@@ -272,6 +272,25 @@ try
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
+            }
+
+            Context 'When the system is not in the desired state and ensure parameter is set to Present' {            
+                It 'Should return the test as false when desired members are not in desired server role' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRole = $mockSqlServerRole
+                        Members = @($mockSqlServerLoginTree,$mockSqlServerLoginFour)
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
             }
 
             Context 'When the system is in the desired state and ensure parameter is set to Absent' {            
@@ -670,6 +689,28 @@ try
                     }
 
                     $throwInvalidOperation = ('Failed to drop member CONTOSO\Kelly to the server role named AdminSqlforBI ' + `                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "DropMember" ' + `                                              'with "1" argument(s): "Mock DropMember Method was called with invalid operation."')
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
+                It 'Should call the mock function Connect-SQL' {
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                }
+            
+            }
+
+            Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
+                It 'Should thrown the correct error when login does not exist' {
+                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
+                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        ServerRole = $mockSqlServerRole
+                        MembersToExclude = 'KingJulian'
+                    }
+
+                    $throwInvalidOperation = ("Login 'KingJulian' does not exist on SQL server 'localhost\MSSQLSERVER'.")
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
