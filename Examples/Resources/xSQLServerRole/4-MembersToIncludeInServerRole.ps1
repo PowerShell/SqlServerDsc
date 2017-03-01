@@ -18,12 +18,12 @@ Configuration Example
     node localhost {
         xSQLServerRole Add_ServerRole_AdminSqlforBI
         {
-            Ensure = 'Present'
-            ServerRole = 'AdminSqlforBI'
-            MembersToInclude = "CONTOSO\John","CONTOSO\Kelly"
-            SQLServer = 'SQLServer'
-            SQLInstanceName = 'DSC'
-            PsDscRunAsCredential = $SysAdminAccount
+            Ensure                  = 'Present'
+            ServerRoleName          = 'AdminSqlforBI'
+            MembersToInclude        = "CONTOSO\John","CONTOSO\Kelly"
+            SQLServer               = 'SQLServer'
+            SQLInstanceName         = 'DSC'
+            PsDscRunAsCredential    = $SysAdminAccount
         }
     }
 }

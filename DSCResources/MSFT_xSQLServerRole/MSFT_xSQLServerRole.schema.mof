@@ -5,7 +5,7 @@ class MSFT_xSQLServerRole : OMI_BaseResource
     [Write, Description("The members the server role should have.")] String Members[];
     [Write, Description("The members the server role should include.")] String MembersToInclude[];
     [Write, Description("The members the server role should exclude.")] String MembersToExclude[];   
-    [Key, Description("The name of of SQL role to add or remove")] String ServerRole;
+    [Key, Description("The name of of SQL role to add or remove")] String ServerRoleName;
     [Key, Description("The host name of the SQL Server to be configured.")] String SQLServer;
     [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
 };

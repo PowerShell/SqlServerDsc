@@ -784,7 +784,7 @@ This resource is used to create or delete a server role and manage members of th
 * **[String[]] Members** _(Write)_: The members the server role should have.
 * **[String[]] MembersToInclude** _(Write)_: The members the server role should include.
 * **[String[]] MembersToExclude** _(Write)_: The members the server role should exclude.
-* **[String] ServerRole** _(Key)_: The name of of SQL role to add or remove.
+* **[String] ServerRoleName** _(Key)_: The name of of SQL role to add or remove.
 * **[String] SQLServer** _(Key)_: The host name of the SQL Server to be configured.
 * **[String] SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
 
