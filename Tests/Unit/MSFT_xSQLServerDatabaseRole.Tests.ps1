@@ -269,7 +269,15 @@ try
                         Role        = @($mockSqlDatabaseRole,$mockSqlDatabaseRoleSecond)
                     }
 
-                    { Get-TargetResource @testParameters } | Should Not Throw 
+                    $result = Get-TargetResource @testParameters
+                }
+
+                It 'Should return the same values as passed as parameters' {
+                    $result.SQLServer | Should Be $testParameters.SQLServer
+                    $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
+                    $result.Name | Should Be $testParameters.Name
+                    $result.Database | Should Be $testParameters.Database
+                    $result.Role | Should Be $testParameters.Role
                 }
 
                 It 'Should call the mock function Connect-SQL' {
