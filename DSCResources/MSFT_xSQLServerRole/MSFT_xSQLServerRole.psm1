@@ -5,7 +5,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .SYNOPSIS
     This function gets the sql server role properties.
     
-    .PARAMETER ServerRole
+    .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
     .PARAMETER SQLServer
@@ -23,7 +23,7 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerRole,
+        $ServerRoleName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -41,8 +41,8 @@ function Get-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message "Getting SQL Server role $ServerRole properties."
-        if ($sqlServerRoleObject = $sqlServerObject.Roles[$ServerRole])
+        Write-Verbose -Message "Getting SQL Server role $ServerRoleName properties."
+        if ($sqlServerRoleObject = $sqlServerObject.Roles[$ServerRoleName])
         {
             $ensure = 'Present'
 
@@ -53,7 +53,7 @@ function Get-TargetResource
             catch
             {
                 throw New-TerminatingError -ErrorType EnumMemberNamesServerRoleGetError `
-                                           -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole) `
+                                           -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRoleName) `
                                            -ErrorCategory InvalidOperation `
                                            -InnerException $_.Exception
             }
@@ -63,7 +63,7 @@ function Get-TargetResource
     $returnValue = @{
         Ensure          = $ensure
         Members         = $membersInRole
-        ServerRole      = $ServerRole
+        ServerRoleName  = $ServerRoleName
         SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
@@ -87,7 +87,7 @@ function Get-TargetResource
     .PARAMETER MembersToExclude
     The members the server role should exclude.
 
-    .PARAMETER ServerRole
+    .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
     .PARAMETER SQLServer
@@ -123,7 +123,7 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerRole,
+        $ServerRoleName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -140,7 +140,7 @@ function Set-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message "Setting SQL Server role $ServerRole properties."
+        Write-Verbose -Message "Setting SQL Server role $ServerRoleName properties."
         
         switch ($Ensure)
         {
@@ -148,18 +148,18 @@ function Set-TargetResource
             {
                 try 
                 {
-                    $sqlServerRoleObjectToDrop = $sqlServerObject.Roles[$ServerRole]
+                    $sqlServerRoleObjectToDrop = $sqlServerObject.Roles[$ServerRoleName]
                     if ($sqlServerRoleObjectToDrop)
                     {
-                        Write-Verbose -Message "Deleting to SQL the server role $ServerRole"
+                        Write-Verbose -Message "Deleting to SQL the server role $ServerRoleName"
                         $sqlServerRoleObjectToDrop.Drop()
-                        New-VerboseMessage -Message "Dropped server role $ServerRole"
+                        New-VerboseMessage -Message "Dropped server role $ServerRoleName"
                     }
                 }
                 catch
                 {
                     throw New-TerminatingError -ErrorType DropServerRoleSetError `
-                                               -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole) `
+                                               -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRoleName) `
                                                -ErrorCategory InvalidOperation `
                                                -InnerException $_.Exception
                 }
@@ -167,23 +167,23 @@ function Set-TargetResource
             
             'Present'
             {              
-                if ($null -eq $sqlServerObject.Roles[$ServerRole])
+                if ($null -eq $sqlServerObject.Roles[$ServerRoleName])
                 {
                     try
                     {
-                        $sqlServerRoleObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.ServerRole `
-                                                                  -ArgumentList $sqlServerObject,$ServerRole
+                        $sqlServerRoleObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.ServerRoleName `
+                                                                  -ArgumentList $sqlServerObject,$ServerRoleName
                         if ($sqlServerRoleObjectToCreate)
                         {
-                            Write-Verbose -Message "Adding to SQL the server role $ServerRole"
+                            Write-Verbose -Message "Adding to SQL the server role $ServerRoleName"
                             $sqlServerRoleObjectToCreate.Create()
-                            New-VerboseMessage -Message "Created server role $ServerRole"
+                            New-VerboseMessage -Message "Created server role $ServerRoleName"
                         }
                     }
                     catch
                     {
                         throw New-TerminatingError -ErrorType CreateServerRoleSetError `
-                                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole) `
+                                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRoleName) `
                                                    -ErrorCategory InvalidOperation `
                                                    -InnerException $_.Exception
                     }
@@ -191,7 +191,7 @@ function Set-TargetResource
 
                 if ($Members)
                 {
-                    $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRole].EnumMemberNames()
+                    $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRoleName].EnumMemberNames()
 
                     if ($MembersToInclude -or $MembersToExclude)
                     {
@@ -206,7 +206,7 @@ function Set-TargetResource
                         {
                             Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                                           -LoginName $memberName `
-                                                          -ServerRole $ServerRole
+                                                          -ServerRoleName $ServerRoleName
                         }
                     }
 
@@ -214,7 +214,7 @@ function Set-TargetResource
                     {
                         Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                                    -LoginName $memberToAdd `
-                                                   -ServerRole $ServerRole
+                                                   -ServerRoleName $ServerRoleName
                     }
                 }
                 
@@ -224,7 +224,7 @@ function Set-TargetResource
                     {
                         Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                                    -LoginName $memberToInclude `
-                                                   -ServerRole $ServerRole
+                                                   -ServerRoleName $ServerRoleName
                     }
                 }
 
@@ -234,7 +234,7 @@ function Set-TargetResource
                     {
                         Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                                       -LoginName $memberToExclude `
-                                                      -ServerRole $ServerRole
+                                                      -ServerRoleName $ServerRoleName
                     }
                 }
             }
@@ -259,7 +259,7 @@ function Set-TargetResource
     .PARAMETER MembersToExclude
     The members the server role should exclude.
 
-    .PARAMETER ServerRole
+    .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
     .PARAMETER SQLServer
@@ -296,7 +296,7 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerRole,
+        $ServerRoleName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -309,12 +309,12 @@ function Test-TargetResource
         $SQLInstanceName
     )
 
-    Write-Verbose -Message "Testing SQL Server role $ServerRole properties."
+    Write-Verbose -Message "Testing SQL Server role $ServerRoleName properties."
     
     $getTargetResourceParameters = @{
         SQLInstanceName = $PSBoundParameters.SQLInstanceName
         SQLServer       = $PSBoundParameters.SQLServer
-        ServerRole      = $PSBoundParameters.ServerRole
+        ServerRoleName      = $PSBoundParameters.ServerRoleName
     }
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters    
@@ -326,7 +326,7 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Absent')
             {
-                New-VerboseMessage -Message "Ensure is set to Absent. The existing role $ServerRole should be dropped"
+                New-VerboseMessage -Message "Ensure is set to Absent. The existing role $ServerRoleName should be dropped"
                 $isServerRoleInDesiredState = $false
             }
         }
@@ -335,7 +335,7 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Present')
             {
-                New-VerboseMessage -Message "Ensure is set to Present. The missing role $ServerRole should be added"
+                New-VerboseMessage -Message "Ensure is set to Present. The missing role $ServerRoleName should be added"
                 $isServerRoleInDesiredState = $false
             }
             else
@@ -351,7 +351,7 @@ function Test-TargetResource
 
                     if ( $null -ne (Compare-Object -ReferenceObject $getTargetResourceResult.Members -DifferenceObject $Members))
                     {
-                        New-VerboseMessage -Message "The desired members are not present in server role $ServerRole"
+                        New-VerboseMessage -Message "The desired members are not present in server role $ServerRoleName"
                         $isServerRoleInDesiredState = $false
                     }
                 }
@@ -362,7 +362,7 @@ function Test-TargetResource
                     {
                         if ( -not ($getTargetResourceResult.Members.Contains($memberToInclude)))
                         {
-                            New-VerboseMessage -Message "The included members are not present in server role $ServerRole"
+                            New-VerboseMessage -Message "The included members are not present in server role $ServerRoleName"
                             $isServerRoleInDesiredState = $false
                         }
                     }
@@ -374,7 +374,7 @@ function Test-TargetResource
                     {
                         if ($getTargetResourceResult.Members.Contains($memberToExclude))
                         {
-                            New-VerboseMessage -Message "The excluded members are present in server role $ServerRole"
+                            New-VerboseMessage -Message "The excluded members are present in server role $ServerRoleName"
                             $isServerRoleInDesiredState = $false
                         }
                     }
@@ -396,7 +396,7 @@ function Test-TargetResource
     .PARAMETER LoginName
         String containing the login (user) which should be added as a member to the server role.
 
-    .PARAMETER ServerRole
+    .PARAMETER ServerRoleName
         String containing the name of the server role which the user will be added as a member to.
 #>
 function Add-SqlDscServerRoleMember
@@ -417,7 +417,7 @@ function Add-SqlDscServerRoleMember
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerRole
+        $ServerRoleName
     )
 
     if ( -not ($SqlServerObject.Logins[$LoginName]) )
@@ -429,14 +429,14 @@ function Add-SqlDscServerRoleMember
 
     try
     {
-        Write-Verbose -Message "Adding SQL login $LoginName in role $ServerRole"
-        $SqlServerObject.Roles[$ServerRole].AddMember($LoginName)
-        New-VerboseMessage -Message "SQL Role $ServerRole for $LoginName, successfullly added"
+        Write-Verbose -Message "Adding SQL login $LoginName in role $ServerRoleName"
+        $SqlServerObject.Roles[$ServerRoleName].AddMember($LoginName)
+        New-VerboseMessage -Message "SQL Role $ServerRoleName for $LoginName, successfullly added"
     }
     catch
     {
         throw New-TerminatingError -ErrorType AddMemberServerRoleSetError `
-                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$LoginName) `
+                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRoleName,$LoginName) `
                                    -ErrorCategory InvalidOperation `
                                    -InnerException $_.Exception
     }
@@ -452,7 +452,7 @@ function Add-SqlDscServerRoleMember
     .PARAMETER LoginName
         String containing the login (user) which should be removed as a member in the server role.
 
-    .PARAMETER ServerRole
+    .PARAMETER ServerRoleName
         String containing the name of the server role for which the user will be removed as a member.
 #>
 function Remove-SqlDscServerRoleMember
@@ -473,7 +473,7 @@ function Remove-SqlDscServerRoleMember
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerRole
+        $ServerRoleName
     )
 
     if ( -not ($SqlServerObject.Logins[$LoginName]) )
@@ -485,14 +485,14 @@ function Remove-SqlDscServerRoleMember
 
     try
     {
-        Write-Verbose -Message "Deleting SQL login $LoginName from role $ServerRole"
-        $SqlServerObject.Roles[$ServerRole].DropMember($LoginName)
-        New-VerboseMessage -Message "SQL Role $ServerRole for $LoginName, successfullly dropped"
+        Write-Verbose -Message "Deleting SQL login $LoginName from role $ServerRoleName"
+        $SqlServerObject.Roles[$ServerRoleName].DropMember($LoginName)
+        New-VerboseMessage -Message "SQL Role $ServerRoleName for $LoginName, successfullly dropped"
     }
     catch
     {
         throw New-TerminatingError -ErrorType DropMemberServerRoleSetError `
-                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRole,$LoginName) `
+                                   -FormatArgs @($SQLServer,$SQLInstanceName,$ServerRoleName,$LoginName) `
                                    -ErrorCategory InvalidOperation `
                                    -InnerException $_.Exception
     }

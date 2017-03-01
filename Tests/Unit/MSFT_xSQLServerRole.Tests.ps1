@@ -166,7 +166,7 @@ try
                 It 'Should return the state as absent' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        ServerRole = 'UnknownUser'
+                        ServerRoleName = 'UnknownUser'
                     }
 
                     $result = Get-TargetResource @testParameters
@@ -180,7 +180,7 @@ try
                 It 'Should return the same values as passed as parameters' {
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.ServerRole | Should Be $testParameters.ServerRole
+                    $result.ServerRoleName | Should Be $testParameters.ServerRoleName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -192,7 +192,7 @@ try
                 It 'Should return the state as present' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                     }
 
                     $result = Get-TargetResource @testParameters
@@ -202,7 +202,7 @@ try
                 It 'Should return the same values as passed as parameters' {
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
-                    $result.ServerRole | Should Be $testParameters.ServerRole
+                    $result.ServerRoleName | Should Be $testParameters.ServerRoleName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -216,11 +216,13 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                     }
                     
                     $throwInvalidOperation = ('Failed to enumerate members name of the server role ' + `
-                                              'named AdminSqlforBI on localhost\MSSQLSERVER. InnerException: ' + `                                              'Exception calling "EnumMemberNames" with "0" argument(s): ' + `                                              '"Mock EnumMemberNames Method was called with invalid operation."')
+                                              'named AdminSqlforBI on localhost\MSSQLSERVER. InnerException: ' + `
+                                              'Exception calling "EnumMemberNames" with "0" argument(s): ' + `
+                                              '"Mock EnumMemberNames Method was called with invalid operation."')
 
                     { Get-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -245,7 +247,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Absent'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -262,7 +264,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = 'newServerRole'
+                        ServerRoleName = 'newServerRole'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -279,7 +281,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = @($mockSqlServerLoginTree,$mockSqlServerLoginFour)
                     }
 
@@ -298,7 +300,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Absent'
-                        ServerRole = 'newServerRole'
+                        ServerRoleName = 'newServerRole'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -315,7 +317,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = $mockEnumMemberNames
                     }
 
@@ -334,12 +336,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = $mockEnumMemberNames
                         MembersToInclude = $mockSqlServerLoginTree
                     }
 
-                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `                                              'must be null when Members parameter is set.')
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
 
                     { Test-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -355,7 +358,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToInclude = $mockSqlServerLoginTwo
                     }
 
@@ -374,7 +377,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToInclude = $mockSqlServerLoginTree
                     }
 
@@ -393,12 +396,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = $mockEnumMemberNames
                         MembersToExclude = $mockSqlServerLoginTwo
                     }
 
-                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `                                              'must be null when Members parameter is set.')
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
 
                     { Test-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -414,7 +418,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToExclude = $mockSqlServerLoginTree
                     }
 
@@ -433,7 +437,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToExclude = $mockSqlServerLoginTwo
                     }
 
@@ -454,7 +458,7 @@ try
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewObjectServerRole -ParameterFilter {
-                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRole'
+                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
                 } 
             }
            
@@ -465,7 +469,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Absent'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                     }
          
                     { Set-TargetResource @testParameters } | Should Not Throw
@@ -483,9 +487,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Absent'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                     }
-                                        $throwInvalidOperation = ('Failed to drop the server role named AdminSqlforBI on ' + `                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `                                              '"Drop" with "0" argument(s): "Mock Drop Method ' + `                                              'was called with invalid operation."')
+                    
+                    $throwInvalidOperation = ('Failed to drop the server role named AdminSqlforBI on ' + `
+                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `
+                                              '"Drop" with "0" argument(s): "Mock Drop Method ' + `
+                                              'was called with invalid operation."')
                     
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
 
@@ -503,7 +511,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRoleAdd
+                        ServerRoleName = $mockSqlServerRoleAdd
                     }
          
                     { Set-TargetResource @testParameters } | Should Not Throw
@@ -514,9 +522,9 @@ try
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
 
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRole' {
+                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRoleName' {
                     Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRole'
+                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
                     } -Scope Context
                 }
             }
@@ -529,10 +537,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRoleAdd
+                        ServerRoleName = $mockSqlServerRoleAdd
                     }
          
-                    $throwInvalidOperation = ('Failed to create the server role named ServerRoleToAdd on ' + `                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `                                              '"Create" with "0" argument(s): "Mock Create Method ' + `                                              'was called with invalid operation."')
+                    $throwInvalidOperation = ('Failed to create the server role named ServerRoleToAdd on ' + `
+                                              'localhost\MSSQLSERVER. InnerException: Exception calling ' + `
+                                              '"Create" with "0" argument(s): "Mock Create Method ' + `
+                                              'was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
 
@@ -542,9 +553,9 @@ try
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
 
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRole' {
+                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.ServerRoleName' {
                     Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter { 
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRole'
+                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRoleName'
                     } -Scope Context
                 }
             }
@@ -554,12 +565,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = $mockEnumMemberNames
                         MembersToInclude = $mockSqlServerLoginTree
                     }
 
-                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `                                              'must be null when Members parameter is set.')
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -575,12 +587,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = $mockEnumMemberNames
                         MembersToExclude = $mockSqlServerLoginTwo
                     }
 
-                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `                                              'must be null when Members parameter is set.')
+                    $throwInvalidOperation = ('The parameter MembersToInclude and/or MembersToExclude ' + `
+                                              'must be null when Members parameter is set.')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -598,7 +611,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToInclude = $mockSqlServerLoginTree
                     }
 
@@ -619,11 +632,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToInclude = $mockSqlServerLoginTree
                     }
 
-                    $throwInvalidOperation = ('Failed to add member CONTOSO\Lucy to the server role named AdminSqlforBI ' + `                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "AddMember" ' + `                                              'with "1" argument(s): "Mock AddMember Method was called with invalid operation."')
+                    $throwInvalidOperation = ('Failed to add member CONTOSO\Lucy to the server role named AdminSqlforBI ' + `
+                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "AddMember" ' + `
+                                              'with "1" argument(s): "Mock AddMember Method was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -641,7 +656,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToInclude = 'KingJulian'
                     }
 
@@ -663,7 +678,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToExclude = $mockSqlServerLoginTwo
                     }
 
@@ -684,11 +699,13 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToExclude = $mockSqlServerLoginTwo
                     }
 
-                    $throwInvalidOperation = ('Failed to drop member CONTOSO\Kelly to the server role named AdminSqlforBI ' + `                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "DropMember" ' + `                                              'with "1" argument(s): "Mock DropMember Method was called with invalid operation."')
+                    $throwInvalidOperation = ('Failed to drop member CONTOSO\Kelly to the server role named AdminSqlforBI ' + `
+                                              'on localhost\MSSQLSERVER. InnerException: Exception calling "DropMember" ' + `
+                                              'with "1" argument(s): "Mock DropMember Method was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
@@ -706,7 +723,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         MembersToExclude = 'KingJulian'
                     }
 
@@ -728,7 +745,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = @('KingJulian',$mockSqlServerLoginOne,$mockSqlServerLoginTree)
                     }
 
@@ -752,7 +769,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = @($mockSqlServerLoginOne,$mockSqlServerLoginTree)
                     }
 
@@ -774,7 +791,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure = 'Present'
-                        ServerRole = $mockSqlServerRole
+                        ServerRoleName = $mockSqlServerRole
                         Members = @($mockSqlServerLoginOne,$mockSqlServerLoginTree)
                     }
 
