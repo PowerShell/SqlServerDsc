@@ -17,11 +17,11 @@ Configuration Example
     node localhost {
         xSQLServerRole Remove_ServerRole
         {
-            Ensure = 'Absent'
-            ServerRole = "serverRoleToDelete"
-            SQLServer = 'SQLServer'
-            SQLInstanceName = 'DSC'
-            PsDscRunAsCredential = $SysAdminAccount
+            Ensure                  = 'Absent'
+            ServerRoleName          = "serverRoleToDelete"
+            SQLServer               = 'SQLServer'
+            SQLInstanceName         = 'DSC'
+            PsDscRunAsCredential    = $SysAdminAccount
         }
     }
 }
