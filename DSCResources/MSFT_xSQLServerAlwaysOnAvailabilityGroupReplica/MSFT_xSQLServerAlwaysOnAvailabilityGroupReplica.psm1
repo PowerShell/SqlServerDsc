@@ -381,7 +381,7 @@ function Set-TargetResource
 
                     if ( $endpoint.Protocol.Tcp.ListenerPort -ne $currentEndpointPort )
                     {
-                        $newEndpointUrl = availabilityGroupReplica.EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
+                        $newEndpointUrl = $availabilityGroupReplica.EndpointUrl.Replace($currentEndpointPort,$endpoint.Protocol.Tcp.ListenerPort)
                         $availabilityGroupReplica.EndpointUrl = $newEndpointUrl
                         Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroupReplica
                     }

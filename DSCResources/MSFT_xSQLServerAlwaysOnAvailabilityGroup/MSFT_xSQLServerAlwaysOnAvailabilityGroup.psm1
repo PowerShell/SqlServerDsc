@@ -276,13 +276,28 @@ function Set-TargetResource
                         {
                             $clusterServiceName
                             {
-                                New-VerboseMessage -Message "The recommended account '$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' ). Trying with '$ntAuthoritySystemName'."
+                                New-VerboseMessage -Message "The recommended account '$loginName' is missing one or more of the following permissions: $( $availabilityGroupManagementPerms -join ', ' ). Trying with '$ntAuthoritySystemName'."
                             }
 
                             $ntAuthoritySystemName
                             {
-                                New-VerboseMessage -Message "'$loginName' is missing the following permissions: $( $loginMissingPermissions -join ', ' )"
+                                New-VerboseMessage -Message "'$loginName' is missing one or more of the following permissions: $( $availabilityGroupManagementPerms -join ', ' )"
                             }
+                        }
+                    }
+                }
+                else
+                {
+                    switch ( $loginName )
+                    {
+                        $clusterServiceName
+                        {
+                            New-VerboseMessage -Message "The recommended login '$loginName' is not present. Trying with '$ntAuthoritySystemName'."
+                        }
+
+                        $ntAuthoritySystemName
+                        {
+                            New-VerboseMessage -Message "The login '$loginName' is not present."
                         }
                     }
                 }
