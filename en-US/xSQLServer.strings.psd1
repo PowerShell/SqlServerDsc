@@ -78,6 +78,7 @@ RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' fro
 AvailabilityGroupNotFound = Unable to locate the availability group '{0}' on the instance '{1}'.
 JoinAvailabilityGroupFailed = Failed to join the availability group replica '{0}'.
 RemoveAvailabilityGroupReplicaFailed = Failed to remove the availability group replica '{0}' with the error '{1}'.
+ReplicaNotFound = Unable to find the availability group replica '{0}' on the instance '{1}'.
 
 # SQLServerHelper
 ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
