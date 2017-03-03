@@ -59,6 +59,30 @@ try
             EndpointHostName = 'Server1'
         }
 
+        #region Login mocks
+
+            $mockLogins = @{} # Will be dynamically set during tests
+            
+            $mockNtServiceClusSvcName = 'NT SERVICE\ClusSvc'
+            $mockNtAuthoritySystemName = 'NT AUTHORITY\SYSTEM'
+
+            $mockAllLoginsAbsent = @{}
+
+            $mockNtServiceClusSvcPresent = @{
+                $mockNtServiceClusSvcName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer,$mockNtServiceClusSvcName) )
+            }
+
+            $mockNtAuthoritySystemPresent = @{
+                $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer,$mockNtAuthoritySystemName) )
+            }
+
+            $mockAllLoginsPresent = @{
+                $mockNtServiceClusSvcName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer,$mockNtServiceClusSvcName) )
+                $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer,$mockNtAuthoritySystemName) )
+            }
+
+        #endregion
+
         $mockConnectSqlVersion12 = {
             $mock = New-Object PSObject -Property @{
                 AvailabilityGroups = @{
@@ -97,10 +121,7 @@ try
                     }
                 )
                 IsHadrEnabled = $true
-                Logins = @{
-                    'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                    'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                }
+                Logins = $mockLogins
                 Name = 'Server1'
                 NetName = 'Server1'
                 Roles = @{}
@@ -168,10 +189,7 @@ try
                     }
                 )
                 IsHadrEnabled = $true
-                Logins = @{
-                    'NT SERVICE\ClusSvc' = @{}
-                    'NT AUTHORITY\SYSTEM' = @{}
-                }
+                Logins = $mockLogins
                 Name = 'Server1'
                 NetName = 'Server1'
                 Roles = @{}
@@ -237,10 +255,7 @@ try
                     }
                 )
                 IsHadrEnabled = $true
-                Logins = @{
-                    'NT SERVICE\ClusSvc' = @{}
-                    'NT AUTHORITY\SYSTEM' = @{}
-                }
+                Logins = $mockLogins
                 Name = 'Server1'
                 NetName = 'Server1'
                 Roles = @{}
@@ -307,10 +322,7 @@ try
                     }
                 )
                 IsHadrEnabled = $true
-                Logins = @{
-                    'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                    'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                }
+                Logins = $mockLogins
                 Name = 'Server1'
                 NetName = 'Server1'
                 Roles = @{}
@@ -396,6 +408,10 @@ try
         }
         
         Describe "xSQLServerAlwaysOnAvailabilityGroup\Get-TargetResource" {
+            
+            BeforeEach {
+                $mockLogins = $mockAllLoginsPresent
+            }
             
             Context 'When the Availability Group is Absent'{
 
@@ -562,6 +578,10 @@ try
 
         Describe "xSQLServerAlwaysOnAvailabilityGroup\Set-TargetResource" {
             
+            BeforeEach {
+                $mockLogins = $mockAllLoginsPresent
+            }
+            
             Mock -CommandName Invoke-Query -MockWith {} -Verifiable
             Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
             Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
@@ -649,6 +669,29 @@ try
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
                 }
 
+                It 'Should throw the correct error (ClusterPermissionsMissing) when the logins "NT SERVICE\ClusSvc" or "NT AUTHORITY\SYSTEM" are absent' {
+                    
+                    Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -Verifiable -Scope It
+                    Mock -CommandName New-SqlAvailabilityGroup {} -Verifiable -Scope It
+                    Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -Verifiable -Scope It
+
+                    $defaultAbsentParameters.Ensure = 'Present'
+                    $mockLogins = $mockAllLoginsAbsent.Clone()
+                    
+                    { Set-TargetResource @defaultAbsentParameters } | Should Throw 'ClusterPermissionsMissing'
+                    
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
+                    Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
+                    Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 0 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
+                    Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 0 -Exactly -ParameterFilter { $LoginName -eq 'NT AUTHORITY\SYSTEM' }
+                    Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
+                    Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+                }
+                
                 It 'Should create the Availability Group when Ensure is set to Present and NT AUTHORITY\SYSTEM has the correct permissions' {
 
                     Mock -CommandName Connect-SQL -MockWith $mockConnectSqlVersion12 -Verifiable -Scope It
@@ -1629,6 +1672,10 @@ try
         }
 
         Describe "xSQLServerAlwaysOnAvailabilityGroup\Test-TargetResource" {
+            
+            BeforeEach {
+                $mockLogins = $mockAllLoginsPresent
+            }
             
             Context 'When the Availability Group is Absent' {
 
