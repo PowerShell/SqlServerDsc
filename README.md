@@ -76,6 +76,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases
 * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
+* [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica) resource to ensure an availability group replica is present or absent.
 * [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server
 * [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener) Create or remove an availability group listener.
 * [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
@@ -141,6 +142,8 @@ None.
 ### xSQLAOGroupJoin
 
 No description.
+
+**This resource is deprecated.** The functionality of this resource has been replaced with * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica). Please do not use this resource for new development efforts.
 
 #### Requirements
 
@@ -216,6 +219,39 @@ This resource is used to create, remove, and update an Always On Availability Gr
 
 * [Add a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/1-CreateAvailabilityGroup.ps1)
 * [Remove a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/2-RemoveAvailabilityGroup.ps1)
+
+### xSQLServerAlwaysOnAvailabilityGroupReplica
+
+This resource is used to create, remove, and update an Always On Availability Group Replica.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
+* 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' must have the 'Connect SQL', 'Alter Any Availability Group', and 'View Server State' permissions.
+
+#### Parameters
+
+* **Name** _(Key)_: The name of the availability group replica.
+* **AvailabilityGroupName** _(Key)_: The name of the availability group.
+* **SQLServer** _(Required)_: Hostname of the SQL Server to be configured.
+* **SQLInstanceName** _(Key)_: Name of the SQL instance to be configued.
+* **PrimaryReplicaSQLServer** _(Write)_: Hostname of the SQL Server where the primary replica lives.
+* **PrimaryReplicaSQLInstanceName** _(Write)_: Name of the SQL instance where the primary replica lives.
+* **Ensure** _(Write)_: Specifies if the availability group replica should be present or absent. Default is Present. { *Present* | Absent }
+* **AvailabilityMode** _(Write)_: Specifies the replica availability mode. Default is 'AsynchronousCommit'. { *AsynchronousCommit* | SynchronousCommit }
+* **BackupPriority** _(Write)_: Specifies the desired priority of the replicas in performing backups. The acceptable values for this parameter are: integers from 0 through 100. Of the set of replicas which are online and available, the replica that has the highest priority performs the backup. Default is 50.
+* **ConnectionModeInPrimaryRole** _(Write)_: Specifies how the availability replica handles connections when in the primary role. { AllowAllConnections | AllowReadWriteConnections }
+* **ConnectionModeInSecondaryRole** _(Write)_: Specifies how the availability replica handles connections when in the secondary role. { AllowNoConnections | AllowReadIntentConnectionsOnly | AllowAllConnections }
+* **EndpointHostName** _(Write)_: Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+* **FailoverMode** _(Write)_: Specifies the failover mode. Default is 'Manual'. { Automatic | *Manual* }
+* **ReadOnlyRoutingConnectionUrl** _(Write)_: Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.
+* **ReadOnlyRoutingList** _(Write)_: Specifies an ordered list of replica server names that represent the probe sequence for connection director to use when redirecting read-only connections through this availability replica. This parameter applies if the availability replica is the current primary replica of the availability group.
+
+#### Examples
+
+* [Add a SQL Server Always On Availability Group Replica](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroupReplica/1-CreateAvailabilityGroupReplica.ps1)
+* [Remove a SQL Server Always On Availability Group Replica](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroupReplica/2-RemoveAvailabilityGroupReplica.ps1)
 
 ### xSQLServerAlwaysOnService
 
