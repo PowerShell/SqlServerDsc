@@ -1,5 +1,6 @@
-Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1') -Force
-
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
 <#
     .SYNOPSIS
     This function gets all Key properties defined in the resource schema file
@@ -22,54 +23,51 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Full','Simple','BulkLogged')]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $RecoveryModel,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLServer,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $Name
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
-    if ($sql)
+    if ($sqlServerObject)
     {
         Write-Verbose -Message "Getting RecoveryModel of SQL database '$Name'"
-        $sqlDatabase = $sql.Databases
+        $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
         
-        if ($sqlDatabase)
+        if ($sqlDatabaseObject)
         {
-            if ($sqlDatabase[$Name])
-            {
-                $getSqlDatabaseRecoveryModel = Get-SqlDatabaseRecoveryModel -SqlServerObject $sql -DatabaseName $Name
-                New-VerboseMessage -Message "RecoveryModel of SQL Database name $Name is $getSqlDatabaseRecoveryModel"
-            }
-            else
-            {
-                New-VerboseMessage -Message "SQL Database name $Name does not exist"
-                $null = $getSqlDatabaseRecoveryModel
-            }
+            $sqlDatabaseRecoveryModel = $sqlDatabaseObject.RecoveryModel
+            New-VerboseMessage -Message "The current recovery model used by database $Name is '$sqlDatabaseRecoveryModel'"
         }
         else
         {
-            New-WarningMessage -Message 'Failed getting SQL databases'
-            $null = $getSqlDatabaseRecoveryModel
+            throw New-TerminatingError -ErrorType NoDatabase `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory InvalidResult
         }
     }
     
     $returnValue = @{
         Name            = $Name
-        RecoveryModel   = $getSqlDatabaseRecoveryModel
+        RecoveryModel   = $sqlDatabaseRecoveryModel
         SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
@@ -98,37 +96,49 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Full','Simple','BulkLogged')]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $RecoveryModel,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLServer,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $Name
     )
  
-     $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+     $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     
-    if ($sql)
+    if ($sqlServerObject)
     {
-        $sqlDatabase = $Sql.Databases[$Name]
-        if ($sqlDatabase)
+        Write-Verbose -Message "Setting RecoveryModel of SQL database '$Name'"
+        $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
+
+        if ($sqlDatabaseObject)
         {
-            Write-Verbose -Message "Setting database '$Name' with RecoveryModel '$RecoveryModel'"
-            Set-SqlDatabaseRecoveryModel -SqlServerObject $sql -DatabaseName $Name -RecoveryModel $RecoveryModel
+            if($sqlDatabaseObject.RecoveryModel -ne $RecoveryModel)
+            {
+                $sqlDatabaseObject.RecoveryModel = $RecoveryModel
+                $sqlDatabaseObject.Alter()
+                New-VerboseMessage -Message "The recovery model for the database $Name is changed to '$RecoveryModel'."
+            }
         }
         else
         {
-            New-VerboseMessage -Message "SQL Database name $Name does not exist"
+            throw New-TerminatingError -ErrorType NoDatabase `
+                                       -FormatArgs @($Name,$sqlServer,$sqlInstanceName) `
+                                       -ErrorCategory InvalidResult
         }
     }
 }
@@ -155,20 +165,24 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Full','Simple','BulkLogged')]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $RecoveryModel,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLServer,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $Name
     )
@@ -177,7 +191,7 @@ function Test-TargetResource
 
     $currentValues = Get-TargetResource @PSBoundParameters
 
-    return Test-SQLDscParameterState -CurrentValues $CurrentValues `
+    return Test-SQLDscParameterState -CurrentValues $currentValues `
                                      -DesiredValues $PSBoundParameters `
                                      -ValuesToCheck @('Name','RecoveryModel')
 }
