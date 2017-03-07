@@ -52,6 +52,8 @@
   - When the system is not in desired state the Test-TargetResource will now output verbose messages saying so.
 - Changes to xSQLServerDatabaseOwner
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
+- Changes to xSQLServerDatabaseRecoveryModel
+  - Fixed code style, removed SQLServerDatabaseRecoveryModel functions from xSQLServerHelper.
 
 ## 5.0.0.0
 
