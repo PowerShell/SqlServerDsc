@@ -41,7 +41,7 @@ function Get-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message "Getting SQL Server role $ServerRoleName properties."
+        Write-Verbose -Message "Getting properties of SQL Server role '$ServerRoleName'."
         if ($sqlServerRoleObject = $sqlServerObject.Roles[$ServerRoleName])
         {
             $ensure = 'Present'
@@ -140,7 +140,7 @@ function Set-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message "Setting SQL Server role $ServerRoleName properties."
+        Write-Verbose -Message "Setting properties of SQL Server role '$ServerRoleName'."
         
         switch ($Ensure)
         {
@@ -151,9 +151,9 @@ function Set-TargetResource
                     $sqlServerRoleObjectToDrop = $sqlServerObject.Roles[$ServerRoleName]
                     if ($sqlServerRoleObjectToDrop)
                     {
-                        Write-Verbose -Message "Deleting to SQL the server role $ServerRoleName"
+                        Write-Verbose -Message "Trying to drop the SQL Server role '$ServerRoleName'."
                         $sqlServerRoleObjectToDrop.Drop()
-                        New-VerboseMessage -Message "Dropped server role $ServerRoleName"
+                        New-VerboseMessage -Message "Dropped the SQL Server role '$ServerRoleName'."
                     }
                 }
                 catch
@@ -175,9 +175,9 @@ function Set-TargetResource
                                                                   -ArgumentList $sqlServerObject,$ServerRoleName
                         if ($sqlServerRoleObjectToCreate)
                         {
-                            Write-Verbose -Message "Adding to SQL the server role $ServerRoleName"
+                            Write-Verbose -Message "Creating the SQL Server role '$ServerRoleName'."
                             $sqlServerRoleObjectToCreate.Create()
-                            New-VerboseMessage -Message "Created server role $ServerRoleName"
+                            New-VerboseMessage -Message "Created the SQL Server role '$ServerRoleName'."
                         }
                     }
                     catch
@@ -191,14 +191,14 @@ function Set-TargetResource
 
                 if ($Members)
                 {
-                    $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRoleName].EnumMemberNames()
-
                     if ($MembersToInclude -or $MembersToExclude)
                     {
                         throw New-TerminatingError -ErrorType MembersToIncludeAndExcludeParamMustBeNull `
                                                    -FormatArgs @($SQLServer,$SQLInstanceName) `
                                                    -ErrorCategory InvalidArgument  
                     }
+
+                    $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRoleName].EnumMemberNames()
 
                     foreach ($memberName in $memberNamesInRoleObject)
                     {
@@ -212,29 +212,44 @@ function Set-TargetResource
 
                     foreach ($memberToAdd in $Members)
                     {
-                        Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                                   -LoginName $memberToAdd `
-                                                   -ServerRoleName $ServerRoleName
+                        if ( -not ($memberNamesInRoleObject.Contains($memberToAdd)))
+                        {
+                            Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                       -LoginName $memberToAdd `
+                                                       -ServerRoleName $ServerRoleName
+                        }
                     }
                 }
-                
-                if($MembersToInclude)
-                {
-                    foreach ($memberToInclude in $MembersToInclude)
+                else
+                {                    
+                    if ($MembersToInclude)
                     {
-                        Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                                   -LoginName $memberToInclude `
-                                                   -ServerRoleName $ServerRoleName
-                    }
-                }
+                        $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRoleName].EnumMemberNames()
 
-                if($MembersToExclude)
-                {
-                    foreach ($memberToExclude in $MembersToExclude)
+                        foreach ($memberToInclude in $MembersToInclude)
+                        {
+                            if ( -not ($memberNamesInRoleObject.Contains($memberToInclude))) 
+                            {
+                                Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                           -LoginName $memberToInclude `
+                                                           -ServerRoleName $ServerRoleName
+                            }
+                        }
+                    }
+
+                    if ($MembersToExclude)
                     {
-                        Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                                      -LoginName $memberToExclude `
-                                                      -ServerRoleName $ServerRoleName
+                        $memberNamesInRoleObject = $sqlServerObject.Roles[$ServerRoleName].EnumMemberNames()
+
+                        foreach ($memberToExclude in $MembersToExclude)
+                        {
+                            if ($memberNamesInRoleObject.Contains($memberToExclude))
+                            {
+                                Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
+                                                              -LoginName $memberToExclude `
+                                                              -ServerRoleName $ServerRoleName
+                            }
+                        }
                     }
                 }
             }
