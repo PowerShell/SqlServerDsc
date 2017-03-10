@@ -2,7 +2,7 @@
 .EXAMPLE
     This example shows how to ensure that the server role named 
     AdminSqlforBI is present on instance SQLServer\DSC and logins
-    CONTOSO\Mark and CONTOSO\Lucy have been dropped from members of this role.
+    CONTOSO\Mark and CONTOSO\Lucy are not members of this role.
 #>
 
 Configuration Example
