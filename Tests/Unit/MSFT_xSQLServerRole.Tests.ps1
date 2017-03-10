@@ -718,6 +718,7 @@ try
 
             Context 'When the MembersToExclude parameter is not null and Members parameter is not set - PRESENT' {            
                 It 'Should thrown the correct error when login does not exist' {
+                    $mockEnumMemberNames = @('KingJulian',$mockSqlServerLoginOne,$mockSqlServerLoginTwo)
                     $mockExpectedMemberToAdd = $mockSqlServerLoginTree
                     $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
                     $testParameters = $mockDefaultParameters
