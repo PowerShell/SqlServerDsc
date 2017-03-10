@@ -768,7 +768,7 @@ None.
 
 ### xSQLServerRole
 
-This resource is used to create or delete a server role and manage members of this role. For more information about server role, please read:
+This resource is used to create a server role, when Ensure is set to 'Present'. Or remove a server role, when Ensure is set to 'Absent'. The resource also manages members in both built-in and user created server roles. For more information about server roles, please read the below articles.
 
 * [Create a Server Role](https://msdn.microsoft.com/en-us/library/ee677627.aspx)
 * [Server-Level Roles](https://msdn.microsoft.com/en-us/library/ms188659.aspx)
@@ -780,13 +780,13 @@ This resource is used to create or delete a server role and manage members of th
 
 #### Parameters
 
-* **[String] Ensure** _(Write)_: An enumerated value that describes if the server role is added (Present) or dropped (Absent). { *Present* | Absent }.
-* **[String[]] Members** _(Write)_: The members the server role should have.
-* **[String[]] MembersToInclude** _(Write)_: The members the server role should include.
-* **[String[]] MembersToExclude** _(Write)_: The members the server role should exclude.
 * **[String] ServerRoleName** _(Key)_: The name of of SQL role to add or remove.
 * **[String] SQLServer** _(Key)_: The host name of the SQL Server to be configured.
 * **[String] SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **[String] Ensure** _(Write)_: An enumerated value that describes if the server role is added (Present) or dropped (Absent). Default values is 'Present'. { *Present* | Absent }.
+* **[String[]] Members** _(Write)_: The members the server role should have. This parameter will replace all the current server role members with the specified members.
+* **[String[]] MembersToInclude** _(Write)_: The members the server role should include. This parameter will only add members to a server role. Can not be used at the same time as parameter Members.
+* **[String[]] MembersToExclude** _(Write)_: The members the server role should exclude. This parameter will only remove members from a server role. Can only be used when parameter Ensure is set to 'Present'. Can not be used at the same time as parameter Members.
 
 #### Examples
 
