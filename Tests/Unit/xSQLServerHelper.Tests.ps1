@@ -288,7 +288,7 @@ InModuleScope $script:moduleName {
                     -ParameterFilter $mockNewObject_MicrosoftAnalysisServicesServer_ParameterFilter `
                     -Verifiable
 
-                $mockCorrectErrorMessage = 'Failed to connect to Analysis Services ''PC01''. InnerException: Did not get the expected Analysis Services server object.'
+                $mockCorrectErrorMessage = ('Failed to connect to Analysis Services ''{0}''. InnerException: Did not get the expected Analysis Services server object.' -f $env:COMPUTERNAME)
                 { Connect-SQLAnalysis } | Should -Throw $mockCorrectErrorMessage
 
                 Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It `
@@ -303,7 +303,7 @@ InModuleScope $script:moduleName {
                 # Force the mock of Connect() method to throw 'Unable to connect.'
                 $mockThrowInvalidOperation = $true
 
-                $mockCorrectErrorMessage = 'Failed to connect to Analysis Services ''PC01''. InnerException: Exception calling "Connect" with "1" argument(s): "Unable to connect."'
+                $mockCorrectErrorMessage = ('Failed to connect to Analysis Services ''{0}''. InnerException: Exception calling "Connect" with "1" argument(s): "Unable to connect."'  -f $env:COMPUTERNAME)
                 { Connect-SQLAnalysis } | Should -Throw $mockCorrectErrorMessage
 
                 Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It `
