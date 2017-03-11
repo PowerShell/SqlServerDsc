@@ -88,16 +88,20 @@ function Connect-SQLAnalysis
     [CmdletBinding()]
     param
     (
-        [ValidateNotNull()]
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
-        [ValidateNotNull()]
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
-        [ValidateNotNull()]
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
         $SetupCredential
     )
 
@@ -105,42 +109,42 @@ function Connect-SQLAnalysis
 
     if ($SQLInstanceName -eq 'MSSQLSERVER')
     {
-        $connectSql = $SQLServer
+        $analysisServiceInstance = $SQLServer
     }
     else
     {
-        $connectSql = "$SQLServer\$SQLInstanceName"
+        $analysisServiceInstance = "$SQLServer\$SQLInstanceName"
+    }
+
+    if ($SetupCredential)
+    {
+        $userName = $SetupCredential.GetNetworkCredential().UserName
+        $password = $SetupCredential.GetNetworkCredential().Password
+
+        $analysisServicesDataSource = "Data Source=$analysisServiceInstance;User ID=$userName;Password=$password"
+    }
+    else
+    {
+        $analysisServicesDataSource = "Data Source=$analysisServiceInstance"
     }
 
     try
     {
-        if ($SetupCredential)
+        $analysisServicesObject = New-Object -TypeName Microsoft.AnalysisServices.Server
+        if ($analysisServicesObject)
         {
-            $userName = $SetupCredential.GetNetworkCredential().UserName
-            $password = $SetupCredential.GetNetworkCredential().Password
-
-            $analysisServicesDataSource = "Data Source=$connectSql;User ID=$userName;Password=$password"
+            $analysisServicesObject.Connect($analysisServicesDataSource)
         }
         else
         {
-            $analysisServicesDataSource = "Data Source=$connectSql"
+            throw New-TerminatingError -ErrorType AnalysisServicesNoServerObject -ErrorCategory InvalidResult
         }
 
-        $analysisServicesObject = New-Object Microsoft.AnalysisServices.Server
-        $analysisServicesObject.Connect($analysisServicesDataSource)
-
-        if (-not $analysisServicesObject)
-        {
-            throw "Connected to $connectSql, but something went wrong. Did not get a Analysis Services server object back."
-        }
-        else
-        {
-            Write-Verbose -Message "Connected to Analysis Services $connectSql."
-        }
+        Write-Verbose -Message "Connected to Analysis Services $analysisServiceInstance." -Verbose
     }
     catch
     {
-        throw "Failed to connect to Analysis Services $connectSql."
+        throw New-TerminatingError -ErrorType AnalysisServicesFailedToConnect -FormatArgs @($analysisServiceInstance) -ErrorCategory ObjectNotFound -InnerException $_.Exception
     }
 
     return $analysisServicesObject
