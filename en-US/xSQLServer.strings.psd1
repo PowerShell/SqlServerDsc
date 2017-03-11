@@ -1,13 +1,13 @@
 ConvertFrom-StringData @'
-###PSLOC 
+###PSLOC
 # Common
 NoKeyFound = No Localization key found for ErrorType: '{0}'.
 AbsentNotImplemented = Ensure = Absent is not implemented!
 TestFailedAfterSet = Test-TargetResource returned false after calling set.
 RemoteConnectionFailed = Remote PowerShell connection to Server '{0}' failed.
-TODO = ToDo. Work not implemented at this time. 
+TODO = ToDo. Work not implemented at this time.
 UnexpectedErrorFromGet = Got unexpected result from Get-TargetResource. No change is made.
-FailedToImportSQLPSModule = Failed to import SQLPS module. 
+FailedToImportSQLPSModule = Failed to import SQLPS module.
 NotConnectedToInstance = Was unable to connect to the instance '{0}\\{1}'
 
 # SQLServer
@@ -77,6 +77,8 @@ RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' fro
 # SQLServerHelper
 ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
 ExecuteNonQueryFailed = Executing non-query failed on database '{0}'.
+AnalysisServicesFailedToConnect = Failed to connect to Analysis Services '{0}'.
+AnalysisServicesNoServerObject = Did not get the expected Analysis Services server object.
 
 # Max degree of parallelism
 MaxDopSetError = Unexpected result when trying to configure the max degree of parallelism server configuration option.
