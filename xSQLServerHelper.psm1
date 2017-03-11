@@ -94,7 +94,7 @@ function Connect-SQLAnalysis
 
         [ValidateNotNull()]
         [System.String]
-        $SQLInstanceName = "MSSQLSERVER",
+        $SQLInstanceName = 'MSSQLSERVER',
 
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
@@ -103,7 +103,7 @@ function Connect-SQLAnalysis
 
     $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.AnalysisServices')
 
-    if ($SQLInstanceName -eq "MSSQLSERVER")
+    if ($SQLInstanceName -eq 'MSSQLSERVER')
     {
         $connectSql = $SQLServer
     }
@@ -112,28 +112,38 @@ function Connect-SQLAnalysis
         $connectSql = "$SQLServer\$SQLInstanceName"
     }
 
-    $sql = New-Object Microsoft.AnalysisServices.Server
-
-    if ($SetupCredential)
+    try
     {
-        $userName = $SetupCredential.GetNetworkCredential().UserName
-        $password = $SetupCredential.GetNetworkCredential().Password
+        if ($SetupCredential)
+        {
+            $userName = $SetupCredential.GetNetworkCredential().UserName
+            $password = $SetupCredential.GetNetworkCredential().Password
 
-        $sql.Connect("Data Source=$connectSql;User ID=$userName;Password=$password")
+            $analysisServicesDataSource = "Data Source=$connectSql;User ID=$userName;Password=$password"
+        }
+        else
+        {
+            $analysisServicesDataSource = "Data Source=$connectSql"
+        }
+
+        $analysisServicesObject = New-Object Microsoft.AnalysisServices.Server
+        $analysisServicesObject.Connect($analysisServicesDataSource)
+
+        if (-not $analysisServicesObject)
+        {
+            throw "Connected to $connectSql, but something went wrong. Did not get a Analysis Services server object back."
+        }
+        else
+        {
+            Write-Verbose -Message "Connected to Analysis Services $connectSql."
+        }
     }
-    else
+    catch
     {
-        $sql.Connect("Data Source=$connectSql")
+        throw "Failed to connect to Analysis Services $connectSql."
     }
 
-    if (!$sql)
-    {
-        Throw -Message "Failed connecting to Analysis Services $connectSql"
-    }
-
-    New-VerboseMessage -Message "Connected to Analysis Services $connectSql"
-
-    return $sql
+    return $analysisServicesObject
 }
 
 <#
@@ -1556,7 +1566,7 @@ function Remove-SqlDatabasePermission
 
     .PARAMETER SQLServer
     The hostname of the server that hosts the SQL instance.
-    
+
     .PARAMETER SQLInstanceName
     The name of the SQL instance that hosts the database.
 
