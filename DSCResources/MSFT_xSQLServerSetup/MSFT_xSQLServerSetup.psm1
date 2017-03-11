@@ -953,7 +953,7 @@ function Set-TargetResource
         # Get the disk resources that are available (not assigned to a cluster role)
         $availableStorage = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_ResourceGroup' -Filter "Name = 'Available Storage'" |
                                 Get-CimAssociatedInstance -Association MSCluster_ResourceGroupToResource -ResultClassName MSCluster_Resource | `
-                                Add-Member -MemberType NoteProperty -Name 'IsPossibleOwner' -Value $false -PassThru
+                                    Add-Member -MemberType NoteProperty -Name 'IsPossibleOwner' -Value $false -PassThru
 
         # First map regular cluster volumes
         foreach ($diskResource in $availableStorage)
@@ -1651,11 +1651,10 @@ function Test-TargetResource
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
     New-VerboseMessage -Message "Features found: '$($getTargetResourceResult.Features)'"
 
-    $result = $false
+    $result = $true
+
     if ($getTargetResourceResult.Features )
     {
-        $result = $true
-
         foreach ($feature in $Features.Split(","))
         {
             # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
@@ -1668,12 +1667,14 @@ function Test-TargetResource
             }
         }
     }
+    else
+    {
+        $result = $false
+    }
 
     if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
     {
         New-VerboseMessage -Message "Clustered install, checking parameters."
-
-        $result = $true
 
         $boundParameters.Keys | Where-Object {$_ -imatch "^FailoverCluster"} | ForEach-Object {
             $variableName = $_
@@ -1685,7 +1686,7 @@ function Test-TargetResource
         }
     }
 
-    $result
+    return $result
 }
 
 <#
