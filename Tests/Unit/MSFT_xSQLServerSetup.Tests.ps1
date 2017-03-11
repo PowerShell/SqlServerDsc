@@ -2388,6 +2388,31 @@ try
 
                     $result | Should Be $false
                 }
+
+                It 'Should return false if SQL Server failover cluster is missing features ' {
+                    $mockCurrentInstanceName = $mockDefaultInstance_InstanceName
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                                Features = 'SQLEngine,AS'
+                                FailoverClusterGroupName = $mockDefaultInstance_FailoverClusterGroupName
+                                FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
+                                FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                            }
+                    } -Verifiable
+
+                    $testClusterParameters = $testParameters.Clone()
+                    $testClusterParameters['Features'] = 'SQLEngine,AS'
+
+                    $testClusterParameters += @{
+                        FailoverClusterGroupName = $mockDefaultInstance_FailoverClusterGroupName
+                        FailoverClusterIPAddress = $mockDefaultInstance_FailoverClusterIPAddress
+                        FailoverClusterNetworkName = $mockDefaultInstance_FailoverClusterNetworkName
+                    }
+
+                    $result = Test-TargetResource @testClusterParameters
+                    $result | Should Be $false
+                }
             }
 
             # For this test we only need to test one SQL Server version. Mocking SQL Server 2014 for the 'in the desired state' test.
