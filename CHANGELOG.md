@@ -11,6 +11,12 @@
 - Changes to xSQLServerSetup
   - Added a note to the README.md saying that it is not possible to add or remove features from a SQL Server failover cluster (issue #433).
   - Changed so that it reports false if the desired state is not correct (issue #432).
+    - Added a test to make sure we always return false if a SQL Server failover cluster is missing features.
+  - Helper function Connect-SQLAnalysis
+    - Now has correct error handling, and throw does not used the unknown named parameter '-Message' (issue #436)
+    - Added tests for Connect-SQLAnalysis
+    - Changed to localized error messages.
+    - Minor changes to error handling.
 
 ## 6.0.0.0
 
