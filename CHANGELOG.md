@@ -10,6 +10,9 @@
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
 - Changes to xSQLServer
   - Raised the CodeCov target to 70% which is the minimum and required target for HQRM resource.
+- Changes to xSQLServerSetup
+  - Added a note to the README.md saying that it is not possible to add or remove features from a SQL Server failover cluster (issue #433).
+  - Changed so that it reports false if the desired state is not correct (issue #432).
 
 ## 6.0.0.0
 
