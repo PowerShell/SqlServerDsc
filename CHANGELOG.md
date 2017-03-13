@@ -23,6 +23,8 @@
     - Three new parameters are added; Members, MembersToInclude and MembersToExclude.
       - Members can be set to one or more logins, and those will _replace all_ the memberships in the server role.
       - MembersToInclude and MembersToExclude can be set to one or more logins that will add or remove memberships, respectively, in the server role. MembersToInclude and MembersToExclude _can not_ be used at the same time as parameter Members. But both MembersToInclude and MembersToExclude can be used together at the same time.
+- Changes to xSQLServerDatabasePermission
+  - Fixed code style, updated README.md and removed *-SqlDatabasePermission functions from xSQLServerHelper.psm1.
 
 ## 6.0.0.0
 
