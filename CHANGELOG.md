@@ -8,6 +8,8 @@
     - 2-RemoveDatabaseRole.ps1
 - Changes to xSQLServerDatabaseRole
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
+- Changes to xSQLServerDatabasePermission
+  - Fixed code style, updated README.md and removed *-SqlDatabasePermission functions from xSQLServerHelper.psm1.
 
 ## 6.0.0.0
 
