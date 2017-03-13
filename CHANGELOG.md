@@ -23,6 +23,8 @@
     - Three new parameters are added; Members, MembersToInclude and MembersToExclude.
       - Members can be set to one or more logins, and those will _replace all_ the memberships in the server role.
       - MembersToInclude and MembersToExclude can be set to one or more logins that will add or remove memberships, respectively, in the server role. MembersToInclude and MembersToExclude _can not_ be used at the same time as parameter Members. But both MembersToInclude and MembersToExclude can be used together at the same time.
+- Changes to xSQLServerDatabaseRecoveryModel
+  - Fixed code style, removed SQLServerDatabaseRecoveryModel functions from xSQLServerHelper.
 
 ## 6.0.0.0
 
@@ -67,8 +69,6 @@
   - When the system is not in desired state the Test-TargetResource will now output verbose messages saying so.
 - Changes to xSQLServerDatabaseOwner
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
-- Changes to xSQLServerDatabaseRecoveryModel
-  - Fixed code style, removed SQLServerDatabaseRecoveryModel functions from xSQLServerHelper.
 
 ## 5.0.0.0
 
