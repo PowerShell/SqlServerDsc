@@ -30,17 +30,14 @@ function Get-TargetResource
     param
     (
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $Members,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]] 
         $MembersToInclude,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $MembersToExclude,
 
@@ -171,22 +168,21 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present',
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $Members,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]] 
         $MembersToInclude,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $MembersToExclude,
 
@@ -359,22 +355,21 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure = 'Present',
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $Members,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]] 
         $MembersToInclude,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]]
         $MembersToExclude,
 
@@ -423,7 +418,8 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Present')
             {
-                New-VerboseMessage -Message "Ensure is set to Present. The missing role $ServerRoleName should be added"
+                New-VerboseMessage -Message ("Ensure is set to Present. The missing role $ServerRoleName " + `
+                                             "should be added or members are not correctly configured")
                 $isServerRoleInDesiredState = $false
             }
         }
