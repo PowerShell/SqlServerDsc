@@ -1676,6 +1676,7 @@ function Test-LoginEffectivePermissions
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [string]
         $LoginName,
 
@@ -1709,7 +1710,7 @@ function Test-LoginEffectivePermissions
     if ( $null -ne $loginEffectivePermissions )
     {
         $loginMissingPermissions = Compare-Object -ReferenceObject $Permissions -DifferenceObject $loginEffectivePermissions | 
-            Where-Object { $_.SideIndicator -ne '=>' } |
+            Where-Object -FilterScript { $_.SideIndicator -ne '=>' } |
             Select-Object -ExpandProperty InputObject 
         
         if ( $loginMissingPermissions.Count -eq 0 )
