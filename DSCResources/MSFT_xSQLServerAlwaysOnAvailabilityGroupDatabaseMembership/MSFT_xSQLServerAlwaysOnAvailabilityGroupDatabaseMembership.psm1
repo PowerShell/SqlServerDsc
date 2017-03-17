@@ -7,14 +7,15 @@ Import-SQLPSModule
 enum Ensure
 {
     Absent
+    Exactly
     Present
 }
 
 [DscResource()]
 class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 {
-    [DscProperty(Key)]
-    [string]
+    [DscProperty(Mandatory)]
+    [string[]]
     $DatabaseName
 
     [DscProperty(Key)]
@@ -45,7 +46,6 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     {
         # Create an object that reflects the current configuration
         $currentConfiguration = New-Object xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
-        $currentConfiguration.DatabaseName = $this.DatabaseName
         $currentConfiguration.SQLServer = $this.SQLServer
         $currentConfiguration.SQLInstanceName = $this.SQLInstanceName
         
@@ -59,49 +59,13 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         {
             $currentConfiguration.AvailabilityGroupName = $this.AvailabilityGroupName
             
-            # Determine if the database is a member of the availability group
-            $availabilityDatabase = $availabilityGroup.AvailabilityDatabases[$this.DatabaseName]
-
-            if ( $availabilityDatabase )
-            {
-                $currentConfiguration.Ensure = [Ensure]::Present
-
-                # Get the database owner
-                $databaseOwner = $serverObject.Databases[$this.DatabaseName].Owner
-
-                # Get the primary replica server object
-                $primaryReplicaServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
-                
-                # Determine if the database owner matches the primary replica database owner
-                if ( $primaryReplicaServerObject.DomainInstanceName -ne $availabilityGroup.PrimaryReplicaServerName )
-                {
-                    $primaryReplicaDatabaseOwner = $primaryReplicaServerObject.Databases[$this.DatabaseName].Owner
-
-                    if ( $primaryReplicaDatabaseOwner -ne $databaseOwner )
-                    {
-                        $currentConfiguration.MatchDatabaseOwner = $false
-                    }
-                    else
-                    {
-                        $currentConfiguration.MatchDatabaseOwner = $true
-                    }
-                }
-                else
-                {
-                    $currentConfiguration.MatchDatabaseOwner = $true
-                }
-            }
-            else
-            {
-                $currentConfiguration.Ensure = [Ensure]::Absent
-                $currentConfiguration.MatchDatabaseOwner = $false
-            }
+            # Get the databases in the availability group
+            $currentConfiguration.DatabaseName = $availabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
         }
         else
         {
             New-VerboseMessage -Message "The availabiilty group '$($this.AvailabilityGroupName)' does not exist."
-            
-            $currentConfiguration.Ensure = [Ensure]::Absent
+
             $currentConfiguration.MatchDatabaseOwner = $false
         }
 
@@ -116,25 +80,108 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $configurationInDesiredState = $true
         $currentConfiguration = $this.Get()
 
-        $propertiesToCheck = @(
-            'DatabaseName',
-            'SQLServer',
-            'SQLInstanceName',
-            'AvailabilityGroupName',
-            'Ensure',
-            'MatchDatabaseOwner'
-        )
+        $comparisonLookupTable = @{
+            'Absent' = '=='
+            'Present' = '<='
+            'Exactly' = '<=|=>'
+        }
 
-        foreach ( $propertyName in $propertiesToCheck )
+        $matchingDatabaseNames = $this.GetMatchingDatabaseNames()
+
+        $missingDatabaseNames = $this.GetMissingDatabaseNames($matchingDatabaseNames)
+
+        if ( $matchingDatabaseNames.Count -gt 0 )
         {
-            if ( $this.$propertyName -ne $currentConfiguration.$propertyName )
+            if ( ( $missingDatabaseNames.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
             {
-                New-VerboseMessage -Message "The property '$propertyName' should be '$($this.$propertyName)' but is '$($currentConfiguration.$propertyName)'"
                 $configurationInDesiredState = $false
+
+                New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $missingDatabaseNames -join ', ' ) )
+            }
+            
+            [array]$comparisonResults = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $currentConfiguration.DatabaseName -IncludeEqual | 
+                                    Where-Object { $_.SideIndicator -match $comparisonLookupTable.($this.Ensure.ToString()) }
+            
+            if ( $comparisonResults.Count -gt 0 )
+            {
+                $configurationInDesiredState = $false
+                
+                foreach ( $comparisonResult in $comparisonResults )
+                {
+                    # Create an array of values to use when providing verbose feedback
+                    $verboseMessageValues = @(
+                        $comparisonResult.InputObject,
+                        (
+                            @{
+                                '=>' = 'not '
+                                '==' = 'not '
+                                '<=' = ''
+                            }.($comparisonResult.SideIndicator)
+                        ),
+                        $this.AvailabilityGroupName
+                    )
+
+                    New-VerboseMessage -Message ( "The database '{0}' should {1}be a member of the availability group '{2}'." -f $verboseMessageValues )
+                }
+            }
+        }
+        else
+        {
+            if ( @('Present','Exactly') -contains $this.Ensure.ToString() )
+            {
+                $configurationInDesiredState = $false
+                New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
             }
         }
 
         return $configurationInDesiredState
+    }
+
+    [string[]] GetMatchingDatabaseNames ()
+    {
+        $matchingDatabaseNames = @()
+        $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
+        $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
+
+        if ( $AvailabilityGroup )
+        {
+            $primaryReplicaServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
+
+            foreach ( $dbName in $this.DatabaseName )
+            {
+                $matchingDatabaseNames += $primaryReplicaServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+            }
+        }        
+
+        return $matchingDatabaseNames
+    }
+
+    [string[]] GetMissingDatabaseNames (
+        [string[]]
+        $MatchingDatabaseNames
+    )
+    {
+        $missingDatabases = @{}
+        foreach ( $dbName in $this.DatabaseName )
+        {
+            # Assume the database name was not found
+            $databaseNameMissing = $true
+
+            foreach ( $matchingDatabaseName in $matchingDatabaseNames )
+            {
+                if ( $matchingDatabaseName -like $dbName )
+                {
+                    # If we found the database name, it's not missing
+                    $databaseNameMissing = $false
+                }
+            }
+
+            $missingDatabases.Add($dbName,$databaseNameMissing)
+        }
+
+        $result = $missingDatabases.GetEnumerator() | Where-Object { $_.Value } | Select-Object -ExpandProperty Key
+
+        return $result
     }
 
     [Microsoft.SqlServer.Management.Smo.Server] GetPrimaryReplicaServerObject (
