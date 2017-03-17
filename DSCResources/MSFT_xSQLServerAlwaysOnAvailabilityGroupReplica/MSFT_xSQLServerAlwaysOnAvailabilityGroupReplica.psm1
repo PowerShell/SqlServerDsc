@@ -24,11 +24,11 @@ function Get-TargetResource
     [OutputType([Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $Name,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $AvailabilityGroupName,
         
@@ -138,7 +138,7 @@ function Get-TargetResource
         Specifies how the availability replica handles connections when in the secondary role.
 
     .PARAMETER EndpointHostName
-        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name which is set in the code because the value can only be determined when connected to the SQL Instance.
 
     .PARAMETER FailoverMode
         Specifies the failover mode. Default is Manual.
@@ -158,7 +158,7 @@ function Set-TargetResource
         [String]
         $Name,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $AvailabilityGroupName,
         
@@ -271,7 +271,6 @@ function Set-TargetResource
         {
             $clusterServiceName = 'NT SERVICE\ClusSvc'
             $ntAuthoritySystemName = 'NT AUTHORITY\SYSTEM'
-            $availabilityGroupManagementRoleName = 'AG_Management'
             $availabilityGroupManagementPerms = @('Connect SQL','Alter Any Availability Group','View Server State')
             $clusterPermissionsPresent = $false
 
@@ -546,7 +545,7 @@ function Set-TargetResource
         Specifies how the availability replica handles connections when in the secondary role.
 
     .PARAMETER EndpointHostName
-        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name.
+        Specifies the hostname or IP address of the availability group replica endpoint. Default is the instance network name which is set in the code because the value can only be determined when connected to the SQL Instance.
 
     .PARAMETER FailoverMode
         Specifies the failover mode. Default is Manual.
@@ -567,7 +566,7 @@ function Test-TargetResource
         [String]
         $Name,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $AvailabilityGroupName,
         
@@ -682,22 +681,18 @@ function Test-TargetResource
                     $parameterValue = Get-Variable -Name $parameterName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value
                                         
                     # Make sure we don't try to validate a common parameter
-                    if ( $parametersToCheck -notcontains $parameterName )
+                    if ( $parametersToCheck -contains $parameterName )
                     {
-                        continue
-                    }
-
-                    # If the parameter is Null, a value wasn't provided
-                    if ( [string]::IsNullOrEmpty($parameterValue) )
-                    {
-                        continue
-                    }
-                   
-                    if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
-                    {                        
-                        New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
-                        
-                        $result = $False
+                        # If the parameter is Null, a value wasn't provided
+                        if ( -not [string]::IsNullOrEmpty($parameterValue) )
+                        {                    
+                            if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
+                            {                        
+                                New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
+                                
+                                $result = $false
+                            }
+                        }
                     }
                 }
 
