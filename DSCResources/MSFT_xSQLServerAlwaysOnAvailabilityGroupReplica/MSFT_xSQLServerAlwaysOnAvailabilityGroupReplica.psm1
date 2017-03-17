@@ -238,7 +238,7 @@ function Set-TargetResource
     # Make sure we're communicating with the primary replica in order to make changes to the replica
     if ( $availabilityGroup )
     {
-        if ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
+        while ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
         {
             $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
             $availabilityGroup = $primaryServerObject.AvailabilityGroups[$AvailabilityGroupName]
