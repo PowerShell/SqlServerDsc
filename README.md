@@ -236,7 +236,7 @@ This resource is used to create, remove, and update an Always On Availability Gr
 * **AvailabilityGroupName** _(Key)_: The name of the availability group.
 * **SQLServer** _(Required)_: Hostname of the SQL Server to be configured.
 * **SQLInstanceName** _(Key)_: Name of the SQL instance to be configued.
-* **PrimaryReplicaSQLServer** _(Write)_: Hostname of the SQL Server where the primary replica is expected to be active. If the primary replica is not found here, the resource will attempt to connect to the primary replica.
+* **PrimaryReplicaSQLServer** _(Write)_: Hostname of the SQL Server where the primary replica is expected to be active. If the primary replica is not found here, the resource will attempt to find the host that holds the primary replica and connect to it.
 * **PrimaryReplicaSQLInstanceName** _(Write)_: Name of the SQL instance where the primary replica lives.
 * **Ensure** _(Write)_: Specifies if the availability group replica should be present or absent. Default is Present. { *Present* | Absent }
 * **AvailabilityMode** _(Write)_: Specifies the replica availability mode. Default is 'AsynchronousCommit'. { *AsynchronousCommit* | SynchronousCommit }

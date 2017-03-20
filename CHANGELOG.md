@@ -10,7 +10,9 @@
   - Fixed code style, added updated parameter descriptions to schema.mof and README.md.
 - Changes to xSQLServer
   - Raised the CodeCov target to 70% which is the minimum and required target for HQRM resource.
-
+- Added new resource
+  - xSQLServerAlwaysOnAvailabilityGroupReplica
+  
 ## 6.0.0.0
 
 - Changes to xSQLServerConfiguration
@@ -20,7 +22,6 @@
   - xSQLServerRole now correctly reports that the desired state is present when the login is already a member of the server roles.
 - Added new resources
   - xSQLServerAlwaysOnAvailabilityGroup
-  - xSQLServerAlwaysOnAvailabilityGroupReplica
 - Changes to xSQLServerSetup
   - Properly checks for use of SQLSysAdminAccounts parameter in $PSBoundParameters. The test now also properly evaluates the setup argument for SQLSysAdminAccounts.
   - xSQLServerSetup should now function correctly for the InstallFailoverCluster action, and also supports cluster shared volumes. Note that the AddNode action is not currently working.

@@ -117,7 +117,7 @@ function Get-TargetResource
         Name of the SQL instance to be configued.
 
     .PARAMETER PrimaryReplicaSQLServer
-        Hostname of the SQL Server where the primary replica lives.
+        Hostname of the SQL Server where the primary replica is expected to be active. If the primary replica is not found here, the resource will attempt to find the host that holds the primary replica and connect to it.
     
     .PARAMETER PrimaryReplicaSQLInstanceName
         Name of the SQL instance where the primary replica lives.
@@ -524,7 +524,7 @@ function Set-TargetResource
         Name of the SQL instance to be configued.
     
     .PARAMETER PrimaryReplicaSQLServer
-        Hostname of the SQL Server where the primary replica lives.
+        Hostname of the SQL Server where the primary replica is expected to be active. If the primary replica is not found here, the resource will attempt to find the host that holds the primary replica and connect to it.
     
     .PARAMETER PrimaryReplicaSQLInstanceName
         Name of the SQL instance where the primary replica lives.

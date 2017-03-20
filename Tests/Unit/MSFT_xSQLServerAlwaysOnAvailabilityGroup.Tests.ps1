@@ -146,7 +146,7 @@ try
             # Type the mock as a server object
             $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
 
-            $mock.Logins.GetEnumerator() | ForEach-Object { $_.Value.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server') }
+            $mock.Logins.GetEnumerator() | ForEach-Object { $_.Value.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Login') }
 
             return $mock
         }
@@ -745,9 +745,7 @@ try
                             AvailabilityGroups = @()
                             Endpoints = @()
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                            }
+                            Logins = $mockNtServiceClusSvcPresent
                         }
                     } -Verifiable -Scope It
                     Mock -CommandName New-SqlAvailabilityGroup {} -Verifiable -Scope It
@@ -1039,10 +1037,7 @@ try
                                 }
                             )
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                                'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                            }
+                            Logins = $mockLogins
                             Name = 'Server1'
                             NetName = 'Server1'
                             Roles = @{}
@@ -1108,10 +1103,7 @@ try
                                 }
                             )
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                                'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                            }
+                            Logins = $mockLogins
                             Name = 'Server1'
                             NetName = 'Server1'
                             Roles = @{}
@@ -1344,10 +1336,7 @@ try
                                 }
                             )
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                                'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                            }
+                            Logins = $mockLogins
                             Name = 'Server1'
                             NetName = 'Server1'
                             Roles = @{}
@@ -1458,10 +1447,7 @@ try
                                 }
                             )
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                                'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                            }
+                            Logins = $mockLogins
                             Name = 'Server1'
                             NetName = 'Server1'
                             Roles = @{}
@@ -1549,10 +1535,7 @@ try
                                 }
                             )
                             IsHadrEnabled = $true
-                            Logins = @{
-                                'NT SERVICE\ClusSvc' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT SERVICE\ClusSvc')
-                                'NT AUTHORITY\SYSTEM' = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login('Server1','NT AUTHORITY\SYSTEM')
-                            }
+                            Logins = $mockLogins
                             Name = 'Server1'
                             NetName = 'Server1'
                             Roles = @{}

@@ -5,7 +5,7 @@ class MSFT_xSQLServerAlwaysOnAvailabilityGroupReplica : OMI_BaseResource
     [Key, Description("The name of the availability group.")] String AvailabilityGroupName;
     [Required, Description("Hostname of the SQL Server to be configured.")] String SQLServer;
     [Key, Description("Name of the SQL instance to be configued.")] String SQLInstanceName;
-    [Write, Description("Hostname of the SQL Server where the primary replica lives.")] String PrimaryReplicaSQLServer;
+    [Write, Description("Hostname of the SQL Server where the primary replica is expected to be active. If the primary replica is not found here, the resource will attempt to find the host that holds the primary replica and connect to it.")] String PrimaryReplicaSQLServer;
     [Write, Description("Name of the SQL instance where the primary replica lives.")] String PrimaryReplicaSQLInstanceName;
     [Write, Description("Specifies if the availability group replica should be present or absent. Default is Present."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("Specifies the replica availability mode. Default is 'AsynchronousCommit'."), ValueMap{"AsynchronousCommit","SynchronousCommit"}, Values{"AsynchronousCommit","SynchronousCommit"}] String AvailabilityMode;
@@ -16,4 +16,5 @@ class MSFT_xSQLServerAlwaysOnAvailabilityGroupReplica : OMI_BaseResource
     [Write, Description("Specifies the failover mode. Default is 'Manual'."), ValueMap{"Automatic","Manual"}, Values{"Automatic","Manual"}] String FailoverMode;
     [Write, Description("Specifies the fully-qualified domain name (FQDN) and port to use when routing to the replica for read only connections.")] String ReadOnlyRoutingConnectionUrl;
     [Write, Description("Specifies an ordered list of replica server names that represent the probe sequence for connection director to use when redirecting read-only connections through this availability replica. This parameter applies if the availability replica is the current primary replica of the availability group.")] String ReadOnlyRoutingList[];    
+    [Read, Description("Output the NetName property from the SQL Server object. Used by Get-TargetResource")] String SqlServerNetName
 };
