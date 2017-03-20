@@ -12,7 +12,7 @@
   - Raised the CodeCov target to 70% which is the minimum and required target for HQRM resource.
 - Added new resource
   - xSQLServerAlwaysOnAvailabilityGroupReplica
-  
+
 ## 6.0.0.0
 
 - Changes to xSQLServerConfiguration
