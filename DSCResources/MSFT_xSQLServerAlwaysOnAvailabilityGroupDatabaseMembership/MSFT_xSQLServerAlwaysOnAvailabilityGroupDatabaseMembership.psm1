@@ -73,7 +73,42 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [void] Set()
-    {}
+    {        
+        # Connect to the defined instance
+        $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
+
+        # Get the Availabilty Group if it exists
+        $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
+
+        # Make sure we're communicating with the primary replica in order to make changes to the replica
+        $primaryServerObject = ''
+        if ( $availabilityGroup )
+        {
+            while ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
+            {
+                $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
+                $availabilityGroup = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
+            }
+        }
+
+        # Ensure the appropriate permissions are in place
+        if ( $this.MatchDatabaseOwner )
+        {
+            $testLoginEffectivePermissionsParams = @{
+                SQLServer = $primaryServerObject.ComputerNamePhysicalNetBIOS
+                SQLInstanceName = $primaryServerObject.ServiceName
+                LoginName = $primaryServerObject.ConnectionContext.TrueLogin
+                Permissions = @('IMPERSONATE ANY LOGIN')
+            }
+            
+            $impersonatePermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
+
+            if ( -not $impersonatePermissionsPresent )
+            {
+                throw New-TerminatingError -ErrorType ImpersonatePermissionNotPresent -ErrorCategory SecurityError
+            }
+        }
+    }
 
     [bool] Test()
     {
@@ -88,15 +123,16 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames()
 
-        $missingDatabaseNames = $this.GetMissingDatabaseNames($matchingDatabaseNames)
+        $databasesNotFoundOnTheInstance = $this.GetDatabaseNamesNotFoundOnTheInstance($matchingDatabaseNames)
 
         if ( $matchingDatabaseNames.Count -gt 0 )
         {
-            if ( ( $missingDatabaseNames.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
+            # If the databases specified are not present on the instance and the desired state is not Absent
+            if ( ( $databasesNotFoundOnTheInstance.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
             {
                 $configurationInDesiredState = $false
 
-                New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $missingDatabaseNames -join ', ' ) )
+                New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $databasesNotFoundOnTheInstance -join ', ' ) )
             }
             
             [array]$comparisonResults = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $currentConfiguration.DatabaseName -IncludeEqual | 
@@ -137,6 +173,16 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $configurationInDesiredState
     }
 
+    [string[]] GetDatabasesToAddToAvailabilityGroup ()
+    {
+        return @()
+    }
+
+    [string[]] GetDatabasesToRemoveFromAvailabilityGroup ()
+    {
+        return @()
+    }
+    
     [string[]] GetMatchingDatabaseNames ()
     {
         $matchingDatabaseNames = @()
@@ -156,30 +202,30 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $matchingDatabaseNames
     }
 
-    [string[]] GetMissingDatabaseNames (
+    [string[]] GetDatabaseNamesNotFoundOnTheInstance (
         [string[]]
         $MatchingDatabaseNames
     )
     {
-        $missingDatabases = @{}
+        $databasesNotFoundOnTheInstance = @{}
         foreach ( $dbName in $this.DatabaseName )
         {
             # Assume the database name was not found
-            $databaseNameMissing = $true
+            $databaseNameNotFound = $true
 
             foreach ( $matchingDatabaseName in $matchingDatabaseNames )
             {
                 if ( $matchingDatabaseName -like $dbName )
                 {
                     # If we found the database name, it's not missing
-                    $databaseNameMissing = $false
+                    $databaseNameNotFound = $false
                 }
             }
 
-            $missingDatabases.Add($dbName,$databaseNameMissing)
+            $databasesNotFoundOnTheInstance.Add($dbName,$databaseNameNotFound)
         }
 
-        $result = $missingDatabases.GetEnumerator() | Where-Object { $_.Value } | Select-Object -ExpandProperty Key
+        $result = $databasesNotFoundOnTheInstance.GetEnumerator() | Where-Object { $_.Value } | Select-Object -ExpandProperty Key
 
         return $result
     }
