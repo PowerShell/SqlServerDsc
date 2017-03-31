@@ -81,15 +81,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
         # Make sure we're communicating with the primary replica in order to make changes to the replica
-        $primaryServerObject = ''
-        if ( $availabilityGroup )
-        {
-            while ( $availabilityGroup.LocalReplicaRole -ne 'Primary' )
-            {
-                $primaryServerObject = Connect-SQL -SQLServer $availabilityGroup.PrimaryReplicaServerName
-                $availabilityGroup = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
-            }
-        }
+        $primaryServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
+
+        $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($serverObject,$availabilityGroup)
+        $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($serverObject,$availabilityGroup)
 
         # Ensure the appropriate permissions are in place
         if ( $this.MatchDatabaseOwner )
@@ -108,6 +103,9 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 throw New-TerminatingError -ErrorType ImpersonatePermissionNotPresent -ErrorCategory SecurityError
             }
         }
+
+        $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
+        $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
     }
 
     [bool] Test()
@@ -115,89 +113,113 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $configurationInDesiredState = $true
         $currentConfiguration = $this.Get()
 
-        $comparisonLookupTable = @{
-            'Absent' = '=='
-            'Present' = '<='
-            'Exactly' = '<=|=>'
-        }
+        # Connect to the defined instance
+        $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
 
-        $matchingDatabaseNames = $this.GetMatchingDatabaseNames()
+        # Get the Availabilty Group if it exists
+        $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
-        $databasesNotFoundOnTheInstance = $this.GetDatabaseNamesNotFoundOnTheInstance($matchingDatabaseNames)
+        # Make sure we're communicating with the primary replica in order to make changes to the replica
+        $primaryServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
 
-        if ( $matchingDatabaseNames.Count -gt 0 )
+        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($primaryServerObject)
+        $databasesNotFoundOnTheInstance = @()
+
+        if ( ( @( [Ensure]::Present,[Ensure]::Exactly ) -contains $this.Ensure ) -and $matchingDatabaseNames.Count -eq 0 )
         {
+            $configurationInDesiredState = $false
+            New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
+        }
+        else
+        {
+            $databasesNotFoundOnTheInstance = $this.GetDatabaseNamesNotFoundOnTheInstance($matchingDatabaseNames)
+
             # If the databases specified are not present on the instance and the desired state is not Absent
             if ( ( $databasesNotFoundOnTheInstance.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
             {
                 $configurationInDesiredState = $false
-
                 New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $databasesNotFoundOnTheInstance -join ', ' ) )
             }
-            
-            [array]$comparisonResults = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $currentConfiguration.DatabaseName -IncludeEqual | 
-                                    Where-Object { $_.SideIndicator -match $comparisonLookupTable.($this.Ensure.ToString()) }
-            
-            if ( $comparisonResults.Count -gt 0 )
-            {
-                $configurationInDesiredState = $false
-                
-                foreach ( $comparisonResult in $comparisonResults )
-                {
-                    # Create an array of values to use when providing verbose feedback
-                    $verboseMessageValues = @(
-                        $comparisonResult.InputObject,
-                        (
-                            @{
-                                '=>' = 'not '
-                                '==' = 'not '
-                                '<=' = ''
-                            }.($comparisonResult.SideIndicator)
-                        ),
-                        $this.AvailabilityGroupName
-                    )
 
-                    New-VerboseMessage -Message ( "The database '{0}' should {1}be a member of the availability group '{2}'." -f $verboseMessageValues )
-                }
-            }
-        }
-        else
-        {
-            if ( @('Present','Exactly') -contains $this.Ensure.ToString() )
+            $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
+
+            if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
             {
                 $configurationInDesiredState = $false
-                New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
+                New-VerboseMessage -Message ( "The following databases should be a member of the availability group '{0}': {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
+            }
+
+            $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
+
+            if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
+            {
+                $configurationInDesiredState = $false
+                New-VerboseMessage -Message ( "The following databases should not be a member of the availability group '{0}': {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
             }
         }
 
         return $configurationInDesiredState
     }
 
-    [string[]] GetDatabasesToAddToAvailabilityGroup ()
+    [string[]] GetDatabasesToAddToAvailabilityGroup (
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject,
+
+        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        $AvailabilityGroup
+    )
     {
-        return @()
+        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
+        $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
+
+        $comparisonResult = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $databasesInAvailabilityGroup
+        $databasesToAddToAvailabilityGroup = @()
+
+        if ( @([Ensure]::Present,[Ensure]::Exactly) -contains $this.Ensure )
+        {
+            $databasesToAddToAvailabilityGroup = $comparisonResult | Where-Object { $_.SideIndicator -eq '<=' } | Select-Object -ExpandProperty InputObject
+        }
+
+        return $databasesToAddToAvailabilityGroup
     }
 
-    [string[]] GetDatabasesToRemoveFromAvailabilityGroup ()
+    [string[]] GetDatabasesToRemoveFromAvailabilityGroup (
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject,
+
+        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        $AvailabilityGroup
+    )
     {
-        return @()
+        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
+        $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
+
+        $comparisonResult = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $databasesInAvailabilityGroup -IncludeEqual
+        $databasesToRemoveFromAvailabilityGroup = @()
+
+        if ( [Ensure]::Absent -eq $this.Ensure )
+        {
+            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
+        }
+        elseif ( [Ensure]::Exactly -eq $this.Ensure )
+        {
+            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
+        }
+    
+        return $databasesToRemoveFromAvailabilityGroup
     }
     
-    [string[]] GetMatchingDatabaseNames ()
+    [string[]] GetMatchingDatabaseNames (
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject
+    )
     {
         $matchingDatabaseNames = @()
-        $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
-        $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
-        if ( $AvailabilityGroup )
+        foreach ( $dbName in $this.DatabaseName )
         {
-            $primaryReplicaServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
-
-            foreach ( $dbName in $this.DatabaseName )
-            {
-                $matchingDatabaseNames += $primaryReplicaServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
-            }
-        }        
+            $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+        }      
 
         return $matchingDatabaseNames
     }
