@@ -290,7 +290,7 @@ No description.
 
 #### Parameters
 
-* **[String] InstanceName** _(Key)_: The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
+* **[String] InstanceName** _(Key)_: The SQL Server instance name of the primary replica.
 * **[String] AvailabilityGroup** _(Key)_: The name of the availability group to which the availability group listener is or will be connected.
 * **[String] NodeName** _(Write)_: The host name or FQDN of the primary replica.
 * **[String] Ensure** _(Write)_: If the availability group listener should be present or absent. { Present | Absent }.

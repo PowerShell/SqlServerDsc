@@ -25,7 +25,7 @@ function Get-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = 'MSSQLSERVER',
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -123,7 +123,7 @@ function Set-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = 'MSSQLSERVER',
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -380,7 +380,7 @@ function Test-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = 'MSSQLSERVER',
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
