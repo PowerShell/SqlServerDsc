@@ -51,7 +51,8 @@
   - Removed the dependency of SQLPS provider (issue #460).
   - Cleaned up code.
   - Cleaned up tests somewhat.
-  - Fixed PSSA rule warnings (issue #255)
+  - Fixed PSSA rule warnings (issue #255).
+  - Parameter Ensure now defaults to 'Present' (issue #450).
 
 ## 6.0.0.0
 

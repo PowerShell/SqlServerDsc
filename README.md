@@ -293,7 +293,7 @@ No description.
 * **[String] InstanceName** _(Key)_: The SQL Server instance name of the primary replica.
 * **[String] AvailabilityGroup** _(Key)_: The name of the availability group to which the availability group listener is or will be connected.
 * **[String] NodeName** _(Write)_: The host name or FQDN of the primary replica.
-* **[String] Ensure** _(Write)_: If the availability group listener should be present or absent. { Present | Absent }.
+* **[String] Ensure** _(Write)_: If the availability group listener should be present or absent. Default value is 'Present'. { *Present* | Absent }.
 * **[String] Name** _(Write)_: The name of the availability group listener, max 15 characters. This name will be used as the Virtual Computer Object (VCO).
 * **[String[]] IpAddress** _(Write)_: The IP address used for the availability group listener, in the format 192.168.10.45/255.255.252.0. If using DCHP, set to the first IP-address of the DHCP subnet, in the format 192.168.8.1/255.255.252.0. Must be valid in the cluster-allowed IP range.
 * **[Uint16] Port** _(Write)_: The port used for the availability group listener.
