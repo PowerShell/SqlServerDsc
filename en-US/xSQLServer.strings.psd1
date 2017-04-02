@@ -11,6 +11,7 @@ FailedToImportSQLPSModule = Failed to import SQLPS module.
 NotConnectedToInstance = Was unable to connect to the instance '{0}\\{1}'
 AlterAvailabilityGroupFailed = Failed to alter the availability group '{0}'.
 HadrNotEnabled = HADR is not enabled.
+AvailabilityGroupNotFound = Unable to locate the availability group '{0}' on the instance '{1}'.
 
 # SQLServer
 NoDatabase = Database '{0}' does not exist on SQL server '{1}\\{2}'.
@@ -75,7 +76,6 @@ InstanceNotPrimaryReplica = The instance '{0}' is not the primary replica for th
 RemoveAvailabilityGroupFailed = Failed to remove the availabilty group '{0}' from the '{1}' instance.
 
 # AlwaysOnAvailabilityGroupReplica
-AvailabilityGroupNotFound = Unable to locate the availability group '{0}' on the instance '{1}'.
 JoinAvailabilityGroupFailed = Failed to join the availability group replica '{0}'.
 RemoveAvailabilityGroupReplicaFailed = Failed to remove the availability group replica '{0}' with the error '{1}'.
 ReplicaNotFound = Unable to find the availability group replica '{0}' on the instance '{1}'.

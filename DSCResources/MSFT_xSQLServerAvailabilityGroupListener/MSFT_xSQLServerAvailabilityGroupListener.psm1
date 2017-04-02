@@ -1,8 +1,22 @@
-﻿$ErrorActionPreference = "Stop"
+﻿Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
+<#
+    .SYNOPSIS
+        Returns the current state of the Availabilty Group listener.
 
-$script:currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -ErrorAction Stop
+    .PARAMETER InstanceName
+        The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
 
+    .PARAMETER NodeName
+        The host name or FQDN of the primary replica.
+
+    .PARAMETER Name
+        The name of the availability group listener, max 15 characters. This name will be used as the Virtual Computer Object (VCO).
+
+    .PARAMETER AvailabilityGroup
+        The name of the availability group to which the availability group listener is or will be connected.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -11,7 +25,7 @@ function Get-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = "DEFAULT",
+        $InstanceName = 'MSSQLSERVER',
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -27,37 +41,42 @@ function Get-TargetResource
         $AvailabilityGroup
     )
 
-    try {
-        $listener = Get-SQLAlwaysOnAvailabilityGroupListener -Name $Name -AvailabilityGroup $AvailabilityGroup -NodeName $NodeName -InstanceName $InstanceName
-        
-        if( $null -ne $listener ) {
-            New-VerboseMessage -Message "Listener $Name already exist"
+    try
+    {
+        $availabilityGroupListener = Get-SQLAlwaysOnAvailabilityGroupListener -Name $Name -AvailabilityGroup $AvailabilityGroup -NodeName $NodeName -InstanceName $InstanceName
 
-            $ensure = "Present"
-            
-            $port = [uint16]( $listener | Select-Object -ExpandProperty PortNumber )
+        if ($null -ne $availabilityGroupListener)
+        {
+            New-VerboseMessage -Message "Listener $Name exist."
 
-            $presentIpAddress = $listener.AvailabilityGroupListenerIPAddresses
+            $ensure = 'Present'
+            $port = [uint16]( $availabilityGroupListener | Select-Object -ExpandProperty PortNumber )
 
+            $presentIpAddress = $availabilityGroupListener.AvailabilityGroupListenerIPAddresses
             $dhcp = [bool]( $presentIpAddress | Select-Object -First 1 -ExpandProperty IsDHCP )
 
             $ipAddress = @()
-            foreach( $currentIpAddress in $presentIpAddress ) {
+            foreach ($currentIpAddress in $presentIpAddress)
+            {
                 $ipAddress += "$($currentIpAddress.IPAddress)/$($currentIpAddress.SubnetMask)"
-            } 
-        } else {
+            }
+        }
+        else
+        {
             New-VerboseMessage -Message "Listener $Name does not exist"
 
-            $ensure = "Absent"
+            $ensure = 'Absent'
             $port = 0
             $dhcp = $false
             $ipAddress = $null
         }
-    } catch {
+    }
+    catch
+    {
         throw New-TerminatingError -ErrorType AvailabilityGroupListenerNotFound -FormatArgs @($Name) -ErrorCategory ObjectNotFound -InnerException $_.Exception
     }
 
-    $returnValue = @{
+    return @{
         InstanceName = [System.String] $InstanceName
         NodeName = [System.String] $NodeName
         Name = [System.String] $Name
@@ -67,10 +86,36 @@ function Get-TargetResource
         Port = [System.UInt16] $port
         DHCP = [System.Boolean] $dhcp
     }
-
-    return $returnValue
 }
 
+<#
+    .SYNOPSIS
+        Creates the Availability Group listener.
+
+    .PARAMETER InstanceName
+        The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
+
+    .PARAMETER NodeName
+        The host name or FQDN of the primary replica.
+
+    .PARAMETER Name
+        The name of the availability group listener, max 15 characters. This name will be used as the Virtual Computer Object (VCO).
+
+    .PARAMETER Ensure
+        If the availability group listener should be present or absent.
+
+    .PARAMETER AvailabilityGroup
+        The name of the availability group to which the availability group listener is or will be connected.
+
+    .PARAMETER IpAddress
+        The IP address used for the availability group listener, in the format 192.168.10.45/255.255.252.0. If using DCHP, set to the first IP-address of the DHCP subnet, in the format 192.168.8.1/255.255.252.0. Must be valid in the cluster-allowed IP range.
+
+    .PARAMETER Port
+        The port used for the availability group listener.
+
+    .PARAMETER DHCP
+        If DHCP should be used for the availability group listener instead of static IP address.
+#>
 function Set-TargetResource
 {
     [CmdletBinding(SupportsShouldProcess)]
@@ -78,7 +123,7 @@ function Set-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = "DEFAULT",
+        $InstanceName = 'MSSQLSERVER',
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -89,7 +134,7 @@ function Set-TargetResource
         [System.String]
         $Name,
 
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -106,123 +151,227 @@ function Set-TargetResource
         [System.Boolean]
         $DHCP
     )
-   
+
     $parameters = @{
         InstanceName = [System.String] $InstanceName
         NodeName = [System.String] $NodeName
         Name = [System.String] $Name
         AvailabilityGroup = [System.String] $AvailabilityGroup
     }
-    
-    $listenerState = Get-TargetResource @parameters 
-    if( $null -ne $listenerState ) {
-        if( $Ensure -ne "" -and $listenerState.Ensure -ne $Ensure ) {
-            $InstanceName = Get-SQLPSInstanceName -InstanceName $InstanceName
-            
-            if( $Ensure -eq "Present") {
-                if( ( $PSCmdlet.ShouldProcess( $Name, "Create listener on $AvailabilityGroup" ) ) ) {
+
+    $availabilityGroupListenerState = Get-TargetResource @parameters
+    if ($null -ne $availabilityGroupListenerState)
+    {
+        if ($Ensure -ne '' -and $availabilityGroupListenerState.Ensure -ne $Ensure)
+        {
+            if ($Ensure -eq 'Present')
+            {
+                New-VerboseMessage -Message "Create listener on $AvailabilityGroup"
+
+                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+
+                $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
+                if ($availabilityGroupObject)
+                {
                     $newListenerParams = @{
                         Name = $Name
-                        Path = "SQLSERVER:\SQL\$NodeName\$InstanceName\AvailabilityGroups\$AvailabilityGroup"
+                        InputObject = $availabilityGroupObject
                     }
 
-                    if( $Port ) {
+                    if ($Port)
+                    {
                         New-VerboseMessage -Message "Listener port set to $Port"
                         $newListenerParams += @{
                             Port = $Port
                         }
                     }
 
-                    if( $DHCP -and $IpAddress.Count -gt 0 ) {
+                    if ($DHCP -and $IpAddress.Count -gt 0)
+                    {
                         New-VerboseMessage -Message "Listener set to DHCP with subnet $IpAddress"
                         $newListenerParams += @{
                             DhcpSubnet = [string]$IpAddress
                         }
-                    } elseif ( -not $DHCP -and $IpAddress.Count -gt 0 ) {
+                    }
+                    elseif (-not $DHCP -and $IpAddress.Count -gt 0)
+                    {
                         New-VerboseMessage -Message "Listener set to static IP-address(es); $($IpAddress -join ', ')"
                         $newListenerParams += @{
                             StaticIp = $IpAddress
                         }
-                    } else {
+                    }
+                    else
+                    {
                         New-VerboseMessage -Message "Listener using DHCP with server default subnet"
                     }
-                                        
-                    New-SqlAvailabilityGroupListener @newListenerParams -Verbose:$False | Out-Null   # Suppressing Verbose because it prints the entire T-SQL statement otherwise
+
+                    New-SqlAvailabilityGroupListener @newListenerParams -ErrorAction Stop | Out-Null
                 }
-            } else {
-                if( ( $PSCmdlet.ShouldProcess( $Name, "Remove listener from $AvailabilityGroup" ) ) ) {
-                    Remove-Item "SQLSERVER:\SQL\$NodeName\$InstanceName\AvailabilityGroups\$AvailabilityGroup\AvailabilityGroupListeners\$Name"
+                else
+                {
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
                 }
             }
-        } else {
-            if( $Ensure -ne "" ) { New-VerboseMessage -Message "State is already $Ensure" }
-            
-            if( $listenerState.Ensure -eq "Present") {
-                if( -not $DHCP -and $listenerState.IpAddress.Count -lt $IpAddress.Count ) { # Only able to add a new IP-address, not change existing ones.
+            else
+            {
+                New-VerboseMessage -Message "Remove listener from $AvailabilityGroup"
+
+                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+
+                $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
+                if ($availabilityGroupObject)
+                {
+                    $availabilityGroupListenerObject = $availabilityGroupObject.AvailabilityGroupListeners[$Name]
+                    if ($availabilityGroupListenerObject)
+                    {
+                        $availabilityGroupListenerObject.Drop()
+                    }
+                    else
+                    {
+                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerNotFound -ErrorCategory ObjectNotFound
+                    }
+                }
+                else
+                {
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+                }
+            }
+        }
+        else
+        {
+            if ($Ensure -ne '')
+            {
+                New-VerboseMessage -Message "State is already $Ensure"
+            }
+
+            if ($availabilityGroupListenerState.Ensure -eq 'Present')
+            {
+                if (-not $DHCP -and $availabilityGroupListenerState.IpAddress.Count -lt $IpAddress.Count) # Only able to add a new IP-address, not change existing ones.
+                {
                     New-VerboseMessage -Message "Found at least one new IP-address."
-                    $ipAddressEqual = $False
-                } else {
+                    $ipAddressEqual = $false
+                }
+                else
+                {
                     # No new IP-address
-                    if( $null -eq $IpAddress -or -not ( Compare-Object -ReferenceObject $IpAddress -DifferenceObject $listenerState.IpAddress ) ) { 
-                       $ipAddressEqual = $True
-                    } else {
-                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerIPChangeError -FormatArgs @($($IpAddress -join ', '),$($listenerState.IpAddress -join ', ')) -ErrorCategory InvalidOperation
+                    if ($null -eq $IpAddress -or -not ( Compare-Object -ReferenceObject $IpAddress -DifferenceObject $availabilityGroupListenerState.IpAddress))
+                    {
+                       $ipAddressEqual = $true
+                    }
+                    else
+                    {
+                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerIPChangeError -FormatArgs @($($IpAddress -join ', '),$($availabilityGroupListenerState.IpAddress -join ', ')) -ErrorCategory InvalidOperation
                     }
                 }
 
-                if( $($PSBoundParameters.ContainsKey('DHCP')) -and $listenerState.DHCP -ne $DHCP ) {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupListenerDHCPChangeError -FormatArgs @( $DHCP, $($listenerState.DHCP) ) -ErrorCategory InvalidOperation
+                if ($($PSBoundParameters.ContainsKey('DHCP')) -and $availabilityGroupListenerState.DHCP -ne $DHCP)
+                {
+                    throw New-TerminatingError -ErrorType AvailabilityGroupListenerDHCPChangeError -FormatArgs @( $DHCP, $($availabilityGroupListenerState.DHCP) ) -ErrorCategory InvalidOperation
                 }
-                
-                if( $listenerState.Port -ne $Port -or -not $ipAddressEqual ) {
-                    New-VerboseMessage -Message "Listener differ in configuration."
 
-                    if( $listenerState.Port -ne $Port ) {
-                        if( ( $PSCmdlet.ShouldProcess( $Name, "Changing port configuration" ) ) ) {
-                            $InstanceName = Get-SQLPSInstanceName -InstanceName $InstanceName
-                            
-                            $setListenerParams = @{
-                                Path = "SQLSERVER:\SQL\$NodeName\$InstanceName\AvailabilityGroups\$AvailabilityGroup\AvailabilityGroupListeners\$Name"
-                                Port = $Port
-                            }
+                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
 
-                            Set-SqlAvailabilityGroupListener @setListenerParams -Verbose:$False | Out-Null # Suppressing Verbose because it prints the entire T-SQL statement otherwise
-                        }
-                    }
+                $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
+                if ($availabilityGroupObject)
+                {
+                    $availabilityGroupListenerObject = $availabilityGroupObject.AvailabilityGroupListeners[$Name]
+                    if ($availabilityGroupListenerObject)
+                    {
+                        if ($availabilityGroupListenerState.Port -ne $Port -or -not $ipAddressEqual)
+                        {
+                            New-VerboseMessage -Message "Listener differ in configuration."
 
-                    if( -not $ipAddressEqual ) {
-                        if( ( $PSCmdlet.ShouldProcess( $Name, "Adding IP-address(es)" ) ) ) {
-                            $InstanceName = Get-SQLPSInstanceName -InstanceName $InstanceName
-                            
-                            $newIpAddress = @()
-                            
-                            foreach( $currentIpAddress in $IpAddress ) {
-                                if( -not ( $listenerState.IpAddress -contains $currentIpAddress ) ) {
-                                    $newIpAddress += $currentIpAddress
+                            if ($availabilityGroupListenerState.Port -ne $Port)
+                            {
+                                New-VerboseMessage -Message "Changing port configuration"
+
+                                $setListenerParams = @{
+                                    InputObject = $availabilityGroupListenerObject
+                                    Port = $Port
                                 }
-                            }
-                            
-                            $setListenerParams = @{
-                                Path = "SQLSERVER:\SQL\$NodeName\$InstanceName\AvailabilityGroups\$AvailabilityGroup\AvailabilityGroupListeners\$Name"
-                                StaticIp = $newIpAddress
+
+                                Set-SqlAvailabilityGroupListener @setListenerParams -ErrorAction Stop | Out-Null
                             }
 
-                            Add-SqlAvailabilityGroupListenerStaticIp @setListenerParams -Verbose:$False | Out-Null # Suppressing Verbose because it prints the entire T-SQL statement otherwise
+                            if (-not $ipAddressEqual)
+                            {
+                                New-VerboseMessage -Message "Adding IP-address(es)"
+
+                                $InstanceName = Get-SQLPSInstanceName -InstanceName $InstanceName
+
+                                $newIpAddress = @()
+
+                                foreach ($currentIpAddress in $IpAddress)
+                                {
+                                    if (-not ( $availabilityGroupListenerState.IpAddress -contains $currentIpAddress))
+                                    {
+                                        $newIpAddress += $currentIpAddress
+                                    }
+                                }
+
+                                $setListenerParams = @{
+                                    InputObject = $availabilityGroupListenerObject
+                                    StaticIp = $newIpAddress
+                                }
+
+                                Add-SqlAvailabilityGroupListenerStaticIp @setListenerParams -ErrorAction Stop | Out-Null
+                            }
+                        }
+                        else
+                        {
+                            New-VerboseMessage -Message "Listener configuration is already correct."
                         }
                     }
-
-                } else {
-                    New-VerboseMessage -Message "Listener configuration is already correct."
+                    else
+                    {
+                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerNotFound -ErrorCategory ObjectNotFound
+                    }
                 }
-            } else {
+                else
+                {
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+                }
+            }
+            else
+            {
                 throw New-TerminatingError -ErrorType AvailabilityGroupListenerNotFound -ErrorCategory ObjectNotFound
             }
         }
-    } else {
+    }
+    else
+    {
         throw New-TerminatingError -ErrorType UnexpectedErrorFromGet -ErrorCategory InvalidResult
     }
 }
 
+<#
+    .SYNOPSIS
+        Tests if the the Availability Group listener is in desired state.
+
+    .PARAMETER InstanceName
+        The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
+
+    .PARAMETER NodeName
+        The host name or FQDN of the primary replica.
+
+    .PARAMETER Name
+        The name of the availability group listener, max 15 characters. This name will be used as the Virtual Computer Object (VCO).
+
+    .PARAMETER Ensure
+        If the availability group listener should be present or absent.
+
+    .PARAMETER AvailabilityGroup
+        The name of the availability group to which the availability group listener is or will be connected.
+
+    .PARAMETER IpAddress
+        The IP address used for the availability group listener, in the format 192.168.10.45/255.255.252.0. If using DCHP, set to the first IP-address of the DHCP subnet, in the format 192.168.8.1/255.255.252.0. Must be valid in the cluster-allowed IP range.
+
+    .PARAMETER Port
+        The port used for the availability group listener.
+
+    .PARAMETER DHCP
+        If DHCP should be used for the availability group listener instead of static IP address.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -231,7 +380,7 @@ function Test-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName = "DEFAULT",
+        $InstanceName = 'MSSQLSERVER',
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -242,7 +391,7 @@ function Test-TargetResource
         [System.String]
         $Name,
 
-        [ValidateSet("Present","Absent")]
+        [ValidateSet('Present','Absent')]
         [System.String]
         $Ensure,
 
@@ -266,34 +415,42 @@ function Test-TargetResource
         Name = [System.String] $Name
         AvailabilityGroup = [System.String] $AvailabilityGroup
     }
-    
+
     New-VerboseMessage -Message "Testing state of listener $Name"
-    
-    $listenerState = Get-TargetResource @parameters 
-    if( $null -ne $listenerState ) {
-        if( $null -eq $IpAddress -or ($null -ne $listenerState.IpAddress -and -not ( Compare-Object -ReferenceObject $IpAddress -DifferenceObject $listenerState.IpAddress ) ) ) { 
+
+    $availabilityGroupListenerState = Get-TargetResource @parameters
+    if ($null -ne $availabilityGroupListenerState)
+    {
+        if ($null -eq $IpAddress -or ($null -ne $availabilityGroupListenerState.IpAddress -and -not ( Compare-Object -ReferenceObject $IpAddress -DifferenceObject $availabilityGroupListenerState.IpAddress)))
+        {
             $ipAddressEqual = $true
-        } else {
+        }
+        else
+        {
             $ipAddressEqual = $false
         }
-        
-        [System.Boolean] $result = $false
-        if( $listenerState.Ensure -eq $Ensure)  {
-            if( $Ensure -eq 'Absent' ) {
-                $result = $true
-            }
-        }
 
-        if( -not $($PSBoundParameters.ContainsKey('Ensure')) -or $Ensure -eq "Present" ) { 
-            if( ( $Port -eq "" -or $listenerState.Port -eq $Port) -and 
-                $ipAddressEqual -and 
-                ( -not $($PSBoundParameters.ContainsKey('DHCP')) -or $listenerState.DHCP -eq $DHCP ) ) 
+        [System.Boolean] $result = $false
+        if ($availabilityGroupListenerState.Ensure -eq $Ensure)
+        {
+            if ($Ensure -eq 'Absent')
             {
                 $result = $true
             }
         }
 
-    } else {
+        if (-not $($PSBoundParameters.ContainsKey('Ensure')) -or $Ensure -eq 'Present')
+        {
+            if (($Port -eq "" -or $availabilityGroupListenerState.Port -eq $Port) -and
+                $ipAddressEqual -and
+                (-not $($PSBoundParameters.ContainsKey('DHCP')) -or $availabilityGroupListenerState.DHCP -eq $DHCP))
+            {
+                $result = $true
+            }
+        }
+    }
+    else
+    {
         throw New-TerminatingError -ErrorType UnexpectedErrorFromGet -ErrorCategory InvalidResult
     }
 
@@ -320,23 +477,24 @@ function Get-SQLAlwaysOnAvailabilityGroupListener
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $NodeName 
+        $NodeName
     )
 
-    $instance = Get-SQLPSInstance -InstanceName $InstanceName -NodeName $NodeName
-    $Path = "$($instance.PSPath)\AvailabilityGroups\$AvailabilityGroup\AvailabilityGroupListeners"
+    Write-Debug "Connecting to availability group $Name as $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
 
-    Write-Debug "Connecting to $Path as $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
-    
-    [String[]] $presentListener = Get-ChildItem $Path
-    if( $presentListener.Count -ne 0 -and $presentListener.Contains("[$Name]") ) {
-        Write-Debug "Connecting to availability group $Name as $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
-        $listener = Get-Item "$Path\$Name"
-    } else {
-        $listener = $null
-    }    
+    $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
 
-    return $listener
+    $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
+    if ($availabilityGroupObject)
+    {
+        $availabilityGroupListener = $availabilityGroupObject.AvailabilityGroupListeners[$Name]
+    }
+    else
+    {
+        throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+    }
+
+    return $availabilityGroupListener
 }
 
 Export-ModuleMember -Function *-TargetResource

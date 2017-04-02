@@ -2,7 +2,7 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAvailabilityGroupListener")]
 class MSFT_xSQLServerAvailabilityGroupListener : OMI_BaseResource
 {
-    [Key, Description("The SQL Server instance name of the primary replica.")] String InstanceName;
+    [Key, Description("The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.")] String InstanceName;
     [Required, Description("The host name or FQDN of the primary replica.")] String NodeName;
     [Required, Description("The name of the availability group listener, max 15 characters. This name will be used as the Virtual Computer Object (VCO).")] String Name;
     [Write, Description("If the availability group listener should be present or absent."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
