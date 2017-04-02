@@ -51,6 +51,7 @@
   - Removed the dependency of SQLPS provider (issue #460).
   - Cleaned up code.
   - Cleaned up tests somewhat.
+  - Fixed PSSA rule warnings (issue #255)
 
 ## 6.0.0.0
 
