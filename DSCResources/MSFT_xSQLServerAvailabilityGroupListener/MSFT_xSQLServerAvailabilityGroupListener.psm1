@@ -209,7 +209,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
                 }
             }
             else
@@ -233,7 +233,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
                 }
             }
         }
@@ -329,12 +329,8 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
                 }
-            }
-            else
-            {
-                throw New-TerminatingError -ErrorType AvailabilityGroupListenerNotFound -ErrorCategory ObjectNotFound
             }
         }
     }
@@ -491,7 +487,7 @@ function Get-SQLAlwaysOnAvailabilityGroupListener
     }
     else
     {
-        throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -ErrorCategory ObjectNotFound
+        throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
     }
 
     return $availabilityGroupListener

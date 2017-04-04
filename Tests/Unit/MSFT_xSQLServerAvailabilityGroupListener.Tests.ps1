@@ -35,34 +35,46 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
+
+        $mockKnownAvailabilityGroup = 'AG01'
+        $mockUnknownAvailabilityGroup = 'UnknownAG'
+        $mockKnownListenerName = 'AGListener'
+        $mockUnknownListenerName = 'UnknownListener'
+        $mockKnownPortNumber = 5031
+        $mockUnknownPortNumber = 9001
+
         # Static parameter values
         $mockNodeName = 'localhost'
         $mockInstanceName = 'MSSQLSERVER'
-        $mockAvailabilityGroup = 'AG01'
-        $mockListenerName = 'AGListner'
-        $mockPortNumber = 5031
-        $mockIsDhcp = $true
+        $mockDynamicAvailabilityGroup = $mockKnownAvailabilityGroup
+        $mockDynamicListenerName = $mockKnownListenerName
+        $mockDynamicPortNumber = $mockKnownPortNumber
+        $mockDynamicIsDhcp = $true
+        $script:mockMethodDropRan = $false
 
         $mockConnectSql = {
             return New-Object Object |
                 Add-Member ScriptProperty AvailabilityGroups {
                     return @(
                         @{
-                            $mockAvailabilityGroup = New-Object Object |
+                            $mockDynamicAvailabilityGroup = New-Object Object |
                                 Add-Member ScriptProperty AvailabilityGroupListeners {
                                     @(
                                         @{
-                                            $mockListenerName = New-Object Object |
-                                                Add-Member NoteProperty PortNumber $mockPortNumber -PassThru |
+                                            $mockDynamicListenerName = New-Object Object |
+                                                Add-Member NoteProperty PortNumber $mockDynamicPortNumber -PassThru |
                                                 Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
                                                     return @(
                                                         # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
                                                         (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                                            Add-Member NoteProperty IsDHCP $mockIsDhcp -PassThru |
+                                                            Add-Member NoteProperty IsDHCP $mockDynamicIsDhcp -PassThru |
                                                             Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                                             Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
                                                         )
                                                     )
+                                                } -PassThru |
+                                                Add-Member ScriptMethod Drop {
+                                                    $script:mockMethodDropRan = $true
                                                 } -PassThru -Force
                                         }
                                     )
@@ -75,8 +87,8 @@ try
         $defaultParameters = @{
             InstanceName = $mockInstanceName
             NodeName = $mockNodeName
-            Name = $mockListenerName
-            AvailabilityGroup = $mockAvailabilityGroup
+            Name = $mockKnownListenerName
+            AvailabilityGroup = $mockKnownAvailabilityGroup
         }
 
         #endregion Pester Test Initialization
@@ -147,11 +159,11 @@ try
 
                 It 'Should return correct port' {
                     $result = Get-TargetResource @testParameters
-                    $result.Port | Should Be $mockPortNumber
+                    $result.Port | Should Be $mockKnownPortNumber
                 }
 
                 It 'Should return that DHCP is not used' {
-                    $mockIsDhcp = $false
+                    $mockDynamicIsDhcp = $false
 
                     $result = Get-TargetResource @testParameters
                     $result.DHCP | Should Be $false
@@ -184,11 +196,11 @@ try
 
                 It 'Should return correct port' {
                     $result = Get-TargetResource @testParameters
-                    $result.Port | Should Be $mockPortNumber
+                    $result.Port | Should Be $mockKnownPortNumber
                 }
 
                 It 'Should return that DHCP is used' {
-                    $mockIsDhcp = $true
+                    $mockDynamicIsDhcp = $true
 
                     $result = Get-TargetResource @testParameters
                     $result.DHCP | Should Be $true
@@ -197,6 +209,15 @@ try
                 It 'Should call the mock function Connect-SQL' {
                     $result = Get-TargetResource @testParameters
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When Get-SQLAlwaysOnAvailabilityGroupListener throws an error' {
+                # Setting dynamic mock to an availability group that the test is not expecting.
+                $mockDynamicAvailabilityGroup = $mockUnknownAvailabilityGroup
+
+                It 'Should throw the correct error' {
+                    { Get-TargetResource @testParameters } | Should Throw 'Trying to make a change to a listener that does not exist. InnerException: Unable to locate the availability group 'AG01' on the instance 'MSSQLSERVER'.'
                 }
             }
 
@@ -505,6 +526,16 @@ try
                 }
             }
 
+            Context 'When Get-TargetResource returns $null' {
+                It 'Should throw the correct error' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return $null
+                    }
+
+                    { Test-TargetResource @testParameters } | Should Throw 'Got unexpected result from Get-TargetResource. No change is made.'
+                }
+            }
+
             Assert-VerifiableMocks
         }
 
@@ -519,69 +550,100 @@ try
             }
 
             Context 'When the system is not in the desired state' {
-                It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state' {
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using Static IP' {
                     $testParameters += @{
                         Ensure = 'Present'
                         IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = 5030
+                        Port = $mockKnownPortNumber
                         DHCP = $false
                     }
 
-                    Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {} -Verifiable
-
                     { Set-TargetResource @testParameters } | Should Not Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 1 -Scope It
                     Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
                 }
 
-                Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {
-                    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListener
-                    return New-Object Object |
-                        Add-Member NoteProperty PortNumber 5030 -PassThru |
-                        Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                    Add-Member NoteProperty IsDHCP $false -PassThru |
-                                    Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
-                                    Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
-                            )
-                        } -PassThru -Force
-                } -Verifiable
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using DHCP and specific DhcpSubnet' {
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        IpAddress = '192.168.10.1/255.255.252.0'
+                        Port = $mockKnownPortNumber
+                        DHCP = $true
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
+                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+                }
+
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using DHCP and server default DhcpSubnet' {
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        Port = $mockKnownPortNumber
+                        DHCP = $true
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
+                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+                }
+
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should throw when trying to change an existing IP address' {
                     $testParameters += @{
                         IpAddress = '10.0.0.1/255.255.252.0'
-                        Port = 5030
+                        Port = $mockKnownPortNumber
                         DHCP = $false
                     }
 
                     { Set-TargetResource @testParameters } | Should Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
                 }
 
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
+
                 It 'Should throw when trying to change from static IP to DHCP' {
                     $testParameters += @{
                         IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
+                        Port = $mockKnownPortNumber
                         DHCP = $true
                     }
 
                     { Set-TargetResource @testParameters } | Should Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
                 }
+
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should call the cmdlet Add-SqlAvailabilityGroupListenerStaticIp, when adding another IP address, and system is not in desired state' {
                     $testParameters += @{
@@ -592,89 +654,206 @@ try
 
                     { Set-TargetResource @testParameters } | Should Not Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
-                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 1 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 1 -Scope It
                 }
 
-                Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {
-                    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListener
-                    return New-Object Object |
-                        Add-Member NoteProperty PortNumber 5555 -PassThru |
-                        Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                    Add-Member NoteProperty IsDHCP $false -PassThru |
-                                    Add-Member NoteProperty IPAddress '192.168.10.45' -PassThru |
-                                    Add-Member NoteProperty SubnetMask '255.255.252.0' -PassThru
-                                )
-                            )
-                        } -PassThru -Force
-                } -Verifiable
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
 
-                It 'Should call the cmdlet Set-SqlAvailabilityGroupListener when port is not in desired state' {
-                    $testParameters += @{
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
-
-                    { Set-TargetResource @testParameters } | Should Not Throw
-
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
-                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
-                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 1 -Scope It
-                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
-                }
-            }
-
-            Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {
-                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListener
-                return New-Object Object |
-                    Add-Member NoteProperty PortNumber 5030 -PassThru |
-                    Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                        return @(
-                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                Add-Member NoteProperty IsDHCP $false -PassThru |
-                                Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
-                                Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                            )
-                        )
-                    } -PassThru -Force
-            } -Verifiable
-
-            Context 'When the system is in the desired state' {
                 It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state' {
                     $testParameters += @{
                         Ensure = 'Present'
                         IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
+                        Port = $mockKnownPortNumber
                         DHCP = $false
                     }
 
                     { Set-TargetResource @testParameters } | Should Not Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
                 }
 
-                It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state (without ensure parameter)' {
+                $mockDynamicListenerName = $mockKnownListenerName
+                $script:mockMethodDropRan = $false # This is set to $true when Drop() method is called. make sure we start the test with $false.
+
+                It 'Should not call the any cmdlet *-SqlAvailability* or the the Drop() method when system is in desired state and ensure is set to ''Absent''' {
                     $testParameters += @{
+                        Ensure = 'Absent'
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+                    $script:mockMethodDropRan | Should Be $true # Should have made one call to the Drop() method.
+
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
+                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+                }
+
+                $mockDynamicAvailabilityGroup = $mockUnknownAvailabilityGroup
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should throw the correct error when availability group is not found and Ensure is set to ''Present''' {
+                    $testParameters += @{
+                        Ensure = 'Present'
                         IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
+                        Port = $mockKnownPortNumber
+                        DHCP = $false
+                    }
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Absent'
+                        }
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Unable to locate the availability group ''AG01'' on the instance ''MSSQLSERVER''.'
+                }
+
+                It 'Should throw the correct error when availability group is not found and Ensure is set to ''Absent''' {
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                    }
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                        }
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Unable to locate the availability group ''AG01'' on the instance ''MSSQLSERVER''.'
+                }
+
+                $mockDynamicAvailabilityGroup = $mockKnownAvailabilityGroup
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should throw the correct error when listener is not found and Ensure is set to ''Absent''' {
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Trying to make a change to a listener that does not exist.'
+                }
+
+                It 'Should throw the correct error when listener is not found and Ensure is set to ''Present''' {
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        IpAddress = '192.168.0.1/255.255.255.0'
+                        Port = $mockKnownPortNumber
+                        DHCP = $false
+                    }
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                            Name = $mockUnknownListenerName
+                            AvailabilityGroup = $mockKnownAvailabilityGroup
+                            IpAddress = '192.168.0.1/255.255.255.0'
+                            Port = $mockKnownPortNumber
+                            DHCP = $false
+                        }
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Trying to make a change to a listener that does not exist.'
+                }
+
+                $mockDynamicAvailabilityGroup = $mockUnknownAvailabilityGroup
+                $mockDynamicListenerName = $mockUnknownListenerName
+
+                It 'Should throw the correct error when availability group is not found and Ensure is set to ''Present''' {
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        IpAddress = '192.168.0.1/255.255.255.0'
+                        Port = $mockKnownPortNumber
+                        DHCP = $false
+                    }
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                            Name = $mockUnknownListenerName
+                            AvailabilityGroup = $mockUnknownAvailabilityGroup
+                            IpAddress = '192.168.0.1/255.255.255.0'
+                            Port = $mockKnownPortNumber
+                            DHCP = $false
+                        }
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Unable to locate the availability group ''AG01'' on the instance ''MSSQLSERVER''.'
+                }
+            }
+
+            Context 'When the system is in the desired state' {
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
+
+                It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state' {
+                    $testParameters += @{
+                        Ensure = 'Present'
+                        IpAddress = '192.168.0.1/255.255.255.0'
+                        Port = $mockKnownPortNumber
                     }
 
                     { Set-TargetResource @testParameters } | Should Not Throw
 
-                    Assert-MockCalled Get-SQLAlwaysOnAvailabilityGroupListener -Exactly -Times 1 -Scope It
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
                     Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
                     Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+                }
+
+                $mockDynamicIsDhcp = $false
+                $mockDynamicListenerName = $mockKnownListenerName
+                $mockDynamicPortNumber = $mockKnownPortNumber
+
+                It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state (without ensure parameter)' {
+                    $testParameters += @{
+                        IpAddress = '192.168.0.1/255.255.255.0'
+                        Port = $mockKnownPortNumber
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope It
+                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+                }
+
+                $mockDynamicListenerName = $mockUnknownListenerName
+                $script:mockMethodDropRan = $false # This is set to $true when Drop() method is called. make sure we start the test with $false.
+
+                It 'Should not call the any cmdlet *-SqlAvailability* or the the Drop() method when system is in desired state and ensure is set to ''Absent''' {
+                    $testParameters += @{
+                        Ensure = 'Absent'
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+                    $script:mockMethodDropRan | Should Be $false # Should not have called Drop() method.
+
+                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope It
+                    Assert-MockCalled New-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Set-SqlAvailabilityGroupListener -Exactly -Times 0 -Scope It
+                    Assert-MockCalled Add-SqlAvailabilityGroupListenerStaticIp -Exactly -Times 0 -Scope It
+
+                }
+            }
+
+            Context 'When Get-TargetResource returns $null' {
+                It 'Should throw the correct error' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return $null
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Throw 'Got unexpected result from Get-TargetResource. No change is made.'
                 }
             }
 
