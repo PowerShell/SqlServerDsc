@@ -64,7 +64,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         }
         else
         {
-            New-VerboseMessage -Message "The availabiilty group '$($this.AvailabilityGroupName)' does not exist."
+            New-VerboseMessage -Message "The availabilty group '$($this.AvailabilityGroupName)' does not exist."
 
             $currentConfiguration.MatchDatabaseOwner = $false
         }
@@ -83,29 +83,57 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         # Make sure we're communicating with the primary replica in order to make changes to the replica
         $primaryServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
 
-        $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($serverObject,$availabilityGroup)
-        $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($serverObject,$availabilityGroup)
+        $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
+        $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
 
-        # Ensure the appropriate permissions are in place
+        # Ensure the appropriate permissions are in place on all the replicas
         if ( $this.MatchDatabaseOwner )
         {
-            $testLoginEffectivePermissionsParams = @{
-                SQLServer = $primaryServerObject.ComputerNamePhysicalNetBIOS
-                SQLInstanceName = $primaryServerObject.ServiceName
-                LoginName = $primaryServerObject.ConnectionContext.TrueLogin
-                Permissions = @('IMPERSONATE ANY LOGIN')
-            }
-            
-            $impersonatePermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
+            $impersonatePermissionsStatus = @{}
 
-            if ( -not $impersonatePermissionsPresent )
+            foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
             {
-                throw New-TerminatingError -ErrorType ImpersonatePermissionNotPresent -ErrorCategory SecurityError
+                $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                $impersonatePermissionsStatus.Add($availabilityGroupReplica.Name, $this.TestImpersonatePermissions($currentAvailabilityGroupReplicaServerObject))
+            }
+
+            if ( $impersonatePermissionsStatus.Values -contains $false )
+            {
+                $newTerminatingErrorParams = @{
+                    ErrorType = 'ImperstonatePermissionsMissing'
+                    FormatArgs = @(
+                        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
+                        ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
+                    )
+                    ErrorCategory = 'SecurityError'
+                }
+                New-TerminatingError @newTerminatingErrorParams
             }
         }
 
-        $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
-        $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
+        if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
+        {
+            # Create a hash table to store the databases that failed to be added to the Availability Group
+            $databasesToAddFailures = @{}
+            
+            foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
+            {
+                $database = $primaryServerObject.Databases[$databaseName]
+                
+                # Check the databse recovery model
+                if ( $database.RecoverModel -eq 'Full' )
+                {
+                    # If no full backup was ever taken, take one w/o copy only, otherwise do backups with copy-only
+
+                    # Add database to each replica
+                    Add-SqlAvailabilityDatabase
+                }
+                else
+                {
+                    $databasesToAddFailures.Add($databaseName, "The database recovery model is not full."
+                }                
+            }
+        }
     }
 
     [bool] Test()
@@ -263,11 +291,33 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $primaryReplicaServerObject = $serverObject
         
         # Determine if we're connected to the primary replica
-        if ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName )
+        if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [string]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
         {
             $primaryReplicaServerObject = Connect-SQL -SQLServer $AvailabilityGroup.PrimaryReplicaServerName
         }
 
         return $primaryReplicaServerObject
+    }
+
+    [bool] TestImpersonatePermissions (
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject
+    )
+    {
+        $testLoginEffectivePermissionsParams = @{
+            SQLServer = $ServerObject.ComputerNamePhysicalNetBIOS
+            SQLInstanceName = $ServerObject.ServiceName
+            LoginName = $ServerObject.ConnectionContext.TrueLogin
+            Permissions = @('IMPERSONATE ANY LOGIN')
+        }
+        
+        $impersonatePermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
+
+        if ( -not $impersonatePermissionsPresent )
+        {
+            New-VerboseMessage -Message ( 'The login "{0}" does not have impersonate permissions on the instance "{1}\{2}".' -f $testLoginEffectivePermissionsParams.LoginName, $testLoginEffectivePermissionsParams.SQLServer, $testLoginEffectivePermissionsParams.SQLInstanceName )
+        }
+
+        return $impersonatePermissionsPresent
     }
 }
