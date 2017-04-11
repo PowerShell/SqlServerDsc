@@ -86,42 +86,112 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
         $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
 
-        # Ensure the appropriate permissions are in place on all the replicas
-        if ( $this.MatchDatabaseOwner )
-        {
-            $impersonatePermissionsStatus = @{}
-
-            foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
-            {
-                $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                $impersonatePermissionsStatus.Add($availabilityGroupReplica.Name, $this.TestImpersonatePermissions($currentAvailabilityGroupReplicaServerObject))
-            }
-
-            if ( $impersonatePermissionsStatus.Values -contains $false )
-            {
-                $newTerminatingErrorParams = @{
-                    ErrorType = 'ImperstonatePermissionsMissing'
-                    FormatArgs = @(
-                        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-                        ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
-                    )
-                    ErrorCategory = 'SecurityError'
-                }
-                New-TerminatingError @newTerminatingErrorParams
-            }
-        }
-
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
+            # Ensure the appropriate permissions are in place on all the replicas
+            if ( $this.MatchDatabaseOwner )
+            {
+                $impersonatePermissionsStatus = @{}
+
+                foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                {
+                    $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                    $impersonatePermissionsStatus.Add($availabilityGroupReplica.Name, $this.TestImpersonatePermissions($currentAvailabilityGroupReplicaServerObject))
+                }
+
+                if ( $impersonatePermissionsStatus.Values -contains $false )
+                {
+                    $newTerminatingErrorParams = @{
+                        ErrorType = 'ImperstonatePermissionsMissing'
+                        FormatArgs = @(
+                            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
+                            ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
+                        )
+                        ErrorCategory = 'SecurityError'
+                    }
+                    New-TerminatingError @newTerminatingErrorParams
+                }
+            }
+
             # Create a hash table to store the databases that failed to be added to the Availability Group
             $databasesToAddFailures = @{}
             
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
                 $database = $primaryServerObject.Databases[$databaseName]
+
+                # Verify the prerequisites prior to joining the database to the availability group
+                # https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
+
+                # Create a hash table to store prerequisite check failures
+                $prerequisiteCheckFailures = @()
+
+                $prerequisiteChecks = @{
+                    RecoveryModel = [Microsoft.SqlServer.Management.Smo.RecoveryModel]::Full
+                    ReadOnly = $false
+                    UserAccess = [Microsoft.SqlServer.Management.Smo.DatabaseUserAccess]::Multiple
+                    AutoClose = $false
+                    AvailabilityGroupName = ''
+                    IsMirroringEnabled = $false
+                }
                 
-                # Check the databse recovery model
-                if ( $database.RecoverModel -eq 'Full' )
+                foreach ( $prerequisiteCheck in $prerequisiteChecks.GetEnumerator() )
+                {
+                    if ( $database.($prerequisiteCheck.Key) -ne $prerequisiteCheck.Value )
+                    {
+                        $prerequisiteCheckFailures += "$($prerequisiteCheck.Key) is not $($prerequisiteCheck.Value)."
+                    }
+                }
+
+                # Cannot be a system database
+                if ( $database.ID -le 4 )
+                {
+                    $prerequisiteCheckFailures += 'The database cannot be a system database.'
+                }
+
+                # If FILESTREAM is enabled, ensure FILESTREAM is enabled on all replica instances
+                if (
+                    ( -not [string]::IsNullOrEmpty($database.DefaultFileStreamFileGroup) ) `
+                    -or ( -not [string]::IsNullOrEmpty($database.FilestreamDirectoryName) ) `
+                    -or ( $database.FilestreamNonTransactedAccess -ne [Microsoft.SqlServer.Management.Smo.FilestreamNonTransactedAccessType]::Off )
+                )
+                {
+                    $availbilityReplicaFilestreamLevel = @{}
+                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    {
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
+                    }
+
+                    if ( $availbilityReplicaFilestreamLevel.Values -contains [Microsoft.SqlServer.Management.Smo.FileStreamEffectiveLevel]::Off )
+                    {
+                        $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availbilityReplicaFilestreamLevel.Keys -join ', ' ) )
+                    }
+                }
+
+                # If the database is contained, ensure contained database authentication is enabled on all replica instances
+                if ( $database.ContainmentType -ne [Microsoft.SqlServer.Management.Smo.ContainmentType]::None )
+                {
+                    $availbilityReplicaContainmentEnabled = @{}
+                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    {
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $availbilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
+                    }
+
+                    if ( $availbilityReplicaContainmentEnabled.Values -contains 1 )
+                    {
+                        $prerequisiteCheckFailures += ( 'Contained Database Authentication is not enabled on the following instances: {0}' -f ( $availbilityReplicaContainmentEnabled.Keys -join ', ' ) )
+                    }
+                }
+
+                # Ensure the data and log file paths exist on all replicas
+
+                # If the database is TDE'd, ensure the certificate or asymmetric key is installed on all replicas
+
+                
+
+                if ( $prerequisiteCheckFailures.Count -eq 0 )
                 {
                     # If no full backup was ever taken, take one w/o copy only, otherwise do backups with copy-only
 
@@ -130,10 +200,34 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 }
                 else
                 {
-                    $databasesToAddFailures.Add($databaseName, "The database recovery model is not full."
-                }                
+                    $databasesToAddFailures.Add($databaseName, 'The following prerequisite checks failed:')
+                }
             }
         }
+
+        if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
+        {
+            # Create a hash table to store the databases that failed to be added to the Availability Group
+            $databasesToRemoveFailures = @{}
+            
+            foreach ( $databaseName in $databasesToRemoveFromAvailabilityGroup )
+            {
+                $availabilityDatabase = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName].AvailabilityDatabases[$databaseName]
+
+                try
+                {
+                    Remove-SqlAvailabilityDatabase -InputObject $availabilityDatabase -ErrorAction Stop
+                }
+                catch
+                {
+                    $databasesToRemoveFailures.Add($databaseName, 'Failed to remove the database from the availability group.')
+                }
+            }
+        }
+
+        # Combine the failures into one error message and throw it here. Doing this will allow all the databases that can be processes to be processed and will still show that applying the configuration failed
+        $databasesToAddFailures
+        $databasesToRemoveFailures
     }
 
     [bool] Test()
