@@ -974,3 +974,61 @@ function Test-LoginEffectivePermissions
 
     return $permissionsPresent
 }
+
+function Test-AvailabilityReplicaSeedingModeAutomatic
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SQLServer,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SQLInstanceName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $AvailabilityGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $AvailabilityReplicaName
+    )
+
+    # Assume automatic seeding is disabled by default
+    $availabilityReplicaSeedingModeAutomatic = $false
+
+    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    
+    # Only check the seeding mode if this is SQL 2016 or newer
+    if ( $serverObject.Version -ge 13 )
+    {
+        $invokeQueryParams = @{
+            SQLServer = $SQLServer
+            SQLInstanceName = $SQLInstanceName
+            Database = 'master'
+            WithResults = $true
+        }
+        
+        $queryToGetSeedingMode = "
+            SELECT	seeding_mode_desc
+            FROM	sys.availability_replicas ar
+            INNER	JOIN sys.availability_groups ag ON ar.group_id = ag.group_id
+            WHERE	ag.name = '$AvailabilityGroupName'
+                AND ar.replica_server_name = '$AvailabilityReplicaName'
+        "
+        $seedingModeResults = Invoke-Query @invokeQueryParams -Query $queryToGetSeedingMode
+        $seedingMode = $seedingModeResults.Tables.Rows.seeding_mode_desc
+
+        if ( $seedingMode = 'Automatic' )
+        {
+            $availabilityReplicaSeedingModeAutomatic = $true
+        }
+    }
+
+    return $availabilityReplicaSeedingModeAutomatic
+}
