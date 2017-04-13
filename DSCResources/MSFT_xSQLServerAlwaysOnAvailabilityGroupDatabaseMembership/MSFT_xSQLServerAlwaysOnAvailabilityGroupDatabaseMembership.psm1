@@ -186,10 +186,52 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 }
 
                 # Ensure the data and log file paths exist on all replicas
+                $databaseFileDirectories = @()
+                $databaseFileDirectories += $database.FileGroups.Files.FileName | ForEach-Object { Split-Path -Path $_ -Parent } | Select-Object -Unique
+                $databaseFileDirectories += $database.LogFiles.FileName | ForEach-Object { Split-Path -Path $_ -Parent } | Select-Object -Unique
+                $databaseFileDirectories = $databaseFileDirectories | Select-Object -Unique
+
+                $availabilityReplicaMissingDirectories = @{}
+                foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                {
+                    $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                    
+                    $missingDirectories = @()
+                    foreach ( $databaseFileDirectory in $databaseFileDirectories )
+                    {
+                        $fileExistsQuery = "EXEC master.dbo.xp_fileexist '$databaseFileDirectory'"
+                        $fileExistsResult = Invoke-Query -SQLServer $currentAvailabilityGroupReplicaServerObject.NetName -SQLInstanceName $currentAvailabilityGroupReplicaServerObject.ServiceName -Database master -Query $fileExistsQuery -WithResults
+
+                        if  ( $fileExistsResult.Tables.Rows.'File is a Directory' -ne 1 )
+                        {
+                            $missingDirectories += $databaseFileDirectory
+                        }
+                    }
+
+                    if ( $missingDirectories.Count -gt 0 )
+                    {
+                        $availabilityReplicaMissingDirectories.Add($availabilityGroupReplica, ( $missingDirectories -join ', ' ))
+                    }
+                }
 
                 # If the database is TDE'd, ensure the certificate or asymmetric key is installed on all replicas
+                if ( $database.EncryptionEnabled )
+                {
+                    $databaseCertificateThumbprint = [System.BitConverter]::ToString($database.DatabaseEncryptionKey.Thumbprint)
+                    $databaseCertificateName = $database.DatabaseEncryptionKey.EncryptorName
 
-                
+                    $availabilityReplicaMissingCertificates = @{}
+                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    {
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
+
+                        if ( $installedCertificateThumbprints -notcontains $databaseCertificateThumbprint )
+                        {
+                            $availabilityReplicaMissingCertificates.Add($availabilityGroupReplica, $databaseCertificateName)
+                        }
+                    }
+                }
 
                 if ( $prerequisiteCheckFailures.Count -eq 0 )
                 {
