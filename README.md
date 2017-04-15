@@ -72,38 +72,38 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
-* [**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent
-* [**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group
-* [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases
+* **[Deprecated]** ~~[**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent.~~ Please use [xSQLServerAlwaysOnAvailabilityGroup](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroup) and [xSQLServerAlwaysOnAvailabilityGroupReplica](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroupreplica) instead.
+* **[Deprecated]** ~~[**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group.~~  Please use [xSQLServerAlwaysOnAvailabilityGroup](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroup) and [xSQLServerAlwaysOnAvailabilityGroupReplica](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroupreplica) instead.
+* [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases.
 * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
 * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica) resource to ensure an availability group replica is present or absent.
-* [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server
+* [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server.
 * [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener) Create or remove an availability group listener.
-* [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
-* [**xSQLServerDatabase**](#xsqlserverdatabase) resource to manage ensure database is present or absent
-* [**xSQLServerDatabaseOwner**](#xsqlserverdatabaseowner) resource to manage SQL database owners
-* [**xSQLServerDatabasePermission**](#xsqlserverdatabasepermission) resource to manage SQL database permissions
-* [**xSQLServerDatabaseRecoveryModel**](#xsqlserverdatabaserecoverymodel) resource to manage database recovery model
-* [**xSQLServerDatabaseRole**](#xsqlserverdatabaserole) resource to manage SQL database roles
-* [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint is present or absent
+* [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
+* [**xSQLServerDatabase**](#xsqlserverdatabase) resource to manage ensure database is present or absent.
+* [**xSQLServerDatabaseOwner**](#xsqlserverdatabaseowner) resource to manage SQL database owners.
+* [**xSQLServerDatabasePermission**](#xsqlserverdatabasepermission) resource to manage SQL database permissions.
+* [**xSQLServerDatabaseRecoveryModel**](#xsqlserverdatabaserecoverymodel) resource to manage database recovery model.
+* [**xSQLServerDatabaseRole**](#xsqlserverdatabaserole) resource to manage SQL database roles.
+* [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint is present or absent.
 * [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission) Grant or revoke permission on the endpoint.
 * [**xSQLServerEndpointState**](#xsqlserverendpointstate) Change state of the endpoint.
 * [**xSQLServerFailoverClusterSetup**](#xsqlserverfailoverclustersetup) installs SQL Server failover cluster instances.
 * [**xSQLServerFirewall**](#xsqlserverfirewall) configures firewall settings to allow remote access to a SQL Server instance.
-* [**xSQLServerLogin**](#xsqlserverlogin) resource to manage SQL logins
-* [**xSQLServerMaxDop**](#xsqlservermaxdop) resource to manage MaxDegree of Parallelism for SQL Server
-* [**xSQLServerMemory**](#xsqlservermemory) resource to manage Memory for SQL Server
-* [**xSQLServerNetwork**](#xsqlservernetwork) resource to manage SQL Server Network Protocols
+* [**xSQLServerLogin**](#xsqlserverlogin) resource to manage SQL logins.
+* [**xSQLServerMaxDop**](#xsqlservermaxdop) resource to manage MaxDegree of Parallelism for SQL Server.
+* [**xSQLServerMemory**](#xsqlservermemory) resource to manage Memory for SQL Server.
+* [**xSQLServerNetwork**](#xsqlservernetwork) resource to manage SQL Server Network Protocols.
 * [**xSQLServerPermission**](#xsqlserverpermission) Grant or revoke permission on the SQL Server.
-* [**xSQLServerRole**](#xsqlserverrole) resource to manage SQL server roles
+* [**xSQLServerRole**](#xsqlserverrole) resource to manage SQL server roles.
 * [**xSQLServerReplication**](#xsqlserverreplication) resource to manage SQL Replication distribution and publishing.
 * [**xSQLServerRSConfig**](#xsqlserverrsconfig) configures SQL Server Reporting Services to use a database engine in another instance.
 * [**xSQLServerRSSecureConnectionLevel**](#xsqlserverrssecureconnectionlevel) sets the secure connection level for SQL Server Reporting Services.
-* [**xSQLServerScript**](#xsqlserverscript) resource to extend DSCs Get/Set/Test functionality to T-SQL
-* [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance
-* [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait till availability group is created on primary server
+* [**xSQLServerScript**](#xsqlserverscript) resource to extend DSCs Get/Set/Test functionality to T-SQL.
+* [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
+* [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait till availability group is created on primary server.
 
-### xSQLAOGroupEnsure
+### xSQLAOGroupEnsure **[Deprecated]**
 
 No description.
 
@@ -139,7 +139,7 @@ No description.
 
 None.
 
-### xSQLAOGroupJoin
+### xSQLAOGroupJoin **[Deprecated]**
 
 No description.
 
