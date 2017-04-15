@@ -83,7 +83,7 @@
 - Changes to xSQLServerFirewall
   - Now it will correctly create rules when the resource is used for two or more instances on the same server (issue #461).
 - Changes to README.md
-  - Adding deprecated tag to xSQLAOGroupEnsure and xSQLAOGroupJoin in README.md so it it more clear that these resources has been replaced by xSQLServerAlwaysOnAvailabilityGroup and xSQLServerAlwaysOnAvailabilityGroupReplica.
+  - Adding deprecated tag to xSQLServerFailoverClusterSetup, xSQLAOGroupEnsure and xSQLAOGroupJoin in README.md so it it more clear that these resources has been replaced by xSQLServerSetup, xSQLServerAlwaysOnAvailabilityGroup and xSQLServerAlwaysOnAvailabilityGroupReplica respectively.
 
 ## 6.0.0.0
 

@@ -88,7 +88,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint is present or absent.
 * [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission) Grant or revoke permission on the endpoint.
 * [**xSQLServerEndpointState**](#xsqlserverendpointstate) Change state of the endpoint.
-* [**xSQLServerFailoverClusterSetup**](#xsqlserverfailoverclustersetup) installs SQL Server failover cluster instances.
+* **[Deprecated]** ~~[**xSQLServerFailoverClusterSetup**](#xsqlserverfailoverclustersetup) installs SQL Server failover cluster instances.~~ Please use [xSQLServerSetup](https://github.com/PowerShell/xSQLServer#xsqlserversetup) instead.
 * [**xSQLServerFirewall**](#xsqlserverfirewall) configures firewall settings to allow remote access to a SQL Server instance.
 * [**xSQLServerLogin**](#xsqlserverlogin) resource to manage SQL logins.
 * [**xSQLServerMaxDop**](#xsqlservermaxdop) resource to manage MaxDegree of Parallelism for SQL Server.
@@ -522,7 +522,7 @@ No description.
 * [Make sure that an endpoint is started](/Examples/Resources/xSQLServerEndpointState/1-MakeSureEndpointIsStarted.ps1)
 * [Make sure that an endpoint is stopped](/Examples/Resources/xSQLServerEndpointState/2-MakeSureEndpointIsStopped.ps1)
 
-### xSQLServerFailoverClusterSetup
+### xSQLServerFailoverClusterSetup **[Deprecated]**
 
 **This resource is deprecated.** The functionality of this resource has been merged with [xSQLServerSetup](#xsqlserversetup). Please do not use this resource for new development efforts.
 
