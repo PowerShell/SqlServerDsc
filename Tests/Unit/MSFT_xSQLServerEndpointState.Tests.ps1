@@ -258,26 +258,6 @@ try
             Assert-VerifiableMocks
         }
 
-        Write-Verbose -Message '' -Verbose
-        Write-Verbose -Message 'Available modules:' -Verbose
-        Get-Module -ListAvailable | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
-
-        Write-Verbose -Message '' -Verbose
-        Write-Verbose -Message 'Loaded modules:' -Verbose
-        Get-Module | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
-
-        Write-Verbose -Message '' -Verbose
-        Write-Verbose -Message 'Commands from SQLPSStub:' -Verbose
-        Get-Command -Module SQLPSStub -Name Set-Sql* | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
-
-        Write-Verbose -Message '' -Verbose
-        Describe 'Testing SQLPSStub Set-SqlHADREndpoint stub cmdlet' {
-            It 'Should throw correct errot' {
-                { Set-SqlHADREndpoint } | Should Throw 'StubNotImplemented'
-            }
-        }
-        Write-Verbose -Message '' -Verbose
-
         Describe 'MSFT_xSQLServerEndpointState\Set-TargetResource' -Tag Set {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
