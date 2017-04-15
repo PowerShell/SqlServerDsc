@@ -334,7 +334,7 @@ try
                 }
 
                 Context 'When Get-TargetResource returns nothing' {
-                    It 'Should thor the correct error message' {
+                    It 'Should throw the correct error message' {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return $null
                         } -Verifiable
