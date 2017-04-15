@@ -1,10 +1,8 @@
-
 [ClassVersion("1.0.0.0"), FriendlyName("xSQLServerEndpointState")]
 class MSFT_xSQLServerEndpointState : OMI_BaseResource
 {
-    [Key, Description("The SQL Server instance name.")] String InstanceName;
-    [Required, Description("The host name or FQDN.")] String NodeName;
+    [Key, Description(The name of the SQL instance to be configured.")] String InstanceName;
+    [Required, Description("The host name of the SQL Server to be configured.")] String NodeName;
     [Required, Description("The name of the endpoint.")] String Name;
-    [Write, Description("The state of the endpoint. Valid states are Started, Stopped or Disabled."), ValueMap{"Started","Stopped","Disabled"}, Values{"Started","Stopped","Disabled"}] String State;
+    [Write, Description("The state of the endpoint. Valid states are Started, Stopped or Disabled. Default value is 'Started'."), ValueMap{"Started","Stopped","Disabled"}, Values{"Started","Stopped","Disabled"}] String State;
 };
-

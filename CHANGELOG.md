@@ -92,6 +92,9 @@
   - Adding deprecated tag to xSQLServerFailoverClusterSetup, xSQLAOGroupEnsure and xSQLAOGroupJoin in README.md so it it more clear that these resources has been replaced by xSQLServerSetup, xSQLServerAlwaysOnAvailabilityGroup and xSQLServerAlwaysOnAvailabilityGroupReplica respectively.
 - Changes to xSQLServerEndpointState
   - Cleaned up code, removed `SupportsShouldProcess` and fixed PSSA rules warnings (issue #258 and issue #230).
+  - Now the defult value for the parameter `State` is 'Started'.
+  - Updated README.md with a description for the resources and revised the parameter descriptions.
+  - Removed dependency of SQLPS provider (issue #481).
 
 ## 6.0.0.0
 

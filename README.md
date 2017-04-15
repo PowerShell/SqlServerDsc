@@ -501,7 +501,9 @@ This resource is used to give connect permission to an endpoint for a user (logi
 
 ### xSQLServerEndpointState
 
-No description.
+This resource is used to set the state of an endpoint.
+
+>Note: Currently this resource can only be used with Database Mirror endpoints.
 
 #### Requirements
 
@@ -511,10 +513,10 @@ No description.
 
 #### Parameters
 
-* **[String] InstanceName** _(Key)_: The SQL Server instance name.
-* **[String] NodeName** _(Required)_: The host name or FQDN.
+* **[String] InstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **[String] NodeName** _(Required)_: The host name of the SQL Server to be configured.
 * **[String] Name** _(Required)_: The name of the endpoint.
-* **[String] State** _(Write)_: The state of the endpoint. Valid states are Started, Stopped or Disabled. { Started | Stopped | Disabled }.
+* **[String] State** _(Write)_: The state of the endpoint. Valid states are Started, Stopped or Disabled. Default value is 'Started'. { *Started* | Stopped | Disabled }.
 
 #### Examples
 

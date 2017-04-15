@@ -1,7 +1,19 @@
 ﻿Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
+<#
+    .SYNOPSIS
+        Returns the current state of an endpoint.
 
+    .PARAMETER InstanceName
+        The name of the SQL instance to be configured.
+
+    .PARAMETER NodeName
+        The host name of the SQL Server to be configured.
+
+    .PARAMETER Name
+        The name of the endpoint.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -25,11 +37,12 @@ function Get-TargetResource
 
     try
     {
-        $endpoint = Get-SQLAlwaysOnEndpoint -Name $Name -NodeName $NodeName -InstanceName $InstanceName -Verbose:$VerbosePreference
+        $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
 
-        if ($null -ne $endpoint)
+        $endpointObject = $sqlServerObject.Endpoints[$Name]
+        if ($null -ne $endpointObject)
         {
-            $state = $endpoint.EndpointState
+            $currentState = $endpointObject.EndpointState
         }
         else
         {
@@ -45,10 +58,26 @@ function Get-TargetResource
         InstanceName = [System.String] $InstanceName
         NodeName = [System.String] $NodeName
         Name = [System.String] $Name
-        State = [System.String] $state
+        State = [System.String] $currentState
     }
 }
 
+<#
+    .SYNOPSIS
+        Changes the state of an endpoint.
+
+    .PARAMETER InstanceName
+        The name of the SQL instance to be configured.
+
+    .PARAMETER NodeName
+        The host name of the SQL Server to be configured.
+
+    .PARAMETER Name
+        The name of the endpoint.
+
+    .PARAMETER State
+        The state of the endpoint. Valid states are Started, Stopped or Disabled. Default value is 'Started'.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -69,7 +98,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Started','Stopped','Disabled')]
         [System.String]
-        $State
+        $State = 'Started'
     )
 
     $parameters = @{
@@ -83,23 +112,22 @@ function Set-TargetResource
     {
         if ($getTargetResourceResult.State -ne $State)
         {
-            Write-Verbose -Message ('Changing state of endpoint ''{0}''' -f $Name)
+            New-VerboseMessage -Message ('Changing state of endpoint ''{0}''' -f $Name)
 
-            $endpoint = Get-SQLAlwaysOnEndpoint -Name $Name -NodeName $NodeName -InstanceName $InstanceName -Verbose:$VerbosePreference
-            $InstanceName = Get-SQLPSInstanceName -InstanceName $InstanceName
+            $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
 
-            $setEndPointParams = @{
-                Path = "SQLSERVER:\SQL\$NodeName\$InstanceName\Endpoints\$Name"
-                Port = $endpoint.Protocol.Tcp.ListenerPort
-                IpAddress = $endpoint.Protocol.Tcp.ListenerIPAddress.IPAddressToString
+            $endpointObject = $sqlServerObject.Endpoints[$Name]
+
+            $setEndpointParams = @{
+                InputObject = $endpointObject
                 State = $State
             }
 
-            Set-SqlHADREndpoint @setEndPointParams -Verbose:$False | Out-Null # Suppressing Verbose because it prints the entire T-SQL statement otherwise
+            Set-SqlHADREndpoint @setEndpointParams -ErrorAction Stop | Out-Null
         }
         else
         {
-            New-VerboseMessage -Message 'Endpoint configuration is already correct.'
+            New-VerboseMessage -Message ('Endpoint ''{0}'' state is already correct.' -f $Name)
         }
     }
     else
@@ -108,6 +136,22 @@ function Set-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Tests the state of an endpoint if it is in desired state.
+
+    .PARAMETER InstanceName
+        The name of the SQL instance to be configured.
+
+    .PARAMETER NodeName
+        The host name of the SQL Server to be configured.
+
+    .PARAMETER Name
+        The name of the endpoint.
+
+    .PARAMETER State
+        The state of the endpoint. Valid states are Started, Stopped or Disabled. Default value is 'Started'.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -129,7 +173,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Started','Stopped','Disabled')]
         [System.String]
-        $State
+        $State = 'Started'
     )
 
     $parameters = @{
@@ -138,7 +182,7 @@ function Test-TargetResource
         Name = $Name
     }
 
-    New-VerboseMessage -Message "Testing state $State on endpoint $Name"
+    New-VerboseMessage -Message "Testing state $State on endpoint '$Name'"
 
     $getTargetResourceResult = Get-TargetResource @parameters
     if ($null -ne $getTargetResourceResult)
