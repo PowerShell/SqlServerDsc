@@ -22,7 +22,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 function Invoke-TestSetup {
     # Loading stub cmdlets
-    Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SQLPSStub.psm1') -Force
+    Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force -Global
 }
 
 function Invoke-TestCleanup {
@@ -70,7 +70,7 @@ try
 
         Describe 'MSFT_xSQLServerEndpointState\Get-TargetResource' -Tag Get {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -182,7 +182,7 @@ try
 
         Describe 'MSFT_xSQLServerEndpointState\Test-TargetResource' -Tag Test {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -192,9 +192,7 @@ try
 
                 Context 'When desired state should be Started, but the current state is Stopped' {
                     It 'Should return that desired state as absent' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStarted
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStarted)
 
                         $result = Test-TargetResource @testParameters
                         $result | Should Be $false
@@ -207,9 +205,7 @@ try
 
                 Context 'When desired state should be Stopped, but the current state is Started' {
                     It 'Should return that desired state as absent' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStopped
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStopped)
 
                         $result = Test-TargetResource @testParameters
                         $result | Should Be $false
@@ -224,9 +220,7 @@ try
 
                 Context 'When desired state should be Started, and the current state is Started' {
                     It 'Should return that desired state as absent' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStarted
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStarted)
 
                         $result = Test-TargetResource @testParameters
                         $result | Should Be $true
@@ -239,9 +233,7 @@ try
 
                 Context 'When desired state should be Stopped, and the current state is Stopped' {
                     It 'Should return that desired state as absent' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStopped
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStopped)
 
                         $result = Test-TargetResource @testParameters
                         $result | Should Be $true
@@ -251,7 +243,7 @@ try
                 }
 
                 Context 'When Get-TargetResource returns nothing' {
-                    It 'Should thor the correct error message' {
+                    It 'Should throw the correct error message' {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return $null
                         } -Verifiable
@@ -266,9 +258,29 @@ try
             Assert-VerifiableMocks
         }
 
+        Write-Verbose -Message '' -Verbose
+        Write-Verbose -Message 'Available modules:' -Verbose
+        Get-Module -ListAvailable | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
+
+        Write-Verbose -Message '' -Verbose
+        Write-Verbose -Message 'Loaded modules:' -Verbose
+        Get-Module | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
+
+        Write-Verbose -Message '' -Verbose
+        Write-Verbose -Message 'Commands from SQLPSStub:' -Verbose
+        Get-Command -Module SQLPSStub -Name Set-Sql* | ForEach-Object { Write-Verbose -Message $_.Name -Verbose }
+
+        Write-Verbose -Message '' -Verbose
+        Describe 'Testing SQLPSStub Set-SqlHADREndpoint stub cmdlet' {
+            It 'Should throw correct errot' {
+                { Set-SqlHADREndpoint } | Should Throw 'StubNotImplemented'
+            }
+        }
+        Write-Verbose -Message '' -Verbose
+
         Describe 'MSFT_xSQLServerEndpointState\Set-TargetResource' -Tag Set {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
                 Mock Set-SqlHADREndpoint -Verifiable
@@ -279,9 +291,7 @@ try
 
                 Context 'When desired state should be Started, but the current state is Stopped' {
                     It 'Should call the mock function Set-SqlHADREndpoint to set the state to Started' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStarted
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStarted)
 
                         Set-TargetResource @testParameters
 
@@ -293,9 +303,7 @@ try
 
                 Context 'When desired state should be Stopped, but the current state is Started' {
                     It 'Should call the mock function Set-SqlHADREndpoint to set the state to Stopped' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStopped
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStopped)
 
                         Set-TargetResource @testParameters
 
@@ -309,9 +317,7 @@ try
 
                 Context 'When desired state should be Started, and the current state is Started' {
                     It 'Should not call the mock function Set-SqlHADREndpoint' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStarted
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStarted)
 
                         Set-TargetResource @testParameters
 
@@ -323,9 +329,7 @@ try
 
                 Context 'When desired state should be Stopped, and the current state is Stopped' {
                     It 'Should not call the mock function Set-SqlHADREndpoint' {
-                        $testParameters += @{
-                            State = $mockEndpointStateStopped
-                        }
+                        $testParameters.Add('State', $mockEndpointStateStopped)
 
                         Set-TargetResource @testParameters
 
