@@ -107,7 +107,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 No description.
 
-**This resource is deprecated.** The functionality of this resource has been replaced with * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup). Please do not use this resource for new development efforts.
+**This resource is deprecated.** The functionality of this resource has been replaced with [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup). Please do not use this resource for new deployment or development efforts.
 
 #### Requirements
 
@@ -143,7 +143,7 @@ None.
 
 No description.
 
-**This resource is deprecated.** The functionality of this resource has been replaced with * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica). Please do not use this resource for new development efforts.
+**This resource is deprecated.** The functionality of this resource has been replaced with [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica). Please do not use this resource for new deployment or development efforts.
 
 #### Requirements
 
