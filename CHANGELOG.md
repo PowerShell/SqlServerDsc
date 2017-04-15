@@ -90,6 +90,8 @@
   - Refactored tests so they use less code.
 - Changes to README.md
   - Adding deprecated tag to xSQLServerFailoverClusterSetup, xSQLAOGroupEnsure and xSQLAOGroupJoin in README.md so it it more clear that these resources has been replaced by xSQLServerSetup, xSQLServerAlwaysOnAvailabilityGroup and xSQLServerAlwaysOnAvailabilityGroupReplica respectively.
+- Changes to xSQLServerEndpointState
+  - Cleaned up code, removed `SupportsShouldProcess` and fixed PSSA rules warnings (issue #258 and issue #230).
 
 ## 6.0.0.0
 
