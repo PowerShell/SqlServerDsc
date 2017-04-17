@@ -1040,7 +1040,7 @@ These issues are also documented in the example files [Install a named instance 
 
 This resource will wait for a cluster role/group to be created. This is used to wait for an Availability Group to create the cluster role/group in the cluster.
 
->Note: This only looks for the cluster role/group to be created and will immediately return when it does. There is currently no check to validate that the Availability Group was successfully created or that it has finished creating the Availability Group.
+>Note: This only evaluates if the cluster role/group has been created and when it found it will wait for RetryIntervalSec a last time before returning. There is currently no check to validate that the Availability Group was successfully created or that it has finished creating the Availability Group.
 
 #### Requirements
 
@@ -1051,7 +1051,7 @@ This resource will wait for a cluster role/group to be created. This is used to 
 #### Parameters
 
 * **[String] Name** _(Key)_: Name of the cluster role/group to look for (normally the same as the Availability Group name).
-* **[Uint64] RetryIntervalSec** _(Write)_: The interval, in seconds, to check for the presence of the cluster role/group. Default value is 20 seconds.
+* **[Uint64] RetryIntervalSec** _(Write)_: The interval, in seconds, to check for the presence of the cluster role/group. Default value is 20 seconds. When the cluster role/group has been found the resource will wait for this amount of time once more before returning.
 * **[Uint32] RetryCount** _(Write)_: Maximum number of retries until the resource will timeout and throw an error. Default value is 30 times.
 
 #### Read-Only Properties from Get-TargetResource
