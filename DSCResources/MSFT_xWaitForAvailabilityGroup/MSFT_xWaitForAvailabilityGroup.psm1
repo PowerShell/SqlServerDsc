@@ -1,3 +1,7 @@
+Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
+
 <#
     .SYNOPSIS
         Returns the cluster role/group that is waiting to be created,
