@@ -1,9 +1,7 @@
-
 [ClassVersion("1.0.0.0"), FriendlyName("xWaitForAvailabilityGroup")]
 class MSFT_xWaitForAvailabilityGroup : OMI_BaseResource
 {
-    [Key, Description("Availability Group Name")] String Name;
-    [Write, Description("Interval to check for Availability Group")] Uint64 RetryIntervalSec;
-    [Write, Description("Maximum number of retries to check Availabilty group creation")] Uint32 RetryCount;
+    [Key, Description("Name of the cluster role/group to look for (normally the same as the Availability Group name).")] String Name;
+    [Write, Description("The interval, in seconds, to check for the presence of the cluster role/group. Default values is 20 seconds.")] Uint64 RetryIntervalSec;
+    [Write, Description("Maximum number of retries until the resource will timeout and throw an error. Default values is 30 times.")] Uint32 RetryCount;
 };
-

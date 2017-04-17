@@ -1038,18 +1038,21 @@ These issues are also documented in the example files [Install a named instance 
 
 ### xWaitforAvailabilityGroup
 
-No description.
+This resource will wait for a cluster role/group to be created. This is used to wait for an Availability Group to create the cluster role/group in the cluster.
+
+>Note: This only looks for the cluster role/group to be created and will immediately return when it does. There is currently no check to validate that the Availability Group was successfully created or that it has finished creating the Availability Group.
 
 #### Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
+* Target machine must have access to the Failover Cluster PowerShell module.
 
 #### Parameters
 
-* **[String] Name** _(Key)_: Name for availability group
-* **[Uint64] RetryIntervalSec** _(Write)_: Interval to check for availability group
-* **[Uint32] RetryCount** _(Write)_: Maximum number of retries to check availability group creation
+* **[String] Name** _(Key)_: Name of the cluster role/group to look for (normally the same as the Availability Group name).
+* **[Uint64] RetryIntervalSec** _(Write)_: The interval, in seconds, to check for the presence of the cluster role/group. Default value is 20 seconds.
+* **[Uint32] RetryCount** _(Write)_: Maximum number of retries until the resource will timeout and throw an error. Default value is 30 times.
 
 #### Read-Only Properties from Get-TargetResource
 

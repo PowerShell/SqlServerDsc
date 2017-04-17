@@ -112,6 +112,9 @@
   - The parameter Name is now a key so it is now possible to change the state on more than one endpoint on the same instance. _Note: The resource still only supports Database Mirror endpoints at this time._
 - Changes to xSQLServerHelper module
   - Removing helper function Get-SQLAlwaysOnEndpoint becuase there is no resource using it any longer.
+- Changes to xWaitForAvailabilityGroup
+  - Updated README.md with a description for the resources and revised the parameter descriptions.
+  - The default value for RetryIntervalSec is now 20 seconds and the default value for RetryCount is now 30 times (issue #505).
 
 ## 6.0.0.0
 

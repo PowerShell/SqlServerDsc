@@ -4,6 +4,20 @@ Write-Verbose -Message "CurrentPath: $currentPath"
 # Load Common Code
 Import-Module $currentPath\..\..\xSQLServerHelper.psm1 -Verbose:$false -ErrorAction Stop
 
+<#
+    .SYNOPSIS
+        Returns the cluster role/group that is waiting to be created,
+        along with the time and number of times to wait.
+
+    .PARAMETER Name
+        Name of the cluster role/group to look for (normally the same as the Availability Group name).
+
+    .PARAMETER RetryIntervalSec
+        The interval, in seconds, to check for the presence of the cluster role/group. Default values is 20 seconds.
+
+    .PARAMETER RetryCount
+        Maximum number of retries until the resource will timeout and throw an error. Default values is 30 times.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -13,9 +27,9 @@ function Get-TargetResource
         [parameter(Mandatory = $true)]
         [System.String]
         $Name,
-        
-        [UInt64] $RetryIntervalSec = 10,
-        [UInt32] $RetryCount = 50
+
+        [UInt64] $RetryIntervalSec = 20,
+        [UInt32] $RetryCount = 30
     )
 
     @{
@@ -25,7 +39,19 @@ function Get-TargetResource
     }
 }
 
+<#
+    .SYNOPSIS
+        Waits for a cluster role/group to be created
 
+    .PARAMETER Name
+        Name of the cluster role/group to look for (normally the same as the Availability Group name).
+
+    .PARAMETER RetryIntervalSec
+        The interval, in seconds, to check for the presence of the cluster role/group. Default values is 20 seconds.
+
+    .PARAMETER RetryCount
+        Maximum number of retries until the resource will timeout and throw an error. Default values is 30 times.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
@@ -36,14 +62,14 @@ function Set-TargetResource
         $Name,
 
         [System.UInt64]
-        $RetryIntervalSec =20,
+        $RetryIntervalSec = 20,
 
         [System.UInt32]
-        $RetryCount = 6
+        $RetryCount = 30
     )
 
     $AGFound = $false
-    New-VerboseMessage -Message "Checking for Availaibilty Group $Name ..."
+    New-VerboseMessage -Message "Checking for Availaibilty Group $Name. Will try for a total of $($RetryIntervalSec*$RetryCount) seconds."
 
     for ($count = 0; $count -lt $RetryCount; $count++)
     {
@@ -58,13 +84,13 @@ function Set-TargetResource
                 Start-Sleep -Seconds $RetryIntervalSec
                 break;
             }
-            
+
         }
         catch
         {
              New-VerboseMessage -Message "Availability Group $Name not found. Will retry again after $RetryIntervalSec sec"
         }
-            
+
         New-VerboseMessage -Message "Availability Group $Name not found. Will retry again after $RetryIntervalSec sec"
         Start-Sleep -Seconds $RetryIntervalSec
     }
@@ -78,7 +104,19 @@ function Set-TargetResource
 
 }
 
+<#
+    .SYNOPSIS
+        Tests if the cluster role/group has been created.
 
+    .PARAMETER Name
+        Name of the cluster role/group to look for (normally the same as the Availability Group name).
+
+    .PARAMETER RetryIntervalSec
+        The interval, in seconds, to check for the presence of the cluster role/group. Default values is 20 seconds.
+
+    .PARAMETER RetryCount
+        Maximum number of retries until the resource will timeout and throw an error. Default values is 30 times.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -90,10 +128,10 @@ function Test-TargetResource
         $Name,
 
         [System.UInt64]
-        $RetryIntervalSec = 10,
+        $RetryIntervalSec = 20,
 
         [System.UInt32]
-        $RetryCount = 50
+        $RetryCount = 30
     )
 
     New-VerboseMessage -Message "Checking for Availability Group $Name ..."
