@@ -1048,6 +1048,10 @@ This resource will wait for a cluster role/group to be created. This is used to 
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the Failover Cluster PowerShell module.
 
+#### Security Requirements
+
+* The account running this resource must have permission in the cluster to be able to run the cmdlet Get-ClusterGroup.
+
 #### Parameters
 
 * **[String] Name** _(Key)_: Name of the cluster role/group to look for (normally the same as the Availability Group name).

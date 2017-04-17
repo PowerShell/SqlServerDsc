@@ -117,6 +117,7 @@
   - The default value for RetryIntervalSec is now 20 seconds and the default value for RetryCount is now 30 times (issue #505).
   - Cleaned up code and fixed PSSA rules warnings (issue #268).
   - Added unit tests (issue #297).
+  - Added descriptive text to README.md that the account that runs the resource must have permission to run the cmdlet Get-ClusterGroup (issue #307).
 
 ## 6.0.0.0
 
