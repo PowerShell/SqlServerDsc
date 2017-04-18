@@ -1064,4 +1064,5 @@ This resource will wait for a cluster role/group to be created. This is used to 
 
 #### Examples
 
-None.
+* [Wait for a cluster role/group to be available](/Examples/Resources/xWaitForAvailabilityGroup/1-WaitForASingleClusterGroup.ps1)
+* [Wait for multiple cluster roles/groups to be available](/Examples/Resources/xWaitForAvailabilityGroup/2-WaitForMultipleClusterGroups.ps1)

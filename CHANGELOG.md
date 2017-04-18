@@ -119,6 +119,7 @@
   - Added unit tests (issue #297).
   - Added descriptive text to README.md that the account that runs the resource must have permission to run the cmdlet Get-ClusterGroup (issue #307).
   - Added read-only parameter GroupExist which will return $true if the cluster role/group exist, otherwise it returns $false (issue #510).
+  - Added examples.
 
 ## 6.0.0.0
 
