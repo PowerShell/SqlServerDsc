@@ -25,7 +25,7 @@ Configuration Example
             PsDscRunAsCredential = $SysAdminAccount
         }
 
-        xWaitForAvailabilityGroup SQLConfigureAG-WaitAGTest1
+        xWaitForAvailabilityGroup SQLConfigureAG-WaitAGTest2
         {
             Name = 'AGTest2'
             RetryIntervalSec = 20
