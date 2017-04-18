@@ -96,7 +96,7 @@
   - Adding deprecated tag to xSQLServerFailoverClusterSetup, xSQLAOGroupEnsure and xSQLAOGroupJoin in README.md so it it more clear that these resources has been replaced by xSQLServerSetup, xSQLServerAlwaysOnAvailabilityGroup and xSQLServerAlwaysOnAvailabilityGroupReplica respectively.
 - Changes to xSQLServerEndpoint
   - BREAKING CHANGE: Now SQLInstanceName is mandatory, and is a key, so SQLInstanceName has no longer a default value (issue #279).
-  - BREAKING CHANGE: Parameter AutorizedUser has been removed (issue #466, issue #275 and issue #80). Connect permissons can be set using the resource xSQLServerEndpointPermission.
+  - BREAKING CHANGE: Parameter AuthorizedUser has been removed (issue #466, issue #275 and issue #80). Connect permissions can be set using the resource xSQLServerEndpointPermission.
   - Optional parameter IpAddress has been added. Default is to listen on any valid IP-address. (issue #232)
   - Parameter Port now has a default value of 5022.
   - Parameter Ensure now defaults to 'Present'.
@@ -105,13 +105,13 @@
   - Added examples.
 - Changes to xSQLServerEndpointState
   - Cleaned up code, removed SupportsShouldProcess and fixed PSSA rules warnings (issue #258 and issue #230).
-  - Now the defult value for the parameter State is 'Started'.
+  - Now the default value for the parameter State is 'Started'.
   - Updated README.md with a description for the resources and revised the parameter descriptions.
   - Removed dependency of SQLPS provider (issue #481).
   - The parameter NodeName is no longer mandatory and has now the default value of $env:COMPUTERNAME.
   - The parameter Name is now a key so it is now possible to change the state on more than one endpoint on the same instance. _Note: The resource still only supports Database Mirror endpoints at this time._
 - Changes to xSQLServerHelper module
-  - Removing helper function Get-SQLAlwaysOnEndpoint becuase there is no resource using it any longer.
+  - Removing helper function Get-SQLAlwaysOnEndpoint because there is no resource using it any longer.
 - Changes to xWaitForAvailabilityGroup
   - Updated README.md with a description for the resources and revised the parameter descriptions.
   - The default value for RetryIntervalSec is now 20 seconds and the default value for RetryCount is now 30 times (issue #505).
