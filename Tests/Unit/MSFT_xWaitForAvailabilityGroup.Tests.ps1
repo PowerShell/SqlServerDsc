@@ -118,7 +118,7 @@ try
         }
 
 
-        Describe 'MSFT_xWaitForAvailabilityGroup\Get-TargetResource' -Tag 'Test'{
+        Describe 'MSFT_xWaitForAvailabilityGroup\Test-TargetResource' -Tag 'Test'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -135,27 +135,27 @@ try
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
 
-                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1
+                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1 -Scope It
                 }
             }
 
             $mockExpectedClusterGroupName = $mockOtherClusterGroupName
 
             Context 'When the system is not in the desired state' {
-                It 'Should return that desired state is present ($true)' {
+                It 'Should return that desired state is absent ($false)' {
                     $testParameters.Name = $mockOtherClusterGroupName
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
 
-                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1
+                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1 -Scope It
                 }
             }
 
             Assert-VerifiableMocks
         }
 
-        Describe 'MSFT_xWaitForAvailabilityGroup\Get-TargetResource' -Tag 'Set'{
+        Describe 'MSFT_xWaitForAvailabilityGroup\Set-TargetResource' -Tag 'Set'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -172,7 +172,7 @@ try
                 It 'Should find the cluster group and return withput throwing' {
                      { Set-TargetResource @testParameters } | Should -Not -Throw
 
-                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1
+                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -184,7 +184,7 @@ try
 
                     { Set-TargetResource @testParameters } | Should -Throw 'Cluster group UnknownAG not found after 2 attempts with 1 sec interval'
 
-                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 2
+                    Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 2 -Scope It
                 }
             }
 
