@@ -73,13 +73,44 @@ try
         Describe 'MSFT_xWaitForAvailabilityGroup\Get-TargetResource' -Tag 'Get' {
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
+
+                Mock -CommandName Get-ClusterGroup -MockWith $mockGetClusterGroup -ParameterFilter $mockGetClusterGroup_ParameterFilter_KnownGroup -Verifiable
+                Mock -CommandName Get-ClusterGroup -MockWith {
+                    return $null
+                } -ParameterFilter $mockGetClusterGroup_ParameterFilter_UnknownGroup -Verifiable
             }
 
-            Context 'When the system is either in the desired state or not in desired state' {
+            Context 'When the system is in the desired state' {
+                $mockExpectedClusterGroupName = $mockClusterGroupName
+
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
                     $result.RetryIntervalSec | Should -Be $mockRetryInterval
                     $result.RetryCount | Should -Be $mockRetryCount
+                }
+
+                It 'Should return that the group exist' {
+                    $result = Get-TargetResource @testParameters
+                    $result.GroupExist | Should -Be $true
+                }
+            }
+
+            Context 'When the system is not in the desired state' {
+                BeforeEach {
+                    $testParameters.Name = $mockOtherClusterGroupName
+                }
+
+                $mockExpectedClusterGroupName = $mockOtherClusterGroupName
+
+                It 'Should return the same values as passed as parameters' {
+                    $result = Get-TargetResource @testParameters
+                    $result.RetryIntervalSec | Should -Be $mockRetryInterval
+                    $result.RetryCount | Should -Be $mockRetryCount
+                }
+
+                It 'Should return that the group does not exist' {
+                    $result = Get-TargetResource @testParameters
+                    $result.GroupExist | Should -Be $false
                 }
             }
 
@@ -97,7 +128,7 @@ try
                 } -ParameterFilter $mockGetClusterGroup_ParameterFilter_UnknownGroup -Verifiable
             }
 
-            $mockExpectedClusterGroupName =$mockClusterGroupName
+            $mockExpectedClusterGroupName = $mockClusterGroupName
 
             Context 'When the system is in the desired state' {
                 It 'Should return that desired state is present ($true)' {
@@ -151,7 +182,7 @@ try
                 It 'Should throw the correct error message' {
                     $testParameters.Name = $mockOtherClusterGroupName
 
-                     { Set-TargetResource @testParameters } | Should -Throw 'Cluster group UnknownAG not found after 2 attempts with 1 sec interval'
+                    { Set-TargetResource @testParameters } | Should -Throw 'Cluster group UnknownAG not found after 2 attempts with 1 sec interval'
 
                     Assert-MockCalled -CommandName Get-ClusterGroup -Exactly -Times 2
                 }

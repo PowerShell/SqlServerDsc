@@ -1060,7 +1060,7 @@ This resource will wait for a cluster role/group to be created. This is used to 
 
 #### Read-Only Properties from Get-TargetResource
 
-None.
+* **[Boolean] GroupExist** _(Read)_: Returns $true if the cluster role/group exist, otherwise it returns $false. Used by Get-TargetResource.
 
 #### Examples
 

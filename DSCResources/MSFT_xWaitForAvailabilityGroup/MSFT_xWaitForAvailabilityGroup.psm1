@@ -38,10 +38,19 @@ function Get-TargetResource
         $RetryCount = 30
     )
 
+    $clusterGroupFound = $false
+
+    $clusterGroup = Get-ClusterGroup -Name $Name -ErrorAction SilentlyContinue
+    if ($null -ne $clusterGroup)
+    {
+        $clusterGroupFound = $true
+    }
+
     return @{
         Name = $Name
         RetryIntervalSec = $RetryIntervalSec
         RetryCount = $RetryCount
+        GroupExist = $clusterGroupFound
     }
 }
 
@@ -79,17 +88,19 @@ function Set-TargetResource
         $RetryCount = 30
     )
 
-    $clusterGroupFound = $false
     New-VerboseMessage -Message "Checking for cluster group $Name. Will try for a total of $($RetryIntervalSec*$RetryCount) seconds."
+
+    $getTargetResourceParameters = @{
+        Name = $Name
+        RetryIntervalSec = $RetryIntervalSec
+        RetryCount = $RetryCount
+    }
 
     for ($forLoopCount = 0; $forLoopCount -lt $RetryCount; $forLoopCount++)
     {
-        $clusterGroup = Get-ClusterGroup -Name $Name -ErrorAction SilentlyContinue
-
-        if ($null -ne $clusterGroup)
+        $clusterGroupFound = (Get-TargetResource @getTargetResourceParameters).GroupExist
+        if ($clusterGroupFound)
         {
-            $clusterGroupFound = $true
-
             New-VerboseMessage -Message "Found cluster group $Name. Will sleep for another $RetryIntervalSec seconds before continuing."
             Start-Sleep -Seconds $RetryIntervalSec
             break
@@ -142,20 +153,23 @@ function Test-TargetResource
 
     New-VerboseMessage -Message "Testing for cluster group $Name."
 
-    $clusterGroup = Get-ClusterGroup -Name $Name -ErrorAction Ignore
+    $getTargetResourceParameters = @{
+        Name = $Name
+        RetryIntervalSec = $RetryIntervalSec
+        RetryCount = $RetryCount
+    }
 
-    if ($null -eq $clusterGroup)
+    $clusterGroupFound = (Get-TargetResource @getTargetResourceParameters).GroupExist
+    if ($clusterGroupFound)
     {
-        $testTargetResource = $false
-        New-VerboseMessage -Message "Cluster group $Name not found"
+        New-VerboseMessage -Message "Found cluster group $Name"
     }
     else
     {
-        $testTargetResource = $true
-        New-VerboseMessage -Message "Found cluster group $Name"
+        New-VerboseMessage -Message "Cluster group $Name not found"
     }
 
-    return $testTargetResource
+    return $clusterGroupFound
 }
 
 Export-ModuleMember -Function *-TargetResource
