@@ -128,9 +128,9 @@ try
                 } -ParameterFilter $mockGetClusterGroup_ParameterFilter_UnknownGroup -Verifiable
             }
 
-            $mockExpectedClusterGroupName = $mockClusterGroupName
-
             Context 'When the system is in the desired state' {
+                $mockExpectedClusterGroupName = $mockClusterGroupName
+
                 It 'Should return that desired state is present ($true)' {
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -139,9 +139,9 @@ try
                 }
             }
 
-            $mockExpectedClusterGroupName = $mockOtherClusterGroupName
-
             Context 'When the system is not in the desired state' {
+                $mockExpectedClusterGroupName = $mockOtherClusterGroupName
+
                 It 'Should return that desired state is absent ($false)' {
                     $testParameters.Name = $mockOtherClusterGroupName
 
@@ -166,9 +166,9 @@ try
                 } -ParameterFilter $mockGetClusterGroup_ParameterFilter_UnknownGroup -Verifiable
             }
 
-            $mockExpectedClusterGroupName =$mockClusterGroupName
-
             Context 'When the system is in the desired state' {
+                $mockExpectedClusterGroupName =$mockClusterGroupName
+
                 It 'Should find the cluster group and return withput throwing' {
                      { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -176,9 +176,9 @@ try
                 }
             }
 
-            $mockExpectedClusterGroupName = $mockOtherClusterGroupName
-
             Context 'When the system is not in the desired state' {
+                $mockExpectedClusterGroupName = $mockOtherClusterGroupName
+
                 It 'Should throw the correct error message' {
                     $testParameters.Name = $mockOtherClusterGroupName
 
@@ -196,4 +196,3 @@ finally
 {
     Invoke-TestCleanup
 }
-
