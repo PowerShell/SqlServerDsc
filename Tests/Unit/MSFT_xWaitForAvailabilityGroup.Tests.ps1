@@ -167,7 +167,7 @@ try
             }
 
             Context 'When the system is in the desired state' {
-                $mockExpectedClusterGroupName =$mockClusterGroupName
+                $mockExpectedClusterGroupName = $mockClusterGroupName
 
                 It 'Should find the cluster group and return withput throwing' {
                      { Set-TargetResource @testParameters } | Should -Not -Throw
