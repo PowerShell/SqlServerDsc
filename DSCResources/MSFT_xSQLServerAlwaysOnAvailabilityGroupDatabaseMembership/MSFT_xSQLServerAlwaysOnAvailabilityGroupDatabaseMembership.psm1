@@ -214,6 +214,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     }
                 }
 
+                if ( $availabilityReplicaMissingDirectories.Count -gt 0 )
+                {
+                    foreach ( $availabilityReplicaMissingDirectory in $availabilityReplicaMissingDirectories.GetEnumerator() )
+                    {
+                        $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingDirectory.Key)' is missing the following directories: $($availabilityReplicaMissingDirectory.Value)"
+                    }
+                }
+
                 # If the database is TDE'd, ensure the certificate or asymmetric key is installed on all replicas
                 if ( $database.EncryptionEnabled )
                 {
@@ -229,6 +237,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         if ( $installedCertificateThumbprints -notcontains $databaseCertificateThumbprint )
                         {
                             $availabilityReplicaMissingCertificates.Add($availabilityGroupReplica, $databaseCertificateName)
+                        }
+                    }
+
+                    if ( $availabilityReplicaMissingCertificates.Count -gt 0 )
+                    {
+                        foreach ( $availabilityReplicaMissingCertificate in $availabilityReplicaMissingCertificates.GetEnumerator() )
+                        {
+                            $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingCertificate.Key)' is missing the following certificates: $($availabilityReplicaMissingCertificate.Value)"
                         }
                     }
                 }
