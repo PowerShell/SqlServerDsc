@@ -170,6 +170,17 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
         }
 
+        Write-Debug -Message "Detecting Client Tools SDK feature ($clientComponentsFullRegistryPath)"
+        if (($registryClientComponentsFullFeatureList -like '*SDK_Full=3*') -and ($registryClientComponentsFullFeatureList -like '*SDK_FNS=3*'))
+        {
+            New-VerboseMessage -Message 'Client Tools SDK feature detected'
+            $features += 'SDK,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Client Tools SDK feature not detected'
+        }
+
         $instanceId = $fullInstanceId.Split('.')[1]
         $instanceDirectory = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\Setup" -Name 'SqlProgramDir').SqlProgramDir.Trim("\")
 
