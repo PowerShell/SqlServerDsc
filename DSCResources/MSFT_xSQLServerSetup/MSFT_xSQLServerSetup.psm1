@@ -145,6 +145,32 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Replication feature not detected'
         }
 
+        # Check if Data Quality Client sub component is configured
+        New-VerboseMessage -Message "Detecting Data Quality Client (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+        $isDQCInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_DQ_CLIENT_Full
+        if ($isDQCInstalled -eq 1)
+        {
+            New-VerboseMessage -Message 'Data Quality Client feature detected'
+            $features += 'DQC,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Data Quality Client feature not detected'
+        }
+
+        # Check if Data Quality Services sub component is configured
+        New-VerboseMessage -Message "Detecting Data Quality Services (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+        $isDQInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\DQ\*" -ErrorAction SilentlyContinue)
+        if ($isDQInstalled)
+        {
+            New-VerboseMessage -Message 'Data Quality Services feature detected'
+            $features += 'DQ,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Data Quality Services feature not detected'
+        }
+
         $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
         $registryClientComponentsFullFeatureList = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
 
