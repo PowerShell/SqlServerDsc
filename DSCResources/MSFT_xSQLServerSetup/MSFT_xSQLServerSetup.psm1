@@ -171,6 +171,19 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Data Quality Services feature not detected'
         }
 
+        # Check if Documentation Components "BOL" is configured
+        New-VerboseMessage -Message "Detecting Documentation Components (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+        $isBOLInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_BOL_Components
+        if ($isBOLInstalled -eq 1)
+        {
+            New-VerboseMessage -Message 'Documentation Components feature detected'
+            $features += 'BOL,'
+        }
+        else
+        {
+            New-VerboseMessage -Message 'Documentation Components feature not detected'
+        }
+
         $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
         $registryClientComponentsFullFeatureList = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
 
