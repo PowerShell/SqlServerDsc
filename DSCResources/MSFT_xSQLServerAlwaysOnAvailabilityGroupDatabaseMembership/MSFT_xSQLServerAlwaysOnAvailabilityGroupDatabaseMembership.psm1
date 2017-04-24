@@ -86,6 +86,12 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
         $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
 
+        # Create a hash table to store the databases that failed to be added to the Availability Group
+        $databasesToAddFailures = @{}
+
+        # Create a hash table to store the databases that failed to be added to the Availability Group
+        $databasesToRemoveFailures = @{}
+        
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
             # Ensure the appropriate permissions are in place on all the replicas
@@ -112,9 +118,6 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     New-TerminatingError @newTerminatingErrorParams
                 }
             }
-
-            # Create a hash table to store the databases that failed to be added to the Availability Group
-            $databasesToAddFailures = @{}
             
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
@@ -258,16 +261,13 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 }
                 else
                 {
-                    $databasesToAddFailures.Add($databaseName, 'The following prerequisite checks failed:')
+                    $databasesToAddFailures.Add($databaseName, "The following prerequisite checks failed: $( $prerequisiteCheckFailures -join "`r`n" )" )
                 }
             }
         }
 
         if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
         {
-            # Create a hash table to store the databases that failed to be added to the Availability Group
-            $databasesToRemoveFailures = @{}
-            
             foreach ( $databaseName in $databasesToRemoveFromAvailabilityGroup )
             {
                 $availabilityDatabase = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName].AvailabilityDatabases[$databaseName]
@@ -284,8 +284,18 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         }
 
         # Combine the failures into one error message and throw it here. Doing this will allow all the databases that can be processes to be processed and will still show that applying the configuration failed
-        $databasesToAddFailures
-        $databasesToRemoveFailures
+        $allFailures = $databasesToAddFailures + $databasesToRemoveFailures
+
+        if ( $allFailures.Count -gt 0 )
+        {
+            $newTerminatingErrorParams = @{
+                ErrorType = 'AlterAvailabilityGroupDatabaseMembershipFailure'
+                FormatArgs = ( $allFailures.GetEnumerator() | ForEach-Object { "The operation on the database '$( $_.Key )' failed with the following errors: $( $_.Value -join "`r`n" )" } )
+                ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
+            }
+            
+            New-TerminatingError @newTerminatingErrorParams
+        }
     }
 
     [bool] Test()
