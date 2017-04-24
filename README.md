@@ -739,8 +739,8 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) - (102
 #### Parameters
 
 * **[String] SQLInstance** _(Key)_: The name of the SQL instance to be configured.
-* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is *$env:COMPUTERNAME*.
-* **[Boolean] DynamicAlloc** _(Write)_: If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory must be set to $null or not be configured. Default value is *$false*.
+* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
+* **[Boolean] DynamicAlloc** _(Write)_: If set to $true then max memory will be dynamically configured. When this is set parameter is set to $true, the parameter MaxMemory must be set to $null or not be configured. Default value is $false.
 * **[String] Ensure** _(Write)_: When set to 'Present' then min and max memory will be set to either the value in parameter MinMemory and MaxMemory or dynamically configured when parameter DynamicAlloc is set to $true. When set to 'Absent' min and max memory will be set to default values. { *Present* | Absent }.
 * **[Sint32] MinMemory** _(Write)_: Minimum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
 * **[Sint32] MaxMemory** _(Write)_: Maximum amount of memory, in MB, in the buffer pool used by the instance of SQL Server.
@@ -765,10 +765,12 @@ No description.
 
 * **[String] InstanceName** _(Key)_: name of SQL Server instance for which network will be configured.
 * **[String] ProtocolName** _(Required)_: Name of network protocol to be configured. Only tcp is currently supported. { tcp }.
+* **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 * **[Boolean] IsEnabled** _(Write)_: Enables/Disables network protocol.
 * **[String] TCPDynamicPorts** _(Write)_: 0 if Dynamic ports should be used otherwise empty. { 0 }.
 * **[String] TCPPort** _(Write)_: Custom TCP port.
-* **[Boolean] RestartService** _(Write)_: If true will restart SQL Service instance service after update. Default false.
+* **[Boolean] RestartService** _(Write)_: If true will restart SQL Service instance service after update. The default value is $false.
+* **[Uint16] RestartTimeout** _(Write)_: Timeout value for restarting the SQL services. The default value is 120 seconds.
 
 #### Examples
 

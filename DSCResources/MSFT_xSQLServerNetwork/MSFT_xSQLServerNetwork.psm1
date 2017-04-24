@@ -1,4 +1,8 @@
-﻿Function Get-TargetResource
+﻿Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
+                               -ChildPath 'xSQLServerHelper.psm1') `
+                               -Force
+
+Function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
@@ -29,7 +33,7 @@
         {
             throw "Unable to resolve SQL version for instance"
         }
-        
+
         $smo = $dom_get.Load("Microsoft.SqlServer.Smo, Version=$version.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
         $sqlWmiManagement = $dom_get.Load("Microsoft.SqlServer.SqlWmiManagement, Version=$version.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
 
@@ -55,7 +59,7 @@
     {
         [System.AppDomain]::Unload($dom_get)
     }
-    
+
     return $returnValue
 }
 
@@ -63,6 +67,11 @@ Function Set-TargetResource
 {
     [CmdletBinding()]
     param(
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLServer = $env:COMPUTERNAME,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $InstanceName,
@@ -83,7 +92,11 @@ Function Set-TargetResource
         $TCPPort,
 
         [System.Boolean]
-        $RestartService = $false
+        $RestartService = $false,
+
+        [Parameter()]
+        [System.UInt16]
+        $RestartTimeout = 120
     )
 
     Write-Verbose "xSQLServerNetwork.Set-TargetResource ..."
@@ -103,7 +116,7 @@ Function Set-TargetResource
         {
             throw "Unable to resolve SQL version for instance"
         }
-        
+
         $smo = $dom_set.Load("Microsoft.SqlServer.Smo, Version=$version.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
         $sqlWmiManagement = $dom_set.Load("Microsoft.SqlServer.SqlWmiManagement, Version=$version.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
 
@@ -147,58 +160,7 @@ Function Set-TargetResource
 
         if($RestartService)
         {
-            Write-Verbose "SQL Service will be restarted ..."
-            if($InstanceName -eq "MSSQLSERVER")
-            {
-                $dbServiceName = "MSSQLSERVER"
-                $agtServiceName = "SQLSERVERAGENT"
-            }
-            else
-            {
-                $dbServiceName = "MSSQL`$$InstanceName"
-                $agtServiceName = "SQLAgent`$$InstanceName"
-            }
-
-            $sqlService = $wmi.Services[$dbServiceName]
-            $agentService = $wmi.Services[$agtServiceName]
-            $startAgent = ($agentService.ServiceState -eq "Running")
-
-            if ($sqlService -eq $null)
-            {
-                throw "$dbServiceName service was not found, restart service failed"
-            }   
-
-            Write-Verbose "Stopping [$dbServiceName] service ..."
-            $sqlService.Stop()
-
-            while($sqlService.ServiceState -ne "Stopped")
-            {
-                Start-Sleep -Milliseconds 500
-                $sqlService.Refresh()
-            }
-            Write-Verbose "[$dbServiceName] service stopped"
-
-            Write-Verbose "Starting [$dbServiceName] service ..."
-            $sqlService.Start()
-
-            while($sqlService.ServiceState -ne "Running")
-            {
-                Start-Sleep -Milliseconds 500
-                $sqlService.Refresh()
-            }
-            Write-Verbose "[$dbServiceName] service started"
-
-            if ($startAgent)
-            {
-                Write-Verbose "Staring [$agtServiceName] service ..."
-                $agentService.Start()
-                while($agentService.ServiceState -ne "Running")
-                {
-                    Start-Sleep -Milliseconds 500
-                    $agentService.Refresh()
-                }
-                Write-Verbose "[$agtServiceName] service started"
-            }
+            Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $InstanceName -Timeout $RestartTimeout
         }
     }
     Finally
@@ -212,6 +174,11 @@ Function Test-TargetResource
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param(
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLServer = $env:COMPUTERNAME,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $InstanceName,
@@ -232,7 +199,11 @@ Function Test-TargetResource
         $TCPPort,
 
         [System.Boolean]
-        $RestartService = $false
+        $RestartService = $false,
+
+        [Parameter()]
+        [System.UInt16]
+        $RestartTimeout = 120
     )
 
     Write-Verbose "xSQLServerNetwork.Test-TargetResource ..."
@@ -244,8 +215,8 @@ Function Test-TargetResource
         IsEnabled = $IsEnabled
         TCPDynamicPorts = $TCPDynamicPorts
         TCPPort = $TCPPort
-    } 
-    
+    }
+
     Write-Verbose "Calling xSQLServerNetwork.Get-TargetResource ..."
     $currentState = Get-TargetResource -InstanceName $InstanceName -ProtocolName $ProtocolName
 
@@ -267,7 +238,7 @@ Function Test-TargetResource
         }
     }
 
-    Write-Verbose "States match"        
+    Write-Verbose "States match"
     return $true
 }
 

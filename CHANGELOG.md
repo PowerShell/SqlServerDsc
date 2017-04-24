@@ -24,6 +24,10 @@
   - Fixed typos in markdown files; CHANGELOG, CONTRIBUTING, README and ISSUE_TEMPLATE.
 - Changes to xSQLServerAlwaysOnService
   - Get-TargetResource should no longer fail silently with error 'Index operation failed; the array index evaluated to null.' (issue #519). Now if the Server.IsHadrEnabled property return neither $true or $false the Get-TargetResource function will throw an error.
+- Changes to xSQLServerNetwork
+  - Added optional parameter SQLServer with default value of $env:COMPUTERNAME (issue #528).
+  - Added optional parameter RestartTimeout with default value of 120 seconds.
+  - Now the resource supports restarting a sql server in a cluster (issue #527).
 
 ## 7.0.0.0
 
