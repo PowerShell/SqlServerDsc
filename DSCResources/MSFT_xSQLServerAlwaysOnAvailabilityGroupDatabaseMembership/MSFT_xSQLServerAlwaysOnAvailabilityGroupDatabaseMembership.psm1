@@ -30,7 +30,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     [string]
     $AvailabilityGroupName
 
-    [DscProperty()]
+    [DscProperty(Mandatory)]
     [string]
     $BackupPath
 
@@ -388,10 +388,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                             # Move on to the next database
                             continue
                          }
-                    }
 
-                    # Add database to each replica
-                    Add-SqlAvailabilityDatabase
+                         # Clean up the backup files
+                         Remove-Item -Path $databaseFullBackupFile,$databaseLogBackupFile -Force -ErrorAction Continue
+                    }
                 }
                 else
                 {
