@@ -122,6 +122,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
                 $database = $primaryServerObject.Databases[$databaseName]
+                $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne [Microsoft.SqlServer.Management.Smo.AvailabilityReplicaRole]::Primary }
 
                 # Verify the prerequisites prior to joining the database to the availability group
                 # https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
@@ -160,7 +161,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 )
                 {
                     $availbilityReplicaFilestreamLevel = @{}
-                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
                         $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
@@ -176,7 +177,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 if ( $database.ContainmentType -ne [Microsoft.SqlServer.Management.Smo.ContainmentType]::None )
                 {
                     $availbilityReplicaContainmentEnabled = @{}
-                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
                         $availbilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
@@ -195,7 +196,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 $databaseFileDirectories = $databaseFileDirectories | Select-Object -Unique
 
                 $availabilityReplicaMissingDirectories = @{}
-                foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                foreach ( $availabilityGroupReplica in $secondaryReplicas )
                 {
                     $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
                     
@@ -232,7 +233,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     $databaseCertificateName = $database.DatabaseEncryptionKey.EncryptorName
 
                     $availabilityReplicaMissingCertificates = @{}
-                    foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                    foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
                         $installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
@@ -254,7 +255,140 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
                 if ( $prerequisiteCheckFailures.Count -eq 0 )
                 {
-                    # If no full backup was ever taken, take one w/o copy only, otherwise do backups with copy-only
+                    $databaseFullBackupFile = Join-Path -Path $this.BackupPath -ChildPath "$($database.Name)_Full_$(Get-Date -Format 'yyyyMMddhhmmss').bak"
+                    $databaseLogBackupFile = Join-Path -Path $this.BackupPath -ChildPath "$($database.Name)_Log_$(Get-Date -Format 'yyyyMMddhhmmss').trn"
+                    
+                    $backupSqlDatabaseParams = @{
+                        DatabaseObject = $database
+                        BackupAction = 'Database'
+                        BackupFile = $databaseFullBackupFile
+                        ErrorAction = 'Stop'
+                    }
+
+                    # If no full backup was ever taken, do not take a backup with CopyOnly
+                    if ( $database.LastBackupDate -ne 0 )
+                    {
+                        $backupSqlDatabaseParams.Add('CopyOnly', $true)
+                    }
+
+                    try
+                    {
+                        Backup-SqlDatabase @backupSqlDatabaseParams
+                    }
+                    catch
+                    {
+                        # Log the failure
+                        $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                        # Move on to the next database
+                        continue
+                    }
+
+                    $backupSqlDatabaseLogParams = @{
+                        DatabaseObject = $database
+                        BackupAction = 'Log'
+                        BackupFile = $databaseLogBackupFile
+                        ErrorAction = 'Stop'
+                    }
+
+                    try
+                    {
+                        Backup-SqlDatabase @backupSqlDatabaseLogParams
+                    }
+                    catch
+                    {
+                        # Log the failure
+                        $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                        # Move on to the next database
+                        continue
+                    }
+
+                    # Add the database to the availability group on the primary instance
+                    try
+                    {
+                        Add-SqlAvailabilityDatabase -InputObject $availabilityGroup -Database $databaseName
+                    }
+                    catch
+                    {
+                        # Log the failure
+                        $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                        # Move on to the next database
+                        continue
+                    }
+
+                    # Need to restore the database with a query in order to impersonate the correct login 
+                    $restoreDatabaseQueryStringBuilder = New-Object -TypeName System.Text.StringBuilder
+                    
+                    if ( $this.MatchDatabaseOwner )
+                    {
+                        $restoreDatabaseQueryStringBuilder.Append('EXECUTE AS LOGIN = ''') | Out-Null
+                        $restoreDatabaseQueryStringBuilder.Append($database.Owner) | Out-Null
+                        $restoreDatabaseQueryStringBuilder.AppendLine('''') | Out-Null
+                    }
+
+                    $restoreDatabaseQueryStringBuilder.Append('RESTORE DATABASE [') | Out-Null
+                    $restoreDatabaseQueryStringBuilder.Append($databaseName) | Out-Null
+                    $restoreDatabaseQueryStringBuilder.AppendLine(']') | Out-Null
+                    $restoreDatabaseQueryStringBuilder.Append('FROM DISK = ''') | Out-Null
+                    $restoreDatabaseQueryStringBuilder.Append($databaseFullBackupFile) | Out-Null
+                    $restoreDatabaseQueryStringBuilder.AppendLine('''') | Out-Null
+                    $restoreDatabaseQueryStringBuilder.Append('WITH NORECOVERY') | Out-Null
+                    $restoreDatabaseQueryString = $restoreDatabaseQueryStringBuilder.ToString()
+
+                    $restoreSqlDatabaseLogParams = @{
+                        Database = $databaseName
+                        BackupFile = $databaseLogBackupFile
+                        RestoreAction = 'Log'
+                        NoRecovery = $true
+                    }
+                    
+                    foreach ( $availabilityGroupReplica in $secondaryReplicas )
+                    {
+                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+
+                         $currentReplicaAvailabilityGroupObject = $currentAvailabilityGroupReplicaServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
+                         
+                         try
+                         {
+                            Invoke-Query -SQLServer $currentAvailabilityGroupReplicaServerObject.NetName -SQLInstanceName $currentAvailabilityGroupReplicaServerObject.ServiceName -Database master -Query $restoreDatabaseQueryString
+                         }
+                         catch
+                         {
+                             # Log the failure
+                            $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                            # Move on to the next database
+                            continue
+                         }
+
+                         try
+                         {
+                            Restore-SqlDatabase -InputObject $currentAvailabilityGroupReplicaServerObject @restoreSqlDatabaseLogParams
+                         }
+                         catch
+                         {
+                             # Log the failure
+                            $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                            # Move on to the next database
+                            continue
+                         }
+
+                         try
+                         {
+                            Add-SqlAvailabilityDatabase -InputObject $currentReplicaAvailabilityGroupObject -Database $databaseName
+                         }
+                         catch
+                         {
+                             # Log the failure
+                            $databasesToAddFailures.Add($databaseName, $_.Exception)
+
+                            # Move on to the next database
+                            continue
+                         }
+                    }
 
                     # Add database to each replica
                     Add-SqlAvailabilityDatabase
