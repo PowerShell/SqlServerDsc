@@ -58,6 +58,7 @@ function Get-TargetResource
         LoginType = $login.LoginType
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
+        Disabled = $login.IsDisabled
     }
 
     if ( $login.LoginType -eq 'SqlLogin' )
@@ -100,6 +101,9 @@ function Get-TargetResource
 
     .PARAMETER LoginPasswordPolicyEnforced
     Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
+
+    .PARAMETER Disabled
+    Specifies if the login is disabled. Default is $false.
 #>
 function Set-TargetResource
 {
@@ -150,7 +154,11 @@ function Set-TargetResource
 
         [Parameter()]
         [bool]
-        $LoginPasswordPolicyEnforced = $true
+        $LoginPasswordPolicyEnforced = $true,
+
+        [Parameter()]
+        [bool]
+        $Disabled = $false
     )
     
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -164,9 +172,7 @@ function Set-TargetResource
                 $login = $serverObject.Logins[$Name]
 
                 if ( $login.LoginType -eq 'SqlLogin' )
-                {                    
-                    
-                    
+                {
                     if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
                     {
                         New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
@@ -186,6 +192,20 @@ function Set-TargetResource
                     {
                          Set-SQLServerLoginPassword -Login $login -SecureString $LoginCredential.Password
                     }
+                }
+
+                if ( $login.IsDisabled -ne $Disabled )
+                {
+                    New-VerboseMessage -Message "Setting IsDisabled to '$Disabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                    if( $Disabled )
+                    {
+                        $login.Disable() 
+                    }
+                    else
+                    {
+                        $login.Enable()
+                    }
+                    Update-SQLServerLogin -Login $login
                 }
             }
             else
@@ -235,6 +255,13 @@ function Set-TargetResource
                         New-SQLServerLogin -Login $login
                     }
                 }
+
+                # we can only disable the login once it's been created
+                if( $Disabled )
+                {
+                    $login.Disable() 
+                    Update-SQLServerLogin -Login $login
+                }
             }
         }
 
@@ -279,6 +306,9 @@ function Set-TargetResource
 
     .PARAMETER LoginPasswordPolicyEnforced
     Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
+
+    .PARAMETER Disabled
+    Specifies if the login is disabled. Default is $false.
 #>
 function Test-TargetResource
 {
@@ -329,7 +359,11 @@ function Test-TargetResource
 
         [Parameter()]
         [bool]
-        $LoginPasswordPolicyEnforced = $true
+        $LoginPasswordPolicyEnforced = $true,
+
+        [Parameter()]
+        [bool]
+        $Disabled = $false
     )
 
     # Assume the test will pass
@@ -354,6 +388,12 @@ function Test-TargetResource
         if ( $LoginType -ne $loginInfo.LoginType )
         {
             New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' is a $($loginInfo.LoginType) rather than $LoginType"
+            $testPassed = $false
+        }
+
+        if ( $Disabled -ne $loginInfo.IsDisabled )
+        {
+            New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has IsDisabled set to $($loginInfo.IsDisabled) rather than $Disabled"
             $testPassed = $false
         }
 
