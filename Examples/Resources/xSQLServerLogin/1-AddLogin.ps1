@@ -34,6 +34,17 @@ Configuration Example
             PsDscRunAsCredential = $SysAdminAccount
         }
 
+        xSQLServerLogin Add_DisabledWindowsUser
+        {
+            Ensure = 'Present'
+            Name = 'CONTOSO\WindowsUser2'
+            LoginType = 'WindowsUser'
+            SQLServer = 'SQLServer'
+            SQLInstanceName = 'DSC'
+            PsDscRunAsCredential = $SysAdminAccount
+            Disabled = $true
+        }
+
         xSQLServerLogin Add_WindowsGroup
         {
             Ensure = 'Present'

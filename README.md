@@ -671,6 +671,7 @@ No description.
 * **[Boolean] LoginMustChangePassword** _(Write)_: Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Default is $true.
 * **[Boolean] LoginPasswordExpirationEnabled** _(Write)_: Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
 * **[Boolean] LoginPasswordPolicyEnforced** _(Write)_: Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
+* **[Boolean] Disabled** _(Write)_: Specifies if the login is disabled. Default is $false.
 
 #### Examples
 
