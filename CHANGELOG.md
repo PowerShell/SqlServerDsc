@@ -117,6 +117,10 @@
   - BREAKING CHANGE: Changed helper function Import-SQLPSModule to support SqlServer module (issue #91). The SqlServer module is the preferred module so if it is found it will be used, and if not found an attempt will be done to load SQLPS module instead.
 - Changes to xSQLServerScript
   - Updated tests for this resource, because they failed when Import-SQLPSModule was updated.
+  
+ - Changes to xSQLServerSetup
+   - Updated xSQLServerSetup Module Get-Resource method to fix (issue #516 and #490)
+   - Added change to detect DQ, DQC, BOL, SDK features. Now Test-Resource returns true after calling set for DQ, DQC, BOL, SDK features.
 
 ## 6.0.0.0
 
