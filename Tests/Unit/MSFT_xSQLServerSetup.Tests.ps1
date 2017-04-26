@@ -406,7 +406,7 @@ try
             return @(
                 (
                     New-Object Object |
-                        Add-Member -MemberType NoteProperty -Name 'FeatureList' -Value 'Connectivity_Full=3 SQL_SSMS_Full=3 Tools_Legacy_Full=3 Connectivity_FNS=3 SQL_Tools_Standard_FNS=3 Tools_Legacy_FNS=3' -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'FeatureList' -Value 'Connectivity_Full=3 SDK_Full=3 Tools_Legacy_Full=3 Connectivity_FNS=3 SDK_FNS=3 Tools_Legacy_FNS=3' -PassThru -Force
                 )
             )
         }
@@ -419,6 +419,7 @@ try
                 )
             )
         }
+        
 
         $mockGetItemProperty_SQL = {
             return @(
@@ -868,7 +869,7 @@ try
                 These are written with both lower-case and upper-case to make sure we support that.
                 The feature list must be written in the order it is returned by the function Get-TargerResource.
             #>
-            Features = 'SQLEngine,Replication,Conn,Bc,FullText,Rs,As,Is,Ssms,Adv_Ssms'
+            Features = 'SQLEngine,Replication,Conn,Bc,FullText,Rs,As,Is,Ssms,Adv_Ssms,SDK'
         }
 
         $mockDefaultClusterParameters = @{
