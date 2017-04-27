@@ -890,7 +890,7 @@ try
             #>
             Features = 'SQLENGINE,REPLICATION,DQC,DQ,BOL,CONN,BC,SDK,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
         }
-		$featuresForSqlServer2016 = ''
+        $featuresForSqlServer2016 = ''
         
         $mockDefaultClusterParameters = @{
             SetupCredential = $mockSetupCredential
