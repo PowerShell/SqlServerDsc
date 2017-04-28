@@ -74,6 +74,8 @@
   - Now it skips cluster validation för add node (issue #442).
   - Now it ignores parameters that are not allowed for action Addnode (issue #441).
   - Added support for vNext CTP 1.4 (issue #472).
+  - Updated xSQLServerSetup Module Get-Resource method to fix (issue #516 and #490).
+  - Added change to detect DQ, DQC, BOL, SDK features. Now Test-Resource returns true after calling set for DQ, DQC, BOL, SDK features.
 - Added new resource
   - xSQLServerAlwaysOnAvailabilityGroupReplica
 - Changes to xSQLServerDatabaseRecoveryModel
