@@ -117,10 +117,6 @@
   - BREAKING CHANGE: Changed helper function Import-SQLPSModule to support SqlServer module (issue #91). The SqlServer module is the preferred module so if it is found it will be used, and if not found an attempt will be done to load SQLPS module instead.
 - Changes to xSQLServerScript
   - Updated tests for this resource, because they failed when Import-SQLPSModule was updated.
-  
- - Changes to xSQLServerSetup
-   - Updated xSQLServerSetup Module Get-Resource method to fix (issue #516 and #490)
-   - Added change to detect DQ, DQC, BOL, SDK features. Now Test-Resource returns true after calling set for DQ, DQC, BOL, SDK features.
 
 ## 6.0.0.0
 
@@ -141,8 +137,8 @@
   - Changed so that instead of connection to localhost it is using $env:COMPUTERNAME as the host name to which it connects. And for cluster installation it uses the parameter FailoverClusterNetworkName as the host name to which it connects (issue #407).
   - When called with Action = 'PrepareFailoverCluster', the SQLSysAdminAccounts and FailoverClusterGroup parameters are no longer passed to the setup process (issues #410 and 411).
   - Solved the problem that InstanceDir and InstallSQLDataDir could not be set to just a qualifier, i.e 'E:' (issue #418). All paths (except SourcePath) can now be set to just the qualifier.
-  - Enables CodeCov.io code coverage reporting.
-  - Added badge for CodeCov.io to README.md.
+- Enables CodeCov.io code coverage reporting.
+- Added badge for CodeCov.io to README.md.
 - Examples
   - xSQLServerMaxDop
     - 1-SetMaxDopToOne.ps1
