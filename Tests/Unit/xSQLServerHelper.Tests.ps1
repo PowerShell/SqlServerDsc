@@ -47,6 +47,7 @@ InModuleScope $script:moduleName {
         $TypeName -eq 'Microsoft.AnalysisServices.Server'
     }
 
+    $mockSqlMajorVersion = 13
     $mockInstanceName = 'TEST'
 
     $mockSetupCredentialUserName = 'TestUserName12345'
@@ -878,6 +879,185 @@ InModuleScope $script:moduleName {
                 Assert-MockCalled -CommandName Import-Module -Exactly -Times 1 -Scope It
             }
         }
+
         Assert-VerifiableMocks
+    }
+
+    $mockGetItemProperty_MicrosoftSQLServer_InstanceNames_SQL = {
+        return @(
+            (
+                New-Object Object |
+                    Add-Member -MemberType NoteProperty -Name $mockInstanceName -Value $mockInstance_InstanceId -PassThru -Force
+            )
+        )
+    }
+
+    $mockGetItemProperty_MicrosoftSQLServer_FullInstanceId_Setup = {
+        return @(
+            (
+                New-Object Object |
+                    Add-Member -MemberType NoteProperty -Name 'Version' -Value "$($mockSqlMajorVersion).0.4001.0" -PassThru -Force
+            )
+        )
+    }
+
+    $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_InstanceNames_SQL = {
+        $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+    }
+
+    $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_FullInstanceId_Setup = {
+        $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockInstance_InstanceId\Setup"
+    }
+
+    Describe 'Testing Get-SqlMajorVersion' -Tag GetSqlMajorVersion {
+        BeforeEach {
+            Mock -CommandName Get-ItemProperty `
+                -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_InstanceNames_SQL `
+                -MockWith $mockGetItemProperty_MicrosoftSQLServer_InstanceNames_SQL `
+                -Verifiable
+
+            Mock -CommandName Get-ItemProperty `
+                -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_FullInstanceId_Setup `
+                -MockWith $mockGetItemProperty_MicrosoftSQLServer_FullInstanceId_Setup `
+                -Verifiable
+        }
+
+        $mockInstance_InstanceId = "MSSQL$($mockSqlMajorVersion).$($mockInstanceName)"
+
+        Context 'When calling Get-SqlMajorVersion' {
+            It 'Should return the correct major SQL version number' {
+                $result = Get-SqlMajorVersion -SQLInstanceName $mockInstanceName
+                $result | Should -Be $mockSqlMajorVersion
+
+                Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 1 -Scope It `
+                    -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_InstanceNames_SQL
+
+                Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 1 -Scope It `
+                    -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_FullInstanceId_Setup
+            }
+        }
+
+        Context 'When calling Get-SqlMajorVersion and nothing is returned' {
+            It 'Should throw the correct error' {
+                Mock -CommandName Get-ItemProperty `
+                    -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_FullInstanceId_Setup `
+                    -MockWith {
+                        return New-Object Object
+                    } -Verifiable
+
+                 { Get-SqlMajorVersion -SQLInstanceName $mockInstanceName } | Should -Throw 'Could not get the SQL version for the instance ''TEST''.'
+
+                Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 1 -Scope It `
+                    -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_InstanceNames_SQL
+
+                Assert-MockCalled -CommandName Get-ItemProperty -Exactly -Times 1 -Scope It `
+                    -ParameterFilter $mockGetItemProperty_ParameterFilter_MicrosoftSQLServer_FullInstanceId_Setup
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
+
+    $mockApplicationDomainName = 'xSQLServerHelperTests'
+    $mockApplicationDomainObject = [System.AppDomain]::CreateDomain($mockApplicationDomainName)
+
+    <#
+        It is not possible to fully test this helper function since we can't mock having the correct assembly
+        in the GAC. So these test will try to load the wrong assembly and will catch the error. But that means
+        it will never test the rows after if fails to load the assembly.
+    #>
+    Describe 'Testing Register-SqlSmo' -Tag RegisterSqlSmo {
+        BeforeEach {
+            Mock -CommandName Get-SqlMajorVersion -MockWith {
+                return '0' # Mocking zero because that could never match a correct assembly
+            } -Verifiable
+        }
+
+        Context 'When calling Register-SqlSmo to load the wrong assembly' {
+            It 'Should throw with the correct error' {
+                {
+                    Register-SqlSmo -SQLInstanceName $mockInstanceName
+                } | Should -Throw 'Exception calling "Load" with "1" argument(s): "Could not load file or assembly ''Microsoft.SqlServer.Smo, Version=0.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91'' or one of its dependencies. The system cannot find the file specified."'
+
+                Assert-MockCalled -CommandName Get-SqlMajorVersion
+            }
+        }
+
+        Context 'When calling Register-SqlSmo with a application domain to load the wrong assembly' {
+            It 'Should throw with the correct error' {
+                {
+                    Register-SqlSmo -SQLInstanceName $mockInstanceName -ApplicationDomain $mockApplicationDomainObject
+                } | Should -Throw 'Exception calling "Load" with "1" argument(s): "Could not load file or assembly ''Microsoft.SqlServer.Smo, Version=0.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91'' or one of its dependencies. The system cannot find the file specified."'
+
+                Assert-MockCalled -CommandName Get-SqlMajorVersion
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
+
+    <#
+        It is not possible to fully test this helper function since we can't mock having the correct assembly
+        in the GAC. So these test will try to load the wrong assembly and will catch the error. But that means
+        it will never test the rows after if fails to load the assembly.
+    #>
+    Describe 'Testing Register-SqlWmiManagement' -Tag RegisterSqlWmiManagement {
+        BeforeEach {
+            Mock -CommandName Get-SqlMajorVersion -MockWith {
+                return '0' # Mocking zero because that could never match a correct assembly
+            } -Verifiable
+
+            Mock -CommandName Register-SqlSmo -MockWith {
+                [System.AppDomain]::CreateDomain('xSQLServerHelper')
+            } -ParameterFilter {
+                $SQLInstanceName -eq $mockInstanceName
+            } -Verifiable
+        }
+
+        Context 'When calling Register-SqlWmiManagement to load the wrong assembly' {
+            It 'Should throw with the correct error' {
+                {
+                    Register-SqlWmiManagement -SQLInstanceName $mockInstanceName
+                } | Should -Throw 'Exception calling "Load" with "1" argument(s): "Could not load file or assembly ''Microsoft.SqlServer.SqlWmiManagement, Version=0.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91'' or one of its dependencies. The system cannot find the file specified."'
+
+                Assert-MockCalled -CommandName Get-SqlMajorVersion
+                Assert-MockCalled -CommandName Register-SqlSmo -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $SQLInstanceName -eq $mockInstanceName -and $ApplicationDomain -eq $null
+                }
+            }
+        }
+
+        Context 'When calling Register-SqlWmiManagement with a application domain to load the wrong assembly' {
+            It 'Should throw with the correct error' {
+                {
+                    Register-SqlWmiManagement -SQLInstanceName $mockInstanceName -ApplicationDomain $mockApplicationDomainObject
+                } | Should -Throw 'Exception calling "Load" with "1" argument(s): "Could not load file or assembly ''Microsoft.SqlServer.SqlWmiManagement, Version=0.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91'' or one of its dependencies. The system cannot find the file specified."'
+
+                Assert-MockCalled -CommandName Get-SqlMajorVersion
+                Assert-MockCalled -CommandName Register-SqlSmo -Exactly -Times 0 -Scope It -ParameterFilter {
+                    $SQLInstanceName -eq $mockInstanceName -and $ApplicationDomain -eq $null
+                }
+
+                Assert-MockCalled -CommandName Register-SqlSmo -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $SQLInstanceName -eq $mockInstanceName -and $ApplicationDomain.FriendlyName -eq $mockApplicationDomainName
+                }
+            }
+        }
+
+        Assert-VerifiableMocks
+    }
+
+    <#
+        NOTE! This test must be after the tests for Register-SqlSmo and Register-SqlWmiManagement.
+        This test unloads the application domain that is used during those tests.
+    #>
+    Describe 'Testing Unregister-SqlAssemblies' -Tag UnregisterSqlAssemblies {
+        Context 'When calling Unregister-SqlAssemblies to unload the assemblies' {
+            It 'Should not throw an error' {
+                {
+                    Unregister-SqlAssemblies -ApplicationDomain $mockApplicationDomainObject
+                } | Should -Not -Throw
+            }
+        }
     }
 }

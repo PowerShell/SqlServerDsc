@@ -152,6 +152,184 @@ function Connect-SQLAnalysis
 
 <#
     .SYNOPSIS
+        Creates a new application domain and loads the assemblies Microsoft.SqlServer.Smo
+        for the correct SQL Server major version.
+
+        An isolated application domain is used to load version specific assemblies, this needed
+        if there is multiple versions of SQL server in the same configuration. So that a newer
+        version of SQL is not using an older version of the assembly, or vice verse.
+
+        This should be unloaded using the helper function Unregister-SqlAssemblies or
+        using [System.AppDomain]::Unload($applicationDomainObject).
+
+    .PARAMETER SQLInstanceName
+        String containing the SQL Server Database Engine instance name to get the major SQL version from.
+
+    .PARAMETER ApplicationDomain
+        An optional System.AppDomain object to load the assembly into.
+
+    .OUTPUTS
+        System.AppDomain. Returns the application domain object with SQL SMO loaded.
+#>
+function Register-SqlSmo
+{
+    [CmdletBinding()]
+    [OutputType([System.AppDomain])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLInstanceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.AppDomain]
+        $ApplicationDomain
+    )
+
+    $sqlMajorVersion = Get-SqlMajorVersion -SQLInstanceName $SQLInstanceName
+    New-VerboseMessage -Message ('SQL major version is {0}.' -f $sqlMajorVersion)
+
+    if( -not $ApplicationDomain )
+    {
+        $applicationDomainName = $MyInvocation.MyCommand.ModuleName
+        New-VerboseMessage -Message ('Creating application domain ''{0}''.' -f $applicationDomainName)
+        $applicationDomainObject = [System.AppDomain]::CreateDomain($applicationDomainName)
+    }
+    else
+    {
+        New-VerboseMessage -Message ('Reusing application domain ''{0}''.' -f $ApplicationDomain.FriendlyName)
+        $applicationDomainObject = $ApplicationDomain
+    }
+
+    $sqlSmoAssemblyName = "Microsoft.SqlServer.Smo, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
+    New-VerboseMessage -Message ('Loading assembly ''{0}''.' -f $sqlSmoAssemblyName)
+    $applicationDomainObject.Load($sqlSmoAssemblyName) | Out-Null
+
+    return $applicationDomainObject
+}
+
+<#
+    .SYNOPSIS
+        Creates a new application domain and loads the assemblies Microsoft.SqlServer.Smo and
+        Microsoft.SqlServer.SqlWmiManagement for the correct SQL Server major version.
+
+        An isolated application domain is used to load version specific assemblies, this needed
+        if there is multiple versions of SQL server in the same configuration. So that a newer
+        version of SQL is not using an older version of the assembly, or vice verse.
+
+        This should be unloaded using the helper function Unregister-SqlAssemblies or
+        using [System.AppDomain]::Unload($applicationDomainObject) preferably in a finally block.
+
+    .PARAMETER SQLInstanceName
+        String containing the SQL Server Database Engine instance name to get the major SQL version from.
+
+    .PARAMETER ApplicationDomain
+        An optional System.AppDomain object to load the assembly into.
+
+    .OUTPUTS
+        System.AppDomain. Returns the application domain object with SQL WMI Management loaded.
+#>
+function Register-SqlWmiManagement
+{
+    [CmdletBinding()]
+    [OutputType([System.AppDomain])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLInstanceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.AppDomain]
+        $ApplicationDomain
+    )
+
+    $sqlMajorVersion = Get-SqlMajorVersion -SQLInstanceName $SQLInstanceName
+    New-VerboseMessage -Message ('SQL major version is {0}.' -f $sqlMajorVersion)
+
+    <#
+        Must register Microsoft.SqlServer.Smo first because that is a
+        dependency of Microsoft.SqlServer.SqlWmiManagement.
+    #>
+    if (-not $ApplicationDomain)
+    {
+        $applicationDomainObject = Register-SqlSmo -SQLInstanceName $SQLInstanceName
+    }
+    # Returns zero (0) objects if the assembly is not found
+    elseif (-not ($ApplicationDomain.GetAssemblies().FullName -match 'Microsoft.SqlServer.Smo'))
+    {
+        $applicationDomainObject = Register-SqlSmo -SQLInstanceName $SQLInstanceName -ApplicationDomain $ApplicationDomain
+    }
+
+    $sqlSqlWmiManagementAssemblyName = "Microsoft.SqlServer.SqlWmiManagement, Version=$sqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
+    New-VerboseMessage -Message ('Loading assembly ''{0}''.' -f $sqlSqlWmiManagementAssemblyName)
+    $applicationDomainObject.Load($sqlSqlWmiManagementAssemblyName) | Out-Null
+
+    return $applicationDomainName
+}
+
+<#
+    .SYNOPSIS
+        Unloads all assemblies in an application domain. It unloads the application domain.
+
+    .PARAMETER ApplicationDomain
+        System.AppDomain object containing the SQL assemblies to unload.
+#>
+function Unregister-SqlAssemblies
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.AppDomain]
+        $ApplicationDomain
+    )
+
+    New-VerboseMessage -Message ('Unloads application domain ''{0}''.' -f $ApplicationDomain.FriendlyName)
+    [System.AppDomain]::Unload($ApplicationDomain)
+}
+
+<#
+    .SYNOPSIS
+        Returns the major SQL version for the specific instance.
+
+    .PARAMETER SQLInstanceName
+        String containing the name of the SQL instance to be configured. Default value is 'MSSQLSERVER'.
+
+    .OUTPUTS
+        System.UInt16. Returns the SQL Server major version number.
+#>
+function Get-SqlMajorVersion
+{
+    [CmdletBinding()]
+    [OutputType([System.UInt16])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SQLInstanceName = 'MSSQLSERVER'
+    )
+
+    $sqlInstanceId = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL').$SQLInstanceName
+    $sqlVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstanceId\Setup").Version
+
+    if (-not $sqlVersion)
+    {
+        throw New-TerminatingError -ErrorType SqlServerVersionIsInvalid -FormatArgs @($SQLInstanceName) -ErrorCategory InvalidResult
+    }
+
+    [System.UInt16] $sqlMajorVersionNumber = $sqlVersion.Split('.')[0]
+
+    return $sqlMajorVersionNumber
+}
+
+<#
+    .SYNOPSIS
         Returns a localized error message.
 
     .PARAMETER ErrorType
@@ -168,7 +346,7 @@ function Connect-SQLAnalysis
         The object that was being operated on when the error occurred.
 
     .PARAMETER InnerException
-        Exception object that was thorwn when the error occured, which will be added to the final error message.
+        Exception object that was thrown when the error occurred, which will be added to the final error message.
 #>
 function New-TerminatingError
 {
@@ -314,7 +492,7 @@ function New-VerboseMessage
         This method is used to compare current and desired values for any DSC resource.
 
     .PARAMETER CurrentValues
-        This is hashtable of the current values that are applied to the resource.
+        This is hash table of the current values that are applied to the resource.
 
     .PARAMETER DesiredValues
         This is a PSBoundParametersDictionary of the desired values for the resource.
@@ -348,7 +526,7 @@ function Test-SQLDscParameterState
         -and ($DesiredValues.GetType().Name -ne "PSBoundParametersDictionary"))
     {
         throw "Property 'DesiredValues' in Test-SQLDscParameterState must be either a " + `
-              "Hashtable or CimInstance. Type detected was $($DesiredValues.GetType().Name)"
+              "Hash table or CimInstance. Type detected was $($DesiredValues.GetType().Name)"
     }
 
     if (($DesiredValues.GetType().Name -eq "CimInstance") -and ($null -eq $ValuesToCheck))
@@ -533,7 +711,7 @@ function Grant-ServerPerms
         Connect to a Active Directory and give the Cluster Name Object all rights on the cluster Virtual Computer Object (VCO).
 
     .PARAMETER AvailabilityGroupNameListener
-        String containing the name of the Availabilty Group's Virtual Computer Object (VCO).
+        String containing the name of the Availability Group's Virtual Computer Object (VCO).
 
     .PARAMETER CNO
         String containing the name of the Cluster Name Object (CNO) for the failover cluster.
@@ -563,7 +741,7 @@ function Grant-CNOPerms
     Try{
         $AG = Get-ADComputer $AvailabilityGroupNameListener
 
-        $comp = $AG.DistinguishedName  # input AD computer distinguishedname
+        $comp = $AG.DistinguishedName  # input AD computer distinguished name
         $acl = Get-Acl "AD:\$comp"
         $u = Get-ADComputer $CNO                        # get the AD user object given full control to computer
         $SID = [System.Security.Principal.SecurityIdentifier] $u.SID
@@ -586,10 +764,10 @@ function Grant-CNOPerms
 
 <#
     .SYNOPSIS
-        Create a new computer object for a Availabilty Group's Virtual Computer Object (VCO).
+        Create a new computer object for a Availability Group's Virtual Computer Object (VCO).
 
     .PARAMETER AvailabilityGroupNameListener
-        String containing the name of the Availabilty Group's Virtual Computer Object (VCO).
+        String containing the name of the Availability Group's Virtual Computer Object (VCO).
 
     .PARAMETER SQLServer
         String containing the host name of the SQL Server to connect to.
@@ -726,7 +904,7 @@ function Import-SQLPSModule
 
             <#
                 SQLPS has unapproved verbs, disable checking to ignore Warnings.
-                Suppressing verbose so all cmdlet is not llsted.
+                Suppressing verbose so all cmdlet is not listed.
             #>
             Import-Module -Name $module -DisableNameChecking -Verbose:$False -ErrorAction Stop
 
@@ -756,7 +934,7 @@ function Import-SQLPSModule
     Hostname of the SQL Server to be configured
 
     .PARAMETER SQLInstanceName
-    Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
+    Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
 
     .PARAMETER Timeout
     Timeout value for restarting the SQL services. The default value is 120 seconds.
@@ -1275,7 +1453,7 @@ function Invoke-Query
         Executes the alter method on an Availability Group Replica object.
 
     .PARAMETER AvailabilityGroupReplica
-        The Availabilty Group Replica object that must be altered.
+        The Availability Group Replica object that must be altered.
 #>
 function Update-AvailabilityGroupReplica
 {
