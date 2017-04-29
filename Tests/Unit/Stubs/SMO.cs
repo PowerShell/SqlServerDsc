@@ -303,6 +303,7 @@ namespace Microsoft.SqlServer.Management.Smo
         public bool MustChangePassword = false;
         public bool PasswordPolicyEnforced = false;
         public bool PasswordExpirationEnabled = false;
+        public bool IsDisabled = false;
 
         public string MockName;
         public LoginType MockLoginType;
