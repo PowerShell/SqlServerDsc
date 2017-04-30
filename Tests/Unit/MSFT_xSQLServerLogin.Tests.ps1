@@ -660,7 +660,12 @@ try
             }
 
             It 'Should add the specified Windows User as disabled when it is Absent' {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                Mock -CommandName Connect-SQL -MockWith {
+                    return New-Object -TypeName PSObject -Property @{
+                        Logins = @{}
+                    }
+                } -ModuleName $script:DSCResourceName -Verifiable
+
                 Mock -CommandName New-Object -MockWith {
                     $windowsUser = New-Object Microsoft.SqlServer.Management.Smo.Login( 'Server', 'Windows\User1' )
                     $windowsUser = $windowsUser | Add-Member -Name 'Disable' -MemberType ScriptMethod {
@@ -670,13 +675,14 @@ try
                     return $windowsUser
                 } -ParameterFilter {
                     $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Login' -and $ArgumentList[1] -eq 'Windows\UserAbsent'
-                }
+                } -ModuleName $script:DSCResourceName -Verifiable
 
-                $setTargetResource_WindowsUserAbsent_EnsurePresent = $setTargetResource_WindowsUserAbsent.Clone()
-                $setTargetResource_WindowsUserAbsent_EnsurePresent.Add( 'Ensure','Present' )
-                $setTargetResource_WindowsUserAbsent_EnsurePresent.Add( 'Disabled', $true )
+                $mockSetTargetResourceParameters = $instanceParameters.Clone()
+                $mockSetTargetResourceParameters.Add( 'Ensure','Present' )
+                $mockSetTargetResourceParameters.Add( 'Name','Windows\UserAbsent' )
+                $mockSetTargetResourceParameters.Add( 'Disabled', $true )
 
-                Set-TargetResource @setTargetResource_WindowsUserAbsent_EnsurePresent
+                Set-TargetResource @mockSetTargetResourceParameters
                 $global:mockWasLoginClassMethodDisabledCalled | Should -Be $true
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
