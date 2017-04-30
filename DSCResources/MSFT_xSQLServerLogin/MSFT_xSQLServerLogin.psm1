@@ -389,7 +389,7 @@ function Test-TargetResource
             $testPassed = $false
         }
 
-        if ( $PSBoundParameters.ContainsKey('Disabled') -and ($login.IsDisabled -ne $Disabled) )
+        if ( $PSBoundParameters.ContainsKey('Disabled') -and ($loginInfo.Disabled -ne $Disabled) )
         {
             New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has IsDisabled set to $($loginInfo.Disabled) rather than $Disabled"
             $testPassed = $false
