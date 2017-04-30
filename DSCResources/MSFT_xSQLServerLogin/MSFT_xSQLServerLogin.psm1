@@ -145,20 +145,20 @@ function Set-TargetResource
         $LoginCredential,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginMustChangePassword = $true,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginPasswordExpirationEnabled = $true,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginPasswordPolicyEnforced = $true,
 
         [Parameter()]
-        [bool]
-        $Disabled = $false
+        [System.Boolean]
+        $Disabled
     )
 
     $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -194,7 +194,7 @@ function Set-TargetResource
                     }
                 }
 
-                if ( $login.IsDisabled -ne $Disabled )
+                if ( $PSBoundParameters.ContainsKey('Disabled') -and ($login.IsDisabled -ne $Disabled) )
                 {
                     New-VerboseMessage -Message "Setting IsDisabled to '$Disabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
                     if( $Disabled )
@@ -205,7 +205,6 @@ function Set-TargetResource
                     {
                         $login.Enable()
                     }
-                    Update-SQLServerLogin -Login $login
                 }
             }
             else
@@ -260,7 +259,6 @@ function Set-TargetResource
                 if( $Disabled )
                 {
                     $login.Disable()
-                    Update-SQLServerLogin -Login $login
                 }
             }
         }
@@ -350,20 +348,20 @@ function Test-TargetResource
         $LoginCredential,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginMustChangePassword = $true,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginPasswordExpirationEnabled = $true,
 
         [Parameter()]
-        [bool]
+        [System.Boolean]
         $LoginPasswordPolicyEnforced = $true,
 
         [Parameter()]
-        [bool]
-        $Disabled = $false
+        [System.Boolean]
+        $Disabled
     )
 
     # Assume the test will pass
@@ -391,7 +389,7 @@ function Test-TargetResource
             $testPassed = $false
         }
 
-        if ( $Disabled -ne $loginInfo.Disabled )
+        if ( $PSBoundParameters.ContainsKey('Disabled') -and ($login.IsDisabled -ne $Disabled) )
         {
             New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has IsDisabled set to $($loginInfo.Disabled) rather than $Disabled"
             $testPassed = $false

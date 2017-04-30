@@ -544,7 +544,7 @@ try
                     $script:mockWasLoginClassMethodDisabledCalled | Should -Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Set-SQLServerLoginPassword  -Scope It -Times 0 -Exactly
@@ -563,7 +563,7 @@ try
                     $script:mockWasLoginClassMethodDisabledCalled | Should -Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Set-SQLServerLoginPassword  -Scope It -Times 0 -Exactly
@@ -693,7 +693,7 @@ try
                     $script:mockWasLoginClassMethodDisabledCalled | Should -Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SQLServerLogin  -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SQLServerLogin  -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Set-SQLServerLoginPassword  -Scope It -Times 0 -Exactly
