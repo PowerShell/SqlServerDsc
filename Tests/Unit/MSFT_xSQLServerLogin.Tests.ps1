@@ -639,6 +639,11 @@ try
         }
 
         Context 'When the desired state is Present' {
+            BeforeEach {
+                $global:mockWasLoginClassMethodEnableCalled = $false
+                $global:mockWasLoginClassMethodDisabledCalled = $false
+            }
+
             It 'Should add the specified Windows User when it is Absent' {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
 
@@ -649,6 +654,33 @@ try
 
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-SQLServerLogin -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SQLServerLogin -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SQLServerLogin -Scope It -Times 0 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-SQLServerLoginPassword -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should add the specified Windows User as disabled when it is Absent' {
+                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -ModuleName $script:DSCResourceName -Scope It -Verifiable
+                Mock -CommandName New-Object -MockWith {
+                    $windowsUser = New-Object Microsoft.SqlServer.Management.Smo.Login( 'Server', 'Windows\User1' )
+                    $windowsUser = $windowsUser | Add-Member -Name 'Disable' -MemberType ScriptMethod {
+                        $global:mockWasLoginClassMethodDisabledCalled = $true
+                    } -PassThru -Force
+
+                    return $windowsUser
+                } -ParameterFilter {
+                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Login' -and $ArgumentList[1] -eq 'Windows\UserAbsent'
+                }
+
+                $setTargetResource_WindowsUserAbsent_EnsurePresent = $setTargetResource_WindowsUserAbsent.Clone()
+                $setTargetResource_WindowsUserAbsent_EnsurePresent.Add( 'Ensure','Present' )
+                $setTargetResource_WindowsUserAbsent_EnsurePresent.Add( 'Disabled', $true )
+
+                Set-TargetResource @setTargetResource_WindowsUserAbsent_EnsurePresent
+                $global:mockWasLoginClassMethodDisabledCalled | Should -Be $true
+
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Update-SQLServerLogin -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-SQLServerLogin -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Remove-SQLServerLogin -Scope It -Times 0 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Set-SQLServerLoginPassword -Scope It -Times 0 -Exactly
