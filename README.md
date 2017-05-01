@@ -754,7 +754,9 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) - (102
 
 ### xSQLServerNetwork
 
-No description.
+This resource is used to change the network settings for the instance.
+
+>Note: Currently only TCP is supported.
 
 #### Requirements
 
@@ -763,11 +765,11 @@ No description.
 
 #### Parameters
 
-* **[String] InstanceName** _(Key)_: name of SQL Server instance for which network will be configured.
+* **[String] InstanceName** _(Key)_: Name of SQL Server instance for which network will be configured.
 * **[String] ProtocolName** _(Required)_: Name of network protocol to be configured. Only tcp is currently supported. { tcp }.
 * **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 * **[Boolean] IsEnabled** _(Write)_: Enables/Disables network protocol.
-* **[String] TCPDynamicPorts** _(Write)_: 0 if Dynamic ports should be used otherwise empty. { 0 }.
+* **[String] TCPDynamicPorts** _(Write)_: Set the value to '0' if dynamic ports should be used. If static port should be used set this to a empty string value. { '0','' }.
 * **[String] TCPPort** _(Write)_: Custom TCP port.
 * **[Boolean] RestartService** _(Write)_: If true will restart SQL Service instance service after update. The default value is $false.
 * **[Uint16] RestartTimeout** _(Write)_: Timeout value for restarting the SQL services. The default value is 120 seconds.

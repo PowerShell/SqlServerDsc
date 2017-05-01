@@ -290,7 +290,7 @@ function Unregister-SqlAssemblies
         $ApplicationDomain
     )
 
-    New-VerboseMessage -Message ('Unloads application domain ''{0}''.' -f $ApplicationDomain.FriendlyName)
+    New-VerboseMessage -Message ('Unloading application domain ''{0}''.' -f $ApplicationDomain.FriendlyName)
     [System.AppDomain]::Unload($ApplicationDomain)
 }
 
