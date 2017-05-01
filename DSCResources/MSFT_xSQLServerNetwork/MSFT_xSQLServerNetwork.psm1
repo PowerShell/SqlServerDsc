@@ -127,6 +127,11 @@ Function Set-TargetResource
         $RestartTimeout = 120
     )
 
+    if ($TcpDynamicPorts -eq '0' -and $TcpPort)
+    {
+        throw New-TerminatingError -ErrorType UnableToUseBothDynamicAndStaticPort -ErrorCategory InvalidOperation
+    }
+
     $getTargetResourceResult = Get-TargetResource -InstanceName $InstanceName -ProtocolName $ProtocolName
 
     $applicationDomainObject = Register-SqlWmiManagement -SQLInstanceName $InstanceName
@@ -264,12 +269,34 @@ Function Test-TargetResource
         $RestartTimeout = 120
     )
 
+    if ($TcpDynamicPorts -eq '0' -and $TcpPort)
+    {
+        throw New-TerminatingError -ErrorType UnableToUseBothDynamicAndStaticPort -ErrorCategory InvalidOperation
+    }
+
     $desiredState = @{
-        InstanceName = $InstanceName
         ProtocolName = $ProtocolName
-        IsEnabled = $IsEnabled
-        TcpDynamicPorts = $TcpDynamicPorts
-        TcpPort = $TcpPort
+    }
+
+    if ($PSBoundParameters.ContainsKey('IsEnabled'))
+    {
+        $desiredState += @{
+            IsEnabled = $IsEnabled
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('TcpDynamicPorts'))
+    {
+        $desiredState += @{
+            TcpDynamicPorts = $TcpDynamicPorts
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('TcpPort'))
+    {
+        $desiredState += @{
+            TcpPort = $TcpPort
+        }
     }
 
     $getTargetResourceResult = Get-TargetResource -InstanceName $InstanceName -ProtocolName $ProtocolName

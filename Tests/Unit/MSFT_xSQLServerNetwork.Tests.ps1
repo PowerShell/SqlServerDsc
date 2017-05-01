@@ -178,7 +178,6 @@ try
                         $testParameters += @{
                             TcpDynamicPorts = '0'
                             IsEnabled = $false
-                            TcpPort = '4509'
                         }
                     }
 
@@ -193,7 +192,6 @@ try
                         $testParameters += @{
                             TcpPort = '1433'
                             IsEnabled = $true
-                            TcpDynamicPorts = ''
                         }
                     }
 
@@ -202,24 +200,41 @@ try
                         $result | Should Be $false
                     }
                 }
+
+                Context 'When both TcpDynamicPorts and TcpPort is being set' {
+                    BeforeEach {
+                        $testParameters += @{
+                            TcpDynamicPorts = '0'
+                            TcpPort = '1433'
+                            IsEnabled = $false
+                        }
+                    }
+
+                    It 'Should throw the correct error message' {
+                        { Test-TargetResource @testParameters } | Should -Throw 'Unable to set both tcp dynamic port and tcp static port. Only one can be set.'
+                    }
+                }
             }
 
             Context 'When the system is in the desired state' {
                 BeforeEach {
-                    $mockDynamicValue_IsEnabled = $false
+                    $mockDynamicValue_IsEnabled = $true
                     $mockDynamicValue_TcpDynamicPorts = '0'
                     $mockDynamicValue_TcpPort = '1433'
-
-                    $testParameters += @{
-                        IsEnabled = $false
-                        TcpDynamicPorts = '0'
-                        TcpPort = '1433'
-                    }
                 }
 
-                It 'Should return $true' {
-                    $result = Test-TargetResource @testParameters
-                    $result | Should Be $true
+                Context 'When TcpPort is in desired state' {
+                    BeforeEach {
+                        $testParameters += @{
+                            TcpPort = '1433'
+                            IsEnabled = $true
+                        }
+                    }
+
+                    It 'Should return $true' {
+                        $result = Test-TargetResource @testParameters
+                        $result | Should Be $true
+                    }
                 }
             }
 
@@ -284,7 +299,6 @@ try
                         $testParameters += @{
                             IsEnabled = $true
                             TcpDynamicPorts = '0'
-                            TcpPort = '4509'
                         }
                     }
 
@@ -310,6 +324,20 @@ try
                         $script:WasMethodAlterCalled | Should -Be $true
 
                         Assert-MockCalled -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
+                    }
+                }
+
+                Context 'When both TcpDynamicPorts and TcpPort is being set' {
+                    BeforeEach {
+                        $testParameters += @{
+                            TcpDynamicPorts = '0'
+                            TcpPort = '1433'
+                            IsEnabled = $false
+                        }
+                    }
+
+                    It 'Should throw the correct error message' {
+                        { Set-TargetResource @testParameters } | Should -Throw 'Unable to set both tcp dynamic port and tcp static port. Only one can be set.'
                     }
                 }
             }

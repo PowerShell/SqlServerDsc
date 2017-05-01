@@ -112,4 +112,7 @@ CreateServerRoleSetError = Failed to create the server role named {2} on {0}\\{1
 DropServerRoleSetError = Failed to drop the server role named {2} on {0}\\{1}.
 AddMemberServerRoleSetError = Failed to add member {3} to the server role named {2} on {0}\\{1}.
 DropMemberServerRoleSetError = Failed to drop member {3} to the server role named {2} on {0}\\{1}.
+
+# SQLServerNetwork
+UnableToUseBothDynamicAndStaticPort = Unable to set both tcp dynamic port and tcp static port. Only one can be set.
 '@
