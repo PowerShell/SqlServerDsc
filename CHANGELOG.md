@@ -31,12 +31,12 @@
 - Changes to xSQLServerNetwork
   - Added optional parameter SQLServer with default value of $env:COMPUTERNAME (issue #528).
   - Added optional parameter RestartTimeout with default value of 120 seconds.
-  - Now the resource supports restarting a sql server in a cluster (issue #527).
+  - Now the resource supports restarting a sql server in a cluster (issue #527 and issue #455).
   - Now the resource allows to set the parameter TcpDynamicPorts to a blank value (partly fixes issue #534). Setting a blank value for parameter TcpDynamicPorts together with a value for parameter TcpPort means that static port will be used.
   - Now the resource will not call Alter() in the Set-TargetResource when there is no change necessary (issue #537).
   - Updated example 1-EnableTcpIpOnCustomStaticPort.
   - Added unit tests (issue #294).
-
+  - Refactored some of the code, cleaned up the rest and fixed PSSA rules warnings (issue #261).
 
 ## 7.0.0.0
 

@@ -765,14 +765,14 @@ This resource is used to change the network settings for the instance.
 
 #### Parameters
 
-* **[String] InstanceName** _(Key)_: Name of SQL Server instance for which network will be configured.
-* **[String] ProtocolName** _(Required)_: Name of network protocol to be configured. Only tcp is currently supported. { tcp }.
+* **[String] InstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **[String] ProtocolName** _(Required)_: The name of network protocol to be configured. Only tcp is currently supported. { tcp }.
 * **[String] SQLServer** _(Write)_: The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
-* **[Boolean] IsEnabled** _(Write)_: Enables/Disables network protocol.
+* **[Boolean] IsEnabled** _(Write)_: Enables or disables the network protocol.
 * **[String] TCPDynamicPorts** _(Write)_: Set the value to '0' if dynamic ports should be used. If static port should be used set this to a empty string value. { '0','' }.
-* **[String] TCPPort** _(Write)_: Custom TCP port.
-* **[Boolean] RestartService** _(Write)_: If true will restart SQL Service instance service after update. The default value is $false.
-* **[Uint16] RestartTimeout** _(Write)_: Timeout value for restarting the SQL services. The default value is 120 seconds.
+* **[String] TCPPort** _(Write)_: The TCP port that SQL Server should be listening on.
+* **[Boolean] RestartService** _(Write)_: If set to $true then SQL Server and dependent services will be restarted if a change to the configuration is made. The default value is $false.
+* **[Uint16] RestartTimeout** _(Write)_: Timeout value for restarting the SQL Server services. The default value is 120 seconds.
 
 #### Examples
 
