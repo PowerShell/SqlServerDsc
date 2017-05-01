@@ -17,14 +17,13 @@ Configuration Example
 
     node localhost
     {
-        xSQLServerNetwork 'RDBMS'
+        xSQLServerNetwork 'ChangeTcpIpOnDefaultInstance'
         {
             InstanceName = 'MSSQLSERVER'
             ProtocolName = 'Tcp'
             IsEnabled = $true
-            TCPDynamicPorts = ''
-            TCPPort = 4509
-            RestartService = $true
+            TCPDynamicPorts = '0'
+            RestartService = $false
         }
     }
 }

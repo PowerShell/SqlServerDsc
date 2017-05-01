@@ -38,6 +38,7 @@
   - Added unit tests (issue #294).
   - Refactored some of the code, cleaned up the rest and fixed PSSA rules warnings (issue #261).
   - If both parameter TcpDynamicPort and TcpPort is set at the same time it will now throw an error (issue #535).
+  - Added examples (issue #536).
 
 ## 7.0.0.0
 

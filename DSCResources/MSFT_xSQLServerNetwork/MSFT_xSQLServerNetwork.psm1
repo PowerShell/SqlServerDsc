@@ -75,16 +75,23 @@ Function Get-TargetResource
     Enables or disables the network protocol.
 
     .PARAMETER TcpDynamicPorts
-    Set the value to '0' if dynamic ports should be used. If static port should be used set this to a empty string value.
+    Set the value to '0' if dynamic ports should be used.
+    If static port should be used set this to a empty string value.
+    Value can not be set to '0' if TcpPort is also set to a value.
 
     .PARAMETER TcpPort
-    The TCP port that SQL Server should be listening on.
+    The TCP port(s) that SQL Server should be listening on.
+    If the IP address should listen on more than one port, list all ports
+    separated with a comma ('1433,1500,1501'). To use this parameter set
+    TcpDynamicPorts to the value '' (empty string).
 
     .PARAMETER RestartService
-    If set to $true then SQL Server and dependent services will be restarted if a change to the configuration is made. The default value is $false.
+    If set to $true then SQL Server and dependent services will be restarted
+    if a change to the configuration is made. The default value is $false.
 
     .PARAMETER RestartTimeout
-    Timeout value for restarting the SQL Server services. The default value is 120 seconds.
+    Timeout value for restarting the SQL Server services. The default value
+    is 120 seconds.
 #>
 Function Set-TargetResource
 {
@@ -213,18 +220,25 @@ Function Set-TargetResource
     Enables or disables the network protocol.
 
     .PARAMETER TcpDynamicPorts
-    Set the value to '0' if dynamic ports should be used. If static port should be used set this to a empty string value.
+    Set the value to '0' if dynamic ports should be used.
+    If static port should be used set this to a empty string value.
+    Value can not be set to '0' if TcpPort is also set to a value.
 
     .PARAMETER TcpPort
-    The TCP port that SQL Server should be listening on.
+    The TCP port(s) that SQL Server should be listening on.
+    If the IP address should listen on more than one port, list all ports
+    separated with a comma ('1433,1500,1501'). To use this parameter set
+    TcpDynamicPorts to the value '' (empty string).
 
     .PARAMETER RestartService
-    If set to $true then SQL Server and dependent services will be restarted if a change to the configuration is made. The default value is $false.
+    If set to $true then SQL Server and dependent services will be restarted
+    if a change to the configuration is made. The default value is $false.
 
     Not used in Test-TargetResource.
 
     .PARAMETER RestartTimeout
-    Timeout value for restarting the SQL Server services. The default value is 120 seconds.
+    Timeout value for restarting the SQL Server services. The default value
+    is 120 seconds.
 
     Not used in Test-TargetResource.
 #>
