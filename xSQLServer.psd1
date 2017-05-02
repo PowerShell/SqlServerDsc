@@ -18,7 +18,7 @@ Copyright = '(c) 2014 Microsoft Corporation. All rights reserved.'
 Description = 'Module with DSC Resources for deployment and configuration of Microsoft SQL Server.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '4.0'
+PowerShellVersion = '5.0'
 
 # Minimum version of the common language runtime (CLR) required by this module
 CLRVersion = '4.0'
@@ -28,6 +28,13 @@ FunctionsToExport = '*'
 
 # Cmdlets to export from this module
 CmdletsToExport = '*'
+
+DSCResourcesToExport = @('xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership')
+
+# Script module or binary module file associated with this manifest.
+RootModule = '.\DSCResources\MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership\MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership.psm1'
+
+RequiredAssemblies = @('Microsoft.SqlServer.Smo','Microsoft.SqlServer.SqlEnum')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
