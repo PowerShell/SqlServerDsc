@@ -39,7 +39,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     $Ensure = [Ensure]::Present
 
     [DscProperty()]
-    [switch]
+    [bool]
     $MatchDatabaseOwner = $true
 
     [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership] Get()
