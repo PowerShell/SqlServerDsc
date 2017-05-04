@@ -41,7 +41,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     [DscProperty()]
     [bool]
     $MatchDatabaseOwner = $true
-
+    
     [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership] Get()
     {
         # Create an object that reflects the current configuration
@@ -122,7 +122,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
                 $database = $primaryServerObject.Databases[$databaseName]
-                $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne [Microsoft.SqlServer.Management.Smo.AvailabilityReplicaRole]::Primary }
+                $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne 'Primary' }
 
                 # Verify the prerequisites prior to joining the database to the availability group
                 # https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
@@ -131,9 +131,9 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 $prerequisiteCheckFailures = @()
 
                 $prerequisiteChecks = @{
-                    RecoveryModel = [Microsoft.SqlServer.Management.Smo.RecoveryModel]::Full
+                    RecoveryModel = 'Full'
                     ReadOnly = $false
-                    UserAccess = [Microsoft.SqlServer.Management.Smo.DatabaseUserAccess]::Multiple
+                    UserAccess = 'Multiple'
                     AutoClose = $false
                     AvailabilityGroupName = ''
                     IsMirroringEnabled = $false
@@ -157,7 +157,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 if (
                     ( -not [string]::IsNullOrEmpty($database.DefaultFileStreamFileGroup) ) `
                     -or ( -not [string]::IsNullOrEmpty($database.FilestreamDirectoryName) ) `
-                    -or ( $database.FilestreamNonTransactedAccess -ne [Microsoft.SqlServer.Management.Smo.FilestreamNonTransactedAccessType]::Off )
+                    -or ( $database.FilestreamNonTransactedAccess -ne 'Off' )
                 )
                 {
                     $availbilityReplicaFilestreamLevel = @{}
@@ -167,14 +167,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
                     }
 
-                    if ( $availbilityReplicaFilestreamLevel.Values -contains [Microsoft.SqlServer.Management.Smo.FileStreamEffectiveLevel]::Off )
+                    if ( $availbilityReplicaFilestreamLevel.Values -contains 'Off' )
                     {
                         $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availbilityReplicaFilestreamLevel.Keys -join ', ' ) )
                     }
                 }
 
                 # If the database is contained, ensure contained database authentication is enabled on all replica instances
-                if ( $database.ContainmentType -ne [Microsoft.SqlServer.Management.Smo.ContainmentType]::None )
+                if ( $database.ContainmentType -ne 'None' )
                 {
                     $availbilityReplicaContainmentEnabled = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
@@ -486,10 +486,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [string[]] GetDatabasesToAddToAvailabilityGroup (
-        [Microsoft.SqlServer.Management.Smo.Server]
+        #[Microsoft.SqlServer.Management.Smo.Server]
         $ServerObject,
 
-        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
         $AvailabilityGroup
     )
     {
@@ -508,10 +508,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [string[]] GetDatabasesToRemoveFromAvailabilityGroup (
-        [Microsoft.SqlServer.Management.Smo.Server]
+        #[Microsoft.SqlServer.Management.Smo.Server]
         $ServerObject,
 
-        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
         $AvailabilityGroup
     )
     {
@@ -534,7 +534,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
     
     [string[]] GetMatchingDatabaseNames (
-        [Microsoft.SqlServer.Management.Smo.Server]
+        #[Microsoft.SqlServer.Management.Smo.Server]
         $ServerObject
     )
     {
@@ -577,10 +577,11 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [Microsoft.SqlServer.Management.Smo.Server] GetPrimaryReplicaServerObject (
-        [Microsoft.SqlServer.Management.Smo.Server]
+    #[PsObject] GetPrimaryReplicaServerObject (
+        #[Microsoft.SqlServer.Management.Smo.Server]
         $ServerObject,
         
-        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
         $AvailabilityGroup
     )
     {
@@ -596,7 +597,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [bool] TestImpersonatePermissions (
-        [Microsoft.SqlServer.Management.Smo.Server]
+        #[Microsoft.SqlServer.Management.Smo.Server]
         $ServerObject
     )
     {
