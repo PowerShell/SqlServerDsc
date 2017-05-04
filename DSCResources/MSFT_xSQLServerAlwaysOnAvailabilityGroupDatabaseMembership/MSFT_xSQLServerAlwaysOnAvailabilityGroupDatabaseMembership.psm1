@@ -81,7 +81,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
         # Make sure we're communicating with the primary replica in order to make changes to the replica
-        $primaryServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
+        $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
 
         $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
         $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
@@ -102,7 +102,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
                 {
                     $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                    $impersonatePermissionsStatus.Add($availabilityGroupReplica.Name, $this.TestImpersonatePermissions($currentAvailabilityGroupReplicaServerObject))
+                    $impersonatePermissionsStatus.Add(
+                        $availabilityGroupReplica.Name,
+                        ( Test-ImpersonatePermissions -ServerObject $currentAvailabilityGroupReplicaServerObject )
+                    )
                 }
 
                 if ( $impersonatePermissionsStatus.Values -contains $false )
@@ -444,7 +447,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
         # Make sure we're communicating with the primary replica in order to make changes to the replica
-        $primaryServerObject = $this.GetPrimaryReplicaServerObject($serverObject,$availabilityGroup)
+        $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
 
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($primaryServerObject)
         $databasesNotFoundOnTheInstance = @()
@@ -485,14 +488,26 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $configurationInDesiredState
     }
 
-    [string[]] GetDatabasesToAddToAvailabilityGroup (
-        #[Microsoft.SqlServer.Management.Smo.Server]
+    hidden [string[]] GetDatabasesToAddToAvailabilityGroup (
+        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
+        [psobject]
         $ServerObject,
 
-        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.AvailabilityGroup] so that Get-DSCResource will work properly
+        [psobject]
         $AvailabilityGroup
     )
     {
+        if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
+        {
+            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+        }
+
+        if ( $AvailabilityGroup.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
+        {
+            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+        }
+        
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
@@ -507,14 +522,26 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $databasesToAddToAvailabilityGroup
     }
 
-    [string[]] GetDatabasesToRemoveFromAvailabilityGroup (
-        #[Microsoft.SqlServer.Management.Smo.Server]
+    hidden [string[]] GetDatabasesToRemoveFromAvailabilityGroup (
+        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
+        [psobject]
         $ServerObject,
 
-        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.AvailabilityGroup] so that Get-DSCResource will work properly
+        [psobject]
         $AvailabilityGroup
     )
     {
+        if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
+        {
+            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+        }
+
+        if ( $AvailabilityGroup.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
+        {
+            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+        }
+        
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
@@ -533,11 +560,17 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $databasesToRemoveFromAvailabilityGroup
     }
     
-    [string[]] GetMatchingDatabaseNames (
-        #[Microsoft.SqlServer.Management.Smo.Server]
+    hidden [string[]] GetMatchingDatabaseNames (
+        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
+        [psobject]
         $ServerObject
     )
     {
+        if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
+        {
+            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+        }
+        
         $matchingDatabaseNames = @()
 
         foreach ( $dbName in $this.DatabaseName )
@@ -548,7 +581,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $matchingDatabaseNames
     }
 
-    [string[]] GetDatabaseNamesNotFoundOnTheInstance (
+    hidden [string[]] GetDatabaseNamesNotFoundOnTheInstance (
         [string[]]
         $MatchingDatabaseNames
     )
@@ -574,47 +607,5 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $result = $databasesNotFoundOnTheInstance.GetEnumerator() | Where-Object { $_.Value } | Select-Object -ExpandProperty Key
 
         return $result
-    }
-
-    [Microsoft.SqlServer.Management.Smo.Server] GetPrimaryReplicaServerObject (
-    #[PsObject] GetPrimaryReplicaServerObject (
-        #[Microsoft.SqlServer.Management.Smo.Server]
-        $ServerObject,
-        
-        #[Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
-        $AvailabilityGroup
-    )
-    {
-        $primaryReplicaServerObject = $serverObject
-        
-        # Determine if we're connected to the primary replica
-        if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [string]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
-        {
-            $primaryReplicaServerObject = Connect-SQL -SQLServer $AvailabilityGroup.PrimaryReplicaServerName
-        }
-
-        return $primaryReplicaServerObject
-    }
-
-    [bool] TestImpersonatePermissions (
-        #[Microsoft.SqlServer.Management.Smo.Server]
-        $ServerObject
-    )
-    {
-        $testLoginEffectivePermissionsParams = @{
-            SQLServer = $ServerObject.ComputerNamePhysicalNetBIOS
-            SQLInstanceName = $ServerObject.ServiceName
-            LoginName = $ServerObject.ConnectionContext.TrueLogin
-            Permissions = @('IMPERSONATE ANY LOGIN')
-        }
-        
-        $impersonatePermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
-
-        if ( -not $impersonatePermissionsPresent )
-        {
-            New-VerboseMessage -Message ( 'The login "{0}" does not have impersonate permissions on the instance "{1}\{2}".' -f $testLoginEffectivePermissionsParams.LoginName, $testLoginEffectivePermissionsParams.SQLServer, $testLoginEffectivePermissionsParams.SQLInstanceName )
-        }
-
-        return $impersonatePermissionsPresent
     }
 }
