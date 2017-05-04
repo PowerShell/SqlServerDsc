@@ -1032,3 +1032,53 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
 
     return $availabilityReplicaSeedingModeAutomatic
 }
+
+function Get-PrimaryReplicaServerObject
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject,
+        
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.AvailabilityGroup]
+        $AvailabilityGroup
+    )
+
+    $primaryReplicaServerObject = $serverObject
+    
+    # Determine if we're connected to the primary replica
+    if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [string]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
+    {
+        $primaryReplicaServerObject = Connect-SQL -SQLServer $AvailabilityGroup.PrimaryReplicaServerName
+    }
+
+    return $primaryReplicaServerObject
+}
+
+function Test-ImpersonatePermissions
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.SqlServer.Management.Smo.Server]
+        $ServerObject
+    )
+
+    $testLoginEffectivePermissionsParams = @{
+        SQLServer = $ServerObject.ComputerNamePhysicalNetBIOS
+        SQLInstanceName = $ServerObject.ServiceName
+        LoginName = $ServerObject.ConnectionContext.TrueLogin
+        Permissions = @('IMPERSONATE ANY LOGIN')
+    }
+    
+    $impersonatePermissionsPresent = Test-LoginEffectivePermissions @testLoginEffectivePermissionsParams
+
+    if ( -not $impersonatePermissionsPresent )
+    {
+        New-VerboseMessage -Message ( 'The login "{0}" does not have impersonate permissions on the instance "{1}\{2}".' -f $testLoginEffectivePermissionsParams.LoginName, $testLoginEffectivePermissionsParams.SQLServer, $testLoginEffectivePermissionsParams.SQLInstanceName )
+    }
+
+    return $impersonatePermissionsPresent
+}
