@@ -236,10 +236,14 @@ namespace Microsoft.SqlServer.Management.Smo
 
         public string Name;
         public string DisplayName;
+        public string ComputerNamePhysicalNetBIOS;
+        public string DomainInstanceName;
         public string InstanceName;
         public string ServiceName;
         public bool IsClustered = false;
         public bool IsHadrEnabled = false;
+
+        public Microsoft.SqlServer.Management.Smo.ConnectionContext ConnectionContext;
 
         public Server(){}
 
@@ -679,6 +683,17 @@ namespace Microsoft.SqlServer.Management.Smo
                 throw new System.Exception( "Alter Availability Group Replica failed" );
             }
         }
+
+        public void Create()
+        {}
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Common.ServerConnection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class ConnectionContext
+    {
+        public string TrueLogin;
 
         public void Create()
         {}

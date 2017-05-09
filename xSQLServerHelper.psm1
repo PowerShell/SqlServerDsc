@@ -1024,7 +1024,7 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
         $seedingModeResults = Invoke-Query @invokeQueryParams -Query $queryToGetSeedingMode
         $seedingMode = $seedingModeResults.Tables.Rows.seeding_mode_desc
 
-        if ( $seedingMode = 'Automatic' )
+        if ( $seedingMode -eq 'Automatic' )
         {
             $availabilityReplicaSeedingModeAutomatic = $true
         }
