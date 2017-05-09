@@ -845,6 +845,81 @@ InModuleScope $script:moduleName {
 
                 Assert-MockCalled -CommandName Register-SqlSmo -Exactly -Times 1 -Scope It -ParameterFilter {
                     $SQLInstanceName -eq $mockInstanceName -and $ApplicationDomain.FriendlyName -eq $mockApplicationDomainName
+    Describe 'Testing Test-AvailabilityReplicaSeedingModeAutomatic' {
+        
+        BeforeEach {
+            $mockSqlVersion = 13
+            $mockConnectSql = {
+                Param
+                (
+                    [Parameter()]
+                    [string]
+                    $SQLServer,
+
+                    [Parameter()]
+                    [string]
+                    $SQLInstanceName
+                )
+                
+                $mock = @(
+                    (
+                        New-Object Object |
+                            Add-Member -MemberType NoteProperty -Name 'Version' -Value $mockSqlVersion -PassThru
+                    )
+                )
+
+                # Type the mock as a server object
+                $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+                return $mock
+            }
+
+            $mockSeedingMode = 'Manual'
+            $mockInvokeQuery = {
+                return @{
+                    Tables = @{
+                        Rows = @{
+                            seeding_mode_desc = $mockSeedingMode
+                        }
+                    }
+                }
+            }
+            
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
+            Mock -CommandName Invoke-Query -MockWith $mockInvokeQuery -Verifiable
+        }
+
+        $testAvailabilityReplicaSeedingModeAutomaticParams = @{
+            SQLServer = 'Server1'
+            SQLInstanceName = 'MSSQLSERVER'
+            AvailabilityGroupName = 'Group1'
+            AvailabilityReplicaName = 'Replica2'
+        }
+
+        Context 'When the replica seeding mode is manual' {
+            # Test SQL 2012 and 2014. Not testing earlier versions because Availaiblity Groups were intoduced in SQL 2012.
+            foreach ( $instanceVersion in @(11,12) )
+            {
+                It ( 'Should return $false when the instance version is {0}' -f $instanceVersion ) {
+                    $mockSqlVersion = $instanceVersion
+                    
+                    Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Invoke-Query -Scope It -Times 0 -Exactly
+                }
+            }
+
+            # Test SQL 2016 and later
+            foreach ( $instanceVersion in @(13,14) )
+            {
+                It ( 'Should return $false when the instance version is {0} and the replica seeding mode is manual' -f $instanceVersion ) {
+                    $mockSqlVersion = $instanceVersion
+                    
+                    Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Invoke-Query -Scope It -Times 1 -Exactly
                 }
             }
         }
@@ -862,6 +937,121 @@ InModuleScope $script:moduleName {
                 {
                     Unregister-SqlAssemblies -ApplicationDomain $mockApplicationDomainObject
                 } | Should -Not -Throw
+        Context 'When the replica seeding mode is automatic' {
+            # Test SQL 2016 and later
+            foreach ( $instanceVersion in @(13,14) )
+            {
+                It ( 'Should return $true when the instance version is {0} and the replica seeding mode is automatic' -f $instanceVersion ) {
+                    $mockSqlVersion = $instanceVersion
+                    $mockSeedingMode = 'Automatic'
+                    
+                    Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Invoke-Query -Scope It -Times 1 -Exactly
+                }
+            }
+        }
+    }
+
+    Describe 'Testing Get-PrimaryReplicaServerObject' {
+        BeforeEach {
+            $mockServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
+            $mockServerObject.DomainInstanceName = 'Server1'
+
+            $mockAvailabilityGroup = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
+            $mockAvailabilityGroup.PrimaryReplicaServerName = 'Server1'
+        }
+
+        $mockConnectSql = {
+            Param
+            (
+                [Parameter()]
+                [string]
+                $SQLServer,
+
+                [Parameter()]
+                [string]
+                $SQLInstanceName
+            )
+            
+            $mock = @(
+                (
+                    New-Object Object |
+                        Add-Member -MemberType NoteProperty -Name 'DomainInstanceName' -Value $SQLServer -PassThru
+                )
+            )
+
+            # Type the mock as a server object
+            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+
+            return $mock
+        }
+
+        Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
+
+        Context 'When the supplied server object is the primary replica' {
+            It 'Should return the same server object that was supplied' {
+                $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup
+
+                $result.DomainInstanceName | Should Be $mockServerObject.DomainInstanceName
+                $result.DomainInstanceName | Should Be $mockAvailabilityGroup.PrimaryReplicaServerName
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 0 -Exactly
+            }
+
+            It 'Should return the same server object that was supplied when the PrimaryReplicaServerNameProperty is empty' {
+                $mockAvailabilityGroup.PrimaryReplicaServerName = ''
+                
+                $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup
+
+                $result.DomainInstanceName | Should Be $mockServerObject.DomainInstanceName
+                $result.DomainInstanceName | Should Not Be $mockAvailabilityGroup.PrimaryReplicaServerName
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 0 -Exactly
+            }
+        }
+
+        Context 'When the supplied server object is not the primary replica' {
+            It 'Should the server object of the primary replica' {
+                $mockAvailabilityGroup.PrimaryReplicaServerName = 'Server2'
+                
+                $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup
+
+                $result.DomainInstanceName | Should Not Be $mockServerObject.DomainInstanceName
+                $result.DomainInstanceName | Should Be $mockAvailabilityGroup.PrimaryReplicaServerName
+
+                Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+            }
+        }
+    }
+
+    Describe 'Testing Test-ImpersonatePermissions' {
+        $mockConnectionContextObject = New-Object Microsoft.SqlServer.Management.Smo.ConnectionContext
+        $mockConnectionContextObject.TrueLogin = 'Login1'
+        
+        $mockServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
+        $mockServerObject.ComputerNamePhysicalNetBIOS = 'Server1'
+        $mockServerObject.ServiceName = 'MSSQLSERVER'
+        $mockServerObject.ConnectionContext = $mockConnectionContextObject
+        
+        Context 'When impersonate permissions are present for the login' {
+            Mock -CommandName Test-LoginEffectivePermissions -MockWith { $true }
+            
+            It 'Should return true when the impersonate permissions are present for the login'{
+                Test-ImpersonatePermissions -ServerObject $mockServerObject | Should Be $true
+
+                Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly
+            }
+        }
+
+        Context 'When impersonate permissions are missing for the login' {
+            Mock -CommandName Test-LoginEffectivePermissions -MockWith { $false } -Verifiable
+
+            It 'Should return false when the impersonate permissions are missing for the login'{
+                Test-ImpersonatePermissions -ServerObject $mockServerObject | Should Be $false
+                
+                Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly
             }
         }
     }
