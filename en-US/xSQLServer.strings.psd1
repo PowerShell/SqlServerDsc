@@ -15,6 +15,7 @@ HadrNotEnabled = HADR is not enabled.
 AvailabilityGroupNotFound = Unable to locate the availability group '{0}' on the instance '{1}'.
 SqlServerVersionIsInvalid = 'Could not get the SQL version for the instance '{0}'.
 ParameterNotOfType = The parameter '{0}' is not of the type '{1}'.
+ParameterNullOrEmpty = The parameter '{0}' is NULL or empty.
 
 # SQLServer
 NoDatabase = Database '{0}' does not exist on SQL server '{1}\\{2}'.

@@ -1,6 +1,7 @@
 // Stubs for the namespace Microsoft.SqlServer.Management.Smo. Used for mocking in tests.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Security;
 using System.Runtime.InteropServices;
@@ -243,9 +244,17 @@ namespace Microsoft.SqlServer.Management.Smo
         public bool IsClustered = false;
         public bool IsHadrEnabled = false;
 
+        public Server(){}
+        public Server(string name)
+        {
+            this.Name = name;
+        }
+
+        public System.Collections.Hashtable AvailabilityGroups;
+        
         public Microsoft.SqlServer.Management.Smo.ConnectionContext ConnectionContext;
 
-        public Server(){}
+        public Microsoft.SqlServer.Management.Smo.Database[] Databases;
 
         public Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] EnumServerPermissions( string principal, Microsoft.SqlServer.Management.Smo.ServerPermissionSet permissionSetQuery )
         {
@@ -494,6 +503,7 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
+    //  MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     //  MSFT_xSQLServerDatabase
     //  MSFT_xSQLServerDatabasePermission
 	public class Database
@@ -507,6 +517,8 @@ namespace Microsoft.SqlServer.Management.Smo
         public Database( Object server, string name ) {
             this.Name = name;
         }
+
+        public Database() {}
 
         public string Name;
 
@@ -652,6 +664,8 @@ namespace Microsoft.SqlServer.Management.Smo
                 throw new System.Exception( "Alter Availability Group failed" );
             }
         }
+
+        public Microsoft.SqlServer.Management.Smo.AvailabilityDatabase[] AvailabilityDatabases;
     }
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
@@ -698,5 +712,16 @@ namespace Microsoft.SqlServer.Management.Smo
         public void Create()
         {}
     }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabase
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class AvailabilityDatabase
+    {
+        public string Name;
+
+        public void Create() {}
+    }
+
     #endregion Public Classes
 }
