@@ -2,8 +2,6 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
 
-Import-SQLPSModule
-
 enum Ensure
 {
     Absent
@@ -498,14 +496,24 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $AvailabilityGroup
     )
     {
+        if ( ( $ServerObject -eq $null ) -or ( [string]::IsNullOrEmpty($ServerObject) ) )
+        {
+            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
+        }
+
+        if ( ( $AvailabilityGroup -eq $null ) -or ( [string]::IsNullOrEmpty($AvailabilityGroup) ) )
+        {
+            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
+        }
+        
         if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
         }
 
         if ( $AvailabilityGroup.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
         {
-            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
         }
         
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
@@ -532,14 +540,24 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $AvailabilityGroup
     )
     {
+        if ( ( $ServerObject -eq $null ) -or ( [string]::IsNullOrEmpty($ServerObject) ) )
+        {
+            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
+        }
+
+        if ( ( $AvailabilityGroup -eq $null ) -or ( [string]::IsNullOrEmpty($AvailabilityGroup) ) )
+        {
+            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
+        }
+        
         if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
         }
 
         if ( $AvailabilityGroup.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
         {
-            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
         }
         
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
@@ -566,9 +584,9 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $ServerObject
     )
     {
-        if ( $ServerObject.pstypenames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
+        if ( $ServerObject.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
         }
         
         $matchingDatabaseNames = @()
