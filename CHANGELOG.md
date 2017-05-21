@@ -71,8 +71,9 @@
 - Changes to xSQLServerHelper
   - The missing helper function ('Test-SPDSCObjectHasProperty'), that was referenced in the helper function Test-SQLDscParameterState, is now incorporated into Test-SQLDscParameterState (issue #589).
 - Changes to xSQLServer
-  - BREAKING CHANGE: Remove deprecated resource xSQLAOGroupJoin.
-  - BREAKING CHANGE: Remove deprecated resource xSQLAOGroupEnsure.
+  - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupJoin (issue #457).
+  - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupEnsure (issue #456).
+  - BREAKING CHANGE: Removed deprecated resource xSQLServerFailoverClusterSetup (issue #336).
 
 ## 7.0.0.0
 

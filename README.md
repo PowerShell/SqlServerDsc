@@ -86,7 +86,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint is present or absent.
 * [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission) Grant or revoke permission on the endpoint.
 * [**xSQLServerEndpointState**](#xsqlserverendpointstate) Change state of the endpoint.
-* **[Deprecated]** ~~[**xSQLServerFailoverClusterSetup**](#xsqlserverfailoverclustersetup) installs SQL Server failover cluster instances.~~ Please use [xSQLServerSetup](https://github.com/PowerShell/xSQLServer#xsqlserversetup) instead.
 * [**xSQLServerFirewall**](#xsqlserverfirewall) configures firewall settings to allow remote access to a SQL Server instance.
 * [**xSQLServerLogin**](#xsqlserverlogin) resource to manage SQL logins.
 * [**xSQLServerMaxDop**](#xsqlservermaxdop) resource to manage MaxDegree of Parallelism for SQL Server.
@@ -467,72 +466,6 @@ This resource is used to set the state of an endpoint.
 
 * [Make sure that an endpoint is started](/Examples/Resources/xSQLServerEndpointState/1-MakeSureEndpointIsStarted.ps1)
 * [Make sure that an endpoint is stopped](/Examples/Resources/xSQLServerEndpointState/2-MakeSureEndpointIsStopped.ps1)
-
-### xSQLServerFailoverClusterSetup **[Deprecated]**
-
-**This resource is deprecated.** The functionality of this resource has been merged with [xSQLServerSetup](#xsqlserversetup). Please do not use this resource for new development efforts.
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 R2 or later.
-
-#### Parameters
-
-* **[String] Action** _(Key)_: Prepare or Complete. { Prepare | Complete }.
-* **[String] InstanceName** _(Key)_: SQL instance to be installed.
-* **[String] Features** _(Required)_: SQL features to be installed.
-* **[PSCredential] SetupCredential** _(Required)_: Credential to be used to perform the installation.
-* **[String] FailoverClusterNetworkName** _(Required)_: Network name for the SQL Server failover cluster.
-* **[PSCredential] SQLSvcAccount** _(Required)_: Service account for the SQL service.
-* **[String] SourcePath** _(Write)_: UNC path to the root of the source files for installation.
-* **[String] SourceFolder** _(Write)_: Folder within the source path containing the source files for installation.
-* **[PSCredential] SourceCredential** _(Write)_: Credential to be used to access SourcePath
-* **[Boolean] SuppressReboot** _(Write)_: Suppresses reboot
-* **[Boolean] ForceReboot** _(Write)_: Forces Reboot
-* **[String] InstanceID** _(Write)_: SQL instance ID, if different from InstanceName.
-* **[String] PID** _(Write)_: Product key for licensed installations.
-* **[String] UpdateEnabled** _(Write)_: Enabled updates during installation.
-* **[String] UpdateSource** _(Write)_: Source of updates to be applied during installation.
-* **[String] SQMReporting** _(Write)_: Enable customer experience reporting.
-* **[String] ErrorReporting** _(Write)_: Enable error reporting.
-* **[String] FailoverClusterGroup** _(Write)_: Name of the resource group to be used for the SQL Server failover cluster.
-* **[String] FailoverClusterIPAddress** _(Write)_: IPv4 address for the SQL Server failover cluster.
-* **[String] InstallSharedDir** _(Write)_: Installation path for shared SQL files.
-* **[String] InstallSharedWOWDir** _(Write)_: Installation path for x86 shared SQL files.
-* **[String] InstanceDir** _(Write)_: Installation path for SQL instance files.
-* **[PSCredential] AgtSvcAccount** _(Write)_: Service account for the SQL Agent service.
-* **[String] SQLCollation** _(Write)_: Collation for SQL.
-* **[String[]] SQLSysAdminAccounts** _(Write)_: Array of accounts to be made SQL administrators.
-* **[String] SecurityMode** _(Write)_: SQL security mode.
-* **[PSCredential] SAPwd** _(Write)_: SA password, if SecurityMode=SQL.
-* **[String] InstallSQLDataDir** _(Write)_: Root path for SQL database files.
-* **[String] SQLUserDBDir** _(Write)_: Path for SQL database files.
-* **[String] SQLUserDBLogDir** _(Write)_: Path for SQL log files.
-* **[String] SQLTempDBDir** _(Write)_: Path for SQL TempDB files.
-* **[String] SQLTempDBLogDir** _(Write)_: Path for SQL TempDB log files.
-* **[String] SQLBackupDir** _(Write)_: Path for SQL backup files.
-* **[PSCredential] ASSvcAccount** _(Write)_: Service account for Analysis Services service.
-* **[String] ASCollation** _(Write)_: Collation for Analysis Services.
-* **[String[]] ASSysAdminAccounts** _(Write)_: Array of accounts to be made Analysis Services admins.
-* **[String] ASDataDir** _(Write)_: Path for Analysis Services data files.
-* **[String] ASLogDir** _(Write)_: Path for Analysis Services log files.
-* **[String] ASBackupDir** _(Write)_: Path for Analysis Services backup files.
-* **[String] ASTempDir** _(Write)_: Path for Analysis Services temp files.
-* **[String] ASConfigDir** _(Write)_: Path for Analysis Services config.
-* **[PSCredential] ISSvcAccount** _(Write)_: Service account for Integration Services service.
-* **[String] ISFileSystemFolder** _(Write)_: File system folder for Integration Services.
-
-#### Read-Only Properties from Get-TargetResource
-
-* **[String] SQLSvcAccountUsername** _(Read)_: Output user name for the SQL service.
-* **[String] AgtSvcAccountUsername** _(Read)_: Output user name for the SQL Agent service.
-* **[String] ASSvcAccountUsername** _(Read)_: Output user name for the Analysis Services service.
-* **[String] ISSvcAccountUsername** _(Read)_: Output user name for the Integration Services service.
-
-#### Examples
-
-None.
 
 ### xSQLServerFirewall
 
