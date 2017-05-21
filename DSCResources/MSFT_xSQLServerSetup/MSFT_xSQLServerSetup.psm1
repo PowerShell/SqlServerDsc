@@ -1,6 +1,5 @@
 $script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xSQLServerHelper.psm1')
-Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'xPDT.psm1')
 
 <#
     .SYNOPSIS
@@ -851,7 +850,7 @@ function Set-TargetResource
         $mediaDestinationPath = Join-Path -Path (Get-TemporaryFolder) -ChildPath $mediaDestinationFolder
 
         New-VerboseMessage -Message "Robocopy is copying media from source '$SourcePath' to destination '$mediaDestinationPath'"
-        Copy-ItemWithRoboCopy -Path $SourcePath -DestinationPath $mediaDestinationPath
+        Copy-ItemWithRobocopy -Path $SourcePath -DestinationPath $mediaDestinationPath
 
         Remove-SmbMapping -RemotePath $SourcePath -Force
 
@@ -1323,8 +1322,8 @@ function Set-TargetResource
 
     $arguments = $arguments.Trim()
     $processArguments = @{
-        Path = $pathToSetupExecutable
-        Arguments = $arguments
+        FilePath = $pathToSetupExecutable
+        ArgumentList = $arguments
     }
 
     if ($Action -in @('InstallFailoverCluster','AddNode'))
@@ -1332,11 +1331,21 @@ function Set-TargetResource
         $processArguments.Add('Credential',$SetupCredential)
     }
 
-    $process = StartWin32Process @processArguments
+    $sqlSetupProcess = Start-Process @processArguments -PassThru -Wait -NoNewWindow
+    Wait-Process -InputObject $sqlSetupProcess -Timeout 120
 
-    New-VerboseMessage -Message $process
+    $processExitCode = $sqlSetupProcess.ExitCode
+    $setupExitMessage = "Setup exited with code '$processExitCode'."
 
-    WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments
+    if ($processExitCode -ne 0) {
+        $setupExitMessage += ' Please see the ''Summary.txt'' log file in the ''Setup Bootstrap\Log'' folder.'
+
+        throw $setupExitMessage
+    }
+    else
+    {
+        Write-Verbose $setupExitMessage
+    }
 
     if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
     {
@@ -1796,7 +1805,7 @@ function Get-FirstItemPropertyValue
     .PARAMETER DestinationPath
         The path to the destination.
 #>
-function Copy-ItemWithRoboCopy
+function Copy-ItemWithRobocopy
 {
     [CmdletBinding()]
     param

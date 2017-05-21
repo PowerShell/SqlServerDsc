@@ -78,6 +78,8 @@
   - Removed helper function Grant-ServerPerms because the deprecated resource that was using it was removed.
   - Removed helper function Grant-CNOPerms because the deprecated resource that was using it was removed.
   - Removed helper function New-ListenerADObject because the deprecated resource that was using it was removed.
+- Changes to xSQLServerSetup
+  - BREAKING CHANGE: Replaced StartWin32Process helper function with the cmdlet Start-Process (issue #41, #93 and #126).
 
 ## 7.0.0.0
 
