@@ -74,6 +74,10 @@
   - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupJoin (issue #457).
   - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupEnsure (issue #456).
   - BREAKING CHANGE: Removed deprecated resource xSQLServerFailoverClusterSetup (issue #336).
+- Changes to xSQLServerHelper
+  - Removed helper function Grant-ServerPerms because the deprecated resource that was using it was removed.
+  - Removed helper function Grant-CNOPerms because the deprecated resource that was using it was removed.
+  - Removed helper function New-ListenerADObject because the deprecated resource that was using it was removed.
 
 ## 7.0.0.0
 
