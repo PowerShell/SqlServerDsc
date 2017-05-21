@@ -73,7 +73,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 ## Resources
 
 * **[Deprecated]** ~~[**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent.~~ Please use [xSQLServerAlwaysOnAvailabilityGroup](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroup) and [xSQLServerAlwaysOnAvailabilityGroupReplica](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroupreplica) instead.
-* **[Deprecated]** ~~[**xSQLAOGroupJoin**](#xsqlaogroupjoin) resource to join a replica to an existing availability group.~~  Please use [xSQLServerAlwaysOnAvailabilityGroup](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroup) and [xSQLServerAlwaysOnAvailabilityGroupReplica](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroupreplica) instead.
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases.
 * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
 * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica) resource to ensure an availability group replica is present or absent.
@@ -134,29 +133,6 @@ No description.
 * **[String] SQLServer** _(Write)_: The SQL Server for the database.
 * **[String] SQLInstance** _(Write)_: The SQL instance for the database.
 * **[PSCredential] SetupCredential** _(Required)_: Credential to be used to Grant Permissions on SQL Server, set this to $null to use Windows Authentication.
-
-#### Examples
-
-None.
-
-### xSQLAOGroupJoin **[Deprecated]**
-
-No description.
-
-**This resource is deprecated.** The functionality of this resource has been replaced with [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica). Please do not use this resource for new deployment or development efforts.
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine2012 or later.
-
-#### Parameters
-
-* **[String] Ensure** _(Key)_: If the replica should be joined ('Present') to the Availability Group or not joined ('Absent') to the Availability Group. { Present | Absent }.
-* **[String] AvailabilityGroupName** _(Key)_: The name Availability Group to join.
-* **[String] SQLServer** _(Write)_: Name of the SQL server to be configured.
-* **[String] SQLInstanceName** _(Write)_: Name of the SQL instance to be configured.
-* **[PSCredential] SetupCredential** _(Required)_: Credential to be used to Grant Permissions in SQL.
 
 #### Examples
 
