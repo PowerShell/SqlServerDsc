@@ -72,7 +72,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
-* **[Deprecated]** ~~[**xSQLAOGroupEnsure**](#xsqlaogroupensure) resource to ensure availability group is present or absent.~~ Please use [xSQLServerAlwaysOnAvailabilityGroup](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroup) and [xSQLServerAlwaysOnAvailabilityGroupReplica](https://github.com/PowerShell/xSQLServer#xsqlserveralwaysonavailabilitygroupreplica) instead.
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases.
 * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
 * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica) resource to ensure an availability group replica is present or absent.
@@ -101,42 +100,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerScript**](#xsqlserverscript) resource to extend DSC Get/Set/Test functionality to T-SQL.
 * [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
 * [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait till availability group is created on primary server.
-
-### xSQLAOGroupEnsure **[Deprecated]**
-
-No description.
-
-**This resource is deprecated.** The functionality of this resource has been replaced with [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup). Please do not use this resource for new deployment or development efforts.
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2012 or later.
-* Target machine must have access to the Active Directory module.
-
-#### Security Requirements
-
-* The credentials provided in the parameter `SetupCredential` must have the right **Create Computer Object** in the organizational unit (OU) in which the Cluster Name Object (CNO) resides.
-
-#### Parameters
-
-* **[String] Ensure** _(Key)_: Determines whether the availability group should be added or removed. { Present | Absent }.
-* **[String] AvailabilityGroupName**_(Key)_: Name for availability group.
-* **[String] AvailabilityGroupNameListener** _(Write)_: Listener name for availability group.
-* **[String[]] AvailabilityGroupNameIP** _(Write)_: List of IP addresses associated with listener.
-* **[String[]] AvailabilityGroupSubMask** _(Write)_: Network subnet mask for listener.
-* **[Uint32] AvailabilityGroupPort** _(Write)_: Port availability group should listen on.
-* **[String] ReadableSecondary** _(Write)_: Mode secondaries should operate under (None, ReadOnly, ReadIntent). { None | *ReadOnly* | ReadIntent }.
-* **[String] AutoBackupPreference** _(Write)_: Where backups should be backed up from (Primary, Secondary). { *Primary* | Secondary }.
-* **[Uint32] BackupPriority** _(Write)_: The percentage weight for backup priority (default 50).
-* **[Uint32] EndPointPort** _(Write)_: The TCP port for the SQL AG Endpoint (default 5022).
-* **[String] SQLServer** _(Write)_: The SQL Server for the database.
-* **[String] SQLInstance** _(Write)_: The SQL instance for the database.
-* **[PSCredential] SetupCredential** _(Required)_: Credential to be used to Grant Permissions on SQL Server, set this to $null to use Windows Authentication.
-
-#### Examples
-
-None.
 
 ### xSQLServerAlias
 
