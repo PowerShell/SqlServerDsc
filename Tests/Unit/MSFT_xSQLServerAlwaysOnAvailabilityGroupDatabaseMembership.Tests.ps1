@@ -9,7 +9,8 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 }
 
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
-Import-Module (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'xSQLServerHelper.psm1') -Scope Global -Force
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'xSQLServerHelper.psm1') -Scope Global -Force
+Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force -Global
 
 # Loading mocked classes
 Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
@@ -55,6 +56,16 @@ try
 
         #endregion Parameter Mocks
 
+        #region mock names
+
+            $mockServerObjectDomainInstanceName = 'Server1'
+            $mockPrimaryServerObjectDomainInstanceName = 'Server2'
+            $mockAvailabilityGroupObjectName = 'AvailabilityGroup1'
+            $mockAvailabilityGroupWithoutDatabasesObjectName = 'AvailabilityGroupWithoutDatabases'
+            $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServerName = 'AvailabilityGroup2'
+
+        #endregion mock names
+
         #region Availability Group Mocks
 
             $mockAvailabilityDatabaseNames = @(
@@ -92,18 +103,18 @@ try
 
             $mockAvailabilityGroupObject = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
             $mockAvailabilityGroupObject.AvailabilityDatabases = $mockAvailabilityDatabaseObjects
-            $mockAvailabilityGroupObject.Name = 'AvailabilityGroup1'
-            $mockAvailabilityGroupObject.PrimaryReplicaServerName = 'Server1'
+            $mockAvailabilityGroupObject.Name = $mockAvailabilityGroupObjectName
+            $mockAvailabilityGroupObject.PrimaryReplicaServerName = $mockServerObjectDomainInstanceName
 
             $mockAvailabilityGroupWithoutDatabasesObject = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
             $mockAvailabilityGroupWithoutDatabasesObject.AvailabilityDatabases = @()
-            $mockAvailabilityGroupWithoutDatabasesObject.Name = 'AvailabilityGroupWithoutDatabases'
-            $mockAvailabilityGroupWithoutDatabasesObject.PrimaryReplicaServerName = 'Server1'
+            $mockAvailabilityGroupWithoutDatabasesObject.Name = $mockAvailabilityGroupWithoutDatabasesObjectName
+            $mockAvailabilityGroupWithoutDatabasesObject.PrimaryReplicaServerName = $mockServerObjectDomainInstanceName
 
             $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
             $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.AvailabilityDatabases = $mockAvailabilityDatabaseObjects
-            $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = 'AvailabilityGroup2'
-            $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.PrimaryReplicaServerName = 'Server2'
+            $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServerName
+            $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.PrimaryReplicaServerName = $mockPrimaryServerObjectDomainInstanceName
 
         #endregion Availability Group Mocks
 
@@ -117,6 +128,7 @@ try
                 'UndefinedDatabase'
             )
 
+            <#
             $mockDatabaseObjects = @()
             foreach ( $mockPresentDatabaseName in $mockPresentDatabaseNames )
             {
@@ -124,7 +136,16 @@ try
                 $newDatabaseObject.Name = $mockPresentDatabaseName
                 $mockDatabaseObjects += $newDatabaseObject
             }
+            #>
 
+            $mockDatabaseObjects = New-Object Microsoft.SqlServer.Management.Smo.DatabaseCollection
+            foreach ( $mockPresentDatabaseName in $mockPresentDatabaseNames )
+            {
+                $newDatabaseObject = New-Object Microsoft.SqlServer.Management.Smo.Database
+                $newDatabaseObject.Name = $mockPresentDatabaseName
+                $mockDatabaseObjects.Add($newDatabaseObject)
+            }
+        
         #endregion Database Mocks
         
         #region Server mocks
@@ -138,7 +159,7 @@ try
                 $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer
             }
             $mockServerObject.Databases = $mockDatabaseObjects
-            $mockServerObject.DomainInstanceName = 'Server1'
+            $mockServerObject.DomainInstanceName = $mockServerObjectDomainInstanceName
 
             $mockPrimaryServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
             $mockPrimaryServerObject.AvailabilityGroups = @{
@@ -147,7 +168,7 @@ try
                 $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer
             }
             $mockPrimaryServerObject.Databases = $mockDatabaseObjects
-            $mockPrimaryServerObject.DomainInstanceName = 'Server2'
+            $mockPrimaryServerObject.DomainInstanceName = $mockPrimaryServerObjectDomainInstanceName
 
         #endregion Server mocks
         
@@ -228,17 +249,17 @@ try
 
         Describe 'xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership\Set()' {
             BeforeAll {
-                #Mock -CommandName Add-SqlAvailabilityDatabase -MockWith {} -Verifiable # Primary and secondaries
-                #Mock -CommandName Backup-SqlDatabase -MockWith {} -Verifiable
+                Mock -CommandName Add-SqlAvailabilityDatabase -MockWith {} -Verifiable # Primary and secondaries
+                Mock -CommandName Backup-SqlDatabase -MockWith {} -Verifiable
                 Mock -CommandName Connect-SQL -MockWith { return $mockServerObject } -Verifiable
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server1' }
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockPrimaryServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server2' }
-                #Mock -CommandName Invoke-Query -MockWith {} -Verifiable # Restore
-                #Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
-                #Mock -CommandName Remove-Item -MockWith {} -Verifiable
-                #Mock -CommandName Remove-SqlAvailabilityDatabase -MockWith {} -Verifiable
-                #Mock -CommandName Restore-SqlDatabase -MockWith {} -Verifiable
-                #Mock -CommandName Test-ImpersonatePermissions -MockWith {} -Verifiable
+                Mock -CommandName Invoke-Query -MockWith {} -Verifiable # Restore
+                Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
+                Mock -CommandName Remove-Item -MockWith {} -Verifiable
+                Mock -CommandName Remove-SqlAvailabilityDatabase -MockWith {} -Verifiable
+                Mock -CommandName Restore-SqlDatabase -MockWith {} -Verifiable
+                Mock -CommandName Test-ImpersonatePermissions -MockWith {} -Verifiable
             }
 
             BeforeEach {
