@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Security;
 using System.Runtime.InteropServices;
 
@@ -254,7 +255,7 @@ namespace Microsoft.SqlServer.Management.Smo
         
         public Microsoft.SqlServer.Management.Smo.ConnectionContext ConnectionContext;
 
-        public Microsoft.SqlServer.Management.Smo.Database[] Databases;
+        public DatabaseCollection Databases;
 
         public Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] EnumServerPermissions( string principal, Microsoft.SqlServer.Management.Smo.ServerPermissionSet permissionSetQuery )
         {
@@ -721,6 +722,28 @@ namespace Microsoft.SqlServer.Management.Smo
         public string Name;
 
         public void Create() {}
+    }
+    
+    // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseCollection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class DatabaseCollection : Collection<Database>
+    {
+        public Database this[string name]
+        {
+            get
+            {
+                foreach ( Database database in this )
+                {
+                    if ( name == database.Name )
+                    {
+                        return database;
+                    }
+                }
+
+                return new Database();
+            }
+        }
     }
 
     #endregion Public Classes
