@@ -12,9 +12,6 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource.  Environment variables can be used in the path.
 
-    .PARAMETER SetupCredential
-        Credential to be used to perform the installation.
-
     .PARAMETER SourceCredential
         Credentials used to access the path set in the parameter `SourcePath`. Using this parameter will trigger a copy
         of the installation media to a temp folder on the target node. Setup will then be started from the temp folder on the target node.
@@ -44,10 +41,6 @@ function Get-TargetResource
         [Parameter()]
         [System.String]
         $SourcePath,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $SetupCredential,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -459,9 +452,6 @@ function Get-TargetResource
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.
 
-    .PARAMETER SetupCredential
-        Credential to be used to perform the installation.
-
     .PARAMETER SourceCredential
         Credentials used to access the path set in the parameter `SourcePath`. Using this parameter will trigger a copy
         of the installation media to a temp folder on the target node. Setup will then be started from the temp folder on the target node.
@@ -590,6 +580,9 @@ function Get-TargetResource
 
     .PARAMETER FailoverClusterNetworkName
         Host name to be assigned to the clustered SQL Server instance
+
+    .PARAMETER SetupProcessTimeout
+        The timeout, in seconds, to wait for the setup process to finish. Default value is 7200 seconds (2 hours). If the setup process does not finish before this time, and error will be thrown.
 #>
 function Set-TargetResource
 {
@@ -606,10 +599,6 @@ function Set-TargetResource
         [Parameter()]
         [System.String]
         $SourcePath,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $SetupCredential,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -774,13 +763,16 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $FailoverClusterNetworkName
+        $FailoverClusterNetworkName,
+
+        [Parameter()]
+        [System.UInt32]
+        $SetupProcessTimeout = 7200
     )
 
     $getTargetResourceParameters = @{
         Action = $Action
         SourcePath = $SourcePath
-        SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
         InstanceName = $InstanceName
         FailoverClusterNetworkName = $FailoverClusterNetworkName
@@ -864,8 +856,8 @@ function Set-TargetResource
     $sqlVersion = Get-SqlMajorVersion -Path $pathToSetupExecutable
 
     # Determine features to install
-    $featuresToInstall = ""
-    foreach ($feature in $Features.Split(","))
+    $featuresToInstall = ''
+    foreach ($feature in $Features.Split(','))
     {
         # Given that all the returned features are uppercase, make sure that the feature to search for is also uppercase
         $feature = $feature.ToUpper();
@@ -1174,7 +1166,16 @@ function Set-TargetResource
         # Should not be passed when PrepareFailoverCluster is specified
         if ($Action -in @('Install','InstallFailoverCluster','CompleteFailoverCluster'))
         {
-            $setupArguments += @{ SQLSysAdminAccounts =  @($SetupCredential.UserName) }
+            if ($null -ne $PsDscContext.RunAsUser)
+            {
+                <#
+                    Add the credentials from the parameter PsDscRunAsCredential, as the first
+                    system administrator. The username is stored in $PsDscContext.RunAsUser.
+                #>
+                New-VerboseMessage -Message "Adding user '$($PsDscContext.RunAsUser)' from the parameter 'PsDscRunAsCredential' as the first system administrator account for SQL Server."
+                $setupArguments += @{ SQLSysAdminAccounts =  @($PsDscContext.RunAsUser) }
+            }
+
             if ($PSBoundParameters.ContainsKey('SQLSysAdminAccounts'))
             {
                 $setupArguments['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
@@ -1232,7 +1233,15 @@ function Set-TargetResource
 
         if ($Action -in ('Install','InstallFailoverCluster','CompleteFailoverCluster'))
         {
-            $setupArguments += @{ ASSysAdminAccounts = @($SetupCredential.UserName) }
+            if ($null -ne $PsDscContext.RunAsUser)
+            {
+                <#
+                    Add the credentials from the parameter PsDscRunAsCredential, as the first
+                    system administrator. The username is stored in $PsDscContext.RunAsUser.
+                #>
+                New-VerboseMessage -Message "Adding user '$($PsDscContext.RunAsUser)' from the parameter 'PsDscRunAsCredential' as the first system administrator account for Analysis Services."
+                $setupArguments += @{ ASSysAdminAccounts =  @($PsDscContext.RunAsUser) }
+            }
 
             if($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
             {
@@ -1318,50 +1327,64 @@ function Set-TargetResource
         }
     }
 
-    New-VerboseMessage -Message "Starting setup using arguments: $log"
-
     $arguments = $arguments.Trim()
-    $processArguments = @{
-        FilePath = $pathToSetupExecutable
-        ArgumentList = $arguments
-    }
 
-    if ($Action -in @('InstallFailoverCluster','AddNode'))
+    try
     {
-        $processArguments.Add('Credential',$SetupCredential)
-    }
+        New-VerboseMessage -Message "Starting setup using arguments: $log"
 
-    $sqlSetupProcess = Start-Process @processArguments -PassThru -Wait -NoNewWindow
-    Wait-Process -InputObject $sqlSetupProcess -Timeout 120
+        <#
+            This handles when PsDscRunAsCredential is set, or running as the SYSTEM account (when
+            PsDscRunAsCredential is set).
+        #>
 
-    $processExitCode = $sqlSetupProcess.ExitCode
-    $setupExitMessage = "Setup exited with code '$processExitCode'."
+        $startProcessParameters = @{
+            FilePath = $pathToSetupExecutable
+            ArgumentList = $arguments
+            Timeout = $SetupProcessTimeout
+        }
 
-    if ($processExitCode -ne 0) {
-        $setupExitMessage += ' Please see the ''Summary.txt'' log file in the ''Setup Bootstrap\Log'' folder.'
+        $processExitCode = Start-SqlSetupProcess @startProcessParameters
 
-        throw $setupExitMessage
-    }
-    else
-    {
-        Write-Verbose $setupExitMessage
-    }
+        $setupExitMessage = "Setup exited with code '$processExitCode'."
 
-    if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
-    {
-        if (-not ($SuppressReboot))
+        if ($processExitCode -eq 3010 -and -not $SuppressReboot)
         {
-            $global:DSCMachineStatus = 1
+            $setupExitMessage = ('{0} {1}' -f $setupExitMessage, 'Setup was installed successfully, but a reboot is required.')
+
+            Write-Warning -Message $setupExitMessage
+        }
+        elseif ($processExitCode -ne 0)
+        {
+            $setupExitMessage = ('{0} {1}' -f $setupExitMessage, 'Please see the ''Summary.txt'' log file in the ''Setup Bootstrap\Log'' folder.')
+
+            throw $setupExitMessage
         }
         else
         {
-            New-VerboseMessage -Message 'Suppressing reboot'
+            New-VerboseMessage -Message $setupExitMessage
+        }
+
+        if ($ForceReboot -or ($null -ne (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue)))
+        {
+            if (-not ($SuppressReboot))
+            {
+                $global:DSCMachineStatus = 1
+            }
+            else
+            {
+                New-VerboseMessage -Message 'Suppressing reboot'
+            }
+        }
+
+        if (-not (Test-TargetResource @PSBoundParameters))
+        {
+            throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
         }
     }
-
-    if (-not (Test-TargetResource @PSBoundParameters))
+    catch
     {
-        throw New-TerminatingError -ErrorType TestFailedAfterSet -ErrorCategory InvalidResult
+        throw $_
     }
 }
 
@@ -1375,9 +1398,6 @@ function Set-TargetResource
 
     .PARAMETER SourcePath
         The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.
-
-    .PARAMETER SetupCredential
-        Credential to be used to perform the installation.
 
     .PARAMETER SourceCredential
         Credentials used to access the path set in the parameter `SourcePath`. Using this parameter will trigger a copy
@@ -1507,6 +1527,9 @@ function Set-TargetResource
 
     .PARAMETER FailoverClusterNetworkName
         Host name to be assigned to the clustered SQL Server instance
+
+    .PARAMETER SetupProcessTimeout
+        The timeout, in seconds, to wait for the setup process to finish. Default value is 7200 seconds (2 hours). If the setup process does not finish before this time, and error will be thrown.
 #>
 function Test-TargetResource
 {
@@ -1522,10 +1545,6 @@ function Test-TargetResource
         [Parameter()]
         [System.String]
         $SourcePath,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $SetupCredential,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -1690,13 +1709,16 @@ function Test-TargetResource
 
         [Parameter(ParameterSetName = 'ClusterInstall')]
         [System.String]
-        $FailoverClusterNetworkName
+        $FailoverClusterNetworkName,
+
+        [Parameter()]
+        [System.UInt32]
+        $SetupProcessTimeout = 7200
     )
 
     $getTargetResourceParameters = @{
         Action = $Action
         SourcePath = $SourcePath
-        SetupCredential = $SetupCredential
         SourceCredential = $SourceCredential
         InstanceName = $InstanceName
         FailoverClusterNetworkName = $FailoverClusterNetworkName
@@ -1797,7 +1819,7 @@ function Get-FirstItemPropertyValue
 
 <#
     .SYNOPSIS
-        Copy folder structure using RoboCopy. Every file and folder, including empty ones are copied.
+        Copy folder structure using Robocopy. Every file and folder, including empty ones are copied.
 
     .PARAMETER Path
         Source path to be copied.
@@ -1861,12 +1883,12 @@ function Copy-ItemWithRobocopy
 
         {$_ -gt 7 }
         {
-            throw "Robocopy reported that failures occured when copying files. Error code: $_."
+            throw "Robocopy reported that failures occurred when copying files. Error code: $_."
         }
 
         1
         {
-            Write-Verbose 'Robocopy copied files sucessfully'
+            Write-Verbose 'Robocopy copied files successfully'
         }
 
         2
@@ -1876,7 +1898,7 @@ function Copy-ItemWithRobocopy
 
         3
         {
-            Write-Verbose 'Robocopy copied files to destination sucessfully. Robocopy also found files at the destination path that is not present at the source path, these extra files was remove at the destination path.'
+            Write-Verbose 'Robocopy copied files to destination successfully. Robocopy also found files at the destination path that is not present at the source path, these extra files was remove at the destination path.'
         }
 
         {$_ -eq 0 -or $null -eq $_ }
@@ -2027,6 +2049,50 @@ function Get-ServiceAccountParameters
     }
 
     return $parameters
+}
+
+<#
+    .SYNOPSIS
+        Starts the SQL setup process-
+
+    .PARAMETER FilePath
+        String containing the path to setup.exe.
+
+    .PARAMETER ArgumentList
+        The arguments that should be passed to setup.exe.
+
+    .PARAMETER Timeout
+        The timeout in seconds to wait for the process to finish.
+#>
+function Start-SqlSetupProcess
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $FilePath,
+
+        [Parameter()]
+        [System.String]
+        $ArgumentList,
+
+        [Parameter(Mandatory = $true)]
+        [System.UInt32]
+        $Timeout
+    )
+
+    $startProcessParameters = @{
+        FilePath = $FilePath
+        ArgumentList = $ArgumentList
+    }
+
+    $sqlSetupProcess = Start-Process @startProcessParameters -PassThru -NoNewWindow -ErrorAction Stop
+
+    New-VerboseMessage -Message ('Started the process with id {0} using the path ''{1}'', and with a timeout value of {2} seconds.' -f $sqlSetupProcess.Id, $startProcessParameters.FilePath, $Timeout)
+
+    Wait-Process -InputObject $sqlSetupProcess -Timeout $Timeout -ErrorAction Stop
+
+    return $sqlSetupProcess.ExitCode
 }
 
 Export-ModuleMember -Function *-TargetResource

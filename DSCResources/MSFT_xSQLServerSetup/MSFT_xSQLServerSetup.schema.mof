@@ -3,7 +3,6 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
 {
     [Write, Description("The action to be performed. Default value is 'Install'."), ValueMap{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}, Values{"Install","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}] String Action;
     [Write, Description("The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.")] String SourcePath;
-    [Required, EmbeddedInstance("MSFT_Credential"), Description("Credential to be used to perform the installation.")] String SetupCredential;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Credentials used to access the path set in the parameter 'SourcePath'.")] String SourceCredential;
     [Write, Description("Suppresses reboot.")] Boolean SuppressReboot;
     [Write, Description("Forces reboot.")] Boolean ForceReboot;
@@ -50,5 +49,6 @@ class MSFT_xSQLServerSetup : OMI_BaseResource
     [Write, Description("Specifies the startup mode for SQL Server Browser service."), ValueMap{"Automatic", "Disabled", "Manual"}, Values{"Automatic", "Disabled", "Manual"}] String BrowserSvcStartupType;
     [Write, Description("The name of the resource group to create for the clustered SQL Server instance. Default is 'SQL Server (InstanceName)'.")] String FailoverClusterGroupName;
     [Write, Description("Array of IP Addresses to be assigned to the clustered SQL Server instance.")] String FailoverClusterIPAddress[];
-    [Write, Description("Host name to be assigend to the clustered SQL Server instance.")] String FailoverClusterNetworkName;
+    [Write, Description("Host name to be assigned to the clustered SQL Server instance.")] String FailoverClusterNetworkName;
+    [Write, Description("The timeout, in seconds, to wait for the setup process to finish. Default value is 7200 seconds (2 hours). If the setup process does not finish before this time, and error will be thrown.")] Uint32 SetupProcessTimeout;
 };

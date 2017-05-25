@@ -59,8 +59,7 @@ Get-DscResource -Module xSQLServer
 
 ## Requirements
 
-The minimum Windows Management Framework (PowerShell) version required is 4.0, which ships in Windows 8.1 or Windows Server 2012 R2 (or higher versions). But Windows Management Framework (PowerShell) 4.0 can also be installed on Windows Server 2008 R2.
-The preferred Windows Management Framework (PowerShell) version is 5.0 or higher, which ships with Windows 10 or Windows Server 2016, but can also be installed on Windows 7 SP1, Windows 8.1, Windows Server 2008 R2 SP1, Windows Server 2012 and Windows Server 2012 R2.
+The minimum Windows Management Framework (PowerShell) version required is 5.0 or higher, which ships with Windows 10 or Windows Server 2016, but can also be installed on Windows 7 SP1, Windows 8.1, Windows Server 2008 R2 SP1, Windows Server 2012 and Windows Server 2012 R2.
 
 ## Examples
 
@@ -839,11 +838,20 @@ Installs SQL Server on the target node.
 > **Note:** It is not possible to add or remove features to a SQL Server failover cluster. This is a limitation of SQL Server.
 > See article [You cannot add or remove features to a SQL Server 2008, SQL Server 2008 R2, or SQL Server 2012 failover cluster](https://support.microsoft.com/en-us/help/2547273/you-cannot-add-or-remove-features-to-a-sql-server-2008,-sql-server-2008-r2,-or-sql-server-2012-failover-cluster).
 
+#### Credentials
+
+##### PsDscRunAsCredential
+
+If PsDscRunAsCredential is set, the installation will be performed with those credentials, and the user name will be used as the first system administrator.
+
+##### SYSTEM
+
+If PsDscRunAsCredential is not assigned credentials then installation will be performed by the SYSTEM account. When installing as the SYSTEM account, then parameter SQLSysAdminAccounts and ASSysAdminAccounts must be specified when installing feature Database Engine and Analysis Services respectively.
+
 #### Parameters
 
 * **[String] Action** _(Write)_: The action to be performed. Defaults to 'Install'. *Note: AddNode is not currently functional.* { _Install_ | InstallFailoverCluster | AddNode | PrepareFailoverCluster | CompleteFailoverCluster }
 * **[String] InstanceName** _(Key)_: SQL instance to be installed.
-* **[PSCredential] SetupCredential** _(Required)_: Credential to be used to perform the installation.
 * **[String] SourcePath** _(Write)_: The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.
 * **[PSCredential] SourceCredential** _(Write)_: Credentials used to access the path set in the parameter `SourcePath`. Using this parameter will trigger a copy of the installation media to a temp folder on the target node. Setup will then be started from the temp folder on the target node. For any subsequent calls to the resource, the parameter `SourceCredential` is used to evaluate what major version the file 'setup.exe' has in the path set, again, by the parameter `SourcePath`. To know how the temp folder is evaluated please read the online documentation for [System.IO.Path.GetTempPath()](https://msdn.microsoft.com/en-us/library/system.io.path.gettemppath(v=vs.110).aspx). If the path, that is assigned to parameter `SourcePath`, contains a leaf folder, for example '\\server\share\folder', then that leaf folder will be used as the name of the temporary folder. If the path, that is assigned to parameter `SourcePath`, does not have a leaf folder, for example '\\server\share', then a unique GUID will be used as the name of the temporary folder.
 * **[Boolean] SuppressReboot** _(Write)_: Suppresses reboot.
@@ -885,6 +893,7 @@ Installs SQL Server on the target node.
 * **[String] FailoverClusterGroupName** _(Write)_: The name of the resource group to create for the clustered SQL Server instance. Default is 'SQL Server (_InstanceName_)'.
 * **[String[]]FailoverClusterIPAddress** _(Write)_: Array of IP Addresses to be assigned to the clustered SQL Server instance. IP addresses must be in [dotted-decimal notation](https://en.wikipedia.org/wiki/Dot-decimal_notation), for example ````10.0.0.100````. If no IP address is specified, uses 'DEFAULT' for this setup parameter.
 * **[String] FailoverClusterNetworkName** _(Write)_: Host name to be assigned to the clustered SQL Server instance.
+* **[UInt32] SetupProcessTimeout** _(Write)_: The timeout, in seconds, to wait for the setup process to finish. Default value is 7200 seconds (2 hours). If the setup process does not finish before this time, and error will be thrown.
 
 #### Read-Only Properties from Get-TargetResource
 

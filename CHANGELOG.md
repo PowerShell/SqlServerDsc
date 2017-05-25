@@ -71,6 +71,7 @@
 - Changes to xSQLServerHelper
   - The missing helper function ('Test-SPDSCObjectHasProperty'), that was referenced in the helper function Test-SQLDscParameterState, is now incorporated into Test-SQLDscParameterState (issue #589).
 - Changes to xSQLServer
+  - BREAKING CHANGE: xSQLServer does no longer try to support WMF 4.0 (PowerShell 4.0) (issue #574). Minimum supported version of WMF is now 5.0 (PowerShell 5.0).
   - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupJoin (issue #457).
   - BREAKING CHANGE: Removed deprecated resource xSQLAOGroupEnsure (issue #456).
   - BREAKING CHANGE: Removed deprecated resource xSQLServerFailoverClusterSetup (issue #336).
@@ -80,6 +81,11 @@
   - Removed helper function New-ListenerADObject because the deprecated resource that was using it was removed.
 - Changes to xSQLServerSetup
   - BREAKING CHANGE: Replaced StartWin32Process helper function with the cmdlet Start-Process (issue #41, #93 and #126).
+  - BREAKING CHANGE: The parameter SetupCredential has been removed since it is no longer needed. This is because the resource now support the built-in PsDscRunAsCredential.
+  - BREAKING CHANGE: Now the resource supports using built-in PsDscRunAsCredential. If PsDscRunAsCredential is set, that username will be used as the first system administrator.
+  - BREAKING CHANGE: If the parameter PsDscRunAsCredential are not assigned any credentials then the resource will start the setup process as the SYSTEM account. When installing as the SYSTEM account, then parameter SQLSysAdminAccounts and ASSysAdminAccounts must be specified when installing feature Database Engine and Analysis Services respectively.
+  - When setup exits with exit code 3010 a warning message is written to console telling that setup finished successfully, but a reboot is required (partly fixes issue #565).
+  - Added a new parameter SetupProcessTimeout which defaults to 7200 seconds (2 hours). If the setup process has not finished before the timeout value in SetupProcessTimeout an error will be thrown (issue #566).
 
 ## 7.0.0.0
 
