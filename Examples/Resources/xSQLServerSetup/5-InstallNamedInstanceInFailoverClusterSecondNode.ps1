@@ -80,7 +80,6 @@ Configuration Example
             UpdateEnabled = 'False'
             SourcePath = '\\fileserver.compant.local\images$\SQL2016RTM'
             SourceCredential = $SqlInstallCredential
-            SetupCredential = $SqlInstallCredential
 
             InstanceName = 'INST2016'
             Features = 'SQLENGINE,AS'
@@ -90,6 +89,8 @@ Configuration Example
             ASSvcAccount = $SqlServiceCredential
 
             FailoverClusterNetworkName = 'TESTCLU01A'
+
+            PsDscRunAsCredential = $SqlInstallCredential
 
             DependsOn = '[WindowsFeature]NetFramework35','[WindowsFeature]NetFramework45'
         }

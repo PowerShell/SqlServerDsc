@@ -63,7 +63,6 @@ Configuration Example
             ASSvcAccount = $SqlServiceCredential
             SQLSysAdminAccounts = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
             ASSysAdminAccounts = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
-            SetupCredential = $SqlInstallCredential
             InstallSharedDir = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir = 'C:\Program Files (x86)\Microsoft SQL Server'
             InstanceDir = 'C:\Program Files\Microsoft SQL Server'
@@ -81,6 +80,8 @@ Configuration Example
             SourcePath = 'C:\InstallMedia\SQL2016RTM'
             UpdateEnabled = 'False'
             ForceReboot = $false
+
+            PsDscRunAsCredential = $SqlInstallCredential
 
             DependsOn = '[WindowsFeature]NetFramework35','[WindowsFeature]NetFramework45'
         }
