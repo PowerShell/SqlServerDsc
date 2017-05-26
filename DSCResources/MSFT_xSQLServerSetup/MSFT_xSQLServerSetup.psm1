@@ -1358,7 +1358,7 @@ function Set-TargetResource
         {
             $setupExitMessage = ('{0} {1}' -f $setupExitMessage, 'Please see the ''Summary.txt'' log file in the ''Setup Bootstrap\Log'' folder.')
 
-            throw $setupExitMessage
+            Write-Warning $setupExitMessage
         }
         else
         {
