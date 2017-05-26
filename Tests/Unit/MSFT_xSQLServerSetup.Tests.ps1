@@ -2959,8 +2959,12 @@ try
                     Context 'When exit code is any other (exit code is set to 1 for the test)' {
                         $mockDynamicSetupProcessExitCode = 1
 
+                        Mock -CommandName Write-Warning
+
                         It 'Should throw the correct error message' {
-                            { Set-TargetResource @testParameters } | Should Throw 'Setup exited with code '1'. Please see the ''Summary.txt'' log file in the ''Setup Bootstrap\Log'' folder.'
+                            { Set-TargetResource @testParameters } | Should Not Throw
+
+                            Assert-MockCalled -CommandName Write-Warning -Exactly -Times 1 -Scope It
                         }
                     }
                 }
