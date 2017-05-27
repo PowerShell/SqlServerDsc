@@ -85,7 +85,7 @@
   - BREAKING CHANGE: Now the resource supports using built-in PsDscRunAsCredential. If PsDscRunAsCredential is set, that username will be used as the first system administrator.
   - BREAKING CHANGE: If the parameter PsDscRunAsCredential are not assigned any credentials then the resource will start the setup process as the SYSTEM account. When installing as the SYSTEM account, then parameter SQLSysAdminAccounts and ASSysAdminAccounts must be specified when installing feature Database Engine and Analysis Services respectively.
   - When setup exits with the exit code 3010 a warning message is written to console telling that setup finished successfully, but a reboot is required (partly fixes issue #565).
-  - When setup exits with an exit code other than 0 or 3010 a warning message is written to console telling that setup finished with an error.
+  - When setup exits with an exit code other than 0 or 3010 a warning message is written to console telling that setup finished with an error (partly fixes issue #580).
   - Added a new parameter SetupProcessTimeout which defaults to 7200 seconds (2 hours). If the setup process has not finished before the timeout value in SetupProcessTimeout an error will be thrown (issue #566).
   - Updated all examples to match the removal of SetupCredential.
 
