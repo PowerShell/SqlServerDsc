@@ -79,6 +79,10 @@ JoinAvailabilityGroupFailed = Failed to join the availability group replica '{0}
 RemoveAvailabilityGroupReplicaFailed = Failed to remove the availability group replica '{0}'.
 ReplicaNotFound = Unable to find the availability group replica '{0}' on the instance '{1}'.
 
+# AlwaysOnAvailabilityGroupDatabaseMembership
+AlterAvailabilityGroupDatabaseMembershipFailure = {0}
+ImpersonatePermissionsMissing = The login '{0}' is missing impersonate permissions in the instances '{1}'.
+
 # SQLServerHelper
 ExecuteQueryWithResultsFailed = Executing query with results failed on database '{0}'.
 ExecuteNonQueryFailed = Executing non-query failed on database '{0}'.
