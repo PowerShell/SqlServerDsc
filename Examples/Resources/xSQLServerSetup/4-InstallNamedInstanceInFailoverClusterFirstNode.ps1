@@ -9,25 +9,19 @@
         the Organizational Unit (OU) where the CNO Computer Object resides in Active Directory. This is neccessary
         so that SQL Server setup can create a Virtual Computer Object (VCO) for the cluster group
         (Windows Server 2012 R2 and earlier) or cluster role (Windows Server 2016 and later). Also so that the
-        Virtual Computer Object (VCO) can be removed when the Failover CLuster instance is uninstalled.
+        Virtual Computer Object (VCO) can be removed when the Failover Cluster instance is uninstalled.
 
-        See the DSC resources xFailoverCluster, xStorage and iSCSIDsc for information how to setup a failover cluster
-        with DSC.
+        The DSC resource modules xFailoverCluster, xStorage and iSCSIDsc can be use to setup a failover cluste using
+        iSCSI. See each indiviual DSC resource modules for information om how to use them.
 
-        The resource is run using the SYSTEM account, but the setup is run using impersonation, with the credentials in
-        SetupCredential, when Action is 'InstallFailoverCluster'.
+        The resource in this example is run using the built-in PsDscRunAsCredential parameter. These credentials
+        should be allowed to install SQL Server, as well allowed to connect and access to the instance.
 
-        Assumes the credentials assigned to SourceCredential have read permission on the share and on the UNC path.
-        The media will be copied locally, using impersonation with the credentials provided in SourceCredential, so
-        that the impersonated credentials in SetupCredential can access the media locally.
-
-        Setup cannot be run using PsDscRunAsCredential at this time (see issue #405 and issue #444). That
-        also means that at this time PsDscRunAsCredential can not be used to access media on the UNC share.
-
-        There is currently a bug that prevents the resource to logon to the instance if the current node is not the
-        active node. This is beacuse the resource tries to logon using the SYSTEM account instead of the credentials
-        in SetupCredential, and the resource does not currently support the built-in PsDscRunAsCredential either (see
-        issue #444).
+        This examples assumes the credentials assigned to SourceCredential have read permission on the share and
+        on the UNC path. The media will be copied locally, using impersonation with the credentials provided in
+        SourceCredential. The setup will start from the local location.
+        If SourceCredential is not specified, the credentials in PsDscRunAsCredential will be used to directly
+        access the UNC path.
 #>
 Configuration Example
 {

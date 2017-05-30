@@ -10,20 +10,16 @@
         See the example 4-InstallNamedInstanceInFailoverClusterFirstNode.ps1 for information how to setup the first
         SQL Server Failover Cluster node.
 
-        The resource is run using the SYSTEM account, but the setup is run using impersonation, with the credentials in
-        SetupCredential, when Action is 'Addnode'.
+        The resource is run using the built-in PsDscRunAsCredential parameter. These credentials should be allowed
+        to install SQL Server, as well allowed to connect and access to the instance on the active cluster node.
+        Normally it is not possible to install using the SYSTEM account, since the system account normally don't
+        have the permission necessary to connect and access the active cluster node.
 
-        Assumes the credentials assigned to SourceCredential have read permission on the share and on the UNC path.
-        The media will be copied locally, using impersonation with the credentials provided in SourceCredential, so
-        that the impersonated credentials in SetupCredential can access the media locally.
-
-        Setup cannot be run using PsDscRunAsCredential at this time (see issue #405 and issue #444). That
-        also means that at this time PsDscRunAsCredential can not be used to access media on the UNC share.
-
-        There is currently a bug that prevents the resource to logon to the instance if the current node is not the
-        active node. This is beacuse the resource tries to logon using the SYSTEM account instead of the credentials
-        in SetupCredential, and the resource does not currently support the built-in PsDscRunAsCredential either (see
-        issue #444).
+        This examples assumes the credentials assigned to SourceCredential have read permission on the share and
+        on the UNC path. The media will be copied locally, using impersonation with the credentials provided in
+        SourceCredential. The setup will start from the local location.
+        If SourceCredential is not specified, the credentials in PsDscRunAsCredential will be used to directly
+        access the UNC path.
 #>
 Configuration Example
 {
