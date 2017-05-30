@@ -80,14 +80,18 @@
   - Removed helper function Grant-CNOPerms because the deprecated resource that was using it was removed.
   - Removed helper function New-ListenerADObject because the deprecated resource that was using it was removed.
 - Changes to xSQLServerSetup
-  - BREAKING CHANGE: Replaced StartWin32Process helper function with the cmdlet Start-Process (issue #41, #93 and #126).
-  - BREAKING CHANGE: The parameter SetupCredential has been removed since it is no longer needed. This is because the resource now support the built-in PsDscRunAsCredential.
-  - BREAKING CHANGE: Now the resource supports using built-in PsDscRunAsCredential. If PsDscRunAsCredential is set, that username will be used as the first system administrator.
-  - BREAKING CHANGE: If the parameter PsDscRunAsCredential are not assigned any credentials then the resource will start the setup process as the SYSTEM account. When installing as the SYSTEM account, then parameter SQLSysAdminAccounts and ASSysAdminAccounts must be specified when installing feature Database Engine and Analysis Services respectively.
+  - BREAKING CHANGE: Replaced StartWin32Process helper function with the cmdlet Start-Process (issue #126).
+  - BREAKING CHANGE: The parameter SetupCredential has been removed since it is no longer needed. This is because the resource now support the built-in PsDscRunAsCredential. And because we no longer try to support WMF 4.0 (issue #139).
+  - BREAKING CHANGE: Now the resource supports using built-in PsDscRunAsCredential (issue #405). If PsDscRunAsCredential is set, that username will be used as the first system administrator.
+  - BREAKING CHANGE: If the parameter PsDscRunAsCredential are not assigned any credentials then the resource will start the setup process as the SYSTEM account (issue #379). When installing as the SYSTEM account, then parameter SQLSysAdminAccounts and ASSysAdminAccounts must be specified when installing feature Database Engine and Analysis Services respectively.
   - When setup exits with the exit code 3010 a warning message is written to console telling that setup finished successfully, but a reboot is required (partly fixes issue #565).
   - When setup exits with an exit code other than 0 or 3010 a warning message is written to console telling that setup finished with an error (partly fixes issue #580).
   - Added a new parameter SetupProcessTimeout which defaults to 7200 seconds (2 hours). If the setup process has not finished before the timeout value in SetupProcessTimeout an error will be thrown (issue #566).
-  - Updated all examples to match the removal of SetupCredential.
+  - Updated all examples to match the removal of SetupCredential. Also removed texts about issues that is now resolved.
+  - PsDscRunAsCredential can now be used to install a secondary node (issue #444).
+  - The setup process should now always be executed correctly (issue #93).
+  - The setup process ID should now always be captured correctly (issue #41).
+  - The setup process should no longer hang when installing from an UNC path (issue #183).
 
 ## 7.0.0.0
 
