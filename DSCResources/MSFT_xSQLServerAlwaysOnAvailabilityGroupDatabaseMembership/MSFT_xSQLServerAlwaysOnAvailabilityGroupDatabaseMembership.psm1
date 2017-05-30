@@ -75,14 +75,23 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         # Connect to the defined instance
         $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
 
-        # Get the Availabilty Group if it exists
+        # Get the Availabilty Group
         $availabilityGroup = $serverObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
         # Make sure we're communicating with the primary replica in order to make changes to the replica
         $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
 
         $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
+        if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
+        {
+            New-VerboseMessage -Message ( "Adding the following databases to the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
+        }
+
         $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
+        if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
+        {
+            New-VerboseMessage -Message ( "Removing the following databases from the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
+        }
 
         # Create a hash table to store the databases that failed to be added to the Availability Group
         $databasesToAddFailures = @{}
@@ -92,12 +101,15 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
+            # Get only the secondary replicas. Some tests do not need to be performed on the primary replica
+            $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne 'Primary' }
+            
             # Ensure the appropriate permissions are in place on all the replicas
             if ( $this.MatchDatabaseOwner )
             {
                 $impersonatePermissionsStatus = @{}
 
-                foreach ( $availabilityGroupReplica in $availabilityGroup.AvailabilityReplicas )
+                foreach ( $availabilityGroupReplica in $secondaryReplicas )
                 {
                     $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
                     $impersonatePermissionsStatus.Add(
@@ -109,21 +121,20 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 if ( $impersonatePermissionsStatus.Values -contains $false )
                 {
                     $newTerminatingErrorParams = @{
-                        ErrorType = 'ImperstonatePermissionsMissing'
+                        ErrorType = 'ImpersonatePermissionsMissing'
                         FormatArgs = @(
                             [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
                             ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
                         )
                         ErrorCategory = 'SecurityError'
                     }
-                    New-TerminatingError @newTerminatingErrorParams
+                    throw New-TerminatingError @newTerminatingErrorParams
                 }
             }
             
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
                 $database = $primaryServerObject.Databases[$databaseName]
-                $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne 'Primary' }
 
                 # Verify the prerequisites prior to joining the database to the availability group
                 # https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
@@ -168,7 +179,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
                     }
 
-                    if ( $availbilityReplicaFilestreamLevel.Values -contains 'Off' )
+                    if ( $availbilityReplicaFilestreamLevel.Values -contains 'Disabled' )
                     {
                         $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availbilityReplicaFilestreamLevel.Keys -join ', ' ) )
                     }
@@ -184,7 +195,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         $availbilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
                     }
 
-                    if ( $availbilityReplicaContainmentEnabled.Values -contains 1 )
+                    if ( $availbilityReplicaContainmentEnabled.Values -notcontains 'None' )
                     {
                         $prerequisiteCheckFailures += ( 'Contained Database Authentication is not enabled on the following instances: {0}' -f ( $availbilityReplicaContainmentEnabled.Keys -join ', ' ) )
                     }
@@ -237,7 +248,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                        $installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
+                        [array]$installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
 
                         if ( $installedCertificateThumbprints -notcontains $databaseCertificateThumbprint )
                         {
@@ -345,53 +356,34 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         NoRecovery = $true
                     }
                     
-                    foreach ( $availabilityGroupReplica in $secondaryReplicas )
+                    try
                     {
-                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        foreach ( $availabilityGroupReplica in $secondaryReplicas )
+                        {
+                            # Connect to the replica
+                            $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                            $currentReplicaAvailabilityGroupObject = $currentAvailabilityGroupReplicaServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
-                         $currentReplicaAvailabilityGroupObject = $currentAvailabilityGroupReplicaServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
-                         
-                         try
-                         {
+                            # Restore the database
                             Invoke-Query -SQLServer $currentAvailabilityGroupReplicaServerObject.NetName -SQLInstanceName $currentAvailabilityGroupReplicaServerObject.ServiceName -Database master -Query $restoreDatabaseQueryString
-                         }
-                         catch
-                         {
-                             # Log the failure
-                            $databasesToAddFailures.Add($databaseName, $_.Exception)
-
-                            # Move on to the next database
-                            continue
-                         }
-
-                         try
-                         {
                             Restore-SqlDatabase -InputObject $currentAvailabilityGroupReplicaServerObject @restoreSqlDatabaseLogParams
-                         }
-                         catch
-                         {
-                             # Log the failure
-                            $databasesToAddFailures.Add($databaseName, $_.Exception)
 
-                            # Move on to the next database
-                            continue
-                         }
-
-                         try
-                         {
+                            # Add the database to the AG
                             Add-SqlAvailabilityDatabase -InputObject $currentReplicaAvailabilityGroupObject -Database $databaseName
-                         }
-                         catch
-                         {
-                             # Log the failure
-                            $databasesToAddFailures.Add($databaseName, $_.Exception)
+                        }
+                    }
+                    catch
+                    {
+                        # Log the failure
+                        $databasesToAddFailures.Add($databaseName, $_.Exception)
 
-                            # Move on to the next database
-                            continue
-                         }
-
-                         # Clean up the backup files
-                         Remove-Item -Path $databaseFullBackupFile,$databaseLogBackupFile -Force -ErrorAction Continue
+                        # Move on to the next database
+                        continue
+                    }
+                    finally
+                    {
+                        # Clean up the backup files
+                        Remove-Item -Path $databaseFullBackupFile,$databaseLogBackupFile -Force -ErrorAction Continue
                     }
                 }
                 else
@@ -429,7 +421,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
             }
             
-            New-TerminatingError @newTerminatingErrorParams
+            throw New-TerminatingError @newTerminatingErrorParams
         }
     }
 

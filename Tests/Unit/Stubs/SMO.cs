@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Security;
 using System.Runtime.InteropServices;
 
@@ -240,7 +241,9 @@ namespace Microsoft.SqlServer.Management.Smo
         public string DisplayName;
         public string ComputerNamePhysicalNetBIOS;
         public string DomainInstanceName;
+        public string FilestreamLevel = "Disabled";
         public string InstanceName;
+        public string NetName;
         public string ServiceName;
         public bool IsClustered = false;
         public bool IsHadrEnabled = false;
@@ -509,7 +512,26 @@ namespace Microsoft.SqlServer.Management.Smo
     //  MSFT_xSQLServerDatabasePermission
 	public class Database
 	{
+        public bool AutoClose = false;
+        public string AvailabilityGroupName = "";
+        public Certificate[] Certificates;
+        public string ContainmentType = "None";
+        public DatabaseEncryptionKey DatabaseEncryptionKey;
+        public string DefaultFileStreamFileGroup;
+        public bool EncryptionEnabled = false;
+        public Hashtable FileGroups;
+        public string FilestreamDirectoryName;
+        public string FilestreamNonTransactedAccess = "Off";
+        public int ID = 6;
+        public bool IsMirroringEnabled = false;
+        public DateTime LastBackupDate = DateTime.Now;
+        public Hashtable LogFiles;
         public string MockGranteeName;
+        public string Owner = "sa";
+        public bool ReadOnly = false;
+        public string RecoveryModel = "Full";
+        public string UserAccess = "Multiple";
+
 
         public Database( Server server, string name ) {
             this.Name = name;
@@ -650,13 +672,13 @@ namespace Microsoft.SqlServer.Management.Smo
         {}
 
         public string AutomatedBackupPreference;
-        public string AvailabilityReplicas;
+        public AvailabilityReplicaCollection AvailabilityReplicas;
         public bool BasicAvailabilityGroup;
         public string FailureConditionLevel;
         public string HealthCheckTimeout;
         public string Name;
         public string PrimaryReplicaServerName;
-        public string LocalReplicaRole;
+        public string LocalReplicaRole = "Secondary";
 
         public void Alter()
         {
@@ -690,6 +712,7 @@ namespace Microsoft.SqlServer.Management.Smo
         public string Name;
         public string ReadOnlyRoutingConnectionUrl;
         public string[] ReadOnlyRoutingList;
+        public string Role = "Secondary";
 
         public void Alter()
         {
@@ -744,6 +767,45 @@ namespace Microsoft.SqlServer.Management.Smo
                 return new Database();
             }
         }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplicaCollection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class AvailabilityReplicaCollection : Collection<AvailabilityReplica>
+    {
+        public AvailabilityReplica this[string name]
+        {
+            get
+            {
+                foreach ( AvailabilityReplica availabilityReplica in this )
+                {
+                    if ( name == availabilityReplica.Name )
+                    {
+                        return availabilityReplica;
+                    }
+                }
+
+                return new AvailabilityReplica();
+            }
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseEncryptionKey
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class DatabaseEncryptionKey
+    {
+        public string EncryptorName;
+        public byte[] Thumbprint;
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.Certificate
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class Certificate
+    {
+        public byte[] Thumbprint;
     }
 
     #endregion Public Classes
