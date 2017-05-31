@@ -887,7 +887,7 @@ try
                 These are written with both lower-case and upper-case to make sure we support that.
                 The feature list must be written in the order it is returned by the function Get-TargerResource.
             #>
-            Features = 'SQLEngine,Replication,Dqc,Dq,Bol,Conn,Bc,Sdk,FullText,Rs,As,Is,Ssms,Adv_Ssms'
+            Features = 'SQLEngine,Replication,Dqc,Dq,FullText,Rs,As,Is,Bol,Conn,Bc,Sdk,Ssms,Adv_Ssms'
         }
 
         $featuresForSqlServer2016 = ''
@@ -1316,11 +1316,11 @@ try
                         $result = Get-TargetResource @testParameters
                         if ($mockSqlMajorVersion -in (13,14))
                         {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,DQC,DQ,BOL,FULLTEXT,RS,AS,IS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,DQC,DQ,FULLTEXT,RS,AS,IS,BOL'
                         }
                         else
                         {
-                            $result.Features | Should Be 'SQLENGINE,REPLICATION,DQC,DQ,BOL,FULLTEXT,RS,AS,IS,SSMS,ADV_SSMS'
+                            $result.Features | Should Be 'SQLENGINE,REPLICATION,DQC,DQ,FULLTEXT,RS,AS,IS,BOL,SSMS,ADV_SSMS'
                         }
                     }
                 }
