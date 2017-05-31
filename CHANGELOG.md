@@ -107,6 +107,10 @@
   - Updated tests to cover Revoke().
 - Changes to xSQLServerHelper
   - The missing helper function ('Test-SPDSCObjectHasProperty'), that was referenced in the helper function Test-SQLDscParameterState, is now incorporated into Test-SQLDscParameterState (issue #589).
+- Added new resource
+  - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+- **BREAKING CHANGE: The module now requires WMF 5.**
+  - This is required for class-based resources
 
 ## 7.0.0.0
 
