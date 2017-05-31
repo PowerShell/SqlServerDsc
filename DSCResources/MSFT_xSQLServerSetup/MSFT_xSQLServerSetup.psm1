@@ -171,55 +171,6 @@ function Get-TargetResource
             New-VerboseMessage -Message 'Data Quality Services feature not detected'
         }
 
-        # Check if Documentation Components "BOL" is configured
-        New-VerboseMessage -Message "Detecting Documentation Components (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
-        $isBOLInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_BOL_Components
-        if ($isBOLInstalled -eq 1)
-        {
-            New-VerboseMessage -Message 'Documentation Components feature detected'
-            $features += 'BOL,'
-        }
-        else
-        {
-            New-VerboseMessage -Message 'Documentation Components feature not detected'
-        }
-
-        $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
-        $registryClientComponentsFullFeatureList = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
-
-        Write-Debug -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
-        if ($registryClientComponentsFullFeatureList -like '*Connectivity_FNS=3*')
-        {
-            New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
-            $features += 'CONN,'
-        }
-        else
-        {
-            New-VerboseMessage -Message 'Client Connectivity Tools feature not detected'
-        }
-
-        Write-Debug -Message "Detecting Client Connectivity Backwards Compatibility Tools feature ($clientComponentsFullRegistryPath)"
-        if ($registryClientComponentsFullFeatureList -like '*Tools_Legacy_FNS=3*')
-        {
-            New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
-            $features += 'BC,'
-        }
-        else
-        {
-            New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
-        }
-
-        Write-Debug -Message "Detecting Client Tools SDK feature ($clientComponentsFullRegistryPath)"
-        if (($registryClientComponentsFullFeatureList -like '*SDK_Full=3*') -and ($registryClientComponentsFullFeatureList -like '*SDK_FNS=3*'))
-        {
-            New-VerboseMessage -Message 'Client Tools SDK feature detected'
-            $features += 'SDK,'
-        }
-        else
-        {
-            New-VerboseMessage -Message 'Client Tools SDK feature not detected'
-        }
-
         $instanceId = $fullInstanceId.Split('.')[1]
         $instanceDirectory = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\Setup" -Name 'SqlProgramDir').SqlProgramDir.Trim("\")
 
@@ -318,6 +269,55 @@ function Get-TargetResource
     {
         $features += 'IS,'
         $integrationServiceAccountUsername = (Get-CimInstance -ClassName Win32_Service -Filter "Name = '$integrationServiceName'").StartName
+    }
+
+    # Check if Documentation Components "BOL" is configured
+    New-VerboseMessage -Message "Detecting Documentation Components (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+    $isBOLInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_BOL_Components
+    if ($isBOLInstalled -eq 1)
+    {
+        New-VerboseMessage -Message 'Documentation Components feature detected'
+        $features += 'BOL,'
+    }
+    else
+    {
+        New-VerboseMessage -Message 'Documentation Components feature not detected'
+    }
+
+    $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
+    $registryClientComponentsFullFeatureList = (Get-ItemProperty -Path $clientComponentsFullRegistryPath -ErrorAction SilentlyContinue).FeatureList
+
+    Write-Debug -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
+    if ($registryClientComponentsFullFeatureList -like '*Connectivity_FNS=3*')
+    {
+        New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
+        $features += 'CONN,'
+    }
+    else
+    {
+        New-VerboseMessage -Message 'Client Connectivity Tools feature not detected'
+    }
+
+    Write-Debug -Message "Detecting Client Connectivity Backwards Compatibility Tools feature ($clientComponentsFullRegistryPath)"
+    if ($registryClientComponentsFullFeatureList -like '*Tools_Legacy_FNS=3*')
+    {
+        New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
+        $features += 'BC,'
+    }
+    else
+    {
+        New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
+    }
+
+    Write-Debug -Message "Detecting Client Tools SDK feature ($clientComponentsFullRegistryPath)"
+    if (($registryClientComponentsFullFeatureList -like '*SDK_Full=3*') -and ($registryClientComponentsFullFeatureList -like '*SDK_FNS=3*'))
+    {
+        New-VerboseMessage -Message 'Client Tools SDK feature detected'
+        $features += 'SDK,'
+    }
+    else
+    {
+        New-VerboseMessage -Message 'Client Tools SDK feature not detected'
     }
 
     $registryUninstallPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
