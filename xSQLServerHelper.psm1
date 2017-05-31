@@ -1015,10 +1015,10 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
         }
         
         $queryToGetSeedingMode = "
-            SELECT	seeding_mode_desc
-            FROM	sys.availability_replicas ar
-            INNER	JOIN sys.availability_groups ag ON ar.group_id = ag.group_id
-            WHERE	ag.name = '$AvailabilityGroupName'
+            SELECT seeding_mode_desc
+            FROM sys.availability_replicas ar
+            INNER JOIN sys.availability_groups ag ON ar.group_id = ag.group_id
+            WHERE ag.name = '$AvailabilityGroupName'
                 AND ar.replica_server_name = '$AvailabilityReplicaName'
         "
         $seedingModeResults = Invoke-Query @invokeQueryParams -Query $queryToGetSeedingMode
