@@ -672,6 +672,7 @@ namespace Microsoft.SqlServer.Management.Smo
         {}
 
         public string AutomatedBackupPreference;
+        public AvailabilityDatabaseCollection AvailabilityDatabases;
         public AvailabilityReplicaCollection AvailabilityReplicas;
         public bool BasicAvailabilityGroup;
         public string FailureConditionLevel;
@@ -688,7 +689,21 @@ namespace Microsoft.SqlServer.Management.Smo
             }
         }
 
-        public Microsoft.SqlServer.Management.Smo.AvailabilityDatabase[] AvailabilityDatabases;
+        public AvailabilityGroup Clone()
+        {
+            return new AvailabilityGroup()
+            {
+                AutomatedBackupPreference = this.AutomatedBackupPreference,
+                AvailabilityDatabases = this.AvailabilityDatabases,
+                AvailabilityReplicas = this.AvailabilityReplicas,
+                BasicAvailabilityGroup = this.BasicAvailabilityGroup,
+                FailureConditionLevel = this.FailureConditionLevel,
+                HealthCheckTimeout = this.HealthCheckTimeout,
+                Name = this.Name,
+                PrimaryReplicaServerName = this.PrimaryReplicaServerName,
+                LocalReplicaRole = this.LocalReplicaRole
+            };
+        }
     }
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
@@ -806,6 +821,28 @@ namespace Microsoft.SqlServer.Management.Smo
     public class Certificate
     {
         public byte[] Thumbprint;
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabaseCollection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    public class AvailabilityDatabaseCollection : Collection<AvailabilityDatabase>
+    {
+        public AvailabilityDatabase this[string name]
+        {
+            get
+            {
+                foreach ( AvailabilityDatabase availabilityDatabase in this )
+                {
+                    if ( name == availabilityDatabase.Name )
+                    {
+                        return availabilityDatabase;
+                    }
+                }
+
+                return new AvailabilityDatabase();
+            }
+        }
     }
 
     #endregion Public Classes
