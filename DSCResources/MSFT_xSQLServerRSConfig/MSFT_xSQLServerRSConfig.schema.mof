@@ -4,5 +4,9 @@ class MSFT_xSQLServerRSConfig : OMI_BaseResource
     [Key, Description("Name of the SQL Server Reporting Services instance to be configured.")] String InstanceName;
     [Required, Description("Name of the SQL Server to host the Reporting Service database.")] String RSSQLServer;
     [Required, Description("Name of the SQL Server instance to host the Reporting Service database.")] String RSSQLInstanceName;
+    [Write, Description("Report Server virtual directory name. Optional.")] String ReportServerVirtualDir;
+    [Write, Description("Report Manager/Report Web App virtual directory name. Optional.")] String ReportsVirtualDir;
+    [Write, Description("Report Server reserved URLs. Optional.")] String ReportServerReservedUrl[];
+    [Write, Description("Report Manager/Report Web App reserved URLs. Optional.")] String ReportsReservedUrl[];
     [Read, Description("Is the Reporting Services instance initialized.")] Boolean IsInitialized;
 };
