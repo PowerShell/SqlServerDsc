@@ -1040,11 +1040,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It 
+                        } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 1 -Scope It 
+                        } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -1167,11 +1167,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It 
+                        } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 1 -Scope It 
+                        } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -1841,11 +1841,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It 
+                        } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 1 -Scope It 
+                        } -Exactly -Times 1 -Scope It
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -2182,9 +2182,9 @@ try
                         $currentState = Get-TargetResource @testParams
 
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
-                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 1 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
-                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 2 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
+                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It-ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 1 -Scope It-ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 2 -Scope It-ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
 
                         $currentState.InstanceName | Should Be $testParams.InstanceName
                     }
@@ -2754,7 +2754,7 @@ try
                     $result | Should Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
+                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It-ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
                     Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 3 -Scope It
                 }
 
