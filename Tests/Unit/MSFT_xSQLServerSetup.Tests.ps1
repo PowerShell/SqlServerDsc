@@ -4231,6 +4231,14 @@ try
                             SQLTempDbLogDir = $mockDynamicSqlTempDatabaseLogPath
                             SQLBackupDir = $mockDynamicSqlBackupPath
                         }
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -MockWith {} -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\ConfigurationState"
+                        } -MockWith {} -Verifiable
                     }
 
                     BeforeAll {
