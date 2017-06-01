@@ -14,6 +14,7 @@
 
   - Fixed virtual directory creation for SQL Server 2016 (issue #569).
   - Added unit tests (issue #295).
+  - Added support for configuring URL reservations and virtual directory names (issue #570)
 - Changes to xSQLServerDatabase
   - Changed the readme, SQLInstance should have been SQLInstanceName.
 - Changes to xSQLServerSetup
