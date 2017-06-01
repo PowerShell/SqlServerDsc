@@ -2182,9 +2182,9 @@ try
                         $currentState = Get-TargetResource @testParams
 
                         Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It-ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
-                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 1 -Scope It-ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
-                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 2 -Scope It-ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
+                        Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 1 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_ResourceGroup' }
+                        Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 2 -Scope It -ParameterFilter { $ResultClassName -eq 'MSCluster_Resource' }
 
                         $currentState.InstanceName | Should Be $testParams.InstanceName
                     }
@@ -2754,7 +2754,7 @@ try
                     $result | Should Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
-                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It-ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
+                    Assert-MockCalled -CommandName Get-CimInstance -Exactly -Times 1 -Scope It -ParameterFilter { $Filter -eq "Type = 'SQL Server'" }
                     Assert-MockCalled -CommandName Get-CimAssociatedInstance -Exactly -Times 3 -Scope It
                 }
 
