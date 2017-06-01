@@ -1036,11 +1036,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -1059,7 +1059,7 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
-                        $result = Get-TargetResource @testParameters
+                        $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
 
@@ -1159,11 +1159,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -1182,7 +1182,7 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
-                        $result = Get-TargetResource @testParameters
+                        $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
 
@@ -1507,7 +1507,7 @@ try
                         }
                     }
 
-                    It 'Should return the correct values in the hash table' {
+                    It 'Should return the correct values in the hash table' { ###FixThis
                         $result = Get-TargetResource @testParameters
                         $result.SourcePath | Should Be $mockSourcePath
                         $result.InstanceName | Should Be $mockDefaultInstance_InstanceName
@@ -1719,7 +1719,7 @@ try
                         }
                     }
 
-                    It 'Should return the correct values in the hash table' {
+                    It 'Should return the correct values in the hash table' { ###FixThis
                         $result = Get-TargetResource @testParameters
                         $result.SourcePath | Should Be $mockSourcePathUNC
                         $result.InstanceName | Should Be $mockDefaultInstance_InstanceName
@@ -1820,11 +1820,11 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
-                        } -Exactly -Times 0 -Scope It
+                        } -Exactly -Times 1 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockNamedInstance_InstanceId\Setup" -and $Name -eq 'SqlProgramDir'
@@ -1843,7 +1843,7 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
-                        $result = Get-TargetResource @testParameters
+                        $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
 
@@ -2055,7 +2055,7 @@ try
                         }
                     }
 
-                    It 'Should return the correct values in the hash table' {
+                    It 'Should return the correct values in the hash table' { ###FixThis
                         $result = Get-TargetResource @testParameters
                         $result.SourcePath | Should Be $mockSourcePath
                         $result.InstanceName | Should Be $mockNamedInstance_InstanceName
@@ -2904,7 +2904,7 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockEmptyHashtable -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {
+                    It 'Should set the system in the desired state when feature is SQLENGINE' { ###FixThis (Mocks maybe?)
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
@@ -3136,7 +3136,7 @@ try
                         } -MockWith $mockEmptyHashtable -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {
+                    It 'Should set the system in the desired state when feature is SQLENGINE' { ###FixThis (Mocks maybe?)
 
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
@@ -3306,7 +3306,7 @@ try
                         } -MockWith $mockEmptyHashtable -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {
+                    It 'Should set the system in the desired state when feature is SQLENGINE' { ###FixThis (mocks maybe?)
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
@@ -3478,7 +3478,7 @@ try
                         Mock -CommandName Get-CimInstance -MockWith $mockEmptyHashtable -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {
+                    It 'Should set the system in the desired state when feature is SQLENGINE' { ###FixThis (mocks maybe?)
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
