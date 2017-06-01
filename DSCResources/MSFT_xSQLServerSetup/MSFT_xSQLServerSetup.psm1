@@ -371,7 +371,7 @@ function Get-TargetResource
     }
 
     $features = $features.Trim(',')
-    if ($Features -ne '')
+    if (-not ([string]::IsNullOrWhiteSpace($Features)))
     {
         $registryInstallerComponentsPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components'
 
