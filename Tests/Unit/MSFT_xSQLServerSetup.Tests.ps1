@@ -2941,7 +2941,7 @@ try
                         } -MockWith {} -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {  (Mocks maybe?)
+                    It 'Should set the system in the desired state when feature is SQLENGINE' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
                             InstanceName = $mockDefaultInstance_InstanceName
@@ -3181,7 +3181,7 @@ try
                         } -MockWith {} -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {  (Mocks maybe?)
+                    It 'Should set the system in the desired state when feature is SQLENGINE' {
 
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
@@ -3359,7 +3359,7 @@ try
                         } -MockWith {} -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {  (mocks maybe?)
+                    It 'Should set the system in the desired state when feature is SQLENGINE' {
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
@@ -3539,7 +3539,7 @@ try
                         } -MockWith {} -Verifiable
                     }
 
-                    It 'Should set the system in the desired state when feature is SQLENGINE' {  (mocks maybe?)
+                    It 'Should set the system in the desired state when feature is SQLENGINE' {
                         $mockStartWin32ProcessExpectedArgument = @{
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
