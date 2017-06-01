@@ -89,7 +89,7 @@ function Get-TargetResource
 
     $pathToSetupExecutable = Join-Path -Path $SourcePath -ChildPath 'setup.exe'
 
-    Write-Verbose -Message "Using path: $pathToSetupExecutable"
+    New-VerboseMessage -Message "Using path: $pathToSetupExecutable"
 
     $sqlVersion = Get-SqlMajorVersion -Path $pathToSetupExecutable
 
@@ -133,42 +133,42 @@ function Get-TargetResource
         $fullInstanceId = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' -Name $InstanceName).$InstanceName
 
         # Check if Replication sub component is configured for this instance
-        Write-Verbose -Message "Detecting replication feature (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState)"
+        New-VerboseMessage -Message "Detecting replication feature (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState)"
         $isReplicationInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$fullInstanceId\ConfigurationState").SQL_Replication_Core_Inst
         if ($isReplicationInstalled -eq 1)
         {
-            Write-Verbose -Message 'Replication feature detected'
+            New-VerboseMessage -Message 'Replication feature detected'
             $features += 'REPLICATION,'
         }
         else
         {
-            Write-Verbose -Message 'Replication feature not detected'
+            New-VerboseMessage -Message 'Replication feature not detected'
         }
 
         # Check if Data Quality Client sub component is configured
-        Write-Verbose -Message "Detecting Data Quality Client (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+        New-VerboseMessage -Message "Detecting Data Quality Client (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
         $isDQCInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_DQ_CLIENT_Full
         if ($isDQCInstalled -eq 1)
         {
-            Write-Verbose -Message 'Data Quality Client feature detected'
+            New-VerboseMessage -Message 'Data Quality Client feature detected'
             $features += 'DQC,'
         }
         else
         {
-            Write-Verbose -Message 'Data Quality Client feature not detected'
+            New-VerboseMessage -Message 'Data Quality Client feature not detected'
         }
 
         # Check if Data Quality Services sub component is configured
-        Write-Verbose -Message "Detecting Data Quality Services (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\DQ\*)"
+        New-VerboseMessage -Message "Detecting Data Quality Services (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\DQ\*)"
         $isDQInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\DQ\*" -ErrorAction SilentlyContinue)
         if ($isDQInstalled)
         {
-            Write-Verbose -Message 'Data Quality Services feature detected'
+            New-VerboseMessage -Message 'Data Quality Services feature detected'
             $features += 'DQ,'
         }
         else
         {
-            Write-Verbose -Message 'Data Quality Services feature not detected'
+            New-VerboseMessage -Message 'Data Quality Services feature not detected'
         }
 
         $instanceId = $fullInstanceId.Split('.')[1]
@@ -206,7 +206,7 @@ function Get-TargetResource
 
         if ($databaseServer.IsClustered)
         {
-            Write-Verbose -Message 'Clustered instance detected'
+            New-VerboseMessage -Message 'Clustered instance detected'
 
             $clusteredSqlInstance = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" |
                 Where-Object { $_.PrivateProperties.InstanceName -eq $InstanceName }
@@ -216,7 +216,7 @@ function Get-TargetResource
                 throw New-TerminatingError -ErrorType FailoverClusterResourceNotFound -FormatArgs $InstanceName -ErrorCategory 'ObjectNotFound'
             }
 
-            Write-Verbose -Message 'Clustered SQL Server resource located'
+            New-VerboseMessage -Message 'Clustered SQL Server resource located'
 
             $clusteredSqlGroup = $clusteredSqlInstance | Get-CimAssociatedInstance -ResultClassName MSCluster_ResourceGroup
             $clusteredSqlNetworkName = $clusteredSqlGroup | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
@@ -231,7 +231,7 @@ function Get-TargetResource
         }
         else
         {
-            Write-Verbose -Message 'Clustered instance not detected'
+            New-VerboseMessage -Message 'Clustered instance not detected'
         }
     }
 
@@ -272,16 +272,16 @@ function Get-TargetResource
     }
 
     # Check if Documentation Components "BOL" is configured
-    Write-Verbose -Message "Detecting Documentation Components (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
+    New-VerboseMessage -Message "Detecting Documentation Components (HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState)"
     $isBOLInstalled = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\ConfigurationState").SQL_BOL_Components
     if ($isBOLInstalled -eq 1)
     {
-        Write-Verbose -Message 'Documentation Components feature detected'
+        New-VerboseMessage -Message 'Documentation Components feature detected'
         $features += 'BOL,'
     }
     else
     {
-        Write-Verbose -Message 'Documentation Components feature not detected'
+        New-VerboseMessage -Message 'Documentation Components feature not detected'
     }
 
     $clientComponentsFullRegistryPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($sqlVersion)0\Tools\Setup\Client_Components_Full"
@@ -290,34 +290,34 @@ function Get-TargetResource
     Write-Debug -Message "Detecting Client Connectivity Tools feature ($clientComponentsFullRegistryPath)"
     if ($registryClientComponentsFullFeatureList -like '*Connectivity_FNS=3*')
     {
-        Write-Verbose -Message 'Client Connectivity Tools feature detected'
+        New-VerboseMessage -Message 'Client Connectivity Tools feature detected'
         $features += 'CONN,'
     }
     else
     {
-        Write-Verbose -Message 'Client Connectivity Tools feature not detected'
+        New-VerboseMessage -Message 'Client Connectivity Tools feature not detected'
     }
 
     Write-Debug -Message "Detecting Client Connectivity Backwards Compatibility Tools feature ($clientComponentsFullRegistryPath)"
     if ($registryClientComponentsFullFeatureList -like '*Tools_Legacy_FNS=3*')
     {
-        Write-Verbose -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
+        New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature detected'
         $features += 'BC,'
     }
     else
     {
-        Write-Verbose -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
+        New-VerboseMessage -Message 'Client Connectivity Tools Backwards Compatibility feature not detected'
     }
 
     Write-Debug -Message "Detecting Client Tools SDK feature ($clientComponentsFullRegistryPath)"
     if (($registryClientComponentsFullFeatureList -like '*SDK_Full=3*') -and ($registryClientComponentsFullFeatureList -like '*SDK_FNS=3*'))
     {
-        Write-Verbose -Message 'Client Tools SDK feature detected'
+        New-VerboseMessage -Message 'Client Tools SDK feature detected'
         $features += 'SDK,'
     }
     else
     {
-        Write-Verbose -Message 'Client Tools SDK feature not detected'
+        New-VerboseMessage -Message 'Client Tools SDK feature not detected'
     }
 
     $registryUninstallPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -850,7 +850,7 @@ function Set-TargetResource
 
         $mediaDestinationPath = Join-Path -Path (Get-TemporaryFolder) -ChildPath $mediaDestinationFolder
 
-        Write-Verbose -Message "Robocopy is copying media from source '$SourcePath' to destination '$mediaDestinationPath'"
+        New-VerboseMessage -Message "Robocopy is copying media from source '$SourcePath' to destination '$mediaDestinationPath'"
         Copy-ItemWithRoboCopy -Path $SourcePath -DestinationPath $mediaDestinationPath
 
         Remove-SmbMapping -RemotePath $SourcePath -Force
@@ -860,7 +860,7 @@ function Set-TargetResource
 
     $pathToSetupExecutable = Join-Path -Path $SourcePath -ChildPath 'setup.exe'
 
-    Write-Verbose -Message "Using path: $pathToSetupExecutable"
+    New-VerboseMessage -Message "Using path: $pathToSetupExecutable"
 
     $sqlVersion = Get-SqlMajorVersion -Path $pathToSetupExecutable
 
@@ -990,7 +990,7 @@ function Set-TargetResource
                 $parameterValue = Get-Variable -Name $parameterName -ValueOnly
                 if ($parameterValue)
                 {
-                    Write-Verbose -Message ("Found assigned parameter '{0}'. Adding path '{1}' to list of paths that required cluster drive." -f $parameterName, $parameterValue)
+                    New-VerboseMessage -Message ("Found assigned parameter '{0}'. Adding path '{1}' to list of paths that required cluster drive." -f $parameterName, $parameterValue)
                     $requiredDrive += $parameterValue
                 }
             }
@@ -1319,7 +1319,7 @@ function Set-TargetResource
         }
     }
 
-    Write-Verbose -Message "Starting setup using arguments: $log"
+    New-VerboseMessage -Message "Starting setup using arguments: $log"
 
     $arguments = $arguments.Trim()
     $processArguments = @{
@@ -1334,7 +1334,7 @@ function Set-TargetResource
 
     $process = StartWin32Process @processArguments
 
-    Write-Verbose -Message $process
+    New-VerboseMessage -Message $process
 
     WaitForWin32ProcessEnd -Path $pathToSetupExecutable -Arguments $arguments
 
@@ -1346,7 +1346,7 @@ function Set-TargetResource
         }
         else
         {
-            Write-Verbose -Message 'Suppressing reboot'
+            New-VerboseMessage -Message 'Suppressing reboot'
         }
     }
 
@@ -1696,7 +1696,7 @@ function Test-TargetResource
     $boundParameters = $PSBoundParameters
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
-    Write-Verbose -Message "Features found: '$($getTargetResourceResult.Features)'"
+    New-VerboseMessage -Message "Features found: '$($getTargetResourceResult.Features)'"
 
     $result = $true
 
@@ -1709,7 +1709,7 @@ function Test-TargetResource
 
             if(!($getTargetResourceResult.Features.Contains($feature)))
             {
-                Write-Verbose -Message "Unable to find feature '$feature' among the installed features: '$($getTargetResourceResult.Features)'"
+                New-VerboseMessage -Message "Unable to find feature '$feature' among the installed features: '$($getTargetResourceResult.Features)'"
                 $result = $false
             }
         }
@@ -1721,13 +1721,13 @@ function Test-TargetResource
 
     if ($PSCmdlet.ParameterSetName -eq 'ClusterInstall')
     {
-        Write-Verbose -Message "Clustered install, checking parameters."
+        New-VerboseMessage -Message "Clustered install, checking parameters."
 
         $boundParameters.Keys | Where-Object {$_ -imatch "^FailoverCluster"} | ForEach-Object {
             $variableName = $_
 
             if ($getTargetResourceResult.$variableName -ne $boundParameters[$variableName]) {
-                Write-Verbose -Message "$variableName '$($boundParameters[$variableName])' is not in the desired state for this cluster."
+                New-VerboseMessage -Message "$variableName '$($boundParameters[$variableName])' is not in the desired state for this cluster."
                 $result = $false
             }
         }
