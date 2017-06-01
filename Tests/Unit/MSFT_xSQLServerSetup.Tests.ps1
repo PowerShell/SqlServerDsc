@@ -1036,7 +1036,7 @@ try
                         Assert-MockCalled -CommandName Get-Service -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$mockDefaultInstance_InstanceId\ConfigurationState"
-                        } -Exactly -Times 1 -Scope It ###FixThis
+                        } -Exactly -Times 0 -Scope It ###FixThis
 
                         Assert-MockCalled -CommandName Get-ItemProperty -ParameterFilter {
                             $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
@@ -1059,6 +1059,14 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -MockWith {} -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\ConfigurationState"
+                        } -MockWith {} -Verifiable
+
                         $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
@@ -1182,6 +1190,15 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -MockWith {} -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\ConfigurationState"
+                        } -MockWith {} -Verifiable
+
                         $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
@@ -1843,6 +1860,14 @@ try
                     }
 
                     It 'Should not return any names of installed features' {
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
+                        } -MockWith {} -Verifiable
+
+                        Mock -CommandName Get-ItemProperty -ParameterFilter {
+                            $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\ConfigurationState"
+                        } -MockWith {} -Verifiable
+
                         $result = Get-TargetResource @testParameters ###FixThis
                         $result.Features | Should Be ''
                     }
