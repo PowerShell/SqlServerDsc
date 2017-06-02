@@ -97,7 +97,7 @@ Configuration Example
             }
         }
 
-        xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership 'AvailabilityGroup1Databases'
+        xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership 'TestAGDatabaseMemberships'
         {
             AvailabilityGroupName = $Node.AvailabilityGroupName
             BackupPath = '\\SQL1\AgInitialize'
@@ -105,7 +105,6 @@ Configuration Example
             SQLInstanceName = $Node.SQLInstanceName
             SQLServer = $Node.NodeName
             Ensure = 'Absent'
-            DependsOn = '[xSQLServerAlwaysOnAvailabilityGroup]AddTestAG','[xSQLServerAlwaysOnAvailabilityGroupReplica]AddReplica'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
