@@ -38,5 +38,3 @@ Configuration AvailabilityGroupDatabaseMembership
         }
     }
 }
-
-AvailabilityGroupDatabaseMembership -SysAdminAccount $cred -ConfigurationData $ConfigurationData
