@@ -288,11 +288,10 @@ try
             $mockBadServerObject = New-Object -TypeName Object
                         
             $mockServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
-            $mockServerObject.AvailabilityGroups = @{
-                $mockAvailabilityGroupObject.Name = $mockAvailabilityGroupObject.Clone()
-                $mockAvailabilityGroupWithoutDatabasesObject.Name = $mockAvailabilityGroupWithoutDatabasesObject.Clone()
-                $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Clone()
-            }
+            $mockServerObject.AvailabilityGroups = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroupCollection
+            $mockServerObject.AvailabilityGroups.Add($mockAvailabilityGroupObject.Clone())
+            $mockServerObject.AvailabilityGroups.Add($mockAvailabilityGroupWithoutDatabasesObject.Clone())
+            $mockServerObject.AvailabilityGroups.Add($mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Clone())
             $mockServerObject.Databases = $mockDatabaseObjects
             $mockServerObject.DomainInstanceName = $mockServerObjectDomainInstanceName
             $mockServerObject.NetName = $mockServerObjectDomainInstanceName
@@ -302,11 +301,10 @@ try
             $mockServerObject.AvailabilityGroups[$mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name].LocalReplicaRole = 'Secondary'
 
             $mockServer2Object = New-Object Microsoft.SqlServer.Management.Smo.Server
-            $mockServer2Object.AvailabilityGroups = @{
-                $mockAvailabilityGroupObject.Name = $mockAvailabilityGroupObject.Clone()
-                $mockAvailabilityGroupWithoutDatabasesObject.Name = $mockAvailabilityGroupWithoutDatabasesObject.Clone()
-                $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Clone()
-            }
+            $mockServer2Object.AvailabilityGroups = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroupCollection
+            $mockServer2Object.AvailabilityGroups.Add($mockAvailabilityGroupObject.Clone())
+            $mockServer2Object.AvailabilityGroups.Add($mockAvailabilityGroupWithoutDatabasesObject.Clone())
+            $mockServer2Object.AvailabilityGroups.Add($mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Clone())
             $mockServer2Object.Databases = $mockDatabaseObjects
             $mockServer2Object.DomainInstanceName = $mockPrimaryServerObjectDomainInstanceName
             $mockServer2Object.NetName = $mockPrimaryServerObjectDomainInstanceName
