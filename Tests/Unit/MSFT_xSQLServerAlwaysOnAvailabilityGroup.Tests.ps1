@@ -83,73 +83,81 @@ try
 
         #endregion
 
-        $mockConnectSqlVersion12 = {
-            $mock = New-Object PSObject -Property @{
-                AvailabilityGroups = @{
-                    PresentAG = @{
-                        AutomatedBackupPreference = 'Secondary'
-                        FailureConditionLevel = 'OnServerDown'
-                        HealthCheckTimeout = 30000
-                        Name = 'AvailabilityGroup1'
-                        PrimaryReplicaServerName = 'Server1'
-                        LocalReplicaRole = 'Primary'
-                        AvailabilityReplicas = @{
-                            Server1 = @{
-                                AvailabilityMode = 'AsynchronousCommit'
-                                BackupPriority = 50
-                                ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                                ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                                EndpointUrl = 'TCP://Server1:5022'
-                                FailoverMode = 'Manual'
-                            }
-                        }
-                    }
-                }
-                Databases = @{
-                    'master' = @{
-                        Name = 'master'
-                    }
-                }
-                Endpoints = @(
-                    New-Object PSObject -Property @{
-                        EndpointType = 'DatabaseMirroring'
-                        Protocol = @{
-                            TCP = @{
-                                ListenerPort = 5022
-                            }
-                        }
-                    }
-                )
-                IsHadrEnabled = $true
-                Logins = $mockLogins
-                Name = 'Server1'
-                NetName = 'Server1'
-                Roles = @{}
-                Version = @{
-                    Major = 12
-                }
-            }
+        foreach ( $sqlVersion in @(12,13) )
+        {
+            # Create the availability replica
+            $mockAvailabilityReplica = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+            $mockAvailabilityReplica.Name = 'Server1'
+            $mockAvailabilityReplica.AvailabilityMode = 'AsynchronousCommit'
+            $mockAvailabilityReplica.BackupPriority = 50
+            $mockAvailabilityReplica.ConnectionModeInPrimaryRole = 'AllowAllConnections'
+            $mockAvailabilityReplica.ConnectionModeInSecondaryRole = 'AllowNoConnections'
+            $mockAvailabilityReplica.EndpointUrl = 'TCP://Server1:5022'
+            $mockAvailabilityReplica.FailoverMode = 'Manual'
 
-            # Add the ExecuteWithResults method
-            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
-                return New-Object PSObject -Property @{
-                    Tables = @{
-                        Rows = @{
-                            permission_name = @(
-                                'testing'
-                            )
-                        }
-                    }
+            # Create the availability replica collection to store the availability replicas in
+            $mockAvailabilityReplicaCollection = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplicaCollection
+            $mockAvailabilityReplicaCollection.Add($mockAvailabilityReplica)
+
+            # Create the Availability Group
+            $mockAvailabilityGroup = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroup
+            $mockAvailabilityGroup.Name = 'PresentAG'
+            $mockAvailabilityGroup.AutomatedBackupPreference = 'Secondary'
+            $mockAvailabilityGroup.FailureConditionLevel = 'OnServerDown'
+            $mockAvailabilityGroup.HealthCheckTimeout = 30000
+            $mockAvailabilityGroup.PrimaryReplicaServerName = 'Server1'
+            $mockAvailabilityGroup.LocalReplicaRole = 'Primary'
+            $mockAvailabilityGroup.AvailabilityReplicas = $mockAvailabilityReplicaCollection
+
+            # Create the availability group collectionto store the availability groups in
+            $mockAvailabilityGroupCollection = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityGroupCollection
+            $mockAvailabilityGroupCollection.Add($mockAvailabilityGroup)
+
+            # Create the master database
+            $mockMasterDatabaseObject = New-Object Microsoft.SqlServer.Management.Smo.Database
+            $mockMasterDatabaseObject.ID = 1
+            $mockMasterDatabaseObject.Name = 'master'
+
+            # Create the databases collection
+            $mockDatabaseCollection = New-Object Microsoft.SqlServer.Management.Smo.DatabaseCollection
+            $mockDatabaseCollection.Add($mockMasterDatabaseObject)
+
+            # Create the database mirroring endpoint
+            $mockDatabaseMirroringEndpoint = New-Object Microsoft.SqlServer.Management.Smo.Endpoint
+            $mockDatabaseMirroringEndpoint.Name = 'Hadr_endpoint'
+            $mockDatabaseMirroringEndpoint.EndpointType = 'DatabaseMirroring'
+            $mockDatabaseMirroringEndpoint.Protocol = @{
+                TCP = @{
+                    ListenerPort = 5022
                 }
             }
 
-            # Type the mock as a server object
-            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
+            # Create the endpointcollection object
+            $mockEndpointCollection = New-Object Microsoft.SqlServer.Management.Smo.EndpointCollection
+            $mockEndpointCollection.Add($mockDatabaseMirroringEndpoint)
 
-            $mock.Logins.GetEnumerator() | ForEach-Object { $_.Value.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Login') }
+            # Create the server object
+            $mockServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
+            $mockServerObject.AvailabilityGroups = $mockAvailabilityGroupCollection
+            $mockServerObject.Databases = $mockDatabaseCollection
+            $mockServerObject.Endpoints = $mockEndpointCollection
+            $mockServerObject.IsHadrEnabled = $true
+            $mockServerObject.Logins = $mockLogins
+            $mockServerObject.Name = 'Server1'
+            $mockServerObject.NetName = 'Server1'
+            $mockServerObject.Roles = @{}
+            $mockServerObject.Version = @{
+                Major = $sqlVersion
+            }
 
-            return $mock
+            # Clone the server object to a version specific variable
+            $mockConnectSqlServerObjectVariableName = "mockConnectSqlVersion$($sqlVersion)ServerObject"
+            New-Variable -Name $mockConnectSqlServerObjectVariableName
+            Set-Variable -Name $mockConnectSqlServerObjectVariableName -Value $mockServerObject.Clone()
         }
+
+        $mockConnectSqlVersion12 = { $mockConnectSqlVersion12ServerObject }
+        $mockConnectSqlVersion13 = { $mockConnectSqlVersion13ServerObject }
 
         $mockConnectSqlVersion12IncorrectEndpointProtocol = {
             $mock = New-Object PSObject -Property @{
@@ -283,87 +291,15 @@ try
             return $mock
         }
 
-        $mockConnectSqlVersion13 = {
-            $mock = New-Object PSObject -Property @{
-                AvailabilityGroups = @{
-                    PresentAG = @{
-                        AutomatedBackupPreference = 'Secondary'
-                        FailureConditionLevel = 'OnServerDown'
-                        HealthCheckTimeout = 30000
-                        Name = 'AvailabilityGroup1'
-                        BasicAvailabilityGroup = $false
-                        PrimaryReplicaServerName = 'Server1'
-                        LocalReplicaRole = 'Primary'
-                        AvailabilityReplicas = @{
-                            Server1 = @{
-                                AvailabilityMode = 'AsynchronousCommit'
-                                BackupPriority = 50
-                                ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                                ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                                EndpointUrl = 'TCP://Server1:5022'
-                                FailoverMode = 'Manual'
-                            }
-                        }
-                    }
-                }
-                Databases = @{
-                    'master' = @{
-                        Name = 'master'
-                    }
-                }
-                Endpoints = @(
-                    New-Object PSObject -Property @{
-                        EndpointType = 'DatabaseMirroring'
-                        Protocol = @{
-                            TCP = @{
-                                ListenerPort = 5022
-                            }
-                        }
-                    }
-                )
-                IsHadrEnabled = $true
-                Logins = $mockLogins
-                Name = 'Server1'
-                NetName = 'Server1'
-                Roles = @{}
-                Version = @{
-                    Major = 13
-                }
-            }
-
-            # Add the ExecuteWithResults method
-            $mock.Databases['master'] | Add-Member -MemberType ScriptMethod -Name ExecuteWithResults -Value {
-                return New-Object PSObject -Property @{
-                    Tables = @{
-                        Rows = @{
-                            permission_name = @(
-                                'testing'
-                            )
-                        }
-                    }
-                }
-            }
-
-            # Type the mock as a server object
-            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.Server')
-
-            return $mock
-        }
-
         $mockNewSqlAvailabilityReplica = {
-            #TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
-            $mock = return New-Object PSObject -Property @{
-                AvailabilityMode = 'AsynchronousCommit'
-                BackupPriority = 50
-                ConnectionModeInPrimaryRole = 'AllowAllConnections'
-                ConnectionModeInSecondaryRole = 'AllowNoConnections'
-                EndpointUrl = 'TCP://Server1:5022'
-                FailoverMode = 'Manual'
-                Name = 'Server1'
-            }
-
-            # Type the mock as an Availability Replica object
-            $mock.PSObject.TypeNames.Insert(0,'Microsoft.SqlServer.Management.Smo.AvailabilityReplica')
+            $mock = New-Object Microsoft.SqlServer.Management.Smo.AvailabilityReplica
+            $mock.AvailabilityMode = 'AsynchronousCommit'
+            $mock.BackupPriority = 50
+            $mock.ConnectionModeInPrimaryRole = 'AllowAllConnections'
+            $mock.ConnectionModeInSecondaryRole = 'AllowNoConnections'
+            $mock.EndpointUrl = 'TCP://Server1:5022'
+            $mock.FailoverMode = 'Manual'
+            $mock.Name = 'Server1'
 
             return $mock
         }
@@ -381,7 +317,12 @@ try
 
             if ( $mockAvailabilityGroupPropertyValue -ne $AvailabilityGroup.$mockAvailabilityGroupProperty )
             {
-                throw
+                foreach ( $property in ( $AvailabilityGroup | Get-Member -MemberType Property | Select-Object -ExpandProperty Name ) )
+                {
+                    New-VerboseMessage -Message "$($property): $($AvailabilityGroup.$property) ($($defaultPresentParameters.$property))"
+                }
+                
+                throw "Update-AvailabilityGroup should be setting the property '$($mockAvailabilityGroupProperty)' to '$($mockAvailabilityGroupPropertyValue)'"
             }
         }
 
@@ -403,7 +344,12 @@ try
 
             if ( $mockAvailabilityGroupReplicaPropertyValue -ne $AvailabilityGroupReplica.$mockAvailabilityGroupReplicaProperty )
             {
-                throw
+                foreach ( $property in ( $AvailabilityGroupReplica | Get-Member -MemberType Property | Select-Object -ExpandProperty Name ) )
+                {
+                    New-VerboseMessage -Message "$($property): $($AvailabilityGroupReplica.$property) ($($defaultPresentParameters.$property))"
+                }
+                
+                throw "Update-AvailabilityGroupReplica should be setting the property '$($mockAvailabilityGroupReplicaProperty)' to '$($mockAvailabilityGroupReplicaPropertyValue)'"
             }
         }
         
@@ -579,7 +525,9 @@ try
         Describe "xSQLServerAlwaysOnAvailabilityGroup\Set-TargetResource" {
             
             BeforeEach {
-                $mockLogins = $mockAllLoginsPresent
+                $mockLogins = $mockAllLoginsPresent # Need this for legacy purposes
+                $mockConnectSqlVersion12ServerObject.Logins = $mockAllLoginsPresent
+                $mockConnectSqlVersion13ServerObject.Logins = $mockAllLoginsPresent
             }
             
             Mock -CommandName Invoke-Query -MockWith {} -Verifiable
@@ -676,7 +624,7 @@ try
                     Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityReplica -Verifiable -Scope It
 
                     $defaultAbsentParameters.Ensure = 'Present'
-                    $mockLogins = $mockAllLoginsAbsent.Clone()
+                    $mockConnectSqlVersion12ServerObject.Logins = $mockAllLoginsAbsent.Clone()
                     
                     { Set-TargetResource @defaultAbsentParameters } | Should Throw 'ClusterPermissionsMissing'
                     
@@ -1174,6 +1122,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AutomatedBackupPreference = $defaultPresentParameters.AutomatedBackupPreference
                 }
 
                 It 'Should set the AvailabilityMode to the desired state' {
@@ -1198,6 +1148,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].AvailabilityMode = $defaultPresentParameters.AvailabilityMode
                 }
 
                 It 'Should set the BackupPriority to the desired state' {
@@ -1222,6 +1174,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].BackupPriority = $defaultPresentParameters.BackupPriority
                 }
 
                 It 'Should set the BasicAvailabilityGroup to the desired state' {
@@ -1246,6 +1200,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+
+                    $mockConnectSqlVersion13ServerObject.AvailabilityGroups['PresentAG'].BasicAvailabilityGroup = $defaultPresentParameters.BasicAvailabilityGroup
                 }
 
                 It 'Should set the ConnectionModeInPrimaryRole to the desired state' {
@@ -1270,6 +1226,9 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].ConnectionModeInPrimaryRole = $defaultPresentParameters.ConnectionModeInPrimaryRole
+                    $mockConnectSqlVersion13ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].ConnectionModeInPrimaryRole = $defaultPresentParameters.ConnectionModeInPrimaryRole
                 }
 
                 It 'Should set the ConnectionModeInSecondaryRole to the desired state' {
@@ -1294,6 +1253,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].ConnectionModeInSecondaryRole = $defaultPresentParameters.ConnectionModeInSecondaryRole
                 }
 
                 It 'Should set the EndpointUrl to the desired state when the endpoint port is changed' {
@@ -1381,6 +1342,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].EndpointUrl = $mockAvailabilityReplica.EndpointUrl
                 }
 
                 It 'Should set the EndpointUrl to the desired state when the EndpointHostName is specified' {
@@ -1405,6 +1368,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].EndpointUrl = $mockAvailabilityReplica.EndpointUrl
                 }
 
                 It 'Should set the EndpointUrl to the desired state when the EndpointHostName is not specified' {
@@ -1493,6 +1458,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].EndpointUrl = $mockAvailabilityReplica.EndpointUrl
                 }
 
                 It 'Should set the EndpointUrl to the desired state when the endpoint protocol is changed' {
@@ -1580,6 +1547,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].EndpointUrl = $mockAvailabilityReplica.EndpointUrl
                 }
 
                 It 'Should set the FailureConditionLevel to the desired state' {
@@ -1604,6 +1573,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].FailureConditionLevel = $defaultPresentParameters.FailureConditionLevel
                 }
 
                 It 'Should set the FailoverMode to the desired state' {
@@ -1614,6 +1585,8 @@ try
                     $defaultPresentParametersIncorrectProperties = $defaultPresentParameters.Clone()
                     $defaultPresentParametersIncorrectProperties.Ensure = 'Present'
                     $defaultPresentParametersIncorrectProperties.FailoverMode = 'Automatic'
+                    $mockAvailabilityGroupReplicaProperty = 'FailoverMode'
+                    $mockAvailabilityGroupReplicaPropertyValue = 'Automatic'
                     
                     { Set-TargetResource @defaultPresentParametersIncorrectProperties } | Should Not Throw
 
@@ -1626,6 +1599,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 1 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].AvailabilityReplicas['Server1'].FailoverMode = $defaultPresentParameters.FailoverMode
                 }
 
                 It 'Should set the HealthCheckTimeout to the desired state' {
@@ -1650,6 +1625,8 @@ try
                     Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly -ParameterFilter { $LoginName -eq 'NT SERVICE\ClusSvc' }
                     Assert-MockCalled -CommandName Update-AvailabilityGroup -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
+
+                    $mockConnectSqlVersion12ServerObject.AvailabilityGroups['PresentAG'].HealthCheckTimeout = $defaultPresentParameters.HealthCheckTimeout
                 }
             }
         }
