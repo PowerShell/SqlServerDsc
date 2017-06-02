@@ -39,4 +39,4 @@ Configuration AvailabilityGroupDatabaseMembership
     }
 }
 
-AGDatabases -SysAdminAccount $cred -ConfigurationData $ConfigurationData
+AvailabilityGroupDatabaseMembership -SysAdminAccount $cred -ConfigurationData $ConfigurationData
