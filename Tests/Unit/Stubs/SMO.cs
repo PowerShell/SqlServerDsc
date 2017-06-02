@@ -237,16 +237,23 @@ namespace Microsoft.SqlServer.Management.Smo
     {
         public string MockGranteeName;
 
-        public string Name;
-        public string DisplayName;
+        public AvailabilityGroupCollection AvailabilityGroups;
+        public ConnectionContext ConnectionContext;
         public string ComputerNamePhysicalNetBIOS;
+        public DatabaseCollection Databases;
+        public string DisplayName;
         public string DomainInstanceName;
+        public EndpointCollection Endpoints;
         public string FilestreamLevel = "Disabled";
         public string InstanceName;
-        public string NetName;
-        public string ServiceName;
         public bool IsClustered = false;
         public bool IsHadrEnabled = false;
+        public Hashtable Logins;
+        public string Name;
+        public string NetName;
+        public Hashtable Roles;
+        public string ServiceName;
+        public Hashtable Version;
 
         public Server(){}
         public Server(string name)
@@ -254,12 +261,31 @@ namespace Microsoft.SqlServer.Management.Smo
             this.Name = name;
         }
 
-        public System.Collections.Hashtable AvailabilityGroups;
+        public Server Clone()
+        {
+            return new Server()
+            {
+                MockGranteeName = this.MockGranteeName,
+                AvailabilityGroups = this.AvailabilityGroups,
+                ConnectionContext = this.ConnectionContext,
+                ComputerNamePhysicalNetBIOS = this.ComputerNamePhysicalNetBIOS,
+                Databases = this.Databases,
+                DisplayName = this.DisplayName,
+                DomainInstanceName = this.DomainInstanceName,
+                Endpoints = this.Endpoints,
+                FilestreamLevel = this.FilestreamLevel,
+                InstanceName = this.InstanceName,
+                IsClustered = this.IsClustered,
+                IsHadrEnabled = this.IsHadrEnabled,
+                Logins = this.Logins,
+                Name = this.Name,
+                NetName = this.NetName,
+                Roles = this.Roles,
+                ServiceName = this.ServiceName,
+                Version = this.Version
+            };
+        }
         
-        public Microsoft.SqlServer.Management.Smo.ConnectionContext ConnectionContext;
-
-        public DatabaseCollection Databases;
-
         public Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] EnumServerPermissions( string principal, Microsoft.SqlServer.Management.Smo.ServerPermissionSet permissionSetQuery )
         {
             Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] permissionInfo = null;
@@ -779,7 +805,7 @@ namespace Microsoft.SqlServer.Management.Smo
                     }
                 }
 
-                return new Database();
+                return null;
             }
         }
     }
@@ -801,7 +827,7 @@ namespace Microsoft.SqlServer.Management.Smo
                     }
                 }
 
-                return new AvailabilityReplica();
+                return null;
             }
         }
     }
@@ -840,7 +866,61 @@ namespace Microsoft.SqlServer.Management.Smo
                     }
                 }
 
-                return new AvailabilityDatabase();
+                return null;
+            }
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupCollection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroup
+    public class AvailabilityGroupCollection : Collection<AvailabilityGroup>
+    {
+        public AvailabilityGroup this[string name]
+        {
+            get
+            {
+                foreach ( AvailabilityGroup availabilityGroup in this )
+                {
+                    if ( name == availabilityGroup.Name )
+                    {
+                        return availabilityGroup;
+                    }
+                }
+
+                return null;
+            }
+        }
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroup
+    public class Endpoint
+    {
+        public string Name;
+        public string EndpointType;
+        public Hashtable Protocol;
+    }
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.EndpointCollection
+    // Used by:
+    //  xSQLServerAlwaysOnAvailabilityGroup
+    public class EndpointCollection : Collection<Endpoint>
+    {
+        public Endpoint this[string name]
+        {
+            get
+            {
+                foreach ( Endpoint endpoint in this )
+                {
+                    if ( name == endpoint.Name )
+                    {
+                        return endpoint;
+                    }
+                }
+
+                return null;
             }
         }
     }
