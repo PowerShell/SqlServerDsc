@@ -1,13 +1,21 @@
 #---------------------------------#
 #      environment configuration  #
 #---------------------------------#
-version: 5.0.{build}.0
+version: 6.0.{build}.0
 install:
     - git clone https://github.com/PowerShell/DscResource.Tests
-
-    - ps: |
-        Import-Module -Name "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
-        Invoke-AppveyorInstallTask
+    - ps: Import-Module -Name .\Tests\TestHelpers\WMF5Dot1Installation.psm1 -Force
+    - ps: Install-Wmf5Dot1
+    - ps: Start-Sleep 5
+    - ps: Restart-Computer -Force
+    - ps: Start-Sleep 5
+    - ps: Write-Verbose -Message "Returned after restart with PSVersion $($PSVersionTable.PSVersion)" -Verbose
+    - ps: if ($PSVersionTable.PSVersion.Major -lt 5 -or $PSVersionTable.PSVersion.Minor -lt 1)
+        {
+            throw 'WMF 5.1 install failed'
+        }
+    - ps: Import-Module "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
+    - ps: Invoke-AppveyorInstallTask
 
 #---------------------------------#
 #      build configuration        #
