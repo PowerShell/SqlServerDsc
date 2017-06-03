@@ -1,6 +1,7 @@
 # Change log for xSQLServer
 
 ## Unreleased
+
 - Added new resource
   - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 - **BREAKING CHANGE: The module now requires WMF 5.**
