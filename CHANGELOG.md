@@ -1,8 +1,10 @@
 # Change log for xSQLServer
 
 ## Unreleased
+
 - Changes to xSQLServerSetup
   - Updated Get-TargetResource to correctly detect BOL, Conn, BC and other tools when they are installed withouth SQLENGINE (issue #591).
+  
 ## 7.1.0.0
 
 - Changes to xSQLServerMemory
