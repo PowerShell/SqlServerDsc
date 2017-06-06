@@ -6,7 +6,6 @@
   - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 - **BREAKING CHANGE: The module now requires WMF 5.**
   - This is required for class-based resources
-
 - Changes to xSQLServerRSConfig
   - BREAKING CHANGE: Removed `$SQLAdminCredential` parameter. Use common parameter `PsDscRunAsCredential` (WMF 5.0+) to run
     the resource under different credentials. `PsDscRunAsCredential` Windows account must be a sysadmin on SQL Server
@@ -16,7 +15,6 @@
     specified by `$SQLAdminCredential`. The call also needed CredSSP authentication to be enabled and configured on
     the target node, which complicated deployments in non-domain scenarios. Using `PsDscRunAsCredential` solves
     this problems for us.
-
   - Fixed virtual directory creation for SQL Server 2016 (issue #569).
   - Added unit tests (issue #295).
 - Changes to xSQLServerDatabase
