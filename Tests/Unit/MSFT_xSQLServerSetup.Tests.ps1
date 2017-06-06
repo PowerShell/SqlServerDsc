@@ -966,31 +966,25 @@ try
 
                 # Mocking SharedDirectory
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\30AE1F084B1CF8B4797ECB3CCAA3B3B6'
                 } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable
 
                 Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
                 } -MockWith $mockGetItem_SharedDirectory -Verifiable
 
                 # Mocking SharedWowDirectory
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable
 
                 Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
 
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
                     $Path -eq "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$($mockSqlMajorVersion)0\Tools\Setup\Client_Components_Full"
                 } -MockWith $mockGetItemProperty_ClientComponentsFull_FeatureList -Verifiable
-
             }
 
             BeforeEach {
@@ -2264,24 +2258,19 @@ try
 
                 # Mocking SharedDirectory
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\30AE1F084B1CF8B4797ECB3CCAA3B3B6'
                 } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable
 
                 Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
                 } -MockWith $mockGetItem_SharedDirectory -Verifiable
 
                 # Mocking SharedWowDirectory
                 Mock -CommandName Get-ItemProperty -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable
 
                 Mock -CommandName Get-Item -ParameterFilter {
-                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                     $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                 } -MockWith $mockGetItem_SharedWowDirectory -Verifiable
             }
@@ -3213,14 +3202,11 @@ try
 
                         # Mocking SharedDirectory (when previously installed and should not be installed again).
                         Mock -CommandName Get-ItemProperty -ParameterFilter {
-                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -or
                             $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69'
-                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\30AE1F084B1CF8B4797ECB3CCAA3B3B6'
                         } -MockWith $mockGetItemProperty_SharedDirectory -Verifiable
 
                         # Mocking SharedWowDirectory (when previously installed and should not be installed again).
                         Mock -CommandName Get-ItemProperty -ParameterFilter {
-                            $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -or
                             $Path -eq 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4'
                         } -MockWith $mockGetItemProperty_SharedWowDirectory -Verifiable
 

@@ -369,25 +369,7 @@ function Get-TargetResource
 
         switch ($sqlVersion)
         {
-            '10'
-            {
-                $registryKeySharedDir = '0D1F366D0FE0E404F8C15EE4F1C15094'
-                $registryKeySharedWOWDir = 'C90BFAC020D87EA46811C836AD3C507F'
-            }
-
-            '11'
-            {
-                $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
-                $registryKeySharedWOWDir = 'A79497A344129F64CA7D69C56F5DD8B4'
-            }
-
-            '12'
-            {
-                $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
-                $registryKeySharedWOWDir = 'C90BFAC020D87EA46811C836AD3C507F'
-            }
-
-            { $_ -in ('13','14') }
+            { $_ -in ('10','11','12','13','14') }
             {
                 $registryKeySharedDir = 'FEE2E540D20152D4597229B6CFBC0A69'
                 $registryKeySharedWOWDir = 'A79497A344129F64CA7D69C56F5DD8B4'
@@ -878,46 +860,7 @@ function Set-TargetResource
     # If SQL shared components already installed, clear InstallShared*Dir variables
     switch ($sqlVersion)
     {
-        '10'
-        {
-            if((Get-Variable -Name 'InstallSharedDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\0D1F366D0FE0E404F8C15EE4F1C15094' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedDir' -Value ''
-            }
-
-            if((Get-Variable -Name 'InstallSharedWOWDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedWOWDir' -Value ''
-            }
-        }
-
-        '11'
-        {
-            if((Get-Variable -Name 'InstallSharedDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\30AE1F084B1CF8B4797ECB3CCAA3B3B6' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedDir' -Value ''
-            }
-
-            if((Get-Variable -Name 'InstallSharedWOWDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\A79497A344129F64CA7D69C56F5DD8B4' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedWOWDir' -Value ''
-            }
-        }
-
-        '12'
-        {
-            if((Get-Variable -Name 'InstallSharedDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedDir' -Value ''
-            }
-
-            if((Get-Variable -Name 'InstallSharedWOWDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\C90BFAC020D87EA46811C836AD3C507F' -ErrorAction SilentlyContinue))
-            {
-                Set-Variable -Name 'InstallSharedWOWDir' -Value ''
-            }
-        }
-
-        { $_ -in ('13','14') }
+        { $_ -in ('10','11','12','13','14') }
         {
             if((Get-Variable -Name 'InstallSharedDir' -ErrorAction SilentlyContinue) -and (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\FEE2E540D20152D4597229B6CFBC0A69' -ErrorAction SilentlyContinue))
             {
@@ -1267,7 +1210,11 @@ function Set-TargetResource
         }
         else
         {
-            $setupArguments += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
+            # If the argument contains a value, then add the argument to the setup argument list
+            if (Get-Variable -Name $argument -ValueOnly)
+            {
+                $setupArguments += @{ $argument = (Get-Variable -Name $argument -ValueOnly) }
+            }
         }
     }
 
