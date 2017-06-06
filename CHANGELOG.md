@@ -2,11 +2,6 @@
 
 ## Unreleased
 
-- Added new resource
-  - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
-- **BREAKING CHANGE: The module now requires WMF 5.**
-  - This is required for class-based resources
-
 - Changes to xSQLServerDatabase
   - Changed the readme, SQLInstance should have been SQLInstanceName.
 - Changes to xSQLServerSetup
@@ -30,6 +25,10 @@
   - Added a new parameter SetupProcessTimeout which defaults to 7200 seconds (2 hours). If the setup process has not finished before the timeout value in SetupProcessTimeout an error will be thrown (issue #566).
   - Updated all examples to match the removal of SetupCredential.
   - Updated (removed) severe known issues in README.md for resource xSQLServerSetup.
+- Added new resource
+  - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+- **BREAKING CHANGE: The module now requires WMF 5.**
+  - This is required for class-based resources
 
 ## 7.1.0.0
 
