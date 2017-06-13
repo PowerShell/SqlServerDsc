@@ -104,7 +104,6 @@ Configuration Example
             DatabaseName = 'DB*','AdventureWorks'
             SQLInstanceName = $Node.SQLInstanceName
             SQLServer = $Node.NodeName
-            Ensure = 'Exactly'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

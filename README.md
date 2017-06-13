@@ -169,14 +169,14 @@ This resource is used to add and/or remove databases to a specified availability
 
 ### Parameters
 
-* **[String] DatabaseName** _(Write)_: The name of the database(s) that should be members of the availability group. The availability group member database(s) are added and removed until they match the defined databases. This accepts wildcards.
-* **[String] DatabaseNameToInclude** _(Write)_: The name of the database(s) that should be added to the availability group. The defined database(s) are added to the availability group. All other databases that may be a member of the availability group are ignored. This accepts wildcards.
-* **[String] DatabaseNameToExclude** _(Write)_: The name of the database(s) that should be removed from the availability group. The defined database(s) are removed to the availability group. All other databases that may be a member of the availability group are ignored. This accepts wildcards.
+* **[String[]] DatabaseName** _(Write)_: The name of the database(s) that should be members of the availability group. The availability group member database(s) are added and removed until they match the defined databases. This accepts wildcards.
+* **[String[]] DatabaseNameToInclude** _(Write)_: The name of the database(s) that should be added to the availability group. The defined database(s) are added to the availability group. All other databases that may be a member of the availability group are ignored. This accepts wildcards.
+* **[String[]] DatabaseNameToExclude** _(Write)_: The name of the database(s) that should be removed from the availability group. The defined database(s) are removed to the availability group. All other databases that may be a member of the availability group are ignored. This accepts wildcards.
 * **[String] SQLServer** _(Key)_: Hostname of the SQL Server where the primary replica of the availability group lives. If the availability group is not currently on this server, the resource will attempt to connect to the server where the primary replica lives.
 * **[String] SQLInstanceName** _(Key)_: Name of the SQL instance where the primary replica of the availability group lives. If the availability group is not currently on this instance, the resource will attempt to connect to the instance where the primary replica lives.
 * **[String] AvailabilityGroupName** _(Key)_: The name of the availability group in which to manage the database membership(s).
 * **[String] BackupPath** _(Required)_: The path used to seed the availability group replicas. This should be a path that is accessible by all of the replicas.
-* **[Boolean] MatchDatabaseOwner** _(Write)_: If set to $true, this ensures the database owner of the database on the primary replica is the owner of the database on all secondary replicas. This requires the database owner is available as a login on all replicas and that the PSDscRunAsAccount has impersonate permissions. If set to $false, the owner of the database will be the PSDscRunAsAccount. The default is '$true'.
+* **[Boolean] MatchDatabaseOwner** _(Write)_: If set to $true, this ensures the database owner of the database on the primary replica is the owner of the database on all secondary replicas. This requires the database owner is available as a login on all replicas and that the PSDscRunAsCredential has impersonate permissions. If set to $false, the owner of the database will be the PSDscRunAsCredential. The default is '$true'.
 
 ### xSQLServerAlwaysOnAvailabilityGroupReplica
 

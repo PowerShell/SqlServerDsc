@@ -79,16 +79,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
 
         $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
-        if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
-        {
-            New-VerboseMessage -Message ( "Adding the following databases to the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
-        }
-
         $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
-        if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
-        {
-            New-VerboseMessage -Message ( "Removing the following databases from the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
-        }
 
         # Create a hash table to store the databases that failed to be added to the Availability Group
         $databasesToAddFailures = @{}
@@ -98,6 +89,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
+            New-VerboseMessage -Message ( "Adding the following databases to the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
+            
             # Get only the secondary replicas. Some tests do not need to be performed on the primary replica
             $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne 'Primary' }
             
@@ -133,8 +126,10 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             {
                 $database = $primaryServerObject.Databases[$databaseName]
 
-                # Verify the prerequisites prior to joining the database to the availability group
-                # https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
+                <#
+                    Verify the prerequisites prior to joining the database to the availability group
+                    https://docs.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability#a-nameprerequisitesfordbsa-availability-database-prerequisites-and-restrictions
+                #>
 
                 # Create a hash table to store prerequisite check failures
                 $prerequisiteCheckFailures = @()
@@ -169,39 +164,41 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     -or ( $database.FilestreamNonTransactedAccess -ne 'Off' )
                 )
                 {
-                    $availbilityReplicaFilestreamLevel = @{}
+                    $availabilityReplicaFilestreamLevel = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                        $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
+                        $availabilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
                     }
 
-                    if ( $availbilityReplicaFilestreamLevel.Values -contains 'Disabled' )
+                    if ( $availabilityReplicaFilestreamLevel.Values -contains 'Disabled' )
                     {
-                        $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availbilityReplicaFilestreamLevel.Keys -join ', ' ) )
+                        $availabilityReplicaFilestreamLevelDisabled = $availabilityReplicaFilestreamLevel.GetEnumerator() | Where-Object { $_.Value -eq 'Disabled' } | Select-Object -ExpandProperty Key
+                        $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availabilityReplicaFilestreamLevelDisabled -join ', ' ) )
                     }
                 }
 
                 # If the database is contained, ensure contained database authentication is enabled on all replica instances
                 if ( $database.ContainmentType -ne 'None' )
                 {
-                    $availbilityReplicaContainmentEnabled = @{}
+                    $availabilityReplicaContainmentEnabled = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                        $availbilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
+                        $availabilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
                     }
 
-                    if ( $availbilityReplicaContainmentEnabled.Values -notcontains 'None' )
+                    if ( $availabilityReplicaContainmentEnabled.Values -notcontains 'None' )
                     {
-                        $prerequisiteCheckFailures += ( 'Contained Database Authentication is not enabled on the following instances: {0}' -f ( $availbilityReplicaContainmentEnabled.Keys -join ', ' ) )
+                        $availabilityReplicaContainmentNotEnabled = $availabilityReplicaContainmentEnabled.GetEnumerator() | Where-Object { $_.Value -eq 'None' } | Select-Object -ExpandProperty Key
+                        $prerequisiteCheckFailures += ( 'Contained Database Authentication is not enabled on the following instances: {0}' -f ( $availabilityReplicaContainmentNotEnabled -join ', ' ) )
                     }
                 }
 
                 # Ensure the data and log file paths exist on all replicas
                 $databaseFileDirectories = @()
-                $databaseFileDirectories += $database.FileGroups.Files.FileName | ForEach-Object { Split-Path -Path $_ -Parent } | Select-Object -Unique
-                $databaseFileDirectories += $database.LogFiles.FileName | ForEach-Object { Split-Path -Path $_ -Parent } | Select-Object -Unique
+                $databaseFileDirectories += $database.FileGroups.Files.FileName | ForEach-Object -Process { Split-Path -Path $_ -Parent }
+                $databaseFileDirectories += $database.LogFiles.FileName | ForEach-Object -Process { Split-Path -Path $_ -Parent }
                 $databaseFileDirectories = $databaseFileDirectories | Select-Object -Unique
 
                 $availabilityReplicaMissingDirectories = @{}
@@ -392,6 +389,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
         {
+            New-VerboseMessage -Message ( "Removing the following databases from the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
+            
             foreach ( $databaseName in $databasesToRemoveFromAvailabilityGroup )
             {
                 $availabilityDatabase = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName].AvailabilityDatabases[$databaseName]

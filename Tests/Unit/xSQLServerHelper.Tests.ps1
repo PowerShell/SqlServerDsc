@@ -880,7 +880,7 @@ InModuleScope $script:moduleName {
         }
 
         Context 'When the supplied server object is not the primary replica' {
-            It 'Should the server object of the primary replica' {
+            It 'Should return the actual server object of the primary replica' {
                 $mockAvailabilityGroup.PrimaryReplicaServerName = 'Server2'
                 
                 $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup

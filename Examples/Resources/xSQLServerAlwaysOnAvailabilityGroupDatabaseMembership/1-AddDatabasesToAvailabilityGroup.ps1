@@ -101,10 +101,9 @@ Configuration Example
         {
             AvailabilityGroupName = $Node.AvailabilityGroupName
             BackupPath = '\\SQL1\AgInitialize'
-            DatabaseName = 'DB*','AdventureWorks'
+            DatabaseNameToInclude = 'DB*','AdventureWorks'
             SQLInstanceName = $Node.SQLInstanceName
             SQLServer = $Node.NodeName
-            Ensure = 'Present'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
