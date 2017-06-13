@@ -22,10 +22,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
-    
-}
-
 function Invoke-TestCleanup {
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 
@@ -35,8 +31,6 @@ function Invoke-TestCleanup {
 # Begin Testing
 try
 {
-    Invoke-TestSetup
-
     InModuleScope 'MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership' {
 
         #region Parameter Mocks
@@ -377,8 +371,9 @@ WITH NORECOVERY'
                     $result.SQLInstanceName | Should Be $databaseMembershipClass.SQLInstanceName
                     $result.AvailabilityGroupName | Should BeNullOrEmpty
                     $result.DatabaseName | Should BeNullOrEmpty
+                    $result.DatabaseNameToInclude | Should BeNullOrEmpty
+                    $result.DatabaseNameToExclude | Should BeNullOrEmpty
                     $result.BackupPath | Should BeNullOrEmpty
-                    $result.Ensure | Should Be 'Present'
                     $result.MatchDatabaseOwner | Should Be $false
                     
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -394,8 +389,9 @@ WITH NORECOVERY'
                     $result.SQLInstanceName | Should Be $databaseMembershipClass.SQLInstanceName
                     $result.AvailabilityGroupName | Should Be $mockAvailabilityGroupWithoutDatabasesObject.Name
                     $result.DatabaseName | Should BeNullOrEmpty
+                    $result.DatabaseNameToInclude | Should BeNullOrEmpty
+                    $result.DatabaseNameToExclude | Should BeNullOrEmpty
                     $result.BackupPath | Should BeNullOrEmpty
-                    $result.Ensure | Should Be 'Present'
                     $result.MatchDatabaseOwner | Should Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -408,8 +404,9 @@ WITH NORECOVERY'
                     $result.SqlServer | Should Be $databaseMembershipClass.SqlServer
                     $result.SQLInstanceName | Should Be $databaseMembershipClass.SQLInstanceName
                     $result.AvailabilityGroupName | Should Be $mockAvailabilityGroupObject.Name
+                    $result.DatabaseNameToInclude | Should BeNullOrEmpty
+                    $result.DatabaseNameToExclude | Should BeNullOrEmpty
                     $result.BackupPath | Should BeNullOrEmpty
-                    $result.Ensure | Should Be 'Present'
                     $result.MatchDatabaseOwner | Should Be $true
 
                     foreach ( $resultDatabaseName in $result.DatabaseName )
@@ -439,13 +436,14 @@ WITH NORECOVERY'
                 Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
                 Mock -CommandName Remove-Item -MockWith {} -Verifiable
                 Mock -CommandName Restore-SqlDatabase -MockWith {} -Verifiable
-                
             }
 
             BeforeEach {
 
                 $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
-                $databaseMembershipClass.DatabaseName = $($mockDatabaseNameParameter)
+                $databaseMembershipClass.DatabaseName = @()
+                $databaseMembershipClass.DatabaseNameToExclude = @()
+                $databaseMembershipClass.DatabaseNameToInclude = @()
                 $databaseMembershipClass.SqlServer = $($mockServerObject.DomainInstanceName)
                 $databaseMembershipClass.SQLInstanceName = $('MSSQLSERVER')
                 $databaseMembershipClass.AvailabilityGroupName = $($mockAvailabilityGroupObjectName)
@@ -465,7 +463,11 @@ WITH NORECOVERY'
                 Mock -CommandName Test-ImpersonatePermissions -MockWith { $true } -Verifiable
             }
 
-            Context 'When the desired state is Present' {
+            Context 'When the DatabaseNameToInclude property is set' {
+
+                BeforeEach {
+                    $databaseMembershipClass.DatabaseNameToInclude = $($mockDatabaseNameParameter)
+                }
 
                 It 'Should add the specified databases to the availability group' {
 
@@ -525,7 +527,7 @@ WITH NORECOVERY'
 
                 It 'Should not do anything if no databases were found to add' {
 
-                    $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockDatabaseNameParameterWithNonExistingDatabases
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
 
@@ -668,7 +670,7 @@ WITH NORECOVERY'
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when the database property "ID" is less than "4"' {
 
-                    $databaseMembershipClass.DatabaseName = @('master')
+                    $databaseMembershipClass.DatabaseNameToInclude = @('master')
 
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
 
@@ -1015,10 +1017,10 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Absent' {
+            Context 'When the DatabaseNameToExclude property is set' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Absent'
+                    $databaseMembershipClass.DatabaseNameToExclude = $($mockDatabaseNameParameter)
                 }
                 
                 It 'Should remove the specified databases to the availability group(s)' {
@@ -1107,10 +1109,10 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Exactly' {
+            Context 'When the DatabaseName property is set' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.DatabaseName = $($mockDatabaseNameParameter)
                 }
 
                 It 'Should ensure the database membership of the availability group is exactly as specified' {
@@ -1151,16 +1153,18 @@ WITH NORECOVERY'
 
             BeforeEach {
                 $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
-                $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
+                $databaseMembershipClass.DatabaseName = @()
+                $databaseMembershipClass.DatabaseNameToExclude = @()
+                $databaseMembershipClass.DatabaseNameToInclude = @()
                 $databaseMembershipClass.SqlServer = $mockServerObject.DomainInstanceName
                 $databaseMembershipClass.SQLInstanceName = 'MSSQLSERVER'
                 $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObject.Name
             }
 
-            Context 'When the desired state is Present' {
+            Context 'When the DatabaseNameToInclude property is set' {
 
                 It 'Should return $true when the configuration is in the desired state' {
-                    $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames.Clone()
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockAvailabilityDatabaseNames.Clone()
                     
                     $databaseMembershipClass.Test() | Should Be $true
 
@@ -1170,7 +1174,7 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $false when no matching databases are found' {
-                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
                     
                     $databaseMembershipClass.Test() | Should Be $false
 
@@ -1180,6 +1184,9 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $false when databases are found to add to the availability group' {
+
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockDatabaseNameParameter.Clone()
+                    
                     $databaseMembershipClass.Test() | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 2 -Exactly
@@ -1188,7 +1195,7 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $true when the configuration is in the desired state and the primary replica is on another server' {
-                    $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames.Clone()
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockAvailabilityDatabaseNames.Clone()
                     $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name
                     
                     $databaseMembershipClass.Test() | Should Be $true
@@ -1199,14 +1206,10 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Absent' {
-
-                BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Absent'
-                }
+            Context 'When the DatabaseNameToExclude property is set' {
 
                 It 'Should return $true when the configuration is in the desired state' {
-                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
+                    $databaseMembershipClass.DatabaseNameToExclude = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
                     
                     $databaseMembershipClass.Test() | Should Be $true
 
@@ -1216,7 +1219,7 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $true when no matching databases are found' {
-                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
+                    $databaseMembershipClass.DatabaseNameToExclude = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
                     
                     $databaseMembershipClass.Test() | Should Be $true
 
@@ -1226,6 +1229,8 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $false when databases are found to remove from the availability group' {
+                    $databaseMembershipClass.DatabaseNameToExclude = $mockDatabaseNameParameter.Clone()
+                    
                     $databaseMembershipClass.Test() | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 2 -Exactly
@@ -1234,7 +1239,7 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $true when the configuration is in the desired state and the primary replica is on another server' {
-                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
+                    $databaseMembershipClass.DatabaseNameToExclude = $mockDatabaseNameParameterWithNonExistingDatabases.Clone()
                     $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServer.Name
                     
                     $databaseMembershipClass.Test() | Should Be $true
@@ -1245,11 +1250,7 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Exactly' {
-
-                BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
-                }
+            Context 'When the DatabaseName property is set' {
 
                 It 'Should return $true when the configuration is in the desired state' {
                     $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames.Clone()
@@ -1272,6 +1273,8 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $false when databases are found to add to the availability group' {
+                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
+                    
                     $databaseMembershipClass.Test() | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 2 -Exactly
@@ -1280,6 +1283,8 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return $false when databases are found to remove from the availability group' {
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockDatabaseNameParameter.Clone()
+
                     $databaseMembershipClass.Test() | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 2 -Exactly
@@ -1307,7 +1312,8 @@ WITH NORECOVERY'
 
             BeforeEach {
                 $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
-                $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
+                $databaseMembershipClass.DatabaseName = @()
+                $databaseMembershipClass.DatabaseNameToInclude = @()
             }
 
             Context 'When invalid objects are passed to the method' {
@@ -1339,14 +1345,11 @@ WITH NORECOVERY'
                 }
             }
             
-            Context 'When Ensure is Present' {
-                
-                BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Present'
-                }
+            Context 'When the DatabaseNameToInclude property is set' {
                 
                 It 'Should return an array of database names to add when matches are found' {
 
+                    $databaseMembershipClass.DatabaseNameToInclude = $mockDatabaseNameParameter.Clone()
                     $results = $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
 
                     foreach ( $result in $results )
@@ -1358,8 +1361,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return an empty object when no matches are found' {
-
-                    $databaseMembershipClass.DatabaseName = @()
                     
                     $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject) | Should BeNullOrEmpty
 
@@ -1367,10 +1368,10 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When Ensure is Exactly' {
+            Context 'When the DatabaseName property is set' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
                 }
 
                 It 'Should return an array of database names to add when matches are found' {
@@ -1404,6 +1405,8 @@ WITH NORECOVERY'
             BeforeEach {
                 $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
                 $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
+                $databaseMembershipClass.DatabaseNameToExclude = @()
+                $databaseMembershipClass.DatabaseNameToInclude = @()
             }
 
             Context 'When invalid objects are passed to the method' {
@@ -1435,10 +1438,11 @@ WITH NORECOVERY'
                 }
             }
             
-            Context 'When Ensure is Absent' {
+            Context 'When the DatabaseNameToExclude property is set' {
                 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Absent'
+                    $databaseMembershipClass.DatabaseName = @()
+                    $databaseMembershipClass.DatabaseNameToExclude = $mockDatabaseNameParameter.Clone()
                 }
                 
                 It 'Should return an array of database names to remove when matches are found' {
@@ -1455,7 +1459,7 @@ WITH NORECOVERY'
 
                 It 'Should return an empty object when no matches are found' {
 
-                    $databaseMembershipClass.DatabaseName = @()
+                    $databaseMembershipClass.DatabaseNameToExclude = @()
                     
                     $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject) | Should BeNullOrEmpty
 
@@ -1463,11 +1467,7 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When Ensure is Exactly' {
-
-                BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
-                }
+            Context 'When the DatabaseName property is set' {
 
                 It 'Should return an array of database names to remove when matches are found' {
 
@@ -1479,71 +1479,6 @@ WITH NORECOVERY'
                     }
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
-                }
-
-                It 'Should return all of the databases in the availability group if no matches were found' {
-
-                    $databaseMembershipClass.DatabaseName = @()
-                    
-                    $results = $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
-
-                    # Ensure all of the results are in the Availability Databases
-                    foreach ( $result in $results )
-                    {
-                        $mockAvailabilityDatabaseNames -contains $result | Should Be $true
-                    }
-
-                    # Ensure all of the Availability Databases are in the results
-                    foreach ( $mockAvailabilityDatabaseName in $mockAvailabilityDatabaseNames )
-                    {
-                        $results -contains $mockAvailabilityDatabaseName | Should Be $true
-                    }
-
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
-                }
-            }
-        }
-
-        Describe 'xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership\GetMatchingDatabaseNames()' {
-            BeforeAll {
-                Mock -CommandName New-TerminatingError { $ErrorType } -Verifiable
-            }
-
-            BeforeEach {
-                $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
-                $databaseMembershipClass.DatabaseName = $mockDatabaseNameParameter.Clone()
-            }
-
-            Context 'When the GetMatchingDatabaseNames method is called' {
-
-                It 'Should throw the correct error when and invalid object type is passed to the method' {
-
-                    { $databaseMembershipClass.GetMatchingDatabaseNames($mockBadServerObject) } | Should Throw 'ParameterNotOfType'
-
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
-                }
-
-                It 'Should return an empty object when no matching databases are found' {
-                     
-                     $databaseMembershipClass.DatabaseName = @('DatabaseNotHere')
-
-                     $databaseMembershipClass.GetMatchingDatabaseNames($mockServerObject) | Should BeNullOrEmpty
-
-                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
-                }
-
-                It 'Should return an array of database names that match the defined databases' {
-                     
-                     $databaseMembershipClass.DatabaseName = @('DatabaseNotHere')
-                     
-                     $results = $databaseMembershipClass.GetMatchingDatabaseNames($mockServerObject)
-
-                     foreach ( $result in $results )
-                     {
-                         $mockPresentDatabaseNames -contains $result | Should Be $true
-                     }
-
-                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                 }
             }
         }

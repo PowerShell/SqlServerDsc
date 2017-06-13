@@ -2,7 +2,19 @@ SYNOPSIS
     Adds or removes databases to the specified availability group.
 
 PARAMETER DatabaseName
-    The name of the database(s) to add to the availability group. This accepts wildcards.
+    The name of the database(s) that should be members of the availability group. The availability 
+    group member database(s) are added and removed until they match the defined databases. This 
+    accepts wildcards.
+
+PARAMETER DatabaseNameToInclude
+    The name of the database(s) that should be added to the availability group. The defined 
+    database(s) are added to the availability group. All other databases that may be a member of 
+    the availability group are ignored. This accepts wildcards.
+
+PARAMETER DatabaseNameToExclude
+    The name of the database(s) that should be removed from the availability group. The defined 
+    database(s) are removed to the availability group. All other databases that may be a member of 
+    the availability group are ignored. This accepts wildcards.
 
 PARAMETER SQLServer
     Hostname of the SQL Server where the primary replica of the availability group lives. If the
@@ -20,18 +32,6 @@ PARAMETER AvailabilityGroupName
 PARAMETER BackupPath
     The path used to seed the availability group replicas. This should be a path that is accessible
     by all of the replicas.
-
-PARAMETER Ensure
-    Specifies the membership of the database(s) in the availability group. The options are:
-
-        - Present:  The defined database(s) are added to the availability group. All other
-                    databases that may be a member of the availability group are ignored.
-        - Absent:   The defined database(s) are removed from the availability group. All other
-                    databases that may be a member of the availability group are ignored.
-        - Exactly:  The availability group member database(s) are added and removed until they
-                    match the defined databases.
-
-    The default is 'Present'.
 
 PARAMETER MatchDatabaseOwner
     If set to $true, this ensures the database owner of the database on the primary replica is the

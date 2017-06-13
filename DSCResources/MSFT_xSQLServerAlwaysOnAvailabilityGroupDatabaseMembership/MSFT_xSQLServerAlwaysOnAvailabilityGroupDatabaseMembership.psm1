@@ -2,19 +2,20 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
 
-enum Ensure
-{
-    Absent
-    Exactly
-    Present
-}
-
 [DscResource()]
 class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 {
-    [DscProperty(Mandatory)]
+    [DscProperty()]
     [string[]]
     $DatabaseName
+
+    [DscProperty()]
+    [string[]]
+    $DatabaseNameToInclude
+
+    [DscProperty()]
+    [string[]]
+    $DatabaseNameToExclude
 
     [DscProperty(Key)]
     [string]
@@ -31,10 +32,6 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     [DscProperty(Mandatory)]
     [string]
     $BackupPath
-
-    [DscProperty()]
-    [Ensure]
-    $Ensure = [Ensure]::Present
 
     [DscProperty()]
     [bool]
@@ -439,10 +436,19 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         # Make sure we're communicating with the primary replica in order to make changes to the replica
         $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
 
-        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($primaryServerObject)
+        $matchingDatabaseNames = @()
+        foreach ( $dbName in ( $this.DatabaseName + $this.DatabaseNameToInclude ) )
+        {
+            $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+        }
+
         $databasesNotFoundOnTheInstance = @()
 
-        if ( ( @( [Ensure]::Present,[Ensure]::Exactly ) -contains $this.Ensure ) -and $matchingDatabaseNames.Count -eq 0 )
+        if
+        (
+            ( $this.DatabaseName.Count -gt 0 ) -and ( $matchingDatabaseNames.Count -eq 0 ) `
+            -or ( $this.DatabaseNameToInclude.Count -gt 0 ) -and ( $matchingDatabaseNames.Count -eq 0 ) 
+        )
         {
             $configurationInDesiredState = $false
             New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
@@ -452,7 +458,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             $databasesNotFoundOnTheInstance = $this.GetDatabaseNamesNotFoundOnTheInstance($matchingDatabaseNames)
 
             # If the databases specified are not present on the instance and the desired state is not Absent
-            if ( ( $databasesNotFoundOnTheInstance.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
+            if ( ( $databasesNotFoundOnTheInstance.Count -gt 0 ) -and ( $this.DatabaseNameToExclude.Count -eq 0 ) )
             {
                 $configurationInDesiredState = $false
                 New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $databasesNotFoundOnTheInstance -join ', ' ) )
@@ -508,13 +514,17 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
         }
         
-        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
+        $matchingDatabaseNames = @()
+        foreach ( $dbName in ( $this.DatabaseName + $this.DatabaseNameToInclude ) )
+        {
+            $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+        }
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
         $comparisonResult = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $databasesInAvailabilityGroup
         $databasesToAddToAvailabilityGroup = @()
 
-        if ( @([Ensure]::Present,[Ensure]::Exactly) -contains $this.Ensure )
+        if ( ( $this.DatabaseName.Count -gt 0 ) -or ( $this.DatabaseNameToInclude.Count -gt 0 ) )
         {
             $databasesToAddToAvailabilityGroup = $comparisonResult | Where-Object { $_.SideIndicator -eq '<=' } | Select-Object -ExpandProperty InputObject
         }
@@ -552,43 +562,35 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
         }
         
-        $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
+        $matchingDatabaseNames = @()
+
+        if ( $this.DatabaseName.Count -gt 0 )
+        {
+            # Find the databases that are not defined to be in the AG
+            $databaseNamesToKeep = @()
+            foreach ( $dbName in ( $this.DatabaseName ) )
+            {
+                $databaseNamesToKeep += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+            }
+            $matchingDatabaseNames = $serverObject.Databases | Where-Object { $databaseNamesToKeep -notcontains $_.Name } | Select-Object -ExpandProperty Name
+        }
+        elseif ( $this.DatabaseNameToExclude.Count -gt 0 )
+        {
+            # Find the databases that are explicitly specified to not be in the AG
+            foreach ( $dbName in ( $this.DatabaseNameToExclude ) )
+            {
+                $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+            }
+        }
+
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
         $comparisonResult = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $databasesInAvailabilityGroup -IncludeEqual
         $databasesToRemoveFromAvailabilityGroup = @()
 
-        if ( [Ensure]::Absent -eq $this.Ensure )
-        {
-            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
-        }
-        elseif ( [Ensure]::Exactly -eq $this.Ensure )
-        {
-            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
-        }
+        $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
     
         return $databasesToRemoveFromAvailabilityGroup
-    }
-    
-    hidden [string[]] GetMatchingDatabaseNames (
-        # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
-        [psobject]
-        $ServerObject
-    )
-    {
-        if ( $ServerObject.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
-        {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
-        }
-        
-        $matchingDatabaseNames = @()
-
-        foreach ( $dbName in $this.DatabaseName )
-        {
-            $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
-        }      
-
-        return $matchingDatabaseNames
     }
 
     hidden [string[]] GetDatabaseNamesNotFoundOnTheInstance (
@@ -597,7 +599,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     )
     {
         $databasesNotFoundOnTheInstance = @{}
-        foreach ( $dbName in $this.DatabaseName )
+        foreach ( $dbName in ( ( $this.DatabaseName + $this.DatabaseNameToInclude ) | Where-Object { -not [string]::IsNullOrEmpty($_) } ) )
         {
             # Assume the database name was not found
             $databaseNameNotFound = $true
