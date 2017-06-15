@@ -975,6 +975,22 @@ function Test-LoginEffectivePermissions
     return $permissionsPresent
 }
 
+<#
+    .SYNOPSIS
+        Determine if the seeding mode of the specified availability group is automatic.
+
+    .PARAMETER SQLServer
+        The hostname of the server that hosts the SQL instance.
+    
+    .PARAMETER SQLInstanceName
+        The name of the SQL instance that hosts the availability group.
+
+    .PARAMETER AvailabilityGroupName
+        The name of the availability group to check.
+
+    .PARAMETER AvailabilityReplicaName
+        The name of the availabilitiy replica to check.
+#>
 function Test-AvailabilityReplicaSeedingModeAutomatic
 {
     param
@@ -1033,6 +1049,16 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
     return $availabilityReplicaSeedingModeAutomatic
 }
 
+<#
+    .SYNOPSIS
+        Get the server object of the primary replica of the specified availability group.
+
+    .PARAMETER ServerObject
+        The current server object connection.
+    
+    .PARAMETER AvailabilityGroup
+        The availability group object used to find the primary replica server name.
+#>
 function Get-PrimaryReplicaServerObject
 {
     param
@@ -1057,6 +1083,13 @@ function Get-PrimaryReplicaServerObject
     return $primaryReplicaServerObject
 }
 
+<#
+    .SYNOPSIS
+        Determine if the current login has impersonate permissions
+
+    .PARAMETER ServerObject
+        The server object on which to perform the test.
+#>
 function Test-ImpersonatePermissions
 {
     param
