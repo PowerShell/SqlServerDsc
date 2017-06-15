@@ -366,9 +366,7 @@ WITH NORECOVERY'
             }
 
             Context 'When the Get method is called' {
-
                 It 'Should not return an availability group name or availability databases when the availability group does not exist' {
-
                     $databaseMembershipClass.AvailabilityGroupName = 'NonExistentAvailabilityGroup'
 
                     $result = $databaseMembershipClass.Get()
@@ -385,7 +383,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should not return any databases if there are no databases in the availability group' {
-                    
                     $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupWithoutDatabasesObject.Name
                     
                     $result = $databaseMembershipClass.Get()
@@ -402,7 +399,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return databases when there are databases in the availability group' {
-
                     $result = $databaseMembershipClass.Get()
 
                     $result.SqlServer | Should Be $databaseMembershipClass.SqlServer
@@ -428,7 +424,6 @@ WITH NORECOVERY'
         }
 
         Describe 'xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership\Set()' {
-
             BeforeAll {                
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server1' }
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServer2Object } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server2' }
@@ -443,7 +438,6 @@ WITH NORECOVERY'
             }
 
             BeforeEach {
-
                 $databaseMembershipClass = [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership]::New()
                 $databaseMembershipClass.DatabaseName = $($mockDatabaseNameParameter)
                 $databaseMembershipClass.SqlServer = $($mockServerObject.DomainInstanceName)
@@ -466,9 +460,7 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present' {
-
                 It 'Should add the specified databases to the availability group' {
-
                     { $databaseMembershipClass.Set() } | Should Not Throw
 
                     Assert-MockCalled -CommandName Add-SqlAvailabilityDatabase -Scope It -Times 1 -Exactly -ParameterFilter { $InputObject.PrimaryReplicaServerName -eq 'Server1' -and $InputObject.LocalReplicaRole -eq 'Primary' }
@@ -495,7 +487,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should add the specified databases to the availability group when the primary replica is on another server' {
-
                     $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServerName
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
@@ -524,7 +515,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should not do anything if no databases were found to add' {
-
                     $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
@@ -553,7 +543,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should add the specified databases to the availability group when "MatchDatabaseOwner" is $false' {
-
                     $databaseMembershipClass.MatchDatabaseOwner = $false
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
@@ -582,7 +571,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "ImpersonatePermissionsMissing" when "MatchDatabaseOwner" is $true and the current login does not have impersonate permissions' {
-
                     Mock -CommandName Test-ImpersonatePermissions -MockWith { $false } -Verifiable
 
                     { $databaseMembershipClass.Set() } | Should Throw 'ImpersonatePermissionsMissing'
@@ -622,7 +610,6 @@ WITH NORECOVERY'
                 foreach ( $prerequisiteCheck in $prerequisiteChecks.GetEnumerator() )
                 {
                     It "Should throw the correct error 'AlterAvailabilityGroupDatabaseMembershipFailure' when the database property '$($prerequisiteCheck.Key)' is not '$($prerequisiteCheck.Value)'" {
-
                         $originalValue = $mockServerObject.Databases['DB1'].($prerequisiteCheck.Key)
                         $mockServerObject.Databases['DB1'].($prerequisiteCheck.Key) = $true
                         
@@ -667,7 +654,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when the database property "ID" is less than "4"' {
-
                     $databaseMembershipClass.DatabaseName = @('master')
 
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -704,7 +690,6 @@ WITH NORECOVERY'
                 foreach ( $filestreamProperty in $filestreamProperties.GetEnumerator() )
                 {
                     It "Should throw the correct error 'AlterAvailabilityGroupDatabaseMembershipFailure' when the database property '$($filestreamProperty.Key)' is not '$($filestreamProperty.Value)'" {
-
                         $originalValue = $mockServerObject.Databases['DB1'].($filestreamProperty.Key)
                         $mockServerObject.Databases['DB1'].($filestreamProperty.Key) = 'On'
 
@@ -737,7 +722,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when the database property "ContainmentType" is not "Partial"' {
-
                     $originalValue = $mockServerObject.Databases['DB1'].ContainmentType
                     $mockServerObject.Databases['DB1'].ContainmentType = 'Partial'
 
@@ -769,7 +753,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when the database file path does not exist on the secondary replica' {
-
                     Mock -CommandName Invoke-Query -MockWith $mockResultInvokeQueryFileNotExist -Verifiable -ParameterFilter { $Query -like 'EXEC master.dbo.xp_fileexist *' }
                     $originalValue = $mockServer2Object.Databases['DB1'].FileGroups.Files.FileName
                     $mockServer2Object.Databases['DB1'].FileGroups.Files.FileName = ( [IO.Path]::Combine( 'X:\', "DB1.mdf" ) )
@@ -802,7 +785,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when the log file path does not exist on the secondary replica' {
-
                     Mock -CommandName Invoke-Query -MockWith $mockResultInvokeQueryFileNotExist -Verifiable -ParameterFilter { $Query -like 'EXEC master.dbo.xp_fileexist *' }
                     $originalValue = $mockServer2Object.Databases['DB1'].LogFiles.FileName
                     $mockServer2Object.Databases['DB1'].LogFiles.FileName = ( [IO.Path]::Combine( 'Y:\', "DB1.ldf" ) )
@@ -835,7 +817,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when TDE is enabled on the database but the certificate is not present on the replica instances' {
-
                     $mockServerObject.Databases['DB1'].EncryptionEnabled = $true
                     $mockServerObject.Databases['DB1'].DatabaseEncryptionKey = $mockDatabaseEncryptionKeyObject
                     $mockServer2Object.Databases['master'].Certificates = @($mockCertificateObject2)
@@ -870,7 +851,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should add the specified databases to the availability group when the database has not been previously backed up' {
-
                     $mockServerObject.Databases['DB1'].LastBackupDate = 0
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
@@ -899,7 +879,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when it fails to perform a full backup' {
-
                     Mock -CommandName Backup-SqlDatabase -MockWith { throw } -Verifiable -ParameterFilter { $BackupAction -eq 'Database' }
                     
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -928,7 +907,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when it fails to perform a log backup' {
-
                     Mock -CommandName Backup-SqlDatabase -MockWith { throw } -Verifiable -ParameterFilter { $BackupAction -eq 'Log' }
                     
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -957,7 +935,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when it fails to add the database to the primary replica' {
-                    
                     Mock -CommandName Add-SqlAvailabilityDatabase -MockWith { throw } -Verifiable -ParameterFilter { $InputObject.PrimaryReplicaServerName -eq 'Server1' -and $InputObject.LocalReplicaRole -eq 'Primary' }
                     
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -986,7 +963,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when it fails to add the database to the primary replica' {
-                    
                     Mock -CommandName Add-SqlAvailabilityDatabase -MockWith { throw } -Verifiable -ParameterFilter { $InputObject.PrimaryReplicaServerName -eq 'Server1' -and $InputObject.LocalReplicaRole -eq 'Secondary' }
                     
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -1016,13 +992,11 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Absent' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Absent'
                 }
                 
                 It 'Should remove the specified databases to the availability group(s)' {
-
                     { $databaseMembershipClass.Set() } | Should Not Throw
 
                     Assert-MockCalled -CommandName Add-SqlAvailabilityDatabase -Scope It -Times 0 -Exactly -ParameterFilter { $InputObject.PrimaryReplicaServerName -eq 'Server1' -and $InputObject.LocalReplicaRole -eq 'Primary' }
@@ -1049,7 +1023,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should remove the specified databases to the availability group(s) when the primary replica is on another server' {
-
                     $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObjectWithPrimaryReplicaOnAnotherServerName
                     
                     { $databaseMembershipClass.Set() } | Should Not Throw
@@ -1078,7 +1051,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should throw the correct error "AlterAvailabilityGroupDatabaseMembershipFailure" when it fails to remove the database from the availability group' {
-
                     Mock -CommandName Remove-SqlAvailabilityDatabase -MockWith { throw } -Verifiable
 
                     { $databaseMembershipClass.Set() } | Should Throw 'AlterAvailabilityGroupDatabaseMembershipFailure'
@@ -1108,14 +1080,12 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present and Force is True' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Present'
                     $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should ensure the database membership of the availability group is exactly as specified' {
-
                     { $databaseMembershipClass.Set() } | Should Not Throw
 
                     Assert-MockCalled -CommandName Add-SqlAvailabilityDatabase -Scope It -Times 1 -Exactly -ParameterFilter { $InputObject.PrimaryReplicaServerName -eq 'Server1' -and $InputObject.LocalReplicaRole -eq 'Primary' }
@@ -1159,7 +1129,6 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present' {
-
                 It 'Should return $true when the configuration is in the desired state' {
                     $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames.Clone()
                     
@@ -1201,7 +1170,6 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Absent' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Absent'
                 }
@@ -1247,7 +1215,6 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present and Force is True' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Present'
                     $databaseMembershipClass.Force = $true
@@ -1313,9 +1280,7 @@ WITH NORECOVERY'
             }
 
             Context 'When invalid objects are passed to the method' {
-
                 It 'Should throw the correct error when an empty object is passed to the ServerObject property of the method' {
-
                     { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($null,$mockAvailabilityGroupObject) } | Should Throw 'ParameterNullOrEmpty'
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
@@ -1328,7 +1293,6 @@ WITH NORECOVERY'
                 }
                 
                 It 'Should throw the correct error when an invalid object is passed to the ServerObject property of the method' {
-
                     { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockBadServerObject,$mockAvailabilityGroupObject) } | Should Throw 'ParameterNotOfType'
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
@@ -1342,13 +1306,11 @@ WITH NORECOVERY'
             }
             
             Context 'When Ensure is Present' {
-                
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Present'
                 }
                 
                 It 'Should return an array of database names to add when matches are found' {
-
                     $results = $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
 
                     foreach ( $result in $results )
@@ -1360,7 +1322,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return an empty object when no matches are found' {
-
                     $databaseMembershipClass.DatabaseName = @()
                     
                     $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject) | Should BeNullOrEmpty
@@ -1370,14 +1331,12 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present and Force is True' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Present'
                     $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should return an array of database names to add when matches are found' {
-
                     $results = $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
 
                     foreach ( $result in $results )
@@ -1389,7 +1348,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return all of the databases in the availability group if no matches were found' {
-
                     $databaseMembershipClass.DatabaseName = @()
 
                     $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject) | Should BeNullOrEmpty
@@ -1410,9 +1368,7 @@ WITH NORECOVERY'
             }
 
             Context 'When invalid objects are passed to the method' {
-
                 It 'Should throw the correct error when an empty object is passed to the ServerObject property of the method' {
-
                     { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($null,$mockAvailabilityGroupObject) } | Should Throw 'ParameterNullOrEmpty'
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
@@ -1425,7 +1381,6 @@ WITH NORECOVERY'
                 }
                 
                 It 'Should throw the correct error when an invalid object is passed to the ServerObject property of the method' {
-
                     { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockBadServerObject,$mockAvailabilityGroupObject) } | Should Throw 'ParameterNotOfType'
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
@@ -1439,13 +1394,11 @@ WITH NORECOVERY'
             }
             
             Context 'When Ensure is Absent' {
-                
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Absent'
                 }
                 
                 It 'Should return an array of database names to remove when matches are found' {
-
                     $results = $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
 
                     foreach ( $result in $results )
@@ -1457,7 +1410,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return an empty object when no matches are found' {
-
                     $databaseMembershipClass.DatabaseName = @()
                     
                     $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject) | Should BeNullOrEmpty
@@ -1467,14 +1419,12 @@ WITH NORECOVERY'
             }
 
             Context 'When Ensure is Present and Force is True' {
-
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Present'
                     $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should return an array of database names to remove when matches are found' {
-
                     $results = $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
 
                     foreach ( $result in $results )
@@ -1486,7 +1436,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return all of the databases in the availability group if no matches were found' {
-
                     $databaseMembershipClass.DatabaseName = @()
                     
                     $results = $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockAvailabilityGroupObject)
@@ -1519,16 +1468,13 @@ WITH NORECOVERY'
             }
 
             Context 'When the GetMatchingDatabaseNames method is called' {
-
                 It 'Should throw the correct error when and invalid object type is passed to the method' {
-
                     { $databaseMembershipClass.GetMatchingDatabaseNames($mockBadServerObject) } | Should Throw 'ParameterNotOfType'
 
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                 }
 
                 It 'Should return an empty object when no matching databases are found' {
-                     
                      $databaseMembershipClass.DatabaseName = @('DatabaseNotHere')
 
                      $databaseMembershipClass.GetMatchingDatabaseNames($mockServerObject) | Should BeNullOrEmpty
@@ -1537,7 +1483,6 @@ WITH NORECOVERY'
                 }
 
                 It 'Should return an array of database names that match the defined databases' {
-                     
                      $databaseMembershipClass.DatabaseName = @('DatabaseNotHere')
                      
                      $results = $databaseMembershipClass.GetMatchingDatabaseNames($mockServerObject)
@@ -1553,9 +1498,7 @@ WITH NORECOVERY'
         }
 
         Describe 'xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership\GetDatabaseNamesNotFoundOnTheInstance()' {
-
             Context 'When the GetDatabaseNamesNotFoundOnTheInstance method is called' {
-
                 BeforeAll {
                     # The defined databases that should be identified as missing
                     $mockMissingDatabases = @(

@@ -105,7 +105,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
             # Get only the secondary replicas. Some tests do not need to be performed on the primary replica
-            $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object { $_.Role -ne 'Primary' }
+            $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object -FilterScript { $_.Role -ne 'Primary' }
             
             # Ensure the appropriate permissions are in place on all the replicas
             if ( $this.MatchDatabaseOwner )
@@ -127,7 +127,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         ErrorType = 'ImpersonatePermissionsMissing'
                         FormatArgs = @(
                             [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-                            ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
+                            ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object -FilterScript { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
                         )
                         ErrorCategory = 'SecurityError'
                     }
@@ -371,7 +371,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                             Invoke-Query -SQLServer $currentAvailabilityGroupReplicaServerObject.NetName -SQLInstanceName $currentAvailabilityGroupReplicaServerObject.ServiceName -Database master -Query $restoreDatabaseQueryString
                             Restore-SqlDatabase -InputObject $currentAvailabilityGroupReplicaServerObject @restoreSqlDatabaseLogParams
 
-                            # Add the database to the AG
+                            # Add the database to the AvailabilityGroup
                             Add-SqlAvailabilityDatabase -InputObject $currentReplicaAvailabilityGroupObject -Database $databaseName
                         }
                     }
@@ -483,11 +483,11 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
     hidden [string[]] GetDatabasesToAddToAvailabilityGroup (
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
-        [psobject]
+        [PSObject]
         $ServerObject,
 
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.AvailabilityGroup] so that Get-DSCResource will work properly
-        [psobject]
+        [PSObject]
         $AvailabilityGroup
     )
     {
@@ -519,7 +519,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         if ( $this.Ensure -eq [Ensure]::Present )
         {
-            $databasesToAddToAvailabilityGroup = $comparisonResult | Where-Object { $_.SideIndicator -eq '<=' } | Select-Object -ExpandProperty InputObject
+            $databasesToAddToAvailabilityGroup = $comparisonResult | Where-Object -FilterScript { $_.SideIndicator -eq '<=' } | Select-Object -ExpandProperty InputObject
         }
 
         return $databasesToAddToAvailabilityGroup
@@ -563,11 +563,11 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         if ( [Ensure]::Absent -eq $this.Ensure )
         {
-            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
+            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object -FilterScript { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
         }
         elseif ( ( [Ensure]::Present -eq $this.Ensure ) -and ( $this.Force ) )
         {
-            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
+            $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object -FilterScript { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
         }
     
         return $databasesToRemoveFromAvailabilityGroup
@@ -588,7 +588,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         foreach ( $dbName in $this.DatabaseName )
         {
-            $matchingDatabaseNames += $ServerObject.Databases | Where-Object { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
+            $matchingDatabaseNames += $ServerObject.Databases | Where-Object -FilterScript { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
         }      
 
         return $matchingDatabaseNames
@@ -617,7 +617,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             $databasesNotFoundOnTheInstance.Add($dbName,$databaseNameNotFound)
         }
 
-        $result = $databasesNotFoundOnTheInstance.GetEnumerator() | Where-Object { $_.Value } | Select-Object -ExpandProperty Key
+        $result = $databasesNotFoundOnTheInstance.GetEnumerator() | Where-Object -FilterScript { $_.Value } | Select-Object -ExpandProperty Key
 
         return $result
     }
