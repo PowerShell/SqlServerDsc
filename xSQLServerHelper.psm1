@@ -1115,3 +1115,36 @@ function Test-ImpersonatePermissions
 
     return $impersonatePermissionsPresent
 }
+
+<#
+    .SYNOPSIS
+        Takes a SQL Instance name in the format of 'Server\Instance' and splits it into a hash table prepared to be passed into Connect-SQL.
+
+    .PARAMETER FullSQLInstanceName
+        The full SQL instance name string to be split.
+    
+    .OUTPUTS
+        Hashtable with the properties SQLServer and SQLInstanceName.
+#>
+function Split-FullSQLInstanceName
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FullSQLInstanceName
+    )
+
+    $sqlServer,$sqlInstanceName = $FullSQLInstanceName.Split('\')
+
+    if ( [System.String]::IsNullOrEmpty($sqlInstanceName) )
+    {
+        $sqlInstanceName = 'MSSQLSERVER'
+    }
+
+    return @{
+        SQLServer = $sqlServer
+        SQLInstanceName = $sqlInstanceName
+    }
+}

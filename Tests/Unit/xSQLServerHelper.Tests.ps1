@@ -848,7 +848,7 @@ InModuleScope $script:moduleName {
                 }
             }
         }
-        
+
         Assert-VerifiableMocks
     }
 
@@ -886,7 +886,7 @@ InModuleScope $script:moduleName {
                 [string]
                 $SQLInstanceName
             )
-            
+
             $mock = @(
                 (
                     New-Object Object |
@@ -914,7 +914,7 @@ InModuleScope $script:moduleName {
 
             It 'Should return the same server object that was supplied when the PrimaryReplicaServerNameProperty is empty' {
                 $mockAvailabilityGroup.PrimaryReplicaServerName = ''
-                
+
                 $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup
 
                 $result.DomainInstanceName | Should Be $mockServerObject.DomainInstanceName
@@ -927,7 +927,7 @@ InModuleScope $script:moduleName {
         Context 'When the supplied server object is not the primary replica' {
             It 'Should the server object of the primary replica' {
                 $mockAvailabilityGroup.PrimaryReplicaServerName = 'Server2'
-                
+
                 $result = Get-PrimaryReplicaServerObject -ServerObject $mockServerObject -AvailabilityGroup $mockAvailabilityGroup
 
                 $result.DomainInstanceName | Should Not Be $mockServerObject.DomainInstanceName
@@ -939,7 +939,7 @@ InModuleScope $script:moduleName {
     }
 
     Describe 'Testing Test-AvailabilityReplicaSeedingModeAutomatic' {
-        
+
         BeforeEach {
             $mockSqlVersion = 13
             $mockConnectSql = {
@@ -953,7 +953,7 @@ InModuleScope $script:moduleName {
                     [string]
                     $SQLInstanceName
                 )
-                
+
                 $mock = @(
                     (
                         New-Object Object |
@@ -977,7 +977,7 @@ InModuleScope $script:moduleName {
                     }
                 }
             }
-            
+
             Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             Mock -CommandName Invoke-Query -MockWith $mockInvokeQuery -Verifiable
         }
@@ -995,7 +995,7 @@ InModuleScope $script:moduleName {
             {
                 It ( 'Should return $false when the instance version is {0}' -f $instanceVersion ) {
                     $mockSqlVersion = $instanceVersion
-                    
+
                     Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -1008,7 +1008,7 @@ InModuleScope $script:moduleName {
             {
                 It ( 'Should return $false when the instance version is {0} and the replica seeding mode is manual' -f $instanceVersion ) {
                     $mockSqlVersion = $instanceVersion
-                    
+
                     Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -1024,7 +1024,7 @@ InModuleScope $script:moduleName {
                 It ( 'Should return $true when the instance version is {0} and the replica seeding mode is automatic' -f $instanceVersion ) {
                     $mockSqlVersion = $instanceVersion
                     $mockSeedingMode = 'Automatic'
-                    
+
                     Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should Be $true
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
@@ -1037,15 +1037,15 @@ InModuleScope $script:moduleName {
     Describe 'Testing Test-ImpersonatePermissions' {
         $mockConnectionContextObject = New-Object Microsoft.SqlServer.Management.Smo.ConnectionContext
         $mockConnectionContextObject.TrueLogin = 'Login1'
-        
+
         $mockServerObject = New-Object Microsoft.SqlServer.Management.Smo.Server
         $mockServerObject.ComputerNamePhysicalNetBIOS = 'Server1'
         $mockServerObject.ServiceName = 'MSSQLSERVER'
         $mockServerObject.ConnectionContext = $mockConnectionContextObject
-        
+
         Context 'When impersonate permissions are present for the login' {
             Mock -CommandName Test-LoginEffectivePermissions -MockWith { $true }
-            
+
             It 'Should return true when the impersonate permissions are present for the login'{
                 Test-ImpersonatePermissions -ServerObject $mockServerObject | Should Be $true
 
@@ -1058,7 +1058,7 @@ InModuleScope $script:moduleName {
 
             It 'Should return false when the impersonate permissions are missing for the login'{
                 Test-ImpersonatePermissions -ServerObject $mockServerObject | Should Be $false
-                
+
                 Assert-MockCalled -CommandName Test-LoginEffectivePermissions -Scope It -Times 1 -Exactly
             }
         }
@@ -1471,5 +1471,33 @@ InModuleScope $script:moduleName {
         }
 
         Assert-VerifiableMocks
+    Describe 'Testing Split-FullSQLInstanceName' {
+        Context 'When the "FullSQLInstanceName" parameter is not supplied' {
+            It 'Should throw when the "FullSQLInstanceName" parameter is $null' {
+                { Split-FullSQLInstanceName -FullSQLInstanceName $null } | Should throw
+            }
+
+            It 'Should throw when the "FullSQLInstanceName" parameter is an empty string' {
+                { Split-FullSQLInstanceName -FullSQLInstanceName '' } | Should throw
+            }
+        }
+
+        Context 'When the "FullSQLInstanceName" parameter is supplied' {
+            It 'Should throw when the "FullSQLInstanceName" parameter is "ServerName"' {
+                $result = Split-FullSQLInstanceName -FullSQLInstanceName 'ServerName'
+
+                $result.Count | Should Be 2
+                $result.SQLServer | Should Be 'ServerName'
+                $result.SQLInstanceName | Should Be 'MSSQLSERVER'
+            }
+
+            It 'Should throw when the "FullSQLInstanceName" parameter is "ServerName\InstanceName"' {
+                $result = Split-FullSQLInstanceName -FullSQLInstanceName 'ServerName\InstanceName'
+
+                $result.Count | Should Be 2
+                $result.SQLServer | Should Be 'ServerName'
+                $result.SQLInstanceName | Should Be 'InstanceName'
+            }
+        }
     }
 }
