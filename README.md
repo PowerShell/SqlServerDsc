@@ -73,6 +73,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 * [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases.
 * [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup) resource to ensure an availability group is present or absent.
+* [**xSQLServerAlwayOnAvailabilityGroupDatabaseMembership**](#xsqlserveralwaysonavailabilitygroupdatabasemembership) to manage the database membership in Availability Groups.
 * [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica) resource to ensure an availability group replica is present or absent.
 * [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable always on on a SQL Server.
 * [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener) Create or remove an availability group listener.
