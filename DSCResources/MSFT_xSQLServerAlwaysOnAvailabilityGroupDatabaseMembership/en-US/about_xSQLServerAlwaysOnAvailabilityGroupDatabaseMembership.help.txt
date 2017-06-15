@@ -28,10 +28,14 @@ PARAMETER Ensure
                     databases that may be a member of the availability group are ignored.
         - Absent:   The defined database(s) are removed from the availability group. All other
                     databases that may be a member of the availability group are ignored.
-        - Exactly:  The availability group member database(s) are added and removed until they
-                    match the defined databases.
 
     The default is 'Present'.
+
+PARAMETER Force
+    When used with "Ensure = 'Present'" it ensures the specified database(s) are the only databases
+    that are a member of the specified Availability Group.
+    
+    This parameter is ignored when 'Ensure' is 'Absent'.
 
 PARAMETER MatchDatabaseOwner
     If set to $true, this ensures the database owner of the database on the primary replica is the

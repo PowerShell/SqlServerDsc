@@ -465,7 +465,7 @@ WITH NORECOVERY'
                 Mock -CommandName Test-ImpersonatePermissions -MockWith { $true } -Verifiable
             }
 
-            Context 'When the desired state is Present' {
+            Context 'When Ensure is Present' {
 
                 It 'Should add the specified databases to the availability group' {
 
@@ -1015,7 +1015,7 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Absent' {
+            Context 'When Ensure is Absent' {
 
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Absent'
@@ -1107,10 +1107,11 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Exactly' {
+            Context 'When Ensure is Present and Force is True' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.Ensure = 'Present'
+                    $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should ensure the database membership of the availability group is exactly as specified' {
@@ -1157,7 +1158,7 @@ WITH NORECOVERY'
                 $databaseMembershipClass.AvailabilityGroupName = $mockAvailabilityGroupObject.Name
             }
 
-            Context 'When the desired state is Present' {
+            Context 'When Ensure is Present' {
 
                 It 'Should return $true when the configuration is in the desired state' {
                     $databaseMembershipClass.DatabaseName = $mockAvailabilityDatabaseNames.Clone()
@@ -1199,7 +1200,7 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Absent' {
+            Context 'When Ensure is Absent' {
 
                 BeforeEach {
                     $databaseMembershipClass.Ensure = 'Absent'
@@ -1245,10 +1246,11 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When the desired state is Exactly' {
+            Context 'When Ensure is Present and Force is True' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.Ensure = 'Present'
+                    $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should return $true when the configuration is in the desired state' {
@@ -1367,10 +1369,11 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When Ensure is Exactly' {
+            Context 'When Ensure is Present and Force is True' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.Ensure = 'Present'
+                    $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should return an array of database names to add when matches are found' {
@@ -1463,10 +1466,11 @@ WITH NORECOVERY'
                 }
             }
 
-            Context 'When Ensure is Exactly' {
+            Context 'When Ensure is Present and Force is True' {
 
                 BeforeEach {
-                    $databaseMembershipClass.Ensure = 'Exactly'
+                    $databaseMembershipClass.Ensure = 'Present'
+                    $databaseMembershipClass.Force = $true
                 }
 
                 It 'Should return an array of database names to remove when matches are found' {

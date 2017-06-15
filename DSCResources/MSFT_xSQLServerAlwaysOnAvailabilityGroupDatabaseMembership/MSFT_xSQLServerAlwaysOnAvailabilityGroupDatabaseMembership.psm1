@@ -5,7 +5,6 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 enum Ensure
 {
     Absent
-    Exactly
     Present
 }
 
@@ -13,23 +12,23 @@ enum Ensure
 class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 {
     [DscProperty(Mandatory)]
-    [string[]]
+    [System.String[]]
     $DatabaseName
 
     [DscProperty(Key)]
-    [string]
+    [System.String]
     $SQLServer
 
     [DscProperty(Key)]
-    [string]
+    [System.String]
     $SQLInstanceName
 
     [DscProperty(Key)]
-    [string]
+    [System.String]
     $AvailabilityGroupName
 
     [DscProperty(Mandatory)]
-    [string]
+    [System.String]
     $BackupPath
 
     [DscProperty()]
@@ -37,7 +36,11 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     $Ensure = [Ensure]::Present
 
     [DscProperty()]
-    [bool]
+    [Bool]
+    $Force
+
+    [DscProperty()]
+    [Bool]
     $MatchDatabaseOwner = $true
     
     [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership] Get()
@@ -442,7 +445,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($primaryServerObject)
         $databasesNotFoundOnTheInstance = @()
 
-        if ( ( @( [Ensure]::Present,[Ensure]::Exactly ) -contains $this.Ensure ) -and $matchingDatabaseNames.Count -eq 0 )
+        if ( ( $this.Ensure -eq [Ensure]::Present ) -and $matchingDatabaseNames.Count -eq 0 )
         {
             $configurationInDesiredState = $false
             New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
@@ -514,7 +517,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $comparisonResult = Compare-Object -ReferenceObject $matchingDatabaseNames -DifferenceObject $databasesInAvailabilityGroup
         $databasesToAddToAvailabilityGroup = @()
 
-        if ( @([Ensure]::Present,[Ensure]::Exactly) -contains $this.Ensure )
+        if ( $this.Ensure -eq [Ensure]::Present )
         {
             $databasesToAddToAvailabilityGroup = $comparisonResult | Where-Object { $_.SideIndicator -eq '<=' } | Select-Object -ExpandProperty InputObject
         }
@@ -562,7 +565,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         {
             $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '==' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
         }
-        elseif ( [Ensure]::Exactly -eq $this.Ensure )
+        elseif ( ( [Ensure]::Present -eq $this.Ensure ) -and ( $this.Force ) )
         {
             $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
         }
