@@ -178,7 +178,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     $availbilityReplicaFilestreamLevel = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
-                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
                         $availbilityReplicaFilestreamLevel.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.FilestreamLevel)
                     }
 
@@ -194,7 +195,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     $availbilityReplicaContainmentEnabled = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
-                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
                         $availbilityReplicaContainmentEnabled.Add($availabilityGroupReplica.Name, $currentAvailabilityGroupReplicaServerObject.Configuration.ContainmentEnabled.ConfigValue)
                     }
 
@@ -213,7 +215,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 $availabilityReplicaMissingDirectories = @{}
                 foreach ( $availabilityGroupReplica in $secondaryReplicas )
                 {
-                    $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                    $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
+                    $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
                     
                     $missingDirectories = @()
                     foreach ( $databaseFileDirectory in $databaseFileDirectories )
@@ -250,7 +253,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     $availabilityReplicaMissingCertificates = @{}
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
-                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                        $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
+                        $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
                         [Array]$installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
 
                         if ( $installedCertificateThumbprints -notcontains $databaseCertificateThumbprint )
@@ -364,7 +368,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         foreach ( $availabilityGroupReplica in $secondaryReplicas )
                         {
                             # Connect to the replica
-                            $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
+                            $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
+                            $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
                             $currentReplicaAvailabilityGroupObject = $currentAvailabilityGroupReplicaServerObject.AvailabilityGroups[$this.AvailabilityGroupName]
 
                             # Restore the database

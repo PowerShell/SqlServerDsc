@@ -1018,4 +1018,34 @@ InModuleScope $script:moduleName {
             }
         }
     }
+
+    Describe 'Testing Split-FullSQLInstanceName' {
+        Context 'When the "FullSQLInstanceName" parameter is not supplied' {
+            It 'Should throw when the "FullSQLInstanceName" parameter is $null' {
+                { Split-FullSQLInstanceName -FullSQLInstanceName $null } | Should throw
+            }
+
+            It 'Should throw when the "FullSQLInstanceName" parameter is an empty string' {
+                { Split-FullSQLInstanceName -FullSQLInstanceName '' } | Should throw
+            }
+        }
+
+        Context 'When the "FullSQLInstanceName" parameter is supplied' {
+            It 'Should throw when the "FullSQLInstanceName" parameter is "ServerName"' {
+                $result = Split-FullSQLInstanceName -FullSQLInstanceName 'ServerName'
+
+                $result.Count | Should Be 2
+                $result.SQLServer | Should Be 'ServerName'
+                $result.SQLInstanceName | Should Be 'MSSQLSERVER'
+            }
+
+            It 'Should throw when the "FullSQLInstanceName" parameter is "ServerName\InstanceName"' {
+                $result = Split-FullSQLInstanceName -FullSQLInstanceName 'ServerName\InstanceName'
+
+                $result.Count | Should Be 2
+                $result.SQLServer | Should Be 'ServerName'
+                $result.SQLInstanceName | Should Be 'InstanceName'
+            }
+        }
+    }
 }
