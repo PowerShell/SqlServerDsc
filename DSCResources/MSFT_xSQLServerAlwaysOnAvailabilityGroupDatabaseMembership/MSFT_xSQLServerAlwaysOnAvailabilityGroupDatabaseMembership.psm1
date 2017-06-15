@@ -73,7 +73,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $currentConfiguration
     }
 
-    [void] Set()
+    [Void] Set()
     {        
         # Connect to the defined instance
         $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
@@ -170,8 +170,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
                 # If FILESTREAM is enabled, ensure FILESTREAM is enabled on all replica instances
                 if (
-                    ( -not [string]::IsNullOrEmpty($database.DefaultFileStreamFileGroup) ) `
-                    -or ( -not [string]::IsNullOrEmpty($database.FilestreamDirectoryName) ) `
+                    ( -not [System.String]::IsNullOrEmpty($database.DefaultFileStreamFileGroup) ) `
+                    -or ( -not [System.String]::IsNullOrEmpty($database.FilestreamDirectoryName) ) `
                     -or ( $database.FilestreamNonTransactedAccess -ne 'Off' )
                 )
                 {
@@ -251,7 +251,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     foreach ( $availabilityGroupReplica in $secondaryReplicas )
                     {
                         $currentAvailabilityGroupReplicaServerObject = Connect-SQL -SQLServer $availabilityGroupReplica.Name
-                        [array]$installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
+                        [Array]$installedCertificateThumbprints = $currentAvailabilityGroupReplicaServerObject.Databases['master'].Certificates | ForEach-Object { [System.BitConverter]::ToString($_.Thumbprint) }
 
                         if ( $installedCertificateThumbprints -notcontains $databaseCertificateThumbprint )
                         {
@@ -428,7 +428,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         }
     }
 
-    [bool] Test()
+    [Bool] Test()
     {
         $configurationInDesiredState = $true
         $currentConfiguration = $this.Get()
@@ -481,7 +481,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $configurationInDesiredState
     }
 
-    hidden [string[]] GetDatabasesToAddToAvailabilityGroup (
+    hidden [System.String[]] GetDatabasesToAddToAvailabilityGroup (
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
         [PSObject]
         $ServerObject,
@@ -491,12 +491,12 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $AvailabilityGroup
     )
     {
-        if ( ( $ServerObject -eq $null ) -or ( [string]::IsNullOrEmpty($ServerObject) ) )
+        if ( ( $ServerObject -eq $null ) -or ( [System.String]::IsNullOrEmpty($ServerObject) ) )
         {
             throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
         }
 
-        if ( ( $AvailabilityGroup -eq $null ) -or ( [string]::IsNullOrEmpty($AvailabilityGroup) ) )
+        if ( ( $AvailabilityGroup -eq $null ) -or ( [System.String]::IsNullOrEmpty($AvailabilityGroup) ) )
         {
             throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
         }
@@ -525,17 +525,17 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $databasesToAddToAvailabilityGroup
     }
 
-    hidden [string[]] GetDatabasesToRemoveFromAvailabilityGroup (
+    hidden [System.String[]] GetDatabasesToRemoveFromAvailabilityGroup (
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
-        [psobject]
+        [PSObject]
         $ServerObject,
 
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.AvailabilityGroup] so that Get-DSCResource will work properly
-        [psobject]
+        [PSObject]
         $AvailabilityGroup
     )
     {
-        if ( ( $ServerObject -eq $null ) -or ( [string]::IsNullOrEmpty($ServerObject) ) )
+        if ( ( $ServerObject -eq $null ) -or ( [System.String]::IsNullOrEmpty($ServerObject) ) )
         {
             throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
         }
@@ -573,9 +573,9 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $databasesToRemoveFromAvailabilityGroup
     }
     
-    hidden [string[]] GetMatchingDatabaseNames (
+    hidden [System.String[]] GetMatchingDatabaseNames (
         # Using psobject here rather than [Microsoft.SqlServer.Management.Smo.Server] so that Get-DSCResource will work properly
-        [psobject]
+        [PSObject]
         $ServerObject
     )
     {
@@ -594,8 +594,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         return $matchingDatabaseNames
     }
 
-    hidden [string[]] GetDatabaseNamesNotFoundOnTheInstance (
-        [string[]]
+    hidden [System.String[]] GetDatabaseNamesNotFoundOnTheInstance (
+        [System.String[]]
         $MatchingDatabaseNames
     )
     {
