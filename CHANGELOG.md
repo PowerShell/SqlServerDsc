@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- Added new resource
-  - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 - **BREAKING CHANGE: The module now requires WMF 5.**
   - This is required for class-based resources
+- Added new resource
+  - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 - Changes to xSQLServerRSConfig
   - BREAKING CHANGE: Removed `$SQLAdminCredential` parameter. Use common parameter `PsDscRunAsCredential` (WMF 5.0+) to run
     the resource under different credentials. `PsDscRunAsCredential` Windows account must be a sysadmin on SQL Server
