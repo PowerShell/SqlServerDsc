@@ -356,7 +356,7 @@ function New-TerminatingError
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $ErrorType,
 
         [Parameter(Mandatory = $false)]
@@ -436,7 +436,7 @@ function New-WarningMessage
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $WarningType,
 
         [String[]]
@@ -478,7 +478,7 @@ function New-VerboseMessage
 {
     [CmdletBinding()]
     [Alias()]
-    [OutputType([String])]
+    [OutputType([System.String])]
     Param
     (
         [Parameter(Mandatory=$true)]
@@ -608,8 +608,8 @@ function Test-SQLDscParameterState
                         switch ($desiredType.Name)
                         {
                             "String" {
-                                if (-not [String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
-                                    -not [String]::IsNullOrEmpty($DesiredValues.$fieldName))
+                                if (-not [System.String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
+                                    -not [System.String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
                                     New-VerboseMessage -Message ("String value for property $fieldName does not match. " + `
                                                                  "Current state is '$($CurrentValues.$fieldName)' " + `
@@ -738,11 +738,11 @@ function Restart-SqlService
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $SQLServer,
 
         [Parameter()]
-        [String]
+        [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
         [Parameter()]
@@ -835,19 +835,19 @@ function Invoke-Query
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SQLServer,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $Database,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $Query,
 
         [Parameter()]
@@ -921,16 +921,16 @@ function Test-LoginEffectivePermissions
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SQLServer,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $LoginName,
 
         [Parameter(Mandatory = $true)]
@@ -997,21 +997,21 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SQLServer,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $AvailabilityGroupName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $AvailabilityReplicaName
     )
 
@@ -1075,7 +1075,7 @@ function Get-PrimaryReplicaServerObject
     $primaryReplicaServerObject = $serverObject
     
     # Determine if we're connected to the primary replica
-    if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [string]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
+    if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [System.String]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
     {
         $primaryReplicaServerObject = Connect-SQL -SQLServer $AvailabilityGroup.PrimaryReplicaServerName
     }

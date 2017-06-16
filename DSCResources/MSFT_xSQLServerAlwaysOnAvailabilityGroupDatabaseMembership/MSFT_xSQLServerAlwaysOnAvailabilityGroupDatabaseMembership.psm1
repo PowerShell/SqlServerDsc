@@ -187,7 +187,8 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
                     if ( $availabilityReplicaFilestreamLevel.Values -contains 'Disabled' )
                     {
-                        $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availabilityReplicaFilestreamLevel.Keys -join ', ' ) )
+                        $availabilityReplicaFilestreamLevelDisabled = $availabilityReplicaFilestreamLevel.GetEnumerator() | Where-Object { $_.Value -eq 'Disabled' } | Select-Object -ExpandProperty Key
+                        $prerequisiteCheckFailures += ( 'Filestream is disabled on the following instances: {0}' -f ( $availabilityReplicaFilestreamLevelDisabled -join ', ' ) )
                     }
                 }
 
@@ -577,7 +578,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
         }
 
-        if ( ( $AvailabilityGroup -eq $null ) -or ( [string]::IsNullOrEmpty($AvailabilityGroup) ) )
+        if ( ( $AvailabilityGroup -eq $null ) -or ( [System.String]::IsNullOrEmpty($AvailabilityGroup) ) )
         {
             throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
         }
