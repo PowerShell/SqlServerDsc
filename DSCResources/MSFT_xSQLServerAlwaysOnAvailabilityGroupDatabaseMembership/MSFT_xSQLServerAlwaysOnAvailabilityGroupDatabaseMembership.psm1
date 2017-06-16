@@ -42,6 +42,12 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     [DscProperty()]
     [Bool]
     $MatchDatabaseOwner = $true
+
+    # Load the SQLPS module when the class is initialized
+    xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership()
+    {
+        Import-SQLPSModule
+    }
     
     [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership] Get()
     {
