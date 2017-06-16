@@ -752,8 +752,8 @@ Initializes and configures SQL Reporting Services server.
 * **[String] InstanceName** _(Key)_: Name of the SQL Server Reporting Services instance to be configured.
 * **[String] RSSQLServer** _(Required)_: Name of the SQL Server to host the Reporting Service database.
 * **[String] RSSQLInstanceName** _(Required)_: Name of the SQL Server instance to host the Reporting Service database.
-* **[String] ReportServerVirtualDir** _(Write)_: Report Server Web Service virtual directory. Optional. 
-* **[String] ReportsVirtualDir** _(Write)_: Report Manager virtual directory. Optional. 
+* **[String] ReportServerVirtualDir** _(Write)_: Report Server Web Service virtual directory. Optional.
+* **[String] ReportsVirtualDir** _(Write)_: Report Manager virtual directory. Optional.
 * **[String[]] ReportServerReservedUrl** _(Write)_: Report Server URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
 * **[String[]] ReportsReservedUrl** _(Write)_: Report Manager URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
 
