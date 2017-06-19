@@ -1471,6 +1471,8 @@ InModuleScope $script:moduleName {
         }
 
         Assert-VerifiableMocks
+    }
+
     Describe 'Testing Split-FullSQLInstanceName' {
         Context 'When the "FullSQLInstanceName" parameter is not supplied' {
             It 'Should throw when the "FullSQLInstanceName" parameter is $null' {
