@@ -131,10 +131,10 @@ function Get-TargetResource
     Report Manager/Report Web App virtual directory name. Optional.
 
     .PARAMETER ReportServerReservedUrl
-    Report Server URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
+    Report Server URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.
 
     .PARAMETER ReportsReservedUrl
-    Report Manager/Report Web App URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
+    Report Manager/Report Web App URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.
 #>
 function Set-TargetResource
 {
@@ -369,10 +369,10 @@ function Set-TargetResource
     Report Manager/Report Web App virtual directory name. Optional.
 
     .PARAMETER ReportServerReservedUrl
-    Report Server URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
+    Report Server URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.
 
     .PARAMETER ReportsReservedUrl
-    Report Manager/Report Web App URL reservations. Optional. If not specified, "http://+:80" URL reservation will be used.
+    Report Manager/Report Web App URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.
 #>
 function Test-TargetResource
 {
