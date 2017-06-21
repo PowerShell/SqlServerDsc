@@ -195,12 +195,12 @@ function Set-TargetResource
             $reportingServicesConnnection = "$RSSQLServer\$RSSQLInstanceName"
         }
 
-        $wmiOS = Get-WMIObject -Class Win32_OperatingSystem -Namespace root/cimv2 -ErrorAction SilentlyContinue
-        if ( $null -eq  $wmiOS )
+        $wmiOperatingSystem = Get-WMIObject -Class Win32_OperatingSystem -Namespace root/cimv2 -ErrorAction SilentlyContinue
+        if ( $null -eq  $wmiOperatingSystem )
         {
             throw "Unable to find WMI object Win32_OperatingSystem."
         }
-        $language = $wmiOS.OSLanguage
+        $language = $wmiOperatingSystem.OSLanguage
 
         if ( -not $reportingServicesData.Configuration.IsInitialized )
         {
