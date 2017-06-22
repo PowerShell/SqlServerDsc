@@ -1,6 +1,6 @@
 
-[ClassVersion("0.1.0.0"), FriendlyName("xdBmail")]
-class MSFT_xdBmail : OMI_BaseResource
+[ClassVersion("0.1.0.0"), FriendlyName("xSQLServerDatabaseMail")]
+class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
     [Key] String account_name;
     [Required] String sqlServer;
