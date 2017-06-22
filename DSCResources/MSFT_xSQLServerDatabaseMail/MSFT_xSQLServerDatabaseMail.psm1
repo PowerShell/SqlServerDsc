@@ -13,7 +13,7 @@ function Get-TargetResource
         [System.String]
         $AccountName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $SQLServer,
 
@@ -64,6 +64,11 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter()]
+        [ValidateSet('Present','Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -73,7 +78,7 @@ function Set-TargetResource
         [System.String]
         $AccountName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $SQLServer,
 
@@ -184,6 +189,11 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter()]
+        [ValidateSet('Present','Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -193,7 +203,7 @@ function Test-TargetResource
         [System.String]
         $AccountName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $SQLServer,
 
