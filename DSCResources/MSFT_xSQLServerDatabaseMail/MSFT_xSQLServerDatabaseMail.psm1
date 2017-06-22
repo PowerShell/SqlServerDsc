@@ -4,6 +4,11 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLInstanceName,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $AccountName,
@@ -59,6 +64,11 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLInstanceName,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $AccountName,
@@ -174,7 +184,12 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-         [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SQLInstanceName,
+
+        [parameter(Mandatory = $true)]
         [System.String]
         $AccountName,
 
