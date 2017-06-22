@@ -2,16 +2,16 @@
 [ClassVersion("0.1.0.0"), FriendlyName("xSQLServerDatabaseMail")]
 class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
-    [Key, Description("")] String AccountName;
+    [Key, Description("None yet.")] String AccountName;
     [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
-    [Required, Description("")] String EmailAddress;
-    [Required, Description("")] String MailServerName;
-    [Required, Description("")] String ProfileName;
+    [Required, Description("None yet.")] String EmailAddress;
+    [Required, Description("None yet.")] String MailServerName;
+    [Required, Description("None yet.")] String ProfileName;
     [Write, Description("An enumerated value that describes if the database mail configuration should be added ('Present') or removed ('Absent'). Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("The host name of the SQL Server to be configured.")] String SQLServer;
-    [Write, Description("")] String DisplayName;
-    [Write, Description("")] String ReplyToAddress;
-    [Write, Description("")] String Description;
-    [Write, Description("")] String MailServerType;
-    [Write, Description("")] UInt16 Port;
+    [Write, Description("None yet. Default value is the same value assigned to parameter SQLServer.")] String DisplayName;
+    [Write, Description("None yet. Default value is the same e-mail address assigned to parameter EmailAddress.")] String ReplyToAddress;
+    [Write, Description("None yet. Default value is 'Mail account to send alerts for the DBAs'.")] String Description;
+    [Write, Description("Type of mail server. Currently the only option is 'SMTP'. Default value is 'SMTP'."), ValueMap{"SMTP"}, Values{"SMTP"}] String MailServerType;
+    [Write, Description("The TCP port used for communication. Default value is 25 (TCP port 25).")] UInt16 Port;
 };

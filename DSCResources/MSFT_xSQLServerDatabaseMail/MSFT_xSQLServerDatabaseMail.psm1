@@ -103,8 +103,10 @@ function Set-TargetResource
         [System.String]
         $Description = "Mail account to send alerts for the DBAs",
 
+        [Parameter()]
         [System.String]
-        $MailServerType = "SMTP",
+        [ValidateSet('SMTP')]
+        $MailServerType = 'SMTP',
 
         [System.UInt16]
         $Port = 25
@@ -228,8 +230,10 @@ function Test-TargetResource
         [System.String]
         $Description = "Mail account to send alerts for the DBAs",
 
+        [Parameter()]
         [System.String]
-        $MailServerType = "SMTP",
+        [ValidateSet('SMTP')]
+        $MailServerType = 'SMTP',
 
         [System.UInt16]
         $Port = 25
