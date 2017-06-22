@@ -4,14 +4,14 @@ class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
     [Key, Description("")] String AccountName;
     [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
-    [Required, Description(""] String EmailAddress;
-    [Required, Description(""] String MailServerName;
-    [Required, Description(""] String ProfileName;
+    [Required, Description("")] String EmailAddress;
+    [Required, Description("")] String MailServerName;
+    [Required, Description("")] String ProfileName;
     [Write, Description("An enumerated value that describes if the database mail configuration should be added ('Present') or removed ('Absent'). Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Write, Description("The host name of the SQL Server to be configured."] String SQLServer;
-    [Write, Description(""] String DisplayName;
-    [Write, Description(""] String ReplyToAddress;
-    [Write, Description(""] String Description;
-    [Write, Description(""] String MailServerType;
-    [Write, Description(""] UInt16 Port;
+    [Write, Description("The host name of the SQL Server to be configured.")] String SQLServer;
+    [Write, Description("")] String DisplayName;
+    [Write, Description("")] String ReplyToAddress;
+    [Write, Description("")] String Description;
+    [Write, Description("")] String MailServerType;
+    [Write, Description("")] UInt16 Port;
 };
