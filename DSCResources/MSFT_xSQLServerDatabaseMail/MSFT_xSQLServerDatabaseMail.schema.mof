@@ -1,5 +1,4 @@
-
-[ClassVersion("0.1.0.0"), FriendlyName("xSQLServerDatabaseMail")]
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerDatabaseMail")]
 class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
     [Key, Description("None yet.")] String AccountName;
