@@ -3,6 +3,7 @@
 class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
     [Key, Description("")] String AccountName;
+    [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
     [Required, Description("The host name of the SQL Server to be configured."] String SQLServer;
     [Required, Description(""] String EmailAddress;
     [Required, Description(""] String MailServerName;
