@@ -2,14 +2,14 @@
 [ClassVersion("0.1.0.0"), FriendlyName("xSQLServerDatabaseMail")]
 class MSFT_xSQLServerDatabaseMail : OMI_BaseResource
 {
-    [Key] String account_name;
-    [Required] String sqlServer;
-    [Required] String email_address;
-    [Required] String mailserver_name;
-    [Required] String profile_name;
-    [Write] String display_name;
-    [Write] String replyto_address;
-    [Write] String description;
-    [Write] String mailserver_type;
-    [Write] UInt16 port;
+    [Key, Description("")] String AccountName;
+    [Required, Description("The host name of the SQL Server to be configured."] String SQLServer;
+    [Required, Description(""] String EmailAddress;
+    [Required, Description(""] String MailServerName;
+    [Required, Description(""] String ProfileName;
+    [Write, Description(""] String DisplayName;
+    [Write, Description(""] String ReplyToAddress;
+    [Write, Description(""] String Description;
+    [Write, Description(""] String MailServerType;
+    [Write, Description(""] UInt16 Port;
 };
