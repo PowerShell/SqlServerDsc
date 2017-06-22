@@ -6,23 +6,23 @@ function Get-TargetResource
     (
         [parameter(Mandatory = $true)]
         [System.String]
-        $account_name,
+        $AccountName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $sqlServer,
+        $SQLServer,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $email_address,
+        $EmailAddress,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $mailserver_name,
+        $MailServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $profile_name
+        $ProfileName
     )
 
     Get-SQLPSModule
@@ -61,38 +61,38 @@ function Set-TargetResource
     (
         [parameter(Mandatory = $true)]
         [System.String]
-        $account_name,
+        $AccountName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $sqlServer,
+        $SQLServer,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $email_address,
+        $EmailAddress,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $mailserver_name,
+        $MailServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $profile_name,
+        $ProfileName,
 
         [System.String]
-        $display_name    = $sqlServer,
+        $DisplayName = $SQLServer,
 
         [System.String]
-        $replyto_address = $email_address,
+        $ReplyToAddress = $EmailAddress,
 
         [System.String]
-        $description     = "Mail account to send alerts for the DBAs",
+        $Description = "Mail account to send alerts for the DBAs",
 
         [System.String]
-        $mailserver_type = "SMTP",
+        $MailServerType = "SMTP",
 
         [System.UInt16]
-        $port            = 25
+        $Port = 25
     )
 
     Get-SQLPSModule
@@ -127,7 +127,7 @@ function Set-TargetResource
             #Test
             $LoggingLevel = $dBmail.ConfigurationValues.Item('LoggingLevel').Value
             Write-Verbose "Database Mail Logging Level is '$($LoggingLevel)'"
-        
+
             Write-Verbose "Create the mail account '$($account_name)'"
             if(!($dBmail.Accounts|Where-Object {$_.Name -eq $account_name}))
             {
@@ -163,7 +163,7 @@ function Set-TargetResource
                 $server.JobServer.DatabaseMailProfile = $profile_name
                 $server.JobServer.Alter()
             }
-              
+
         }
     }
 }
@@ -174,40 +174,40 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [parameter(Mandatory = $true)]
+         [parameter(Mandatory = $true)]
         [System.String]
-        $account_name,
+        $AccountName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $sqlServer,
+        $SQLServer,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $email_address,
+        $EmailAddress,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $mailserver_name,
+        $MailServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
-        $profile_name,
+        $ProfileName,
 
         [System.String]
-        $display_name    = $sqlServer,
+        $DisplayName = $SQLServer,
 
         [System.String]
-        $replyto_address = $email_address,
+        $ReplyToAddress = $EmailAddress,
 
         [System.String]
-        $description     = "Mail account to send alerts for the DBAs",
+        $Description = "Mail account to send alerts for the DBAs",
 
         [System.String]
-        $mailserver_type = "SMTP",
+        $MailServerType = "SMTP",
 
         [System.UInt16]
-        $port            = 25
+        $Port = 25
     )
 
     Get-SQLPSModule
