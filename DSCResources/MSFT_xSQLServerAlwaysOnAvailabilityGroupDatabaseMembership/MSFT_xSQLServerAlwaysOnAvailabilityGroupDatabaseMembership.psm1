@@ -76,7 +76,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         }
         else
         {
-            New-VerboseMessage -Message "The availabilty group '$($this.AvailabilityGroupName)' does not exist."
+            Write-Verbose -Message ($script:localizedData.AvailabilityGroupDoesNotExist -f $this.AvailabilityGroupName) -Verbose
 
             $currentConfiguration.MatchDatabaseOwner = $false
         }
@@ -107,7 +107,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
-            New-VerboseMessage -Message ( "Adding the following databases to the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
+            Write-Verbose -Message ($script:localizedData.AddingDatabasesToAvailabilityGroup -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' )) -Verbose
 
             # Get only the secondary replicas. Some tests do not need to be performed on the primary replica
             $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object -FilterScript { $_.Role -ne 'Primary' }
@@ -411,7 +411,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
         {
-            New-VerboseMessage -Message ( "Removing the following databases from the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
+            Write-Verbose -Message ($script:localizedData.RemovingDatabasesToAvailabilityGroup -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' )) -Verbose
 
             foreach ( $databaseName in $databasesToRemoveFromAvailabilityGroup )
             {
@@ -461,7 +461,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         if ( ( $this.Ensure -eq [Ensure]::Present ) -and $matchingDatabaseNames.Count -eq 0 )
         {
             $configurationInDesiredState = $false
-            New-VerboseMessage -Message ( 'No databases found that match the name(s): {0}' -f ($this.DatabaseName -join ', ') )
+            Write-Verbose -Message ($script:localizedData.NoDatabasesFound -f ($this.DatabaseName -join ', ')) -Verbose
         }
         else
         {
@@ -471,7 +471,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             if ( ( $databasesNotFoundOnTheInstance.Count -gt 0 ) -and ( $this.Ensure -ne [Ensure]::Absent ) )
             {
                 $configurationInDesiredState = $false
-                New-VerboseMessage -Message ( "The following databases were not found in the instance: {0}" -f ( $databasesNotFoundOnTheInstance -join ', ' ) )
+                Write-Verbose -Message ($script:localizedData.DatabasesNotFound -f ( $databasesNotFoundOnTheInstance -join ', ' )) -Verbose
             }
 
             $databasesToAddToAvailabilityGroup = $this.GetDatabasesToAddToAvailabilityGroup($primaryServerObject,$availabilityGroup)
@@ -479,7 +479,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
             {
                 $configurationInDesiredState = $false
-                New-VerboseMessage -Message ( "The following databases should be a member of the availability group '{0}': {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
+                Write-Verbose -Message ($script:localizedData.DatabaseShouldBeMember -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' )) -Verbose
             }
 
             $databasesToRemoveFromAvailabilityGroup = $this.GetDatabasesToRemoveFromAvailabilityGroup($primaryServerObject,$availabilityGroup)
@@ -487,7 +487,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
             if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
             {
                 $configurationInDesiredState = $false
-                New-VerboseMessage -Message ( "The following databases should not be a member of the availability group '{0}': {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
+                Write-Verbose -Message ($script:localizedData.DatabaseShouldNotBeMember -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' )) -Verbose
             }
         }
 
