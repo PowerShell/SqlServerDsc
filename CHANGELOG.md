@@ -6,6 +6,7 @@
   - This is required for class-based resources
 - Added new resource
   - xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+  - Added localization support for all strings.
 - Changes to xSQLServerRSConfig
   - BREAKING CHANGE: Removed `$SQLAdminCredential` parameter. Use common parameter `PsDscRunAsCredential` (WMF 5.0+) to run
     the resource under different credentials. `PsDscRunAsCredential` Windows account must be a sysadmin on SQL Server
