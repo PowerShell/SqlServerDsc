@@ -1418,28 +1418,28 @@ WITH NORECOVERY'
 
             Context 'When invalid objects are passed to the method' {
                 It 'Should throw the correct error when an empty object is passed to the ServerObject property of the method' {
-                    { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($null,$mockAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is NULL or empty.'
+                    { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($null,$mockAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is NULL or empty.'
 
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                 }
 
                 It 'Should throw the correct error when empty invalid object is passed to the AvailabilityGroup property of the method' {
-                    { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$null) } | Should Throw 'The parameter ''AvailabilityGroup'' is NULL or empty.'
+                    { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$null) } | Should Throw 'The parameter ''AvailabilityGroup'' is NULL or empty.'
 
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                 }
 
                 It 'Should throw the correct error when an invalid object is passed to the ServerObject property of the method' {
-                    { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockBadServerObject,$mockAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is not of the type ''Microsoft.SqlServer.Management.Smo.Server''.'
+                    { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockBadServerObject,$mockAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is not of the type ''Microsoft.SqlServer.Management.Smo.Server''.'
 
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                 }
 
                 It 'Should throw the correct error when an invalid object is passed to the AvailabilityGroup property of the method' {
-                    { $databaseMembershipClass.GetDatabasesToAddToAvailabilityGroup($mockServerObject,$mockBadAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is not of the type ''Microsoft.SqlServer.Management.Smo.AvailabilityGroup''.'
+                    { $databaseMembershipClass.GetDatabasesToRemoveFromAvailabilityGroup($mockServerObject,$mockBadAvailabilityGroupObject) } | Should Throw 'The parameter ''ServerObject'' is not of the type ''Microsoft.SqlServer.Management.Smo.AvailabilityGroup''.'
 
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
