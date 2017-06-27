@@ -2,6 +2,11 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
                                -ChildPath 'xSQLServerHelper.psm1') `
                                -Force
 
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+                               -ChildPath 'CommonResourceHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership'
+
 enum Ensure
 {
     Absent
@@ -48,14 +53,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     {
         Import-SQLPSModule
     }
-    
+
     [xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership] Get()
     {
         # Create an object that reflects the current configuration
         $currentConfiguration = New-Object xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         $currentConfiguration.SQLServer = $this.SQLServer
         $currentConfiguration.SQLInstanceName = $this.SQLInstanceName
-        
+
         # Connect to the instance
         $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
 
@@ -65,7 +70,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         if ( $availabilityGroup )
         {
             $currentConfiguration.AvailabilityGroupName = $this.AvailabilityGroupName
-            
+
             # Get the databases in the availability group
             $currentConfiguration.DatabaseName = $availabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
         }
@@ -80,7 +85,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     }
 
     [Void] Set()
-    {        
+    {
         # Connect to the defined instance
         $serverObject = Connect-SQL -SQLServer $this.SQLServer -SQLInstanceName $this.SQLInstanceName
 
@@ -99,14 +104,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
         # Create a hash table to store the databases that failed to be added to the Availability Group
         $databasesToRemoveFailures = @{}
-        
+
         if ( $databasesToAddToAvailabilityGroup.Count -gt 0 )
         {
             New-VerboseMessage -Message ( "Adding the following databases to the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToAddToAvailabilityGroup -join ', ' ) )
-            
+
             # Get only the secondary replicas. Some tests do not need to be performed on the primary replica
             $secondaryReplicas = $availabilityGroup.AvailabilityReplicas | Where-Object -FilterScript { $_.Role -ne 'Primary' }
-            
+
             # Ensure the appropriate permissions are in place on all the replicas
             if ( $this.MatchDatabaseOwner )
             {
@@ -123,18 +128,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
 
                 if ( $impersonatePermissionsStatus.Values -contains $false )
                 {
-                    $newTerminatingErrorParams = @{
-                        ErrorType = 'ImpersonatePermissionsMissing'
-                        FormatArgs = @(
-                            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-                            ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object -FilterScript { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
-                        )
-                        ErrorCategory = 'SecurityError'
-                    }
-                    throw New-TerminatingError @newTerminatingErrorParams
+                    $impersonatePermissionsMissingParameters = @(
+                        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
+                        ( ( $impersonatePermissionsStatus.GetEnumerator() | Where-Object -FilterScript { -not $_.Value } | Select-Object -ExpandProperty Key ) -join ', ' )
+                    )
+                    throw ($script:localizedData.ImpersonatePermissionsMissing -f $impersonatePermissionsMissingParameters )
                 }
             }
-            
+
             foreach ( $databaseName in $databasesToAddToAvailabilityGroup )
             {
                 $databaseObject = $primaryServerObject.Databases[$databaseName]
@@ -155,7 +156,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     AvailabilityGroupName = ''
                     IsMirroringEnabled = $false
                 }
-                
+
                 foreach ( $prerequisiteCheck in $prerequisiteChecks.GetEnumerator() )
                 {
                     if ( $databaseObject.($prerequisiteCheck.Key) -ne $prerequisiteCheck.Value )
@@ -221,7 +222,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 {
                     $connectSqlParameters = Split-FullSQLInstanceName -FullSQLInstanceName $availabilityGroupReplica.Name
                     $currentAvailabilityGroupReplicaServerObject = Connect-SQL @connectSqlParameters
-                    
+
                     $missingDirectories = @()
                     foreach ( $databaseFileDirectory in $databaseFileDirectories )
                     {
@@ -244,7 +245,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 {
                     foreach ( $availabilityReplicaMissingDirectory in $availabilityReplicaMissingDirectories.GetEnumerator() )
                     {
-                        $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingDirectory.Key)' is missing the following directories: $($availabilityReplicaMissingDirectory.Value)"
+                        $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingDirectory.Key.Name)' is missing the following directories: $($availabilityReplicaMissingDirectory.Value)"
                     }
                 }
 
@@ -271,7 +272,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                     {
                         foreach ( $availabilityReplicaMissingCertificate in $availabilityReplicaMissingCertificates.GetEnumerator() )
                         {
-                            $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingCertificate.Key)' is missing the following certificates: $($availabilityReplicaMissingCertificate.Value)"
+                            $prerequisiteCheckFailures += "The instance '$($availabilityReplicaMissingCertificate.Key.Name)' is missing the following certificates: $($availabilityReplicaMissingCertificate.Value)"
                         }
                     }
                 }
@@ -280,7 +281,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 {
                     $databaseFullBackupFile = Join-Path -Path $this.BackupPath -ChildPath "$($databaseObject.Name)_Full_$(Get-Date -Format 'yyyyMMddhhmmss').bak"
                     $databaseLogBackupFile = Join-Path -Path $this.BackupPath -ChildPath "$($databaseObject.Name)_Log_$(Get-Date -Format 'yyyyMMddhhmmss').trn"
-                    
+
                     # Build the backup parameters. If no backup was previously taken, a standard full will be taken. Otherwise a CopyOnly backup will be taken.
                     $backupSqlDatabaseParameters = @{
                         DatabaseObject = $databaseObject
@@ -343,9 +344,9 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         continue
                     }
 
-                    # Need to restore the database with a query in order to impersonate the correct login 
+                    # Need to restore the database with a query in order to impersonate the correct login
                     $restoreDatabaseQueryStringBuilder = New-Object -TypeName System.Text.StringBuilder
-                    
+
                     if ( $this.MatchDatabaseOwner )
                     {
                         $restoreDatabaseQueryStringBuilder.Append('EXECUTE AS LOGIN = ''') | Out-Null
@@ -369,7 +370,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                         RestoreAction = 'Log'
                         NoRecovery = $true
                     }
-                    
+
                     try
                     {
                         foreach ( $availabilityGroupReplica in $secondaryReplicas )
@@ -411,7 +412,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         if ( $databasesToRemoveFromAvailabilityGroup.Count -gt 0 )
         {
             New-VerboseMessage -Message ( "Removing the following databases from the '{0}' availability group: {1}" -f $this.AvailabilityGroupName,( $databasesToRemoveFromAvailabilityGroup -join ', ' ) )
-            
+
             foreach ( $databaseName in $databasesToRemoveFromAvailabilityGroup )
             {
                 $availabilityDatabase = $primaryServerObject.AvailabilityGroups[$this.AvailabilityGroupName].AvailabilityDatabases[$databaseName]
@@ -436,13 +437,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
                 $formatArgs += "The operation on the database '$( $failure.Key )' failed with the following errors: $( $failure.Value -join "`r`n" )"
             }
 
-            $newTerminatingErrorParams = @{
-                ErrorType = 'AlterAvailabilityGroupDatabaseMembershipFailure'
-                FormatArgs = $formatArgs
-                ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
-            }
-            
-            throw New-TerminatingError @newTerminatingErrorParams
+            throw ($script:localizedData.AlterAvailabilityGroupDatabaseMembershipFailure -f $formatArgs )
         }
     }
 
@@ -521,24 +516,28 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     {
         if ( ( $ServerObject -eq $null ) -or ( [System.String]::IsNullOrEmpty($ServerObject) ) )
         {
-            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
+            $errorMessage = $script:localizedData.ParameterNullOrEmpty -f 'ServerObject'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
 
         if ( ( $AvailabilityGroup -eq $null ) -or ( [System.String]::IsNullOrEmpty($AvailabilityGroup) ) )
         {
-            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
+            $errorMessage = $script:localizedData.ParameterNullOrEmpty -f 'AvailabilityGroup'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
-        
+
         if ( $ServerObject.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            $errorMessage = $script:localizedData.ParameterNotOfType -f 'ServerObject','Microsoft.SqlServer.Management.Smo.Server'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
 
         if ( $AvailabilityGroup.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
         {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+            $errorMessage = $script:localizedData.ParameterNotOfType -f 'ServerObject','Microsoft.SqlServer.Management.Smo.AvailabilityGroup'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
-        
+
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
@@ -575,24 +574,28 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     {
         if ( ( $ServerObject -eq $null ) -or ( [System.String]::IsNullOrEmpty($ServerObject) ) )
         {
-            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'ServerObject' -ErrorCategory InvalidArgument
+            $errorMessage = $script:localizedData.ParameterNullOrEmpty -f 'ServerObject'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
 
         if ( ( $AvailabilityGroup -eq $null ) -or ( [System.String]::IsNullOrEmpty($AvailabilityGroup) ) )
         {
-            throw New-TerminatingError -ErrorType ParameterNullOrEmpty -FormatArgs 'AvailabilityGroup' -ErrorCategory InvalidArgument
+            $errorMessage = $script:localizedData.ParameterNullOrEmpty -f 'AvailabilityGroup'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
-        
+
         if ( $ServerObject.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            $errorMessage = $script:localizedData.ParameterNotOfType -f 'ServerObject','Microsoft.SqlServer.Management.Smo.Server'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
 
         if ( $AvailabilityGroup.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.AvailabilityGroup' )
         {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'AvailabilityGroup','Microsoft.SqlServer.Management.Smo.AvailabilityGroup' -ErrorCategory InvalidType
+            $errorMessage = $script:localizedData.ParameterNotOfType -f 'ServerObject','Microsoft.SqlServer.Management.Smo.AvailabilityGroup'
+            New-InvalidArgumentException -ArgumentName ParameterValidation -Message $errorMessage
         }
-        
+
         $matchingDatabaseNames = $this.GetMatchingDatabaseNames($ServerObject)
         $databasesInAvailabilityGroup = $AvailabilityGroup.AvailabilityDatabases | Select-Object -ExpandProperty Name
 
@@ -607,14 +610,14 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         {
             $databasesToRemoveFromAvailabilityGroup = $comparisonResult | Where-Object -FilterScript { '=>' -eq $_.SideIndicator } | Select-Object -ExpandProperty InputObject
         }
-    
+
         return $databasesToRemoveFromAvailabilityGroup
     }
-    
+
     <#
         .SYNOPSIS
             Get the database names that were specified in the configuration that do not exist on the instance.
-            
+
         .PARAMETER MatchingDatabaseNames
             All of the databases names that match the supplied names and wildcards.
     #>
@@ -626,15 +629,16 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     {
         if ( $ServerObject.PSTypeNames -notcontains 'Microsoft.SqlServer.Management.Smo.Server' )
         {
-            throw New-TerminatingError -ErrorType ParameterNotOfType -FormatArgs 'ServerObject','Microsoft.SqlServer.Management.Smo.Server' -ErrorCategory InvalidType
+            $errorMessage = $script:localizedData.ParameterNotOfType -f 'ServerObject','Microsoft.SqlServer.Management.Smo.Server'
+            New-InvalidArgumentException -ArgumentName ParameterNotOfType -Message $errorMessage
         }
-        
+
         $matchingDatabaseNames = @()
 
         foreach ( $dbName in $this.DatabaseName )
         {
             $matchingDatabaseNames += $ServerObject.Databases | Where-Object -FilterScript { $_.Name -like $dbName } | Select-Object -ExpandProperty Name
-        }      
+        }
 
         return $matchingDatabaseNames
     }
@@ -642,7 +646,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
     <#
         .SYNOPSIS
             Get the database names that were defined in the DatabaseName property but were not found on the instance.
-        
+
         .PARAMETER MatchingDatabaseNames
             All of the database names that were found on the instance that match the supplied DatabaseName property.
     #>

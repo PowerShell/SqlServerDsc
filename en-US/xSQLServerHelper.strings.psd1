@@ -120,10 +120,6 @@ ConvertFrom-StringData @'
     RemoveAvailabilityGroupReplicaFailed = Failed to remove the availability group replica '{0}'.
     ReplicaNotFound = Unable to find the availability group replica '{0}' on the instance '{1}'.
 
-    # AlwaysOnAvailabilityGroupDatabaseMembership
-    AlterAvailabilityGroupDatabaseMembershipFailure = {0}
-    ImpersonatePermissionsMissing = The login '{0}' is missing impersonate permissions in the instances '{1}'.
-
     # Max degree of parallelism
     MaxDopSetError = Unexpected result when trying to configure the max degree of parallelism server configuration option.
     MaxDopParamMustBeNull = MaxDop parameter must be set to $null or not assigned if DynamicAlloc parameter is set to $true.
