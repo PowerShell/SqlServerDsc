@@ -8,7 +8,6 @@ ConvertFrom-StringData @'
     DatabaseShouldNotBeMember = The following databases should not be a member of the availability group '{0}': {1}.
     DatabasesNotFound = The following databases were not found in the instance: {0}.
     ImpersonatePermissionsMissing = The login '{0}' is missing impersonate permissions in the instances '{1}'.
-    NoDatabasesFound = No databases found that match the name(s): {0}.
     ParameterNotOfType = The parameter '{0}' is not of the type '{1}'.
     ParameterNullOrEmpty = The parameter '{0}' is NULL or empty.
     RemovingDatabasesToAvailabilityGroup = Removing the following databases from the '{0}' availability group: {1}.

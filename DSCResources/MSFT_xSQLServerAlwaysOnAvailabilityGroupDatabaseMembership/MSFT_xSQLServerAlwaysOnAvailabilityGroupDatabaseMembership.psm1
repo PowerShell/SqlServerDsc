@@ -461,7 +461,7 @@ class xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
         if ( ( $this.Ensure -eq [Ensure]::Present ) -and $matchingDatabaseNames.Count -eq 0 )
         {
             $configurationInDesiredState = $false
-            Write-Verbose -Message ($script:localizedData.NoDatabasesFound -f ($this.DatabaseName -join ', ')) -Verbose
+            Write-Verbose -Message ($script:localizedData.DatabasesNotFound -f ($this.DatabaseName -join ', ')) -Verbose
         }
         else
         {
