@@ -89,14 +89,14 @@ function Get-TargetResource
     }
 
     return @{
-        InstanceName = $InstanceName
-        RSSQLServer = $RSSQLServer
-        RSSQLInstanceName = $RSSQLInstanceName
+        InstanceName                 = $InstanceName
+        RSSQLServer                  = $RSSQLServer
+        RSSQLInstanceName            = $RSSQLInstanceName
         ReportServerVirtualDirectory = $reportServerVirtualDirectory
-        ReportsVirtualDirectory = $reportsVirtualDirectory
-        ReportServerReservedUrl = $reportServerReservedUrl
-        ReportsReservedUrl = $reportsReservedUrl
-        IsInitialized = $isInitialized
+        ReportsVirtualDirectory      = $reportsVirtualDirectory
+        ReportServerReservedUrl      = $reportServerReservedUrl
+        ReportsReservedUrl           = $reportsReservedUrl
+        IsInitialized                = $isInitialized
     }
 }
 
@@ -204,7 +204,7 @@ function Set-TargetResource
         }
 
         $wmiOperatingSystem = Get-WMIObject -Class Win32_OperatingSystem -Namespace root/cimv2 -ErrorAction SilentlyContinue
-        if ( $null -eq  $wmiOperatingSystem )
+        if ( $null -eq $wmiOperatingSystem )
         {
             throw "Unable to find WMI object Win32_OperatingSystem."
         }
@@ -227,28 +227,28 @@ function Set-TargetResource
             if ( $reportingServicesData.Configuration.VirtualDirectoryReportServer -ne $ReportServerVirtualDirectory )
             {
                 New-VerboseMessage -Message "Setting report server virtual directory on $RSSQLServer\$RSSQLInstanceName to $ReportServerVirtualDirectory."
-                $null = $reportingServicesData.Configuration.SetVirtualDirectory('ReportServerWebService',$ReportServerVirtualDirectory,$language)
+                $null = $reportingServicesData.Configuration.SetVirtualDirectory('ReportServerWebService', $ReportServerVirtualDirectory, $language)
                 $ReportServerReservedUrl | ForEach-Object -Process {
                     New-VerboseMessage -Message "Adding report server URL reservation on $RSSQLServer\$RSSQLInstanceName`: $_."
-                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService',$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService', $_, $language)
                 }
             }
 
             if ( $reportingServicesData.Configuration.VirtualDirectoryReportManager -ne $ReportsVirtualDirectory )
             {
                 New-VerboseMessage -Message "Setting reports virtual directory on $RSSQLServer\$RSSQLInstanceName to $ReportServerVirtualDirectory."
-                $null = $reportingServicesData.Configuration.SetVirtualDirectory($reportingServicesData.ReportsApplicationName,$ReportsVirtualDirectory,$language)
+                $null = $reportingServicesData.Configuration.SetVirtualDirectory($reportingServicesData.ReportsApplicationName, $ReportsVirtualDirectory, $language)
                 $ReportsReservedUrl | ForEach-Object -Process {
                     New-VerboseMessage -Message "Adding reports URL reservation on $RSSQLServer\$RSSQLInstanceName`: $_."
-                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName,$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
             }
 
-            $reportingServicesDatabaseScript = $reportingServicesData.Configuration.GenerateDatabaseCreationScript($reportingServicesDatabaseName,$language,$false)
+            $reportingServicesDatabaseScript = $reportingServicesData.Configuration.GenerateDatabaseCreationScript($reportingServicesDatabaseName, $language, $false)
 
             # Determine RS service account
             $reportingServicesServiceAccountUserName = (Get-WmiObject -Class Win32_Service | Where-Object -FilterScript {$_.Name -eq $reportingServicesServiceName}).StartName
-            $reportingServicesDatabaseRightsScript = $reportingServicesData.Configuration.GenerateDatabaseRightsScript($reportingServicesServiceAccountUserName,$reportingServicesDatabaseName,$false,$true)
+            $reportingServicesDatabaseRightsScript = $reportingServicesData.Configuration.GenerateDatabaseRightsScript($reportingServicesServiceAccountUserName, $reportingServicesDatabaseName, $false, $true)
 
             <#
                 Import-SQLPSModule cmdlet will import SQLPS (SQL 2012/14) or SqlServer module (SQL 2016),
@@ -258,9 +258,8 @@ function Set-TargetResource
             Import-SQLPSModule
             Invoke-Sqlcmd -ServerInstance $reportingServicesConnection -Query $reportingServicesDatabaseScript.Script
             Invoke-Sqlcmd -ServerInstance $reportingServicesConnection -Query $reportingServicesDatabaseRightsScript.Script
-
-            $null = $reportingServicesConfiguration.SetDatabaseConnection($reportingServicesConnection,$reportingServicesDatabaseName,2,'','')
-            $null = $reportingServicesConfiguration.InitializeReportServer($reportingServicesConfiguration.InstallationID)
+            $null = $reportingServicesData.Configuration.SetDatabaseConnection($reportingServicesConnection, $reportingServicesDatabaseName, 2, '', '')
+            $null = $reportingServicesData.Configuration.InitializeReportServer($reportingServicesData.Configuration.InstallationID)
 
             Restart-ReportingServicesService -SQLInstanceName $InstanceName
         }
@@ -277,13 +276,13 @@ function Set-TargetResource
                     change the virtual directory and re-add URL reservations
                 #>
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.RemoveURL('ReportServerWebService',$_,$language)
+                    $null = $reportingServicesData.Configuration.RemoveURL('ReportServerWebService', $_, $language)
                 }
 
-                $reportingServicesData.Configuration.SetVirtualDirectory('ReportServerWebService',$ReportServerVirtualDirectory,$language)
+                $reportingServicesData.Configuration.SetVirtualDirectory('ReportServerWebService', $ReportServerVirtualDirectory, $language)
 
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService',$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService', $_, $language)
                 }
             }
 
@@ -296,39 +295,47 @@ function Set-TargetResource
                     change the virtual directory and re-add URL reservations
                 #>
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.RemoveURL($reportingServicesData.ReportsApplicationName,$_,$language)
+                    $null = $reportingServicesData.Configuration.RemoveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
 
-                $reportingServicesData.Configuration.SetVirtualDirectory($reportingServicesData.ReportsApplicationName,$ReportsVirtualDirectory,$language)
+                $reportingServicesData.Configuration.SetVirtualDirectory($reportingServicesData.ReportsApplicationName, $ReportsVirtualDirectory, $language)
 
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName,$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
             }
 
-            $reportServerReservedUrlDifference = Compare-Object -ReferenceObject $currentConfig.ReportServerReservedUrl -DifferenceObject $ReportServerReservedUrl
-            if ( ($null -ne $ReportServerReservedUrl) -and ($null -ne $reportServerReservedUrlDifference) )
+            $compareParameters = @{
+                ReferenceObject  = $currentConfig.ReportServerReservedUrl
+                DifferenceObject = $ReportServerReservedUrl
+            }
+
+            if ( ($null -ne $ReportServerReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
             {
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.RemoveURL('ReportServerWebService',$_,$language)
+                    $null = $reportingServicesData.Configuration.RemoveURL('ReportServerWebService', $_, $language)
                 }
 
                 $ReportServerReservedUrl | ForEach-Object -Process {
                     New-VerboseMessage -Message "Adding report server URL reservation on $RSSQLServer\$RSSQLInstanceName`: $_."
-                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService',$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL('ReportServerWebService', $_, $language)
                 }
             }
 
-            $reportsReservedUrlDifference = Compare-Object -ReferenceObject $currentConfig.ReportsReservedUrl -DifferenceObject $ReportsReservedUrl
-            if ( ($null -ne $ReportsReservedUrl) -and ($null -ne $reportsReservedUrlDifference) )
+            $compareParameters = @{
+                ReferenceObject  = $currentConfig.ReportsReservedUrl
+                DifferenceObject = $ReportsReservedUrl
+            }
+
+            if ( ($null -ne $ReportsReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
             {
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
-                    $null = $reportingServicesData.Configuration.RemoveURL($reportingServicesData.ReportsApplicationName,$_,$language)
+                    $null = $reportingServicesData.Configuration.RemoveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
 
                 $ReportsReservedUrl | ForEach-Object -Process {
                     New-VerboseMessage -Message "Adding reports URL reservation on $RSSQLServer\$RSSQLInstanceName`: $_."
-                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName,$_,$language)
+                    $null = $reportingServicesData.Configuration.ReserveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
             }
         }
@@ -422,15 +429,23 @@ function Test-TargetResource
         $result = $false
     }
 
-    $reportServerReservedUrlDifference = Compare-Object -ReferenceObject $currentConfig.ReportServerReservedUrl -DifferenceObject $ReportServerReservedUrl
-    if ( ($null -ne $ReportServerReservedUrl) -and ($null -ne $reportServerReservedUrlDifference) )
+    $compareParameters = @{
+        ReferenceObject  = $currentConfig.ReportServerReservedUrl
+        DifferenceObject = $ReportServerReservedUrl
+    }
+
+    if ( ($null -ne $ReportServerReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
     {
         New-VerboseMessage -Message "Report server reserved URLs on $RSSQLServer\$RSSQLInstanceName are $($currentConfig.ReportServerReservedUrl -join ', '), should be $($ReportServerReservedUrl -join ', ')."
         $result = $false
     }
 
-    $reportsReservedUrlDifference = Compare-Object -ReferenceObject $currentConfig.ReportsReservedUrl -DifferenceObject $ReportsReservedUrl
-    if ( ($null -ne $ReportsReservedUrl) -and ($null -ne $reportsReservedUrlDifference) )
+    $compareParameters = @{
+        ReferenceObject  = $currentConfig.ReportsReservedUrl
+        DifferenceObject = $ReportsReservedUrl
+    }
+
+    if ( ($null -ne $ReportsReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
     {
         New-VerboseMessage -Message "Reports reserved URLs on $RSSQLServer\$RSSQLInstanceName are $($currentConfig.ReportsReservedUrl -join ', ')), should be $($ReportsReservedUrl -join ', ')."
         $result = $false
@@ -483,7 +498,7 @@ function Get-ReportingServicesData
     }
 
     @{
-        Configuration = $reportingServicesConfiguration
+        Configuration          = $reportingServicesConfiguration
         ReportsApplicationName = $reportsApplicationName
     }
 }
