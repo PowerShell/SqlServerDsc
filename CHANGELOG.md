@@ -53,6 +53,8 @@
     - 2-DisableAlwaysOn.ps1
 - Changes to xSQLServerSetup
   - Added Swedish localization ([issue #695](https://github.com/PowerShell/xSQLServer/issues/695)).
+- Changes to xSQLServerRSConfig
+  - Added support for configuring URL reservations and virtual directory names (issue #570)
 
 ## 8.0.0.0
 
