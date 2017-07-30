@@ -140,7 +140,8 @@
   - Added a simple integration test ([issue #709](https://github.com/PowerShell/xSQLServer/issues/709)).
   - Fixed PS Script Analyzer errors ([issue #729](https://github.com/PowerShell/xSQLServer/issues/729))
 - Changes to xSQLServerRSConfig
-  - Added support for configuring URL reservations and virtual directory names (issue #570)
+  - Added support for configuring URL reservations and virtual directory names
+    (issue #570)
 
 ## 8.0.0.0
 
