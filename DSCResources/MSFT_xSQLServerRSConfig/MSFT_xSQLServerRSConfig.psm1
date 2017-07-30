@@ -63,7 +63,7 @@ function Get-TargetResource
 
             for ( $i = 0; $i -lt $reservedUrls.Application.Count; ++$i )
             {
-                if ( $reservedUrls.Application[$i] -eq "ReportServerWebService" )
+                if ( $reservedUrls.Application[$i] -eq 'ReportServerWebService' )
                 {
                     $reportServerReservedUrl += $reservedUrls.UrlString[$i]
                 }
@@ -203,7 +203,7 @@ function Set-TargetResource
             $reportingServicesConnection = "$RSSQLServer\$RSSQLInstanceName"
         }
 
-        $wmiOperatingSystem = Get-WMIObject -Class Win32_OperatingSystem -Namespace root/cimv2 -ErrorAction SilentlyContinue
+        $wmiOperatingSystem = Get-WMIObject -Class Win32_OperatingSystem -Namespace 'root/cimv2' -ErrorAction SilentlyContinue
         if ( $null -eq $wmiOperatingSystem )
         {
             throw "Unable to find WMI object Win32_OperatingSystem."
@@ -258,6 +258,7 @@ function Set-TargetResource
             Import-SQLPSModule
             Invoke-Sqlcmd -ServerInstance $reportingServicesConnection -Query $reportingServicesDatabaseScript.Script
             Invoke-Sqlcmd -ServerInstance $reportingServicesConnection -Query $reportingServicesDatabaseRightsScript.Script
+
             $null = $reportingServicesData.Configuration.SetDatabaseConnection($reportingServicesConnection, $reportingServicesDatabaseName, 2, '', '')
             $null = $reportingServicesData.Configuration.InitializeReportServer($reportingServicesData.Configuration.InstallationID)
 
@@ -265,7 +266,13 @@ function Set-TargetResource
         }
         else
         {
-            $currentConfig = Get-TargetResource @PSBoundParameters
+            $getTargetResourceParameters = @{
+                InstanceName = $InstanceName
+                RSSQLServer = $RSSQLServer
+                RSSQLInstanceName = $RSSQLInstanceName
+            }
+
+            $currentConfig = Get-TargetResource @getTargetResourceParameters
 
             if ( -not [string]::IsNullOrEmpty($ReportServerVirtualDirectory) -and ($ReportServerVirtualDirectory -ne $currentConfig.ReportServerVirtualDirectory) )
             {
@@ -409,7 +416,13 @@ function Test-TargetResource
 
     $result = $true
 
-    $currentConfig = Get-TargetResource @PSBoundParameters
+    $getTargetResourceParameters = @{
+        InstanceName = $InstanceName
+        RSSQLServer = $RSSQLServer
+        RSSQLInstanceName = $RSSQLInstanceName
+    }
+
+    $currentConfig = Get-TargetResource @getTargetResourceParameters
 
     if ( -not $currentConfig.IsInitialized )
     {
