@@ -1,5 +1,6 @@
 $script:DSCModuleName = 'xSQLServer'
-$script:DSCResourceName = 'MSFT_xSQLServerSetup'
+$script:DSCResourceFriendlyName = 'xSQLServerSetup'
+$script:DSCResourceName = "MSFT_$($script:DSCResourceFriendlyName)"
 
 if (-not $env:APPVEYOR -eq $true)
 {
@@ -119,10 +120,13 @@ try
     $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
     . $configFile
 
+    $configurationName = "$($script:DSCResourceName)_InstallSqlEngineAsSystem_Config"
+    $resourceId = "[$($script:DSCResourceFriendlyName)]Integration_Test"
+
     Describe "$($script:DSCResourceName)_Integration" {
         It 'Should compile and apply the MOF without throwing' {
             {
-                & "$($script:DSCResourceName)_InstallSqlEngineAsSystem_Config" `
+                & $configurationName `
                     -SqlInstallCredential $mockSqlInstallCredential `
                     -SqlAdministratorCredential $mockSqlAdminCredential `
                     -SqlServiceCredential $mockSqlServiceCredential `
@@ -170,9 +174,9 @@ try
             $currentConfiguration = Get-DscConfiguration
 
             $resourceCurrentState = $currentConfiguration | Where-Object -FilterScript {
-                $_.ConfigurationName -eq "$($script:DSCResourceName)_InstallSqlEngineAsSystem_Config"
+                $_.ConfigurationName -eq $configurationName
             } | Where-Object -FilterScript {
-                $_.ResourceId -eq '[xSQLServerSetup]Integration_Test'
+                $_.ResourceId -eq $resourceId
             }
 
             $resourceCurrentState.Action                     | Should BeNullOrEmpty
