@@ -103,6 +103,7 @@
   - Fixed PS Script Analyzer errors ([issue #724](https://github.com/PowerShell/xSQLServer/issues/724))
   - Casting the result of the property IsHadrEnabled to [System.Boolean] so that
     $null is never returned, which resulted in an exception ([issue #763](https://github.com/PowerShell/xFailOverCluster/issues/763)).
+  - Added integration test ([issue #736](https://github.com/PowerShell/xSQLServer/issues/736)).
 - Changes to xSQLServerDatabasePermission
   - Fixed PS Script Analyzer errors ([issue #725](https://github.com/PowerShell/xSQLServer/issues/725))
 - Changes to xSQLServerScript
