@@ -56,7 +56,7 @@ function Get-TargetResource
         # This is a validation test for issue #519.
         try
         {
-            if ($isAlwaysOnEnabled -eq $null)
+            if ($null -eq $isAlwaysOnEnabled)
             {
                 throw 'Server.IsHadrEnabled was set to $null.'
             }
@@ -189,7 +189,7 @@ function Test-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Present','Absent')]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure,
 
@@ -208,8 +208,8 @@ function Test-TargetResource
 
     # Determine the current state of Always On
     $getTargetResourceParameters = @{
-        Ensure          = $Ensure
-        SQLServer       = $SQLServer
+        Ensure = $Ensure
+        SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
 
