@@ -208,8 +208,8 @@ function Test-TargetResource
 
     # Determine the current state of Always On
     $getTargetResourceParameters = @{
-        Ensure = $Ensure
-        SQLServer = $SQLServer
+        Ensure          = $Ensure
+        SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
     }
 
