@@ -51,8 +51,12 @@
   - Added examples (issue #633)
     - 1-EnableAlwaysOn.ps1
     - 2-DisableAlwaysOn.ps1
+<<<<<<< HEAD
 - Changes to xSQLServerScript
   - Fixed PS Script Analyzer errors ([issue #728](https://github.com/PowerShell/xSQLServer/issues/728))
+=======
+  - Fixed PS Script Analyser errors ([Issue #724](https://github.com/PowerShell/xSQLServer/issues/724))
+>>>>>>> Update changelog
 - Changes to xSQLServerSetup
   - Added Swedish localization ([issue #695](https://github.com/PowerShell/xSQLServer/issues/695)).
   - Now Get-TargetResource correctly returns an array for property ASSysAdminAccounts,
