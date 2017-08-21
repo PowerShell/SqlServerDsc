@@ -27,13 +27,13 @@ function Get-TargetResource
         $ServiceName = 'MSSQLSERVER'
     )
 
-    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $SQLServer
+    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer
     $serviceObject = $managedComputer.Services | Where-Object { $_.Name -ieq $ServiceName }
 
     if (-not $serviceObject)
     {
         $errorMessage = $script:localizedData.InvalidServiceName -f $ServiceName
-        New-InvalidArgument -Message $errorMessage -ArgumentName 'ServiceName'
+        New-InvalidArgumentException -Message $errorMessage -ArgumentName 'ServiceName'
     }
 
     return @{
@@ -264,10 +264,12 @@ function Resolve-ServiceName
         $ServiceType
     )
 
-    # Get the service naming information from the registry
-    $serviceNamingScheme = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services' |
-        Where-Object { (ConvertTo-ManagedServiceType -Id $_.GetVaue('Type')) -ieq $ServiceType } |
-        Get-ItemProperty -Name Type, Name, LName
+    # Get the service type definition from the registry
+    $serviceTypeDefinition = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services' |
+        Where-Object { (ConvertTo-ManagedServiceType -Id $_.GetValue('Type')) -ieq $ServiceType }
+
+    # Get the service naming information for this type
+    $serviceNamingScheme = Get-ItemProperty -Path $serviceTypeDefinition.PSPath -Name Type, Name, LName
 
     # Default instance uses the default service name!
     if ($SQLInstanceName -ieq 'MSSQLSERVER')
@@ -276,6 +278,12 @@ function Resolve-ServiceName
     }
     else
     {
+        if ([String]::IsNullOrEmpty($serviceNamingScheme.LName))
+        {
+            $errorMessage = $script:localizedData.ServiceNotInstanceAware -f $ServiceType
+            New-InvalidOperationException -Message $errorMessage
+        }
+
         return "$($serviceNamingScheme.LName)$SQLInstanceName"
     }
 }
