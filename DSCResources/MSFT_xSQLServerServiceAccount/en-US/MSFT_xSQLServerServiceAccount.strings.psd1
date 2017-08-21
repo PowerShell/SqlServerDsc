@@ -9,4 +9,5 @@ ConvertFrom-StringData @'
     RestartingService = Restarting '{0}' and any dependent services.
     InvalidServiceName = The service '{0}' could not be found.
     InvalidServiceTypeId = Managed Service Type {0} is not valid.
+    ServiceNotInstanceAware = The service {0} is not instance-aware.
 '@
