@@ -25,29 +25,12 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion
 
-$mockComputerName = $env:COMPUTERNAME
-$mockInstanceName = 'DSCSQL2016'
-$mockRestartTimeout = 120
-
 $mockSqlInstallAccountPassword = ConvertTo-SecureString -String 'P@ssw0rd1' -AsPlainText -Force
 $mockSqlInstallAccountUserName = "$env:COMPUTERNAME\SqlInstall"
 $mockSqlInstallCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $mockSqlInstallAccountUserName, $mockSqlInstallAccountPassword
 
 try
 {
-    $ConfigurationData = @{
-        AllNodes = @(
-            @{
-                NodeName                    = 'localhost'
-                ComputerName                = $mockComputerName
-                InstanceName                = $mockInstanceName
-                RestartTimeout              = $mockRestartTimeout
-
-                PSDscAllowPlainTextPassword = $true
-            }
-        )
-    }
-
     $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
     . $configFile
 
@@ -57,6 +40,7 @@ try
     Describe "$($script:DSCResourceName)_Integration" {
         It 'Should compile and apply the MOF without throwing' {
             {
+                # The variable $ConfigurationData was dot-sourced above.
                 & $configurationName `
                     -SqlInstallCredential $mockSqlInstallCredential `
                     -OutputPath $TestDrive `
