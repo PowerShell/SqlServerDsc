@@ -14,8 +14,15 @@ $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.W
     .SYNOPSIS
     Gets the service account for the specified instance
 
-    .PARAMETER ServiceName
-    Name of the SQL Server service
+    .PARAMETER SQLServer
+    Host name of the SQL Server to manage
+
+    .PARAMETER SQLInstanceName
+    Name of the SQL instance.
+
+    .PARAMETER ServiceType
+    Type of service to be managed. Must be one of the following:
+    SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer
 #>
 function Get-TargetResource
 {
@@ -24,20 +31,48 @@ function Get-TargetResource
     param
     (
         [String]
-        $ServiceName = 'MSSQLSERVER'
+        $SQLServer,
+
+        [String]
+        $SQLInstanceName = 'MSSQLServer',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
+        [String]
+        $ServiceType
     )
 
-    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer
-    $serviceObject = $managedComputer.Services | Where-Object { $_.Name -ieq $ServiceName }
+    $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
+    New-VerboseMessage -Message $verboseMessage
 
-    if (-not $serviceObject)
+    # Connect to SQL WMI
+    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $SQLServer
+
+    # Change the regex pattern for a default instance
+    if ($SQLInstanceName -ieq 'MSSQLServer')
     {
-        $errorMessage = $script:localizedData.InvalidServiceName -f $ServiceName
-        New-InvalidArgumentException -Message $errorMessage -ArgumentName 'ServiceName'
+        $serviceNamePattern = '^MSSQLServer$'
+    }
+    else
+    {
+        $serviceNamePattern = ('\${0}$' -f $SQLInstanceName)
     }
 
+    # Get the Service object for the specified instance/type
+    $serviceObject = $managedComputer.Services | Where-Object { ($_.Type -eq $ServiceType) -and ($_.Name -imatch $serviceNamePattern) }
+
+    # If no service was found, throw an exception
+    if (-not $serviceObject)
+    {
+        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $SQLServer, $SQLInstanceName
+        New-ObjectNotFoundException -Message $errorMessage
+    }
+
+    # Return a hashtable with the service information
     return @{
-        ServiceName = $ServiceName
+        SQLServer = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        ServiceType = $serviceObject.Type
         ServiceAccount = $serviceObject.ServiceAccount
     }
 }
@@ -79,16 +114,16 @@ function Test-TargetResource
         [String]
         $SQLServer,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
         [String]
         $ServiceType,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [PSCredential]
         $ServiceAccount,
 
@@ -105,11 +140,8 @@ function Test-TargetResource
         return $false
     }
 
-    # Determine the service name
-    $serviceName = Resolve-ServiceName -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
-
     # Get the current state
-    $currentState = Get-TargetResource -ServiceName $serviceName
+    $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
     New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount)
 
     return ($currentState.ServiceAccount -ieq $ServiceAccount.UserName)
@@ -150,16 +182,16 @@ function Set-TargetResource
         [String]
         $SQLServer,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
         [String]
         $ServiceType,
 
-        [Paramter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [PSCredential]
         $ServiceAccount,
 
@@ -190,100 +222,5 @@ function Set-TargetResource
     {
         New-VerboseMessage -Message ($script:localizedData.RestartingService -f $serviceName)
         Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
-    }
-}
-
-<#
-    .SYNOPSIS
-    Converts an ID to a ManagedServiceType
-
-    .PARAMETER Id
-    Integer identifying the ManagedServiceType
-
-    .EXAMPLE
-    $typeId = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services\SQL Server\' -Name Type
-    ConvertTo-ManagedServiceType -Id $typeId
-#>
-function ConvertTo-ManagedServiceType
-{
-    param
-    (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [Int]
-        $Id
-    )
-
-    switch ($Id)
-    {
-        1 { $enumValue = 'SqlServer' }
-        2 { $enumValue = 'SqlAgent' }
-        3 { $enumValue = 'Search' }
-        4 { $enumValue = 'SqlServerIntegrationService' }
-        5 { $enumValue = 'AnalysisServer' }
-        6 { $enumValue = 'ReportServer' }
-        7 { $enumValue = 'SqlBrowser' }
-        8 { $enumValue = 'NotificationServer' }
-        9 { $enumValue = 'Search' }
-        default
-        {
-            $errorMessage = $script:localizedData.InvalidServiceTypeId -f $Id
-            New-InvalidArgumentException -Message $errorMessage -ArgumentName 'Id'
-        }
-    }
-
-    return ($enumValue -as [Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType])
-}
-
-<#
-    .SYNOPSIS
-    Gets the name of a service based on the type and instance name
-
-    .PARAMETER SQLInstanceName
-    The name of the SQL Server instance
-
-    .PARAMETER ServiceType
-    Type of service this instance supports.
-
-    .EXAMPLE
-    Resolve-ServiceName -SQLInstanceName Accounting -ServiceType SqlServer
-
-    Will resovlve the service name for a SQL Server instance named "Accounting"
-
-#>
-function Resolve-ServiceName
-{
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [String]
-        $SQLInstanceName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
-        [String]
-        $ServiceType
-    )
-
-    # Get the service type definition from the registry
-    $serviceTypeDefinition = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services' |
-        Where-Object { (ConvertTo-ManagedServiceType -Id $_.GetValue('Type')) -ieq $ServiceType }
-
-    # Get the service naming information for this type
-    $serviceNamingScheme = Get-ItemProperty -Path $serviceTypeDefinition.PSPath -Name Type, Name, LName
-
-    # Default instance uses the default service name!
-    if ($SQLInstanceName -ieq 'MSSQLSERVER')
-    {
-        return "$($serviceNamingScheme.Name)"
-    }
-    else
-    {
-        if ([String]::IsNullOrEmpty($serviceNamingScheme.LName))
-        {
-            $errorMessage = $script:localizedData.ServiceNotInstanceAware -f $ServiceType
-            New-InvalidOperationException -Message $errorMessage
-        }
-
-        return "$($serviceNamingScheme.LName)$SQLInstanceName"
     }
 }
