@@ -21,8 +21,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
-}
+function Invoke-TestSetup {}
 
 function Invoke-TestCleanup {
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
@@ -35,38 +34,123 @@ try
 
     InModuleScope $script:DSCResourceName {
 
-        Describe 'ConvertTo-ManagedServiceType' -Tag 'Helper' {
-            Context 'When invalid arguments are specified' {
-                It 'Should throw an exception' {
-                    { ConvertTo-ManagedServiceType -Id 0 } | Should Throw 'Managed Service Type 0 is not valid'
+        $mockSqlServer = 'TestServer'
+        $mockDefaultInstanceName = 'MSSQLSERVER'
+        $mockNamedInstance = 'Testnstance'
+        $mockServiceAccountName = 'CONTOSO\sql.service'
+        $mockServiceAccountCredential = (New-Object pscredential $mockServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+
+        $mockNewObject_ManagedComputer_DefaultInstance = {
+            return @{
+                Name = $mockSqlServer
+                Services = @(
+                    @{
+                        Name = $mockDefaultInstanceName
+                        ServiceAccount = $mockServiceAccountName
+                        Type = 'SqlServer'
+                    }
+                )
+            }
+        }
+
+        $mockNewObject_ManagedComputer_NamedInstance = {
+            return @{
+                Name = $mockSqlServer
+                Services = @{
+                    Name = ('MSSQL${0}' -f $mockNamedInstance)
+                    ServiceAccount = $mockServiceAccountName
+                    Type = 'SqlServer'
+                }
+            }
+        }
+
+        $mockNewObject_ParameterFilter = { $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer' }
+
+        Describe 'MSFT_xSQLServerServiceAccount\Get-TargetResource' -Tag 'Get' {
+
+            Context 'When getting the service information for a default instance' {
+
+                $mockNewObjectParams = @{
+                    CommandName = 'New-Object'
+                    MockWith = $mockNewObject_ManagedComputer_DefaultInstance
+                    ParameterFilter = $mockNewObject_ParameterFilter
+                    Verifiable = $true
+                }
+
+                Mock @mockNewObjectParams
+
+                It 'Should return the correct service information' {
+                    $testServiceType = 'SqlServer'
+
+                    # Splat the function parameters
+                    $getTargetResourceParams = @{
+                        SQLServer = $mockSqlServer
+                        SQLInstanceName = $mockDefaultInstanceName
+                        ServiceType = $testServiceType
+                    }
+
+                    # Get the service information
+                    $testServiceInformation = Get-TargetResource @getTargetResourceParams
+
+                    # Validate the hashtable returned
+                    $testServiceInformation.SQLServer | Should Be $mockSqlServer
+                    $testServiceInformation.SQLInstanceName | Should Be $mockDefaultInstanceName
+                    $testServiceInformation.ServiceType | Should Be $testServiceType
+                    $testServiceInformation.ServiceAccount | Should Be $mockServiceAccountName
+                }
+
+                It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
+                    { Get-TargetResource -SQLServer $mockSqlServer -SQLInstanceName $mockDefaultInstanceName -ServiceType SqlAgent } |
+                        Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockDefaultInstanceName) could not be found."
+                }
+
+                It 'Should use all mocked commands' {
+                    Assert-VerifiableMocks
+
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
 
-            Context 'When valid arguments are specified' {
-                $mockValidServiceTypes = @{
-                    1  = 'SqlServer'
-                    2  = 'SqlAgent'
-                    3  = 'Search'
-                    4  = 'SqlServerIntegrationService'
-                    5  = 'AnalysisServer'
-                    6  = 'ReportServer'
-                    7  = 'SqlBrowser'
-                    8  = 'NotificationServer'
-                    9  = 'Search'
+            Context 'When getting the service information for a named instance' {
+
+                $mockNewObjectParams = @{
+                    CommandName = 'New-Object'
+                    MockWith = $mockNewObject_ManagedComputer_NamedInstance
+                    ParameterFilter = $mockNewObject_ParameterFilter
+                    Verifiable = $true
                 }
 
-                foreach ($serviceType in $mockValidServiceTypes.GetEnumerator())
-                {
-                    $mockServiceTypeId = $serviceType.Name
-                    $mockServiceTypeName = $serviceType.Value
+                Mock @mockNewObjectParams
 
-                    It "Should return the correct service type for $($mockServiceTypeName)" {
-                        ConvertTo-ManagedServiceType -Id $mockServiceTypeId | Should Be $mockServiceTypeName
+                It 'Should return the correct service information' {
+                    $testServiceType = 'SqlServer'
+
+                    # Splat the function parameters
+                    $getTargetResourceParams = @{
+                        SQLServer = $mockSqlServer
+                        SQLInstanceName = $mockNamedInstance
+                        ServiceType = $testServiceType
                     }
+
+                    # Get the service information
+                    $testServiceInformation = Get-TargetResource @getTargetResourceParams
+
+                    # Validate the hashtable returned
+                    $testServiceInformation.SQLServer | Should Be $mockSqlServer
+                    $testServiceInformation.SQLInstanceName | Should Be $mockNamedInstance
+                    $testServiceInformation.ServiceType | Should Be $testServiceType
+                    $testServiceInformation.ServiceAccount | Should Be $mockServiceAccountName
                 }
 
-                It 'Should return the correct service type for SQL Agent' {
-                    ConvertTo-ManagedServiceType -Id 2 | Should Be 'SqlAgent'
+                It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
+                    { Get-TargetResource -SQLServer $mockSqlServer -SQLInstanceName $mockNamedInstance -ServiceType SqlAgent } |
+                        Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockNamedInstance) could not be found."
+                }
+
+                It 'Should use all mocked commands' {
+                    Assert-VerifiableMocks
+
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
         }
