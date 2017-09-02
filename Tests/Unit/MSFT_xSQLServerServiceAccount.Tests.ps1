@@ -39,6 +39,7 @@ try
         $mockNamedInstance = 'Testnstance'
         $mockServiceAccountName = 'CONTOSO\sql.service'
         $mockServiceAccountCredential = (New-Object pscredential $mockServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+        $mockBadServiceAccountCredential = (New-Object PSCredential 'CONTOSO\sql.service2', (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
 
         $mockNewObject_ManagedComputer_DefaultInstance = {
             return @{
@@ -153,6 +154,73 @@ try
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
+        }
+
+        Describe 'MSFT_xSQLServerServiceAccount\Test-TargetResource' -Tag 'Test' {
+
+            $mockNewObjectParams = @{
+                CommandName = 'New-Object'
+                MockWith = $mockNewObject_ManagedComputer_DefaultInstance
+                ParameterFilter = $mockNewObject_ParameterFilter
+                Verifiable = $true
+            }
+
+            Mock @mockNewObjectParams
+
+            Context 'When the system is not in the desired state' {
+                It 'Should return false' {
+                    $testTargetResourceParams = @{
+                        SQLServer = $mockSqlServer
+                        SQLInstanceName = $mockDefaultInstanceName
+                        ServiceType = 'SqlServer'
+                        ServiceAccount = $mockBadServiceAccountCredential
+                    }
+
+                    Test-TargetResource @testTargetResourceParams | Should Be $false
+                }
+
+                It 'Should use all mocked commands' {
+                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
+                }
+            }
+
+            Context 'When the system is in the desired state' {
+                It 'Should return true' {
+                    $testTargetResourceParams = @{
+                        SQLServer = $mockSqlServer
+                        SQLInstanceName = $mockDefaultInstanceName
+                        ServiceType = 'SqlServer'
+                        ServiceAccount = $mockServiceAccountCredential
+                    }
+
+                    Test-TargetResource @testTargetResourceParams | Should Be $true
+                }
+
+                It 'Should use all mocked commands' {
+                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
+                }
+            }
+
+            Context 'When the system is in the desired state and Force is specified' {
+                It 'Should return false' {
+                    $testTargetResourceParams = @{
+                        SQLServer = $mockSqlServer
+                        SQLInstanceName = $mockDefaultInstanceName
+                        ServiceType = 'SqlServer'
+                        ServiceAccount = $mockServiceAccountCredential
+                        Force = $true
+                    }
+
+                    Test-TargetResource @testTargetResourceParams | Should Be $false
+                }
+
+                It 'Should not use any mocked commands' {
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 0
+                }
+            }
+
         }
     }
 }
