@@ -24,20 +24,8 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerServiceA
         ** Not used in this function **
          Credential of the service account that should be used.
 
-<<<<<<< HEAD
     .EXAMPLE
         Get-TargetResource -SQLServer $env:COMPUTERNAME -SQLInstanceName MSSQLSERVER -ServiceType SqlServer -ServiceAccount $account
-=======
-    .PARAMETER SQLServer
-    Host name of the SQL Server to manage
-
-    .PARAMETER SQLInstanceName
-    Name of the SQL instance.
-
-    .PARAMETER ServiceType
-    Type of service to be managed. Must be one of the following:
-    SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer
->>>>>>> Refactored to remove need for helper functions. Updated localized strings.
 #>
 function Get-TargetResource
 {
@@ -45,7 +33,6 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-<<<<<<< HEAD
         [Parameter(Mandatory = $true)]
         [System.String]
         $SQLServer,
@@ -66,38 +53,6 @@ function Get-TargetResource
 
     # Get the SMO Service object instance
     $serviceObject = Get-ServiceObject -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
-=======
-        [String]
-        $SQLServer,
-
-        [String]
-        $SQLInstanceName = 'MSSQLServer',
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
-        [String]
-        $ServiceType
-    )
-
-    $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
-    New-VerboseMessage -Message $verboseMessage
-
-    # Connect to SQL WMI
-    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $SQLServer
-
-    # Change the regex pattern for a default instance
-    if ($SQLInstanceName -ieq 'MSSQLServer')
-    {
-        $serviceNamePattern = '^MSSQLServer$'
-    }
-    else
-    {
-        $serviceNamePattern = ('\${0}$' -f $SQLInstanceName)
-    }
-
-    # Get the Service object for the specified instance/type
-    $serviceObject = $managedComputer.Services | Where-Object { ($_.Type -eq $ServiceType) -and ($_.Name -imatch $serviceNamePattern) }
->>>>>>> Refactored to remove need for helper functions. Updated localized strings.
 
     # If no service was found, throw an exception
     if (-not $serviceObject)
@@ -153,7 +108,6 @@ function Test-TargetResource
         $SQLServer,
 
         [Parameter(Mandatory = $true)]
-<<<<<<< HEAD
         [System.String]
         $SQLInstanceName,
 
@@ -164,18 +118,6 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-=======
-        [String]
-        $SQLInstanceName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
-        [String]
-        $ServiceType,
-
-        [Parameter(Mandatory = $true)]
-        [PSCredential]
->>>>>>> Refactored to remove need for helper functions. Updated localized strings.
         $ServiceAccount,
 
         [Parameter()]
@@ -194,13 +136,8 @@ function Test-TargetResource
     }
 
     # Get the current state
-<<<<<<< HEAD
     $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType -ServiceAccount $ServiceAccount
     New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount, $SQLServer, $SQLInstanceName)
-=======
-    $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
-    New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount)
->>>>>>> Refactored to remove need for helper functions. Updated localized strings.
 
     return ($currentState.ServiceAccount -ieq $ServiceAccount.UserName)
 }
@@ -241,7 +178,6 @@ function Set-TargetResource
         $SQLServer,
 
         [Parameter(Mandatory = $true)]
-<<<<<<< HEAD
         [System.String]
         $SQLInstanceName,
 
@@ -252,18 +188,6 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-=======
-        [String]
-        $SQLInstanceName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
-        [String]
-        $ServiceType,
-
-        [Parameter(Mandatory = $true)]
-        [PSCredential]
->>>>>>> Refactored to remove need for helper functions. Updated localized strings.
         $ServiceAccount,
 
         [Parameter()]
