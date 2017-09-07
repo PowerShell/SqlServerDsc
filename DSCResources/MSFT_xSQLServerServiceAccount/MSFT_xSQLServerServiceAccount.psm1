@@ -31,7 +31,7 @@ function Get-TargetResource
     param
     (
         [String]
-        $SQLServer,
+        $SQLServer = $env:COMPUTERNAME,
 
         [String]
         $SQLInstanceName = 'MSSQLServer',
@@ -112,11 +112,11 @@ function Test-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $SQLServer = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $SQLInstanceName = 'MSSQLServer',
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
@@ -180,11 +180,11 @@ function Set-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $SQLServer = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $SQLInstanceName = 'MSSQLServer',
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
