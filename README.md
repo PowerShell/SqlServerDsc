@@ -152,6 +152,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
 * [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait until
   availability group is created on primary server.
+* [**xSQLServerServiceAccount**](#xsqlserverserviceaccount) Manage the service account
+  for SQL Server services.
 
 ### xSQLServerAlias
 
@@ -1211,6 +1213,31 @@ See [issue #273](https://github.com/PowerShell/xSQLServer/issues/273) for more i
 
 * [Run a script using SQL Authentication](/Examples/Resources/xSQLServerScript/1-RunScriptUsingSQLAuthentication.ps1)
 * [Run a script using Windows Authentication](/Examples/Resources/xSQLServerScript/2-RunScriptUsingWindowsAuthentication.ps1)
+
+### xSQLServerServiceAccount
+
+Manage the service account for SQL Server services.
+
+#### Requirements
+
+#### Parameters
+
+* **`[String]` SQLServer** (Key): The host name of the SQL Server to be configured.
+* **`[String]` SQLInstance** (Key): The name of the SQL instance to be configured.
+* **`[String]` ServiceType** (Key): The service type for **SQLInstance**
+  { SqlServer | SqlAgent | Search | "SqlServerIntegrationService | AnalysisServer
+  | ReportServer | SqlBrowser | NotificationServer }
+* **`[PSCredential]` ServiceAccount** (Required): The service account that should
+  be used when running the service.
+* **`[Boolean]` RestartService** (Write): Determines whether the service is
+  automatically restarted.
+* **`[Boolean]` Force** (Write): Forces the service account to be updated.
+  Useful for password changes.
+
+#### Examples
+
+* [Run service under a user account](/Examples/Resources/xSQLServerServiceAccount/1-ConfigureServiceAccount-UserAccount.ps1)
+* [Run service with a virtual account](/Examples/Resources/xSQLServerServiceAccount/2-ConfigureServiceAccount-VirtualAccount.ps1)
 
 ### xSQLServerSetup
 
