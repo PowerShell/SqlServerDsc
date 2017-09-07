@@ -42,50 +42,134 @@ try
         $mockDefaultServiceAccountName = 'NT SERVICE\MSSQLSERVER'
         $mockDefaultServiceAccountCredential = (New-Object PSCredential $mockDefaultServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
 
+        # Stores the result of SetServiceAccount calls
+        $testServiceAccountUpdated = @{
+            Processed = $false
+            NewUserAccount = [String]::Empty
+            NewPassword = [String]::Emtpy
+        }
+
+        $mockSetServiceAccount = {
+            param
+            (
+                [string]
+                $User,
+
+                [string]
+                $Pass
+            )
+
+            # Update the object
+            $testServiceAccountUpdated.Processed = $true
+            $testServiceAccountUpdated.NewUserAccount = $User
+            $testServiceAccountUpdated.NewPassword = $Pass
+        }
+
+        $mockAddMemberParams_SetServiceAccount = @{
+            Name = 'SetServiceAccount'
+            MemberType = 'ScriptMethod'
+            Value = $mockSetServiceAccount
+        }
+
+        # Used to mock ManagedComputer object for a default instance
         $mockNewObject_ManagedComputer_DefaultInstance = {
-            return New-Object PSObject -Property @{
+            $managedComputerObject = New-Object PSObject -Property @{
                 Name = $mockSqlServer
                 Services = @(
-                    @{
+                    New-Object PSObject -Property @{
                         Name = $mockDefaultInstanceName
+                        ServiceAccount = $mockDefaultServiceAccountName
+                        Type = 'SqlServer'
+                    }
+                )
+            }
+
+            $managedComputerObject.Services | ForEach-Object { $_ | Add-Member @mockAddMemberParams_SetServiceAccount }
+
+            return $managedComputerObject
+        }
+
+        $mockNewObject_ManagedComputer_DefaultInstance_SetServiceAccountException = {
+            $managedComputerObject = New-Object PSObject -Property @{
+                Name = $mockSqlServer
+                Services = @(
+                    New-Object PSObject -Property @{
+                        Name = $mockDefaultInstanceName
+                        ServiceAccount = $mockDefaultServiceAccountName
+                        Type = 'SqlServer'
+                    }
+                )
+            }
+
+            $managedComputerObject.Services |
+                ForEach-Object {
+                    $_ |
+                        Add-Member -Name SetServiceAccount -MemberType ScriptMethod -Value {
+                            param
+                            (
+                                [String]
+                                $User,
+
+                                [String]
+                                $Pass
+                            )
+
+                            throw (New-Object Microsoft.SqlServer.Management.Smo.FailedOperationException 'SetServiceAccount')
+                        }
+                }
+
+            return $managedComputerObject
+        }
+
+        # Used to mock a ManagedComputer object for a named instance
+        $mockNewObject_ManagedComputer_NamedInstance = {
+            $managedComputerObject = New-Object PSObject -Property @{
+                Name = $mockSqlServer
+                Services = @(
+                    New-Object PSObject -Property @{
+                        Name = ('MSSQL${0}' -f $mockNamedInstance)
                         ServiceAccount = $mockDesiredServiceAccountName
                         Type = 'SqlServer'
                     }
                 )
-            } | Add-Member -MemberType ScriptMethod -Name SetServiceAccount -Value {
-                param
-                (
-                    [string]
-                    $User,
+            }
 
-                    [string]
-                    $Pass
-                )
+            $managedComputerObject.Services | ForEach-Object { $_ | Add-Member @mockAddMemberParams_SetServiceAccount }
 
-                return;
-            } -PassThru
+            return $managedComputerObject
         }
 
-        $mockNewObject_ManagedComputer_NamedInstance = {
-            return New-Object PSObject -Property @{
+        # Used to mock a ManagedComputer object that fails to change the service account
+        $mockNewObject_ManagedComputer_NamedInstance_SetServiceAccountException = {
+            $managedComputerObject = New-Object PSObject -Property @{
                 Name = $mockSqlServer
-                Services = @{
-                    Name = ('MSSQL${0}' -f $mockNamedInstance)
-                    ServiceAccount = $mockDesiredServiceAccountName
-                    Type = 'SqlServer'
-                }
-            }  | Add-Member -MemberType ScriptMethod -Name SetServiceAccount -Value {
-                param
-                (
-                    [string]
-                    $User,
-
-                    [string]
-                    $Pass
+                Services = @(
+                    New-Object PSObject -Property @{
+                        Name = ('MSSQL${0}' -f $mockNamedInstance)
+                        ServiceAccount = $mockDesiredServiceAccountName
+                        Type = 'SqlServer'
+                    }
                 )
+            }
 
-                return;
-            } -PassThru
+            $managedComputerObject.Services |
+                ForEach-Object {
+                    $_ |
+                        Add-Member -Name SetServiceAccount -MemberType ScriptMethod -Value {
+                            param
+                            (
+                                [String]
+                                $User,
+
+                                [String]
+                                $Pass
+                            )
+
+                            throw (New-Object Microsoft.SqlServer.Management.Smo.FailedOperationException 'SetServiceAccount')
+                        }
+                }
+
+            return $managedComputerObject
         }
 
         $mockNewObject_ParameterFilter = { $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer' }
@@ -127,7 +211,7 @@ try
                     $testServiceInformation.SQLServer | Should Be $mockSqlServer
                     $testServiceInformation.SQLInstanceName | Should Be $mockDefaultInstanceName
                     $testServiceInformation.ServiceType | Should Be $testServiceType
-                    $testServiceInformation.ServiceAccount | Should Be $mockDesiredServiceAccountName
+                    $testServiceInformation.ServiceAccount | Should Be $mockDefaultServiceAccountName
                 }
 
                 It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
@@ -190,7 +274,7 @@ try
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
                         ServiceType = 'SqlServer'
-                        ServiceAccount = $mockDefaultServiceAccountCredential
+                        ServiceAccount = $mockServiceAccountCredential
                     }
 
                     Test-TargetResource @testTargetResourceParams | Should Be $false
@@ -211,7 +295,7 @@ try
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
                         ServiceType = 'SqlServer'
-                        ServiceAccount = $mockServiceAccountCredential
+                        ServiceAccount = $mockDefaultServiceAccountCredential
                     }
 
                     Test-TargetResource @testTargetResourceParams | Should Be $true
@@ -304,6 +388,135 @@ try
 
                 It 'Should not use any mocked commands' {
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 0
+                }
+            }
+        }
+
+        Describe 'MSFT_xSQLServerServiceAccount\Set-TargetResource' -Tag 'Set' {
+
+            Context 'When changing the service account for the default instance' {
+
+                $defaultSetTargetResourceParams = @{
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockDefaultInstanceName
+                    ServiceType = 'SqlServer'
+                    ServiceAccount = $mockDefaultServiceAccountCredential
+                }
+
+                Mock @mockNewObjectParams_DefaultInstance
+
+                Mock -CommandName Restart-SqlService -MockWith {} -Verifiable
+
+                BeforeEach {
+                    $testServiceAccountUpdated.Processed = $false
+                    $testServiceAccountUpdated.NewUserAccount = [String]::Empty
+                    $testServiceAccountUpdated.NewPassword = [String]::Empty
+                }
+
+                It 'Should update the service account information' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+
+                    # Update the service information
+                    Set-TargetResource @setTargetResourceParams
+
+                    # Validate that the correct information was passed through and updated
+                    $testServiceAccountUpdated.Processed | Should Be $true
+                    $testServiceAccountUpdated.NewUserAccount | Should Be $setTargetResourceParams.ServiceAccount.Username
+                    $testServiceAccountUpdated.NewPassword | Should Be $setTargetResourceParams.ServiceAccount.GetNetworkCredential().Password
+                }
+
+                It 'Should throw an exception when an invalid service name and type is provided' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+                    $setTargetResourceParams.ServiceType = 'SqlAgent'
+
+                    { Set-TargetResource @setTargetResourceParams } | Should Throw
+                }
+
+                It 'Should restart the service if requested' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+                    $setTargetResourceParams += @{ RestartService = $true }
+
+                    Set-TargetResource @setTargetResourceParams
+
+                    Assert-MockCalled -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should throw an exception if SetServiceAccount call fails' {
+                    $newObjectParms = $mockNewObjectParams_DefaultInstance.Clone()
+                    $newObjectParms.MockWith = $mockNewObject_ManagedComputer_DefaultInstance_SetServiceAccountException
+
+                    Mock @newObjectParms
+
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+
+                    # Attempt to update the service information
+                    { Set-TargetResource @setTargetResourceParams } | Should Throw "Unable to set the service account for $($setTargetResourceParams.SQLServer) on $($setTargetResourceParams.SQLInstanceName)"
+
+                    # Ensure mocks are used
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'When changing the service account for the default instance' {
+
+                $defaultSetTargetResourceParams = @{
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockNamedInstance
+                    ServiceType = 'SqlServer'
+                    ServiceAccount = $mockDefaultServiceAccountCredential
+                }
+
+                Mock @mockNewObjectParams_NamedInstance
+
+                Mock -CommandName Restart-SqlService -MockWith {} -Verifiable
+
+                BeforeEach {
+                    $testServiceAccountUpdated.Processed = $false
+                    $testServiceAccountUpdated.NewUserAccount = [String]::Empty
+                    $testServiceAccountUpdated.NewPassword = [String]::Empty
+                }
+
+                It 'Should update the service account information' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+
+                    # Update the service information
+                    Set-TargetResource @setTargetResourceParams
+
+                    # Validate that the correct information was passed through and updated
+                    $testServiceAccountUpdated.Processed | Should Be $true
+                    $testServiceAccountUpdated.NewUserAccount | Should Be $setTargetResourceParams.ServiceAccount.Username
+                    $testServiceAccountUpdated.NewPassword | Should Be $setTargetResourceParams.ServiceAccount.GetNetworkCredential().Password
+                }
+
+                It 'Should throw an exception when an invalid service name and type is provided' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+                    $setTargetResourceParams.ServiceType = 'SqlAgent'
+
+                    { Set-TargetResource @setTargetResourceParams } | Should Throw
+                }
+
+                It 'Should restart the service if requested' {
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+                    $setTargetResourceParams += @{ RestartService = $true }
+
+                    Set-TargetResource @setTargetResourceParams
+
+                    Assert-MockCalled -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should throw an exception if SetServiceAccount call fails' {
+                    $newObjectParms = $mockNewObjectParams_NamedInstance.Clone()
+                    $newObjectParms.MockWith = $mockNewObject_ManagedComputer_NamedInstance_SetServiceAccountException
+
+                    Mock @newObjectParms
+
+                    $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
+
+                    # Attempt to update the service information
+                    { Set-TargetResource @setTargetResourceParams } | Should Throw "Unable to set the service account for $($setTargetResourceParams.SQLServer) on $($setTargetResourceParams.SQLInstanceName)"
+
+                    # Ensure mocks are used
+                    Assert-VerifiableMocks
                 }
             }
         }
