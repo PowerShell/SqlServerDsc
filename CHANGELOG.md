@@ -106,6 +106,9 @@
     administrator (issue #691).
   - Added a simple integration test ([issue #709](https://github.com/PowerShell/xSQLServer/issues/709)).
   - Fixed PS Script Analyzer errors ([issue #729](https://github.com/PowerShell/xSQLServer/issues/729))
+- Added new resource (issue #706)
+  - xSQLServerServiceAccount
+  - Added localization support for all strings
 
 ## 8.0.0.0
 
