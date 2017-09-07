@@ -202,11 +202,31 @@ function Set-TargetResource
         $Force
     )
 
-    $serviceName = Resolve-ServiceName -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
+    $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
+    New-VerboseMessage -Message $verboseMessage
 
-    New-VerboseMessage -Message $script:localizedData.ConnectingToWmi
-    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer
-    $serviceObject = $managedComputer.Services | Where-Object { $_.Name -ieq $serviceName }
+    # Connect to SQL WMI
+    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $SQLServer
+
+    # Change the regex pattern for a default instance
+    if ($SQLInstanceName -ieq 'MSSQLServer')
+    {
+        $serviceNamePattern = '^MSSQLServer$'
+    }
+    else
+    {
+        $serviceNamePattern = ('\${0}$' -f $SQLInstanceName)
+    }
+
+    # Get the Service object for the specified instance/type
+    $serviceObject = $managedComputer.Services | Where-Object { ($_.Type -eq $ServiceType) -and ($_.Name -imatch $serviceNamePattern) }
+
+    # If no service was found, throw an exception
+    if (-not $serviceObject)
+    {
+        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $SQLServer, $SQLInstanceName
+        New-ObjectNotFoundException -Message $errorMessage
+    }
 
     try
     {
@@ -215,12 +235,13 @@ function Set-TargetResource
     }
     catch
     {
-        throw $_
+        $errorMessage = $script:localizedData.SetServiceAccountFailed -f $SQLServer, $SQLInstanceName, $_.Message
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
 
     if ($RestartService)
     {
-        New-VerboseMessage -Message ($script:localizedData.RestartingService -f $serviceName)
+        New-VerboseMessage -Message ($script:localizedData.RestartingService -f $SQLInstanceName)
         Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
     }
 }

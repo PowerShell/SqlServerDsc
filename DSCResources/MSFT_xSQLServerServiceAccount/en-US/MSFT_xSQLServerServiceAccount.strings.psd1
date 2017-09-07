@@ -8,4 +8,5 @@ ConvertFrom-StringData @'
     UpdatingServiceAccount = Setting service account to '{0}'.
     RestartingService = Restarting '{0}' and any dependent services.
     ServiceNotFound = The {0} service on {1}\\{2} could not be found.
+    SetServiceAccountFailed = Unable to set the service account for {0} on {1}. Message {2}
 '@
