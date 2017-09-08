@@ -151,7 +151,7 @@ function Test-TargetResource
     }
 
     # Get the current state
-    $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
+    $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType -ServiceAccount $ServiceAccount
     New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount)
 
     return ($currentState.ServiceAccount -ieq $ServiceAccount.UserName)
