@@ -30,9 +30,11 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName = 'MSSQLServer',
 
@@ -110,9 +112,11 @@ function Test-TargetResource
     [OutputType([Boolean])]
     param
     (
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName = 'MSSQLServer',
 
@@ -176,9 +180,11 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter(Mandatory = $true)]
         [String]
         $SQLInstanceName = 'MSSQLServer',
 
