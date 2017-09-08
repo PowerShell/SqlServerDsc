@@ -25,7 +25,3 @@ Configuration Example
         }
     }
 }
-
-$ServiceAccount = Get-Credential -Message 'Enter username and password for servcie account.'
-
-Example -ServiceAccount $ServiceAccount
