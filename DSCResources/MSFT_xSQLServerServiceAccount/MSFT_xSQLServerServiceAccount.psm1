@@ -23,6 +23,10 @@ $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.W
     .PARAMETER ServiceType
     Type of service to be managed. Must be one of the following:
     SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer
+
+    .PARAMETER ServiceAccount
+    ** Not used in this function **
+    Credential of the service account that should be used.
 #>
 function Get-TargetResource
 {
@@ -41,7 +45,11 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
         [String]
-        $ServiceType
+        $ServiceType,
+
+        [Parameter(Mandatory = $true)]
+        [PSCredential]
+        $ServiceAccount
     )
 
     $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
