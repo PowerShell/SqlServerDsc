@@ -194,28 +194,30 @@ try
 
                 Mock @mockNewObjectParams_DefaultInstance
 
-                It 'Should return the correct service information' {
-                    $testServiceType = 'SqlServer'
+                $defaultGetTargetResourceParams = @{
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockDefaultInstanceName
+                    ServiceType = 'SqlServer'
+                    ServiceAccount = $mockDefaultServiceAccountCredential
+                }
 
-                    # Splat the function parameters
-                    $getTargetResourceParams = @{
-                        SQLServer = $mockSqlServer
-                        SQLInstanceName = $mockDefaultInstanceName
-                        ServiceType = $testServiceType
-                    }
+                It 'Should return the correct service information' {
 
                     # Get the service information
-                    $testServiceInformation = Get-TargetResource @getTargetResourceParams
+                    $testServiceInformation = Get-TargetResource @defaultGetTargetResourceParams
 
                     # Validate the hashtable returned
                     $testServiceInformation.SQLServer | Should Be $mockSqlServer
                     $testServiceInformation.SQLInstanceName | Should Be $mockDefaultInstanceName
-                    $testServiceInformation.ServiceType | Should Be $testServiceType
+                    $testServiceInformation.ServiceType | Should Be 'SqlServer'
                     $testServiceInformation.ServiceAccount | Should Be $mockDefaultServiceAccountName
                 }
 
                 It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
-                    { Get-TargetResource -SQLServer $mockSqlServer -SQLInstanceName $mockDefaultInstanceName -ServiceType SqlAgent } |
+                    $getTargetResourceParams = $defaultGetTargetResourceParams.Clone()
+                    $getTargetResourceParams.ServiceType = 'SqlAgent'
+
+                    { Get-TargetResource @getTargetResourceParams } |
                         Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockDefaultInstanceName) could not be found."
                 }
 
@@ -230,28 +232,30 @@ try
 
                 Mock @mockNewObjectParams_NamedInstance
 
+                # Splat the function parameters
+                $defaultGetTargetResourceParams = @{
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockNamedInstance
+                    ServiceType = 'SqlServer'
+                    ServiceAccount = $mockServiceAccountCredential
+                }
+
                 It 'Should return the correct service information' {
-                    $testServiceType = 'SqlServer'
-
-                    # Splat the function parameters
-                    $getTargetResourceParams = @{
-                        SQLServer = $mockSqlServer
-                        SQLInstanceName = $mockNamedInstance
-                        ServiceType = $testServiceType
-                    }
-
                     # Get the service information
-                    $testServiceInformation = Get-TargetResource @getTargetResourceParams
+                    $testServiceInformation = Get-TargetResource @defaultGetTargetResourceParams
 
                     # Validate the hashtable returned
                     $testServiceInformation.SQLServer | Should Be $mockSqlServer
                     $testServiceInformation.SQLInstanceName | Should Be $mockNamedInstance
-                    $testServiceInformation.ServiceType | Should Be $testServiceType
+                    $testServiceInformation.ServiceType | Should Be 'SqlServer'
                     $testServiceInformation.ServiceAccount | Should Be $mockDesiredServiceAccountName
                 }
 
                 It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
-                    { Get-TargetResource -SQLServer $mockSqlServer -SQLInstanceName $mockNamedInstance -ServiceType SqlAgent } |
+                    $getTargetResourceParams = $defaultGetTargetResourceParams.Clone()
+                    $getTargetResourceParams.ServiceType = 'SqlAgent'
+
+                    { Get-TargetResource @getTargetResourceParams } |
                         Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockNamedInstance) could not be found."
                 }
 
