@@ -27,7 +27,3 @@ Configuration Example
         }
     }
 }
-
-$ServiceAccount = New-Object PSCredential 'NT SERVICE\MSSQL$DSC', (New-Object System.Security.SecureString)
-
-Example -ServiceAccount $ServiceAccount
