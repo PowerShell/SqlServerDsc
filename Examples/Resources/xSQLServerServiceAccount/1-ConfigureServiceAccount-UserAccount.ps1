@@ -9,7 +9,7 @@ Configuration Example
     param(
         [Parameter(Mandatory = $true)]
         [PSCredential]
-        $ServiceAcccount
+        $ServiceAccountCredential
     )
 
     Import-DscResource -ModuleName xSqlServer
@@ -20,7 +20,7 @@ Configuration Example
             SQLServer = 'TestServer'
             SQLInstanceName = 'MSSQLSERVER'
             ServiceType = 'SqlServer'
-            ServiceAccount = $ServiceAcccount
+            ServiceAccount = $ServiceAccountCredential
             RestartService = $true
         }
     }
