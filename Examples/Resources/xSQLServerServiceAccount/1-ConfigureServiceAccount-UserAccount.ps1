@@ -18,6 +18,7 @@ Configuration Example
         xSQLServerServiceAccount SetServiceAcccount_User
         {
             SQLServer = 'TestServer'
+            SQLInstanceName = 'MSSQLSERVER'
             ServiceType = 'SqlServer'
             ServiceAccount = $ServiceAcccount
             RestartService = $true
