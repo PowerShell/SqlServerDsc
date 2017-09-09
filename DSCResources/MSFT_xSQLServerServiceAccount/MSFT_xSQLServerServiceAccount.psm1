@@ -7,7 +7,9 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerServiceAccount'
 
 # Import the required SMO assemblies
-Import-SQLPSModule
+# Import-SQLPSModule
+$null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
+$null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.WmiEnum')
 
 <#
     .SYNOPSIS
