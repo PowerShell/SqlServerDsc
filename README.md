@@ -154,8 +154,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
 * [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait until
   availability group is created on primary server.
-* [**xSQLServerServiceAccount**](#xsqlserverserviceaccount) Manage the service account
-  for SQL Server services.
 
 ### xSQLServerAlias
 
