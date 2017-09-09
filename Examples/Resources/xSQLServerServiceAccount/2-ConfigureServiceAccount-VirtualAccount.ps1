@@ -2,7 +2,9 @@
 .EXAMPLE
     This example shows how to ensure the SQL Server service
     on TestServer\DSC is running under a virtual account.
-    Restart the service after updating.
+    Force will cause this account to be set every time the
+    configuration is evaluated. Specifying RestartService will
+    cause the service to be restarted.
 #>
 
 Configuration Example
