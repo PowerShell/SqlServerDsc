@@ -188,6 +188,40 @@ try
             Verifiable = $true
         }
 
+        Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
+
+            $defaultGetServiceObjectParams = @{
+                SQLServer = $mockSqlServer
+                SQLInstanceName = ''
+                ServiceType = 'SqlServer'
+            }
+
+            Context 'When getting the service information for a default instance' {
+
+                Mock @mockNewObjectParams_DefaultInstance
+
+                It 'Should have the correct Type for the service' {
+                    $getServiceObjectParams = $defaultGetServiceObjectParams.Clone()
+                    $getServiceObjectParams.SQLInstanceName = $mockDefaultInstanceName
+
+                    $serviceObject = Get-ServiceObject @getServiceObjectParams
+                    $serviceObject.Type | Should Be 'SqlServer'
+                }
+            }
+
+            Context 'When getting the service information for a named instance' {
+                Mock @mockNewObjectParams_NamedInstance
+
+                It 'Should have the correct Type for the service' {
+                    $getServiceObjectParams = $defaultGetServiceObjectParams.Clone()
+                    $getServiceObjectParams.SQLInstanceName = $mockNamedInstance
+
+                    $serviceObject = Get-ServiceObject @getServiceObjectParams
+                    $serviceObject.Type | Should Be 'SqlServer'
+                }
+            }
+        }
+
         Describe 'MSFT_xSQLServerServiceAccount\Get-TargetResource' -Tag 'Get' {
 
             Context 'When getting the service information for a default instance' {
