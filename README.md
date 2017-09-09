@@ -149,11 +149,11 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   the secure connection level for SQL Server Reporting Services.
 * [**xSQLServerScript**](#xsqlserverscript) resource to extend DSC Get/Set/Test
   functionality to T-SQL.
+* [**xSQLServerServiceAccount**](#xsqlserverserviceaccount) Manage the service account
+  for SQL Server services.
 * [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
 * [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait until
   availability group is created on primary server.
-* [**xSQLServerServiceAccount**](#xsqlserverserviceaccount) Manage the service account
-  for SQL Server services.
 
 ### xSQLServerAlias
 
@@ -1220,19 +1220,23 @@ Manage the service account for SQL Server services.
 
 #### Requirements
 
+* Target machine must have access to the SQLPS PowerShell module or the SqlServer
+  PowerShell module.
+
 #### Parameters
 
 * **`[String]` SQLServer** (Key): The host name of the SQL Server to be configured.
-* **`[String]` SQLInstance** (Key): The name of the SQL instance to be configured.
-* **`[String]` ServiceType** (Key): The service type for **SQLInstance**
-  { SqlServer | SqlAgent | Search | "SqlServerIntegrationService | AnalysisServer
+* **`[String]` SQLInstanceName** (Key): The name of the SQL instance to be configured.
+* **`[String]` ServiceType** (Key): The service type for **SQLInstanceName**.
+  { SqlServer | SqlAgent | Search | SqlServerIntegrationService | AnalysisServer
   | ReportServer | SqlBrowser | NotificationServer }
 * **`[PSCredential]` ServiceAccount** (Required): The service account that should
   be used when running the service.
 * **`[Boolean]` RestartService** (Write): Determines whether the service is
   automatically restarted.
 * **`[Boolean]` Force** (Write): Forces the service account to be updated.
-  Useful for password changes.
+  Useful for password changes. This will cause `Set-TargetResource` to be run on
+  each consecutive run.
 
 #### Examples
 
