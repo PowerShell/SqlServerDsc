@@ -16,6 +16,9 @@
 - Changes to xSQLServerRole
   - Running Get-DscConfiguration no longer throws an error saying property
     Members is not an array ([issue #790](https://github.com/PowerShell/xSQLServer/issues/790)).
+- Added new resource xSQLServerAccount ([issue #706](https://github.com/PowerShell/xSQLServer/issues/706))
+  - Added localization support for all strings
+  - Added examples for usage
 
 ## 8.1.0.0
 
@@ -84,9 +87,6 @@
     administrator (issue #691).
   - Added a simple integration test ([issue #709](https://github.com/PowerShell/xSQLServer/issues/709)).
   - Fixed PS Script Analyzer errors ([issue #729](https://github.com/PowerShell/xSQLServer/issues/729))
-- Added new resource (issue #706)
-  - xSQLServerServiceAccount
-  - Added localization support for all strings
 
 ## 8.0.0.0
 
