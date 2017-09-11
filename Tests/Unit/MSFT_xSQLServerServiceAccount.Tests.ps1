@@ -270,7 +270,7 @@ try
             $defaultGetServiceObjectParams = @{
                 SQLServer = $mockSqlServer
                 SQLInstanceName = ''
-                ServiceType = 'SqlServer'
+                ServiceType = $mockServiceType
             }
 
             Context 'When getting the service information for a default instance' {
@@ -295,6 +295,38 @@ try
 
                     $serviceObject = Get-ServiceObject @getServiceObjectParams
                     $serviceObject.Type | Should Be 'SqlServer'
+                }
+            }
+        }
+
+        Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
+            Context 'Translating service types' {
+                $testCases = @(
+                    @{ ServiceType = 'DatabaseEngine'; ExpectedType = 'SqlServer' }
+                    @{ ServiceType = 'SQLServerAgent'; ExpectedType = 'SqlAgent' }
+                    @{ ServiceType = 'Search'; ExpectedType = 'Search' }
+                    @{ ServiceType = 'IntegrationServices'; ExpectedType = 'SqlServerIntegrationService' }
+                    @{ ServiceType = 'AnalysisServices'; ExpectedType = 'AnalysisServer' }
+                    @{ ServiceType = 'ReportingServices'; ExpectedType = 'ReportServer' }
+                    @{ ServiceType = 'SQLServerBrowser'; ExpectedType = 'SqlBrowser' }
+                    @{ ServiceType = 'NotificationServices'; ExpectedType = 'NotificationServer' }
+                )
+
+                It 'Should properly map <ServiceType> to ManagedServiceType-><ExpectedType>' -TestCases $testCases {
+                    param
+                    (
+                        [System.String]
+                        $ServiceType,
+
+                        [System.String]
+                        $ExpectedType
+                    )
+
+                    # Get the ManagedServiceType
+                    $managedServiceType = ConvertTo-ManagedServiceType -ServiceType $ServiceType
+
+                    $managedServiceType | Should BeOfType Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
+                    $managedServiceType | Should Be $ExpectedType
                 }
             }
         }

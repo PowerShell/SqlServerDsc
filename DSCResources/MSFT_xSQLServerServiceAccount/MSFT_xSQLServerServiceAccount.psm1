@@ -29,6 +29,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerServiceA
 #>
 function Get-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
@@ -99,6 +100,7 @@ function Get-TargetResource
 #>
 function Test-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -170,6 +172,7 @@ function Test-TargetResource
 #>
 function Set-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     param
     (
