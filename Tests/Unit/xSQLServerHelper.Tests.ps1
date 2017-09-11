@@ -59,33 +59,52 @@ InModuleScope $script:moduleName {
         }
 
         return New-Object Object |
-                    Add-Member -MemberType NoteProperty -Name ConnectionContext -Value (
-                        New-Object Object |
-                            Add-Member -MemberType NoteProperty -Name ServerInstance -Value $serverInstance -PassThru |
-                            Add-Member -MemberType NoteProperty -Name ConnectAsUser -Value $false -PassThru |
-                            Add-Member -MemberType NoteProperty -Name ConnectAsUserPassword -Value '' -PassThru |
-                            Add-Member -MemberType NoteProperty -Name ConnectAsUserName -Value '' -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name Connect {
-                                if ($mockExpectedDatabaseEngineInstance -eq 'MSSQLSERVER')
-                                {
-                                    $mockExpectedServiceInstance = $mockExpectedDatabaseEngineServer
-                                }
-                                else
-                                {
-                                    $mockExpectedServiceInstance = "$mockExpectedDatabaseEngineServer\$mockExpectedDatabaseEngineInstance"
-                                }
+            Add-Member -MemberType ScriptProperty -Name Status -Value {
+                if ($mockExpectedDatabaseEngineInstance -eq 'MSSQLSERVER')
+                {
+                    $mockExpectedServiceInstance = $mockExpectedDatabaseEngineServer
+                }
+                else
+                {
+                    $mockExpectedServiceInstance = "$mockExpectedDatabaseEngineServer\$mockExpectedDatabaseEngineInstance"
+                }
 
-                                if ($this.serverInstance -ne $mockExpectedServiceInstance)
-                                {
-                                    throw ("Mock method Connect() was expecting ServerInstance to be '{0}', but was '{1}'." -f $mockExpectedServiceInstance, $this.serverInstance )
-                                }
+                if ( $this.ConnectionContext.ServerInstance -eq $mockExpectedServiceInstance )
+                {
+                    return 'Online'
+                }
+                else
+                {
+                    return $null
+                }
+            } -PassThru |
+            Add-Member -MemberType NoteProperty -Name ConnectionContext -Value (
+                New-Object Object |
+                    Add-Member -MemberType NoteProperty -Name ServerInstance -Value $serverInstance -PassThru |
+                    Add-Member -MemberType NoteProperty -Name ConnectAsUser -Value $false -PassThru |
+                    Add-Member -MemberType NoteProperty -Name ConnectAsUserPassword -Value '' -PassThru |
+                    Add-Member -MemberType NoteProperty -Name ConnectAsUserName -Value '' -PassThru |
+                    Add-Member -MemberType ScriptMethod -Name Connect {
+                        if ($mockExpectedDatabaseEngineInstance -eq 'MSSQLSERVER')
+                        {
+                            $mockExpectedServiceInstance = $mockExpectedDatabaseEngineServer
+                        }
+                        else
+                        {
+                            $mockExpectedServiceInstance = "$mockExpectedDatabaseEngineServer\$mockExpectedDatabaseEngineInstance"
+                        }
 
-                                if ($mockThrowInvalidOperation)
-                                {
-                                    throw 'Unable to connect.'
-                                }
-                            } -PassThru -Force
-                    ) -PassThru -Force
+                        if ($this.serverInstance -ne $mockExpectedServiceInstance)
+                        {
+                            throw ("Mock method Connect() was expecting ServerInstance to be '{0}', but was '{1}'." -f $mockExpectedServiceInstance, $this.serverInstance )
+                        }
+
+                        if ($mockThrowInvalidOperation)
+                        {
+                            throw 'Unable to connect.'
+                        }
+                    } -PassThru -Force
+            ) -PassThru -Force
     }
 
     $mockNewObject_MicrosoftDatabaseEngine_ParameterFilter = {
@@ -1080,9 +1099,10 @@ InModuleScope $script:moduleName {
 
         Context 'When connecting to the default instance using Windows Authentication' {
             It 'Should return the correct service instance' {
-                $mockExpectedDatabaseEngineServer = $env:COMPUTERNAME
+                $mockExpectedDatabaseEngineServer = 'TestServer'
+                $mockExpectedDatabaseEngineInstance = 'MSSQLSERVER'
 
-                $databaseEngineServerObject = Connect-SQL
+                $databaseEngineServerObject = Connect-SQL -SQLServer $mockExpectedDatabaseEngineServer
                 $databaseEngineServerObject.ConnectionContext.ServerInstance | Should -BeExactly $mockExpectedDatabaseEngineServer
 
                 Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It `

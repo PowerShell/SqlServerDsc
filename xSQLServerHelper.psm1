@@ -50,7 +50,7 @@ function Connect-SQL
 
     if ($SetupCredential)
     {
-        $sql = New-Object Microsoft.SqlServer.Management.Smo.Server
+        $sql = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server
         $sql.ConnectionContext.ConnectAsUser = $true
         $sql.ConnectionContext.ConnectAsUserPassword = $SetupCredential.GetNetworkCredential().Password
         $sql.ConnectionContext.ConnectAsUserName = $SetupCredential.GetNetworkCredential().UserName
@@ -59,18 +59,19 @@ function Connect-SQL
     }
     else
     {
-        $sql = New-Object Microsoft.SqlServer.Management.Smo.Server $databaseEngineInstance
+        $sql = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $databaseEngineInstance
     }
 
-    if (-not $sql)
+    if ( $sql.Status -match '^Online$' )
+    {
+        Write-Verbose -Message ($script:localizedData.ConnectedToDatabaseEngineInstance -f $databaseEngineInstance) -Verbose
+        return $sql
+    }
+    else
     {
         $errorMessage = $script:localizedData.FailedToConnectToDatabaseEngineInstance -f $databaseEngineInstance
         New-InvalidOperationException -Message $errorMessage
     }
-
-    Write-Verbose -Message ($script:localizedData.ConnectedToDatabaseEngineInstance -f $databaseEngineInstance) -Verbose
-
-    return $sql
 }
 
 <#
