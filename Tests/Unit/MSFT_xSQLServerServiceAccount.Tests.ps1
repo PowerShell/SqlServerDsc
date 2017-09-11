@@ -191,9 +191,9 @@ try
         }
 #endregion
 
-        Mock -CommandName Import-SQLPSModule -MockWith {}
-
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
 
             $defaultGetServiceObjectParams = @{
                 SQLServer = $mockSqlServer
@@ -228,6 +228,9 @@ try
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
+
             Context 'Translating service types' {
                 $testCases = @(
                     @{ ServiceType = 'DatabaseEngine'; ExpectedType = 'SqlServer' }
@@ -260,6 +263,8 @@ try
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\Get-TargetResource' -Tag 'Get' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
 
             Context 'When getting the service information for a default instance' {
 
@@ -339,6 +344,8 @@ try
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\Test-TargetResource' -Tag 'Test' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
 
             Context 'When the system is not in the desired state for a default instance' {
 
@@ -468,6 +475,8 @@ try
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\Set-TargetResource' -Tag 'Set' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
 
             Context 'When changing the service account for the default instance' {
 
