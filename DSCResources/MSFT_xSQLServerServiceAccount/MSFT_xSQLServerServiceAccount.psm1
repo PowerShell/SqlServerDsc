@@ -23,17 +23,18 @@ $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.W
 
     .PARAMETER ServiceType
         Type of service to be managed. Must be one of the following:
-        SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer.
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
 
     .PARAMETER ServiceAccount
         ** Not used in this function **
-        Credential of the service account that should be used.
+         Credential of the service account that should be used.
 
     .EXAMPLE
         Get-TargetResource -SQLServer $env:COMPUTERNAME -SQLInstanceName MSSQLSERVER -ServiceType SqlServer -ServiceAccount $account
 #>
 function Get-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
@@ -47,7 +48,7 @@ function Get-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
+        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -87,7 +88,7 @@ function Get-TargetResource
 
     .PARAMETER ServiceType
         Type of service to be managed. Must be one of the following:
-        SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer.
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
 
     .PARAMETER ServiceAccount
         Credential of the service account that should be used.
@@ -104,6 +105,7 @@ function Get-TargetResource
 #>
 function Test-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -117,7 +119,7 @@ function Test-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
+        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -159,7 +161,7 @@ function Test-TargetResource
 
     .PARAMETER ServiceType
         Type of service to be managed. Must be one of the following:
-        SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer.
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
 
     .PARAMETER ServiceAccount
         Credential of the service account that should be used.
@@ -175,6 +177,7 @@ function Test-TargetResource
 #>
 function Set-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     param
     (
@@ -187,7 +190,7 @@ function Set-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
+        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -244,7 +247,7 @@ function Set-TargetResource
 
     .PARAMETER ServiceType
         Type of service to be managed. Must be one of the following:
-        SqlServer, SqlAgent, Search, SqlServerIntegrationService, AnalysisServer, ReportServer, SqlBrowser, NotificationServer.
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
 
     .EXAMPLE
         Get-ServiceObject -SQLServer $env:COMPUTERNAME -SQLInstanceName MSSQLSERVER -ServiceType SqlServer
@@ -264,7 +267,7 @@ function Get-ServiceObject
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('SqlServer','SqlAgent','Search','SqlServerIntegrationService','AnalysisServer','ReportServer','SqlBrowser','NotificationServer')]
+        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
         [System.String]
         $ServiceType
     )
@@ -285,11 +288,52 @@ function Get-ServiceObject
         $serviceNamePattern = ('\${0}$' -f $SQLInstanceName)
     }
 
+    # Get the proper enum value
+    $serviceTypeFilter = ConvertTo-ManagedServiceType -ServiceType $ServiceType
+
     # Get the Service object for the specified instance/type
     $serviceObject = $managedComputer.Services | Where-Object -FilterScript {
-        ($_.Type -eq $ServiceType) -and ($_.Name -imatch $serviceNamePattern)
+        ($_.Type -eq $serviceTypeFilter) -and ($_.Name -imatch $serviceNamePattern)
     }
 
     return $serviceObject
+}
 
+<#
+    .SYNOPSIS
+        Converts the project's standard SQL Service types to the appropriate ManagedServiceType value
+
+    .PARAMETER ServiceType
+        Type of service to be managed. Must be one of the following:
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
+
+    .EXAMPLE
+        ConvertTo-ManagedServiceType -ServiceType 'DatabaseEngine'
+#>
+function ConvertTo-ManagedServiceType
+{
+    [CmdletBinding()]
+    [OutputType([ Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [System.String]
+        $ServiceType
+    )
+
+    # Map the project-specific ServiceType to a valid value from the ManagedServiceType enumeration
+    switch ($ServiceType)
+    {
+        'DatabaseEngine' { $serviceTypeValue = 'SqlServer' }
+        'SQLServerAgent' { $serviceTypeValue = 'SqlAgent' }
+        'Search' { $serviceTypeValue = 'Search' }
+        'IntegrationServices' { $serviceTypeValue = 'SqlServerIntegrationService' }
+        'AnalysisServices' { $serviceTypeValue = 'AnalysisServer' }
+        'ReportingServices' { $serviceTypeValue = 'ReportServer' }
+        'SQLServerBrowser' { $serviceTypeValue = 'SqlBrowser' }
+        'NotificationServices' { $serviceTypeValue = 'NotificationServer' }
+    }
+
+    return $serviceTypeValue -as [Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType]
 }

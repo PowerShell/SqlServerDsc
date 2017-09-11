@@ -1228,8 +1228,9 @@ Manage the service account for SQL Server services.
 * **`[String]` SQLServer** (Key): The host name of the SQL Server to be configured.
 * **`[String]` SQLInstanceName** (Key): The name of the SQL instance to be configured.
 * **`[String]` ServiceType** (Key): The service type for **SQLInstanceName**.
-  { SqlServer | SqlAgent | Search | SqlServerIntegrationService | AnalysisServer
-  | ReportServer | SqlBrowser | NotificationServer }
+  { DatabaseEngine | SQLServerAgent | Search | IntegrationServices
+  | AnalysisServices | ReportingServices | SQLServerBrowser
+  | NotificationServices }
 * **`[PSCredential]` ServiceAccount** (Required): The service account that should
   be used when running the service.
 * **`[Boolean]` RestartService** (Write): Determines whether the service is
