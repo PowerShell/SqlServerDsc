@@ -34,9 +34,11 @@ try
 
     InModuleScope $script:DSCResourceName {
 
+#region - Mocks and Global Objects -
         $mockSqlServer = 'TestServer'
         $mockDefaultInstanceName = 'MSSQLSERVER'
         $mockNamedInstance = 'Testnstance'
+        $mockServiceType = 'DatabaseEngine'
         $mockDesiredServiceAccountName = 'CONTOSO\sql.service'
         $mockServiceAccountCredential = (New-Object pscredential $mockDesiredServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
         $mockDefaultServiceAccountName = 'NT SERVICE\MSSQLSERVER'
@@ -187,13 +189,14 @@ try
             ParameterFilter = $mockNewObject_ParameterFilter
             Verifiable = $true
         }
+#endregion
 
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
 
             $defaultGetServiceObjectParams = @{
                 SQLServer = $mockSqlServer
                 SQLInstanceName = ''
-                ServiceType = 'SqlServer'
+                ServiceType = $mockServiceType
             }
 
             Context 'When getting the service information for a default instance' {
@@ -222,6 +225,38 @@ try
             }
         }
 
+        Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
+            Context 'Translating service types' {
+                $testCases = @(
+                    @{ ServiceType = 'DatabaseEngine'; ExpectedType = 'SqlServer' }
+                    @{ ServiceType = 'SQLServerAgent'; ExpectedType = 'SqlAgent' }
+                    @{ ServiceType = 'Search'; ExpectedType = 'Search' }
+                    @{ ServiceType = 'IntegrationServices'; ExpectedType = 'SqlServerIntegrationService' }
+                    @{ ServiceType = 'AnalysisServices'; ExpectedType = 'AnalysisServer' }
+                    @{ ServiceType = 'ReportingServices'; ExpectedType = 'ReportServer' }
+                    @{ ServiceType = 'SQLServerBrowser'; ExpectedType = 'SqlBrowser' }
+                    @{ ServiceType = 'NotificationServices'; ExpectedType = 'NotificationServer' }
+                )
+
+                It 'Should properly map <ServiceType> to ManagedServiceType-><ExpectedType>' -TestCases $testCases {
+                    param
+                    (
+                        [System.String]
+                        $ServiceType,
+
+                        [System.String]
+                        $ExpectedType
+                    )
+
+                    # Get the ManagedServiceType
+                    $managedServiceType = ConvertTo-ManagedServiceType -ServiceType $ServiceType
+
+                    $managedServiceType | Should BeOfType Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
+                    $managedServiceType | Should Be $ExpectedType
+                }
+            }
+        }
+
         Describe 'MSFT_xSQLServerServiceAccount\Get-TargetResource' -Tag 'Get' {
 
             Context 'When getting the service information for a default instance' {
@@ -231,7 +266,7 @@ try
                 $defaultGetTargetResourceParams = @{
                     SQLServer = $mockSqlServer
                     SQLInstanceName = $mockDefaultInstanceName
-                    ServiceType = 'SqlServer'
+                    ServiceType = $mockServiceType
                     ServiceAccount = $mockDefaultServiceAccountCredential
                 }
 
@@ -249,10 +284,10 @@ try
 
                 It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
                     $getTargetResourceParams = $defaultGetTargetResourceParams.Clone()
-                    $getTargetResourceParams.ServiceType = 'SqlAgent'
+                    $getTargetResourceParams.ServiceType = 'SQLServerAgent'
 
                     { Get-TargetResource @getTargetResourceParams } |
-                        Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockDefaultInstanceName) could not be found."
+                        Should Throw "The SQLServerAgent service on $($mockSqlServer)\$($mockDefaultInstanceName) could not be found."
                 }
 
                 It 'Should use all mocked commands' {
@@ -270,7 +305,7 @@ try
                 $defaultGetTargetResourceParams = @{
                     SQLServer = $mockSqlServer
                     SQLInstanceName = $mockNamedInstance
-                    ServiceType = 'SqlServer'
+                    ServiceType = $mockServiceType
                     ServiceAccount = $mockServiceAccountCredential
                 }
 
@@ -287,10 +322,10 @@ try
 
                 It 'Should throw an exception when an invalid ServiceType and InstanceName are specified' {
                     $getTargetResourceParams = $defaultGetTargetResourceParams.Clone()
-                    $getTargetResourceParams.ServiceType = 'SqlAgent'
+                    $getTargetResourceParams.ServiceType = 'SQLServerAgent'
 
                     { Get-TargetResource @getTargetResourceParams } |
-                        Should Throw "The SqlAgent service on $($mockSqlServer)\$($mockNamedInstance) could not be found."
+                        Should Throw "The SQLServerAgent service on $($mockSqlServer)\$($mockNamedInstance) could not be found."
                 }
 
                 It 'Should use all mocked commands' {
@@ -311,7 +346,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockServiceAccountCredential
                     }
 
@@ -332,7 +367,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockDefaultServiceAccountCredential
                     }
 
@@ -353,7 +388,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockServiceAccountCredential
                         Force = $true
                     }
@@ -374,7 +409,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockNamedInstance
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockDefaultServiceAccountCredential
                     }
 
@@ -395,7 +430,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockNamedInstance
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockServiceAccountCredential
                     }
 
@@ -416,7 +451,7 @@ try
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockNamedInstance
-                        ServiceType = 'SqlServer'
+                        ServiceType = $mockServiceType
                         ServiceAccount = $mockServiceAccountCredential
                         Force = $true
                     }
@@ -437,7 +472,7 @@ try
                 $defaultSetTargetResourceParams = @{
                     SQLServer = $mockSqlServer
                     SQLInstanceName = $mockDefaultInstanceName
-                    ServiceType = 'SqlServer'
+                    ServiceType = $mockServiceType
                     ServiceAccount = $mockDefaultServiceAccountCredential
                 }
 
@@ -465,7 +500,7 @@ try
 
                 It 'Should throw an exception when an invalid service name and type is provided' {
                     $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
-                    $setTargetResourceParams.ServiceType = 'SqlAgent'
+                    $setTargetResourceParams.ServiceType = 'SQLServerAgent'
 
                     { Set-TargetResource @setTargetResourceParams } | Should Throw
                 }
@@ -500,7 +535,7 @@ try
                 $defaultSetTargetResourceParams = @{
                     SQLServer = $mockSqlServer
                     SQLInstanceName = $mockNamedInstance
-                    ServiceType = 'SqlServer'
+                    ServiceType = $mockServiceType
                     ServiceAccount = $mockDefaultServiceAccountCredential
                 }
 
@@ -528,7 +563,7 @@ try
 
                 It 'Should throw an exception when an invalid service name and type is provided' {
                     $setTargetResourceParams = $defaultSetTargetResourceParams.Clone()
-                    $setTargetResourceParams.ServiceType = 'SqlAgent'
+                    $setTargetResourceParams.ServiceType = 'SQLServerAgent'
 
                     { Set-TargetResource @setTargetResourceParams } | Should Throw
                 }
