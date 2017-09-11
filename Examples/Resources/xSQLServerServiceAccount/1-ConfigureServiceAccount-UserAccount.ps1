@@ -19,7 +19,7 @@ Configuration Example
         {
             SQLServer = 'TestServer'
             SQLInstanceName = 'MSSQLSERVER'
-            ServiceType = 'SqlServer'
+            ServiceType = 'DatabaseEngine'
             ServiceAccount = $ServiceAccountCredential
             RestartService = $true
         }
