@@ -194,8 +194,6 @@ try
         }
 #endregion
 
-        Mock -CommandName Import-SQLPSModule -MockWith {}
-
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
 
             Mock -CommandName Import-SQLPSModule -MockWith {}
@@ -302,6 +300,9 @@ try
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {}
+
             Context 'Translating service types' {
                 $testCases = @(
                     @{ ServiceType = 'DatabaseEngine'; ExpectedType = 'SqlServer' }
