@@ -191,6 +191,8 @@ try
         }
 #endregion
 
+        Mock -CommandName Import-SQLPSModule -MockWith {}
+
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
 
             $defaultGetServiceObjectParams = @{
