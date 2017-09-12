@@ -21,6 +21,9 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
+# Compile the SMO stubs for use by the unit tests.`
+Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
+
 function Invoke-TestSetup {}
 
 function Invoke-TestCleanup {

@@ -285,7 +285,7 @@ namespace Microsoft.SqlServer.Management.Smo
                 Version = this.Version
             };
         }
-        
+
         public Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] EnumServerPermissions( string principal, Microsoft.SqlServer.Management.Smo.ServerPermissionSet permissionSetQuery )
         {
             Microsoft.SqlServer.Management.Smo.ServerPermissionInfo[] permissionInfo = null;
@@ -791,7 +791,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
         public void Create() {}
     }
-    
+
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseCollection
     // Used by:
     //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
@@ -930,4 +930,33 @@ namespace Microsoft.SqlServer.Management.Smo
     }
 
     #endregion Public Classes
+}
+
+namespace Microsoft.SqlServer.Management.Smo.Wmi
+{
+    #region Public Enums
+
+    // TypeName: Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
+    // Used by:
+    //  MSFT_xSQLServerServiceAccount.Tests.ps1
+    public enum ManagedServiceType
+    {
+        SqlServer = 1,
+
+        SqlAgent = 2,
+
+        Search = 3,
+
+        SqlServerIntegrationService = 4,
+
+        AnalysisServer = 5,
+
+        ReportServer = 6,
+
+        SqlBrowser = 7,
+
+        NotificationServer = 8
+    }
+
+    #endregion
 }
