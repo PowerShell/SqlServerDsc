@@ -24,6 +24,8 @@
     ([issue #774](https://github.com/PowerShell/xFailOverCluster/issues/774)).
   - Fixed so integration test does not write warnings when SQLPS module is loaded
     ([issue #798](https://github.com/PowerShell/xFailOverCluster/issues/798)).
+  - Cleanup code for integration test a bit.
+  - Refactor integration test to be able to handle ordered testing.
 - Changes to xSQLServerAlwaysOnAvailabilityGroup
   - Change the check of the values entered as parameter for
     BasicAvailabilityGroup. It is a boolean, hence it was not possible to
@@ -41,9 +43,11 @@
 - Changes to xSQLServerRole
   - Running Get-DscConfiguration no longer throws an error saying property
     Members is not an array ([issue #790](https://github.com/PowerShell/xSQLServer/issues/790)).
-- Changes to xSqlServerMaxDop
+- Changes to xSQLServerMaxDop
   - Fixed error where Measure-Object cmdlet would fail claiming it could not
-  find the specified property ([issue #801](https://github.com/PowerShell/xSQLServer/issues/801))
+    find the specified property ([issue #801](https://github.com/PowerShell/xSQLServer/issues/801))
+- Changes to xSQLServerAlwaysOnService
+  - Added integration test ([issue #736](https://github.com/PowerShell/xSQLServer/issues/736)).
 
 ## 8.1.0.0
 
@@ -101,7 +105,6 @@
   - Fixed PS Script Analyzer errors ([issue #724](https://github.com/PowerShell/xSQLServer/issues/724))
   - Casting the result of the property IsHadrEnabled to [System.Boolean] so that
     $null is never returned, which resulted in an exception ([issue #763](https://github.com/PowerShell/xFailOverCluster/issues/763)).
-  - Added integration test ([issue #736](https://github.com/PowerShell/xSQLServer/issues/736)).
 - Changes to xSQLServerDatabasePermission
   - Fixed PS Script Analyzer errors ([issue #725](https://github.com/PowerShell/xSQLServer/issues/725))
 - Changes to xSQLServerScript
@@ -112,8 +115,6 @@
     and no longer throws an error when there is just one Analysis Services
     administrator (issue #691).
   - Added a simple integration test ([issue #709](https://github.com/PowerShell/xSQLServer/issues/709)).
-    - Cleanup code for integration test a bit.
-    - Refactor integration test to be able to handle ordered testing.
   - Fixed PS Script Analyzer errors ([issue #729](https://github.com/PowerShell/xSQLServer/issues/729))
 
 ## 8.0.0.0
