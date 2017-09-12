@@ -6,9 +6,6 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerServiceAccount'
 
-# Import the required SMO assemblies
-Import-SQLPSModule
-
 <#
     .SYNOPSIS
         Gets the service account for the specified instance.
@@ -32,7 +29,6 @@ Import-SQLPSModule
 #>
 function Get-TargetResource
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
     param
@@ -103,7 +99,6 @@ function Get-TargetResource
 #>
 function Test-TargetResource
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -175,7 +170,6 @@ function Test-TargetResource
 #>
 function Set-TargetResource
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseVerboseMessageInDSCResource', $null)]
     [CmdletBinding()]
     param
     (
@@ -253,7 +247,6 @@ function Set-TargetResource
 function Get-ServiceObject
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.SqlServer.Management.Smo.Wmi.Service])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -269,6 +262,9 @@ function Get-ServiceObject
         [System.String]
         $ServiceType
     )
+
+    # Load the SMO libraries
+    Import-SQLPSModule
 
     $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
     New-VerboseMessage -Message $verboseMessage
@@ -311,7 +307,6 @@ function Get-ServiceObject
 function ConvertTo-ManagedServiceType
 {
     [CmdletBinding()]
-    [OutputType([ Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -319,6 +314,9 @@ function ConvertTo-ManagedServiceType
         [System.String]
         $ServiceType
     )
+
+    # Load the SMO libraries
+    Import-SQLPSModule
 
     # Map the project-specific ServiceType to a valid value from the ManagedServiceType enumeration
     switch ($ServiceType)
