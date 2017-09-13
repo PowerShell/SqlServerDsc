@@ -93,6 +93,13 @@ Configuration MSFT_xSQLServerSetup_InstallSqlEngineAsSystem_Config
             Password = $SqlInstallCredential
         }
 
+        Group 'AddSqlInstallAsAdministrator'
+        {
+            Ensure = 'Present'
+            GroupName = 'Administrators'
+            MembersToInclude = $SqlInstallCredential.UserName
+        }
+
         User 'CreateSqlAdminAccount'
         {
             Ensure   = 'Present'
@@ -125,6 +132,11 @@ Configuration MSFT_xSQLServerSetup_InstallSqlEngineAsSystem_Config
             # This must be set if using SYSTEM account to install.
             SQLSysAdminAccounts   = @(
                 $SqlAdministratorCredential.UserName
+                <#
+                    Must have permission to properties IsClustered and
+                    IsHadrEnable for xSQLServerAlwaysOnService.
+                #>
+                $SqlInstallCredential.UserName
             )
 
             DependsOn             = @(
@@ -132,6 +144,7 @@ Configuration MSFT_xSQLServerSetup_InstallSqlEngineAsSystem_Config
                 '[User]CreateSqlServiceAccount'
                 '[User]CreateSqlAgentServiceAccount'
                 '[User]CreateSqlInstallAccount'
+                '[Group]AddSqlInstallAsAdministrator'
                 '[User]CreateSqlAdminAccount'
                 '[WindowsFeature]NetFramework45'
             )

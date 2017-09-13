@@ -8,18 +8,6 @@ install:
     - ps: Write-Verbose -Message "PowerShell version $($PSVersionTable.PSVersion)" -Verbose
     - ps: Import-Module "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
     - ps: Invoke-AppveyorInstallTask
-
-#---------------------------------#
-#      build configuration        #
-#---------------------------------#
-
-build: false
-
-#---------------------------------#
-#      test configuration         #
-#---------------------------------#
-
-test_script:
     - ps: |
         # Workaround for issue #239 and issue #774.
         Write-Verbose -Message '--- WORKAROUND FOR ISSUE #239 AND ISSUE #774 ---' -Verbose
@@ -44,6 +32,18 @@ test_script:
         }
         Write-Verbose -Message '' -Verbose
 
+#---------------------------------#
+#      build configuration        #
+#---------------------------------#
+
+build: false
+
+#---------------------------------#
+#      test configuration         #
+#---------------------------------#
+
+test_script:
+    - ps: |
         Invoke-AppveyorTestScriptTask -CodeCoverage -CodeCovIo -ExcludeTag @() -RunTestInOrder
 
 #---------------------------------#
