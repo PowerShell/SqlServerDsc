@@ -23,7 +23,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 # Compile the SMO stubs for use by the unit tests.`
 Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
-
 function Invoke-TestSetup {}
 
 function Invoke-TestCleanup {
@@ -196,7 +195,7 @@ try
 
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             $defaultGetServiceObjectParams = @{
                 SQLServer = $mockSqlServer
@@ -215,6 +214,11 @@ try
                     $serviceObject = Get-ServiceObject @getServiceObjectParams
                     $serviceObject.Type | Should Be 'SqlServer'
                 }
+
+                It 'Should use all mocks' {
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
+                }
             }
 
             Context 'When getting the service information for a named instance' {
@@ -227,12 +231,17 @@ try
                     $serviceObject = Get-ServiceObject @getServiceObjectParams
                     $serviceObject.Type | Should Be 'SqlServer'
                 }
+
+                It 'Should use all mocks' {
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
+                }
             }
         }
 
         Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'Translating service types' {
                 $testCases = @(
@@ -301,7 +310,7 @@ try
 
         Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'Translating service types' {
                 $testCases = @(
@@ -336,7 +345,7 @@ try
 
         Describe 'MSFT_xSQLServerServiceAccount\Get-TargetResource' -Tag 'Get' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'When getting the service information for a default instance' {
 
@@ -370,8 +379,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
-
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 4 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
@@ -408,8 +416,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
-
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 4 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
@@ -417,7 +424,7 @@ try
 
         Describe 'MSFT_xSQLServerServiceAccount\Test-TargetResource' -Tag 'Test' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'When the system is not in the desired state for a default instance' {
 
@@ -435,7 +442,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -456,7 +463,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -465,7 +472,7 @@ try
 
                 Mock @mockNewObjectParams_DefaultInstance
 
-                It 'Should return false' {
+                It 'Should return False when Force is specified' {
                     $testTargetResourceParams = @{
                         SQLServer = $mockSqlServer
                         SQLInstanceName = $mockDefaultInstanceName
@@ -477,7 +484,7 @@ try
                     Test-TargetResource @testTargetResourceParams | Should Be $false
                 }
 
-                It 'Should not use any mocked commands' {
+                It 'Should not make any calls to New-Object' {
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 0
                 }
             }
@@ -498,7 +505,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -519,7 +526,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -540,7 +547,7 @@ try
                     Test-TargetResource @testTargetResourceParams | Should Be $false
                 }
 
-                It 'Should not use any mocked commands' {
+                It 'Should not make any calls to New-Object' {
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 0
                 }
             }
@@ -548,7 +555,7 @@ try
 
         Describe 'MSFT_xSQLServerServiceAccount\Set-TargetResource' -Tag 'Set' {
 
-            Mock -CommandName Import-SQLPSModule -MockWith {}
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'When changing the service account for the default instance' {
 
@@ -609,7 +616,7 @@ try
                     { Set-TargetResource @setTargetResourceParams } | Should Throw "Unable to set the service account for $($setTargetResourceParams.SQLServer) on $($setTargetResourceParams.SQLInstanceName)"
 
                     # Ensure mocks are used
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -672,7 +679,7 @@ try
                     { Set-TargetResource @setTargetResourceParams } | Should Throw "Unable to set the service account for $($setTargetResourceParams.SQLServer) on $($setTargetResourceParams.SQLInstanceName)"
 
                     # Ensure mocks are used
-                    Assert-VerifiableMocks
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It
                 }
             }
         }
