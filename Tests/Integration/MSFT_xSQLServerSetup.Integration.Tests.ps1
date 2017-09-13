@@ -25,6 +25,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion
 
+
 <#
     Workaround for issue #774. In the appveyor.yml file the folder
     C:\Program Files (x86)\Microsoft SQL Server\**\Tools\PowerShell\Modules
@@ -33,7 +34,7 @@ $TestEnvironment = Initialize-TestEnvironment `
     here we rename back the folder to the correct name. Only the version need
     for our tests are renamed.
 #>
-$sqlModulePath = Get-ChildItem -Path 'C:\Program Files (x86)\Microsoft SQL Server\**\Tools\PowerShell\*.old'
+$sqlModulePath = Get-ChildItem -Path 'C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\*.old'
 $sqlModulePath | ForEach-Object -Process {
     $newFolderName = (Split-Path -Path $_ -Leaf) -replace '\.old'
     Write-Verbose ('Renaming ''{0}'' to ''..\{1}''' -f $_, $newFolderName) -Verbose
@@ -201,6 +202,7 @@ try
             $resourceCurrentState.SQLSvcAccountUsername      | Should Be ('.\{0}' -f (Split-Path -Path $mockSqlServiceAccountUserName -Leaf))
             $resourceCurrentState.SQLSysAdminAccounts        | Should Be @(
                 $mockSqlAdminAccountUserName,
+                $mockSqlInstallAccountUserName,
                 "NT SERVICE\MSSQL`$$mockInstanceName",
                 "NT SERVICE\SQLAgent`$$mockInstanceName",
                 'NT SERVICE\SQLWriter',
