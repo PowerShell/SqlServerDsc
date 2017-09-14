@@ -44,18 +44,6 @@ test_script:
         }
         Write-Verbose -Message '' -Verbose
 
-#---------------------------------#
-#      build configuration        #
-#---------------------------------#
-
-build: false
-
-#---------------------------------#
-#      test configuration         #
-#---------------------------------#
-
-test_script:
-    - ps: |
         Invoke-AppveyorTestScriptTask -CodeCoverage -CodeCovIo -ExcludeTag @() -RunTestInOrder
 
 #---------------------------------#
