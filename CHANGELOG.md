@@ -10,6 +10,8 @@
     ([issue #774](https://github.com/PowerShell/xFailOverCluster/issues/774)).
   - Changed so the maximum version to be installed is 4.0.6.0. Quick fix until we
     can resolve the unit tests (see issue #807).
+  - Moved the code block that contains workarounds so it is run during the
+    install phase instead of the test phase.
 - Changes to xSQLServerHelper
   - Changes to Connect-SQL and Import-SQLPSModule
     - Now it correctly loads the correct assemblies when SqlServer module is
@@ -26,8 +28,19 @@
     ([issue #774](https://github.com/PowerShell/xFailOverCluster/issues/774)).
   - Fixed so integration test does not write warnings when SQLPS module is loaded
     ([issue #798](https://github.com/PowerShell/xFailOverCluster/issues/798)).
-  - Cleanup code for integration test a bit.
-  - Refactor integration test to be able to handle ordered testing.
+  - Changes to integration tests.
+    - Moved the configuration block from the MSFT\_xSQLServerSetup.Integration.Tests.ps1
+      to the MSFT\_xSQLServerSetup.config.ps1 to align with the other integration
+      test. And also get most of the configuration in one place.
+    - Changed the tests so that the local SqlInstall account is added as a member
+      of the local administrators group.
+    - Changed the tests so that the local SqlInstall account is added as a member
+      of the system administrators in SQL Server (Database Engine) - needed for the
+      xSQLServerAlwaysOnService integration tests.
+    - Changed so that only one of the Modules-folder for the SQLPS PowerShell module
+      for SQL Server 2016 is renamed back so it can be used with the integration
+      tests. There was an issue when more than one SQLPS module was present (see
+      more information in issue #806).
 - Changes to xSQLServerAlwaysOnAvailabilityGroup
   - Change the check of the values entered as parameter for
     BasicAvailabilityGroup. It is a boolean, hence it was not possible to
