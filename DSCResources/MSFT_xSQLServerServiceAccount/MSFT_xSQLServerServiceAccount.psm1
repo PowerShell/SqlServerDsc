@@ -61,12 +61,16 @@ function Get-TargetResource
         New-ObjectNotFoundException -Message $errorMessage
     }
 
+    # Local accounts will start with a '.'
+    # Replace a domain of '.' with the value for $SQLServer
+    $serviceAccountName = $serviceObject.ServiceAccount -ireplace '^([\.])\\(.*)$',"$SQLServer\`$2"
+
     # Return a hashtable with the service information
     return @{
         SQLServer = $SQLServer
         SQLInstanceName = $SQLInstanceName
         ServiceType = $serviceObject.Type
-        ServiceAccount = $serviceObject.ServiceAccount
+        ServiceAccount = $serviceAccountName
     }
 }
 
@@ -314,9 +318,6 @@ function ConvertTo-ManagedServiceType
         [System.String]
         $ServiceType
     )
-
-    # Load the SMO libraries
-    Import-SQLPSModule
 
     # Map the project-specific ServiceType to a valid value from the ManagedServiceType enumeration
     switch ($ServiceType)

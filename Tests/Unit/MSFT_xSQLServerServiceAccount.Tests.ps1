@@ -1,4 +1,3 @@
-
 $script:DSCModuleName      = 'xSQLServer'
 $script:DSCResourceName    = 'MSFT_xSQLServerServiceAccount'
 
@@ -42,9 +41,13 @@ try
         $mockNamedInstance = 'Testnstance'
         $mockServiceType = 'DatabaseEngine'
         $mockDesiredServiceAccountName = 'CONTOSO\sql.service'
-        $mockServiceAccountCredential = (New-Object pscredential $mockDesiredServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+        # $mockServiceAccountCredential = (New-Object pscredential $mockDesiredServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+        $mockServiceAccountCredential = (New-Object pscredential $mockDesiredServiceAccountName, (New-Object System.Security.SecureString))
         $mockDefaultServiceAccountName = 'NT SERVICE\MSSQLSERVER'
-        $mockDefaultServiceAccountCredential = (New-Object PSCredential $mockDefaultServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+        # $mockDefaultServiceAccountCredential = (New-Object PSCredential $mockDefaultServiceAccountName, (ConvertTo-SecureString -String 'P@ssword1' -AsPlainText -Force))
+        $mockDefaultServiceAccountCredential = (New-Object PSCredential $mockDefaultServiceAccountName, (New-Object System.Security.SecureString))
+        $mockLocalServiceAccountName = "$($mockSqlServer)\SqlService"
+        $mockLocalServiceAccountCredential = (New-Object PSCredential $mockLocalServiceAccountName, (New-Object System.Security.SecureString))
 
         # Stores the result of SetServiceAccount calls
         $testServiceAccountUpdated = @{
@@ -83,6 +86,23 @@ try
                     New-Object PSObject -Property @{
                         Name = $mockDefaultInstanceName
                         ServiceAccount = $mockDefaultServiceAccountName
+                        Type = 'SqlServer'
+                    }
+                )
+            }
+
+            $managedComputerObject.Services | ForEach-Object { $_ | Add-Member @mockAddMemberParams_SetServiceAccount }
+
+            return $managedComputerObject
+        }
+
+        $mockNewObject_ManagedComputer_DefaultInstance_LocalServiceAccount = {
+            $managedComputerObject = New-Object PSObject -Property @{
+                Name = $mockSqlServer
+                Services = @(
+                    New-Object PSObject -Property @{
+                        Name = $mockDefaultInstanceName
+                        ServiceAccount = ($mockLocalServiceAccountName -replace $mockSqlServer,'.')
                         Type = 'SqlServer'
                     }
                 )
@@ -191,57 +211,10 @@ try
             ParameterFilter = $mockNewObject_ParameterFilter
             Verifiable = $true
         }
+
 #endregion
 
-        Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
-
-            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
-
-            $defaultGetServiceObjectParams = @{
-                SQLServer = $mockSqlServer
-                SQLInstanceName = ''
-                ServiceType = $mockServiceType
-            }
-
-            Context 'When getting the service information for a default instance' {
-
-                Mock @mockNewObjectParams_DefaultInstance
-
-                It 'Should have the correct Type for the service' {
-                    $getServiceObjectParams = $defaultGetServiceObjectParams.Clone()
-                    $getServiceObjectParams.SQLInstanceName = $mockDefaultInstanceName
-
-                    $serviceObject = Get-ServiceObject @getServiceObjectParams
-                    $serviceObject.Type | Should Be 'SqlServer'
-                }
-
-                It 'Should use all mocks' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
-                }
-            }
-
-            Context 'When getting the service information for a named instance' {
-                Mock @mockNewObjectParams_NamedInstance
-
-                It 'Should have the correct Type for the service' {
-                    $getServiceObjectParams = $defaultGetServiceObjectParams.Clone()
-                    $getServiceObjectParams.SQLInstanceName = $mockNamedInstance
-
-                    $serviceObject = Get-ServiceObject @getServiceObjectParams
-                    $serviceObject.Type | Should Be 'SqlServer'
-                }
-
-                It 'Should use all mocks' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
-                }
-            }
-        }
-
         Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
-
-            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             Context 'Translating service types' {
                 $testCases = @(
@@ -273,8 +246,9 @@ try
                 }
             }
         }
-
         Describe 'MSFT_xSQLServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
+
+            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
 
             $defaultGetServiceObjectParams = @{
                 SQLServer = $mockSqlServer
@@ -293,6 +267,11 @@ try
                     $serviceObject = Get-ServiceObject @getServiceObjectParams
                     $serviceObject.Type | Should Be 'SqlServer'
                 }
+
+                It 'Should use all mocks' {
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
+                }
             }
 
             Context 'When getting the service information for a named instance' {
@@ -305,40 +284,10 @@ try
                     $serviceObject = Get-ServiceObject @getServiceObjectParams
                     $serviceObject.Type | Should Be 'SqlServer'
                 }
-            }
-        }
 
-        Describe 'MSFT_xSQLServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
-
-            Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
-
-            Context 'Translating service types' {
-                $testCases = @(
-                    @{ ServiceType = 'DatabaseEngine'; ExpectedType = 'SqlServer' }
-                    @{ ServiceType = 'SQLServerAgent'; ExpectedType = 'SqlAgent' }
-                    @{ ServiceType = 'Search'; ExpectedType = 'Search' }
-                    @{ ServiceType = 'IntegrationServices'; ExpectedType = 'SqlServerIntegrationService' }
-                    @{ ServiceType = 'AnalysisServices'; ExpectedType = 'AnalysisServer' }
-                    @{ ServiceType = 'ReportingServices'; ExpectedType = 'ReportServer' }
-                    @{ ServiceType = 'SQLServerBrowser'; ExpectedType = 'SqlBrowser' }
-                    @{ ServiceType = 'NotificationServices'; ExpectedType = 'NotificationServer' }
-                )
-
-                It 'Should properly map <ServiceType> to ManagedServiceType-><ExpectedType>' -TestCases $testCases {
-                    param
-                    (
-                        [System.String]
-                        $ServiceType,
-
-                        [System.String]
-                        $ExpectedType
-                    )
-
-                    # Get the ManagedServiceType
-                    $managedServiceType = ConvertTo-ManagedServiceType -ServiceType $ServiceType
-
-                    $managedServiceType | Should BeOfType Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
-                    $managedServiceType | Should Be $ExpectedType
+                It 'Should use all mocks' {
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope Context
                 }
             }
         }
@@ -379,7 +328,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 4 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
                 }
             }
@@ -416,8 +365,28 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 4 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 2
+                }
+            }
+
+            Context 'When the service account is local to the machine' {
+                $mockNewObjectParams = $mockNewObjectParams_DefaultInstance.Clone()
+                $mockNewObjectParams.MockWith = $mockNewObject_ManagedComputer_DefaultInstance_LocalServiceAccount
+
+                Mock @mockNewObjectParams
+
+                $defaultGetTargetResourceParams = @{
+                    SQLServer = $mockSqlServer
+                    SQLInstanceName = $mockDefaultInstanceName
+                    ServiceType = $mockServiceType
+                    ServiceAccount = $mockLocalServiceAccountCredential
+                }
+
+                It 'The domain name should match the computer name' {
+                    $currentState = Get-TargetResource @defaultGetTargetResourceParams
+
+                    $currentState.ServiceAccount | Should Be $mockLocalServiceAccountName
                 }
             }
         }
@@ -442,7 +411,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -463,7 +432,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -505,7 +474,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
@@ -526,7 +495,7 @@ try
                 }
 
                 It 'Should use all mocked commands' {
-                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 2 -Scope Context
+                    Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope Context
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Exactly -Times 1
                 }
             }
