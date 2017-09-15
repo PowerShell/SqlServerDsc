@@ -1,8 +1,8 @@
 Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) `
-                               -ChildPath 'xSQLServerHelper.psm1')
+        -ChildPath 'xSQLServerHelper.psm1')
 
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
-                               -ChildPath 'CommonResourceHelper.psm1')
+        -ChildPath 'CommonResourceHelper.psm1')
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerServiceAccount'
 
@@ -42,7 +42,7 @@ function Get-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -63,7 +63,7 @@ function Get-TargetResource
 
     # Local accounts will start with a '.'
     # Replace a domain of '.' with the value for $SQLServer
-    $serviceAccountName = $serviceObject.ServiceAccount -ireplace '^([\.])\\(.*)$',"$SQLServer\`$2"
+    $serviceAccountName = $serviceObject.ServiceAccount -ireplace '^([\.])\\(.*)$', "$SQLServer\`$2"
 
     # Return a hashtable with the service information
     return @{
@@ -116,7 +116,7 @@ function Test-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -186,7 +186,7 @@ function Set-TargetResource
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
         [System.String]
         $ServiceType,
 
@@ -262,7 +262,7 @@ function Get-ServiceObject
         $SQLInstanceName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
         [System.String]
         $ServiceType
     )
@@ -314,7 +314,7 @@ function ConvertTo-ManagedServiceType
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DatabaseEngine','SQLServerAgent','Search','IntegrationServices','AnalysisServices','ReportingServices','SQLServerBrowser','NotificationServices')]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
         [System.String]
         $ServiceType
     )
@@ -322,14 +322,45 @@ function ConvertTo-ManagedServiceType
     # Map the project-specific ServiceType to a valid value from the ManagedServiceType enumeration
     switch ($ServiceType)
     {
-        'DatabaseEngine' { $serviceTypeValue = 'SqlServer' }
-        'SQLServerAgent' { $serviceTypeValue = 'SqlAgent' }
-        'Search' { $serviceTypeValue = 'Search' }
-        'IntegrationServices' { $serviceTypeValue = 'SqlServerIntegrationService' }
-        'AnalysisServices' { $serviceTypeValue = 'AnalysisServer' }
-        'ReportingServices' { $serviceTypeValue = 'ReportServer' }
-        'SQLServerBrowser' { $serviceTypeValue = 'SqlBrowser' }
-        'NotificationServices' { $serviceTypeValue = 'NotificationServer' }
+        'DatabaseEngine'
+        {
+            $serviceTypeValue = 'SqlServer'
+        }
+
+        'SQLServerAgent'
+        {
+            $serviceTypeValue = 'SqlAgent'
+        }
+
+        'Search'
+        {
+            $serviceTypeValue = 'Search'
+        }
+
+        'IntegrationServices'
+        {
+            $serviceTypeValue = 'SqlServerIntegrationService'
+        }
+
+        'AnalysisServices'
+        {
+            $serviceTypeValue = 'AnalysisServer'
+        }
+
+        'ReportingServices'
+        {
+            $serviceTypeValue = 'ReportServer'
+        }
+
+        'SQLServerBrowser'
+        {
+            $serviceTypeValue = 'SqlBrowser'
+        }
+
+        'NotificationServices'
+        {
+            $serviceTypeValue = 'NotificationServer'
+        }
     }
 
     return $serviceTypeValue -as [Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType]
