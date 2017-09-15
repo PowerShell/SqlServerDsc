@@ -564,7 +564,11 @@ try
                     $setTargetResourceParameters = $defaultSetTargetResourceParameters.Clone()
                     $setTargetResourceParameters.ServiceType = 'SQLServerAgent'
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should Throw
+                    # Get the localized error message
+                    $mockCorrectErrorMessage = $script:localizedData.SericeNotFound -f $setTargetResourceParameters.ServiceType, $setTargetResourceParameters.SQLServer, $setTargetResourceParameters.SQLInstanceName
+
+                    # Attempt to update the service account
+                    { Set-TargetResource @setTargetResourceParameters } | Should Throw $mockCorrectErrorMessage
 
                     # Ensure mocks are used properly
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Scope It -Exactly -Times 1
@@ -592,8 +596,11 @@ try
 
                     $setTargetResourceParameters = $defaultSetTargetResourceParameters.Clone()
 
-                    # Attempt to update the service information
-                    { Set-TargetResource @setTargetResourceParameters } | Should Throw "Unable to set the service account for $($setTargetResourceParameters.SQLServer) on $($setTargetResourceParameters.SQLInstanceName)"
+                    # Get the localized error message
+                    $mockCorrectErrorMessage = $script:localizedData.SetServiceAccountFailed -f $setTargetResourceParameters.SQLServer, $setTargetResourceParameters.SQLInstanceName, ''
+
+                    # Attempt to update the service account
+                    { Set-TargetResource @setTargetResourceParameters } | Should Throw $mockCorrectErrorMessage
 
                     # Ensure mocks are used properly
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Scope It -Exactly -Times 1
@@ -641,7 +648,11 @@ try
                     $setTargetResourceParameters = $defaultSetTargetResourceParameters.Clone()
                     $setTargetResourceParameters.ServiceType = 'SQLServerAgent'
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should Throw "The $($setTargetResourceParameters.ServiceType) service on $($setTargetResourceParameters.SQLServer)\$($setTargetResourceParameters.SQLInstanceName)"
+                    # Get the expected localized error message
+                    $mockCorrectErrorMessage = $script:localizedData.SericeNotFound -f $setTargetResourceParameters.ServiceType, $setTargetResourceParameters.SQLServer, $setTargetResourceParameters.SQLInstanceName
+
+                    # Attempt to update the service account
+                    { Set-TargetResource @setTargetResourceParameters } | Should Throw $mockCorrectErrorMessage
 
                     # Ensure mocks are used properly
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Scope It -Exactly -Times 1
@@ -669,8 +680,11 @@ try
 
                     $setTargetResourceParameters = $defaultSetTargetResourceParameters.Clone()
 
+                    # Get the expected localized error message
+                    $mockCorrectErrorMessage = $script:localizedData.SetServiceAccountFailed -f $setTargetResourceParameters.SQLServer, $setTargetResourceParameters.SQLInstanceName, ''
+
                     # Attempt to update the service information
-                    { Set-TargetResource @setTargetResourceParameters } | Should Throw "Unable to set the service account for $($setTargetResourceParameters.SQLServer) on $($setTargetResourceParameters.SQLInstanceName)"
+                    { Set-TargetResource @setTargetResourceParameters } | Should Throw $mockCorrectErrorMessage
 
                     # Ensure mocks are used properly
                     Assert-MockCalled -CommandName New-Object -ParameterFilter $mockNewObject_ParameterFilter -Scope It -Exactly -Times 1
