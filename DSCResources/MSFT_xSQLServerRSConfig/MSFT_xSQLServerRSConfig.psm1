@@ -215,13 +215,13 @@ function Set-TargetResource
             New-VerboseMessage -Message "Initializing Reporting Services on $RSSQLServer\$RSSQLInstanceName."
 
             # If no Report Server reserved URLs have been specified, use the default one.
-            if ( $null -ne $ReportServerReservedUrl )
+            if ( $null -eq $ReportServerReservedUrl )
             {
                 $ReportServerReservedUrl = @('http://+:80')
             }
 
             # If no Report Manager/Report Web App reserved URLs have been specified, use the default one.
-            if ( $null -ne $ReportsReservedUrl )
+            if ( $null -eq $ReportsReservedUrl )
             {
                 $ReportsReservedUrl = @('http://+:80')
             }
