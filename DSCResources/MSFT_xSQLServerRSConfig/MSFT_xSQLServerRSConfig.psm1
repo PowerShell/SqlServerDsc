@@ -214,11 +214,13 @@ function Set-TargetResource
         {
             New-VerboseMessage -Message "Initializing Reporting Services on $RSSQLServer\$RSSQLInstanceName."
 
+            # If no Report Server reserved URLs have been specified, use the default one.
             if ( $null -ne $ReportServerReservedUrl )
             {
                 $ReportServerReservedUrl = @('http://+:80')
             }
 
+            # If no Report Manager/Report Web App reserved URLs have been specified, use the default one.
             if ( $null -ne $ReportsReservedUrl )
             {
                 $ReportsReservedUrl = @('http://+:80')
@@ -274,14 +276,26 @@ function Set-TargetResource
 
             $currentConfig = Get-TargetResource @getTargetResourceParameters
 
+            <#
+                SSRS virtual directories (both Report Server and Report Manager/Report Web App)
+                are a part of SSRS URL reservations.
+
+                The default SSRS URL reservations are:
+                http://+:80/ReportServer/ (for Report Server)
+                and
+                http://+:80/Reports/ (for Report Manager/Report Web App)
+
+                You can get them by running 'netsh http show urlacl' from command line.
+
+                In order to change a virtual directory, we first need to remove existing URL reservations,
+                change the appropriate virtual directory setting and re-add URL reservations, which 
+                will then contain the new virtual directory.
+            #>
+
             if ( -not [string]::IsNullOrEmpty($ReportServerVirtualDirectory) -and ($ReportServerVirtualDirectory -ne $currentConfig.ReportServerVirtualDirectory) )
             {
                 New-VerboseMessage -Message "Setting report server virtual directory on $RSSQLServer\$RSSQLInstanceName to $ReportServerVirtualDirectory."
 
-                <#
-                    to change a virtual directory, we first need to remove all URL reservations,
-                    change the virtual directory and re-add URL reservations
-                #>
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
                     $null = $reportingServicesData.Configuration.RemoveURL('ReportServerWebService', $_, $language)
                 }
@@ -297,10 +311,6 @@ function Set-TargetResource
             {
                 New-VerboseMessage -Message "Setting reports virtual directory on $RSSQLServer\$RSSQLInstanceName to $ReportServerVirtualDirectory."
 
-                <#
-                    to change a virtual directory, we first need to remove all URL reservations,
-                    change the virtual directory and re-add URL reservations
-                #>
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
                     $null = $reportingServicesData.Configuration.RemoveURL($reportingServicesData.ReportsApplicationName, $_, $language)
                 }
