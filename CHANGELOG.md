@@ -71,6 +71,9 @@
 - Added new resource xSQLServerAccount ([issue #706](https://github.com/PowerShell/xSQLServer/issues/706))
   - Added localization support for all strings
   - Added examples for usage
+- Changes to xSQLServerRSConfig
+  - Added support for configuring URL reservations and virtual directory names
+    ([issue #570](https://github.com/PowerShell/xSQLServer/issues/570))
 
 ## 8.1.0.0
 
@@ -139,9 +142,6 @@
     administrator (issue #691).
   - Added a simple integration test ([issue #709](https://github.com/PowerShell/xSQLServer/issues/709)).
   - Fixed PS Script Analyzer errors ([issue #729](https://github.com/PowerShell/xSQLServer/issues/729))
-- Changes to xSQLServerRSConfig
-  - Added support for configuring URL reservations and virtual directory names
-    (issue #570)
 
 ## 8.0.0.0
 
