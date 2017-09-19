@@ -249,7 +249,9 @@ function Set-TargetResource
             $reportingServicesDatabaseScript = $reportingServicesData.Configuration.GenerateDatabaseCreationScript($reportingServicesDatabaseName, $language, $false)
 
             # Determine RS service account
-            $reportingServicesServiceAccountUserName = (Get-WmiObject -Class Win32_Service | Where-Object -FilterScript {$_.Name -eq $reportingServicesServiceName}).StartName
+            $reportingServicesServiceAccountUserName = (Get-WmiObject -Class Win32_Service | Where-Object -FilterScript {
+                $_.Name -eq $reportingServicesServiceName
+            }).StartName
             $reportingServicesDatabaseRightsScript = $reportingServicesData.Configuration.GenerateDatabaseRightsScript($reportingServicesServiceAccountUserName, $reportingServicesDatabaseName, $false, $true)
 
             <#
