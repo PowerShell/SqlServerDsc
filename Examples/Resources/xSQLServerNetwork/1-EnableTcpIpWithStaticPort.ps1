@@ -25,6 +25,7 @@ Configuration Example
             TCPDynamicPorts = ''
             TCPPort         = 4509
             RestartService  = $true
+            PsDscRunAsCredential = $SysAdminAccount
         }
     }
 }
