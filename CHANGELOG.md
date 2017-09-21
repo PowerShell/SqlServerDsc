@@ -1,6 +1,8 @@
 # Change log for xSQLServer
 
 ## Unreleased
+- Changes to xSQLServerNetwork
+  - added parameter sysadmin account to the example
 
 ## 8.1.0.0
 
