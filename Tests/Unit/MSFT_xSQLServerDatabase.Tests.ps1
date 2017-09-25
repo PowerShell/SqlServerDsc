@@ -57,6 +57,7 @@ try
                     New-Object Object |
                         Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockSqlServerInstanceName -PassThru |
                         Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockSqlServerName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name Collation -Value $mockSqlDatabaseCollation -PassThru |
                         Add-Member -MemberType ScriptProperty -Name Databases -Value {
                             return @{
                                 $mockSqlDatabaseName = ( New-Object Object |
@@ -125,7 +126,7 @@ try
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
                     $result.Name | Should Be $testParameters.Name
-                    $result.Collation | Should Be $null
+                    $result.Collation | Should Be $testParameters.Collation
                 }
 
 
