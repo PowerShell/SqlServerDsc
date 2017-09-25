@@ -71,7 +71,8 @@ try
                                             throw "Called mocked Drop() method without dropping the right database. Expected '{0}'. But was '{1}'." `
                                                   -f $mockExpectedDatabaseNameToDrop, $this.Name
                                         }
-                                    } -PassThru
+                                    } -PassThru |
+                                    Add-Member -MemberType NoteProperty -Name Collation -Value 'SQL_Latin1_General_CP1_CI_AS' -PassThru
                                     )
                                 }
                             } -PassThru -Force
@@ -107,43 +108,46 @@ try
             }
 
             Context 'When the system is not in the desired state' {
-                It 'Should return the state as absent' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name = 'UnknownDatabase'
-                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
-                    }
+                $testParameters = $mockDefaultParameters
+                $testParameters += @{
+                    Name = 'UnknownDatabase'
+                    Collation = 'SQL_Latin1_General_CP1_CI_AS'
+                }
 
+                It 'Should return the state as absent' {
                     $result = Get-TargetResource @testParameters
                     $result.Ensure | Should Be 'Absent'
                 }
 
                 It 'Should return the same values as passed as parameters' {
+                    $result = Get-TargetResource @testParameters
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
                     $result.Name | Should Be $testParameters.Name
-                    $result.Collation | Should Be $testParameters.Collation
+                    $result.Collation | Should Be $null
                 }
 
 
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
             }
 
             Context 'When the system is in the desired state for a database' {
-                It 'Should return the state as present' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name = 'AdventureWorks'
-                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
-                    }
 
+                $testParameters = $mockDefaultParameters
+                $testParameters += @{
+                    Name = 'AdventureWorks'
+                    Collation = 'SQL_Latin1_General_CP1_CI_AS'
+                }
+
+                It 'Should return the state as present' {
                     $result = Get-TargetResource @testParameters
                     $result.Ensure | Should Be 'Present'
                 }
 
                 It 'Should return the same values as passed as parameters' {
+                    $result = Get-TargetResource @testParameters
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
                     $result.Name | Should Be $testParameters.Name
@@ -151,7 +155,7 @@ try
                 }
 
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
             }
 
