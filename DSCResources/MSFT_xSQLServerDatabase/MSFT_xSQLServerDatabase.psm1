@@ -17,6 +17,9 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     .PARAMETER SQLInstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER Collation
+    The name of the SQL collation to use for the new database.
 #>
 
 function Get-TargetResource
@@ -191,6 +194,9 @@ function Set-TargetResource
 
     .PARAMETER SQLInstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER Collation
+    The name of the SQL collation to use for the new database.
 #>
 function Test-TargetResource
 {
@@ -246,6 +252,11 @@ function Test-TargetResource
             if ($getTargetResourceResult.Ensure -ne 'Present')
             {
                 New-VerboseMessage -Message "Ensure is set to Present. The database $Name should be created"
+                $isDatabaseInDesiredState = $false
+            }
+            elseif ($getTargetResourceResult.Collation -ne $Collation)
+            {
+                New-VerboseMessage -Message "Database exists but is incorrect collation."
                 $isDatabaseInDesiredState = $false
             }
         }

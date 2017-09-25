@@ -41,6 +41,7 @@ try
         $mockInvalidOperationForDropMethod   = $false
         $mockExpectedDatabaseNameToCreate    = 'Contoso'
         $mockExpectedDatabaseNameToDrop      = 'Sales'
+        $mockSqlDatabaseCollation            = 'SQL_Latin1_General_CP1_CI_AS'
 
         # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
@@ -72,7 +73,7 @@ try
                                                   -f $mockExpectedDatabaseNameToDrop, $this.Name
                                         }
                                     } -PassThru |
-                                    Add-Member -MemberType NoteProperty -Name Collation -Value 'SQL_Latin1_General_CP1_CI_AS' -PassThru
+                                    Add-Member -MemberType NoteProperty -Name Collation -Value $mockSqlDatabaseCollation -PassThru
                                     )
                                 }
                             } -PassThru -Force
@@ -173,6 +174,19 @@ try
                     $testParameters += @{
                         Name    = 'UnknownDatabase'
                         Ensure  = 'Present'
+                        Collation = 'SQL_Latin1_General_CP1_CS_AS'
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $false
+                }
+
+                It 'Should return the state as false when desired database exists but is the incorrect collation' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Name    = 'AdventureWorks'
+                        Ensure  = 'Present'
+                        Collation = 'SQL_Latin1_General_CP1_CS_AS'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -180,7 +194,7 @@ try
                 }
 
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
             }
 
@@ -207,6 +221,19 @@ try
                     $testParameters += @{
                         Name    = 'AdventureWorks'
                         Ensure  = 'Present'
+                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
+                    }
+
+                    $result = Test-TargetResource @testParameters
+                    $result | Should Be $true
+                }
+
+                It 'Should return the state as true when desired database exists and is correct collation' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Name    = 'AdventureWorks'
+                        Ensure  = 'Present'
+                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -214,7 +241,7 @@ try
                 }
 
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
             }
 
