@@ -59,6 +59,7 @@ function Get-TargetResource
 
     if ($sqlServerObject)
     {
+        $sqlDatabaseCollation = $sqlServerObject.Collation
         Write-Verbose -Message 'Getting SQL Databases'
         # Check database exists
         $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
@@ -235,6 +236,11 @@ function Test-TargetResource
 
     $getTargetResourceResult = Get-TargetResource @PSBoundParameters
     $isDatabaseInDesiredState = $true
+
+    if ([string]::IsNullOrWhiteSpace($Collation))
+    {
+        $Collation = $getTargetResourceResult.Collation
+    }
 
     switch ($Ensure)
     {
