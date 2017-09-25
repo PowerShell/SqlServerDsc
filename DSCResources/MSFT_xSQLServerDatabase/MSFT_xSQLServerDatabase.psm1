@@ -44,7 +44,12 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $SQLInstanceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Collation
     )
 
     $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -59,6 +64,7 @@ function Get-TargetResource
         {
             Write-Verbose -Message "SQL Database name $Name is present"
             $Ensure = 'Present'
+            $sqlDatabaseCollation = $sqlDatabaseObject.Collation
         }
         else
         {
@@ -72,6 +78,7 @@ function Get-TargetResource
         Ensure          = $Ensure
         SQLServer       = $SQLServer
         SQLInstanceName = $SQLInstanceName
+        Collation       = $sqlDatabaseCollation
     }
 
     $returnValue
@@ -210,7 +217,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $SQLInstanceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Collation
     )
 
     Write-Verbose -Message "Checking if database named $Name is present or absent"

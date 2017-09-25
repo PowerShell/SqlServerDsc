@@ -111,6 +111,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name = 'UnknownDatabase'
+                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
                     }
 
                     $result = Get-TargetResource @testParameters
@@ -121,7 +122,9 @@ try
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
                     $result.Name | Should Be $testParameters.Name
+                    $result.Collation | Should Be $testParameters.Collation
                 }
+
 
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
@@ -133,6 +136,7 @@ try
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name = 'AdventureWorks'
+                        Collation = 'SQL_Latin1_General_CP1_CI_AS'
                     }
 
                     $result = Get-TargetResource @testParameters
@@ -143,6 +147,7 @@ try
                     $result.SQLServer | Should Be $testParameters.SQLServer
                     $result.SQLInstanceName | Should Be $testParameters.SQLInstanceName
                     $result.Name | Should Be $testParameters.Name
+                    $result.Collation | Should Be $testParameters.Collation
                 }
 
                 It 'Should call the mock function Connect-SQL' {
