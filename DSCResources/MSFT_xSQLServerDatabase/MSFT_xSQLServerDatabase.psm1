@@ -104,6 +104,9 @@ function Get-TargetResource
 
     .PARAMETER SQLInstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER Collation
+    The name of the SQL collation to use for the new database.
 #>
 function Set-TargetResource
 {
@@ -129,31 +132,69 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $SQLInstanceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Collation
     )
 
     $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
     if ($sqlServerObject)
     {
+
         if ($Ensure -eq 'Present')
         {
-            try
+            if ([string]::IsNullOrWhiteSpace($Collation))
             {
-                $sqlDatabaseObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $sqlServerObject, $Name
-                if ($sqlDatabaseObjectToCreate)
+                $Collation = $sqlServerObject.Collation
+            }
+            elseif ($Collation -notin $sqlServerObject.EnumCollations().Name)
+            {
+                throw New-TerminatingError -ErrorType InvalidCollationError `
+                    -FormatArgs @($SQLServer, $SQLInstanceName, $Name, $Collation) `
+                    -ErrorCategory InvalidOperation
+            }
+            $sqlDatabaseObject = $sqlServerObject.Databases.Where({$_.Name -eq $Name})
+            if ($sqlDatabaseObject)
+            {
+                try
                 {
-                    Write-Verbose -Message "Adding to SQL the database $Name"
-                    $sqlDatabaseObjectToCreate.Create()
-                    New-VerboseMessage -Message "Created Database $Name"
+                    Write-Verbose -Message "Updating the database $Name with specified settings"
+                    $sqlDatabaseObject.Collation = $Collation
+                    $sqlDatabaseObject.Alter()
+                    New-VerboseMessage -Message "Updated Database $Name"
+                }
+                catch
+                {
+                    throw New-TerminatingError -ErrorType UpdateDatabaseSetError `
+                        -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
+                        -ErrorCategory InvalidOperation `
+                        -InnerException $_.Exception
                 }
             }
-            catch
+            else
             {
-                throw New-TerminatingError -ErrorType CreateDatabaseSetError `
-                    -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
-                    -ErrorCategory InvalidOperation `
-                    -InnerException $_.Exception
+                try
+                {
+                    $sqlDatabaseObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $sqlServerObject, $Name
+                    if ($sqlDatabaseObjectToCreate)
+                    {
+                        Write-Verbose -Message "Adding to SQL the database $Name"
+                        $sqlDatabaseObjectToCreate.Collation = $Collation
+                        $sqlDatabaseObjectToCreate.Create()
+                        New-VerboseMessage -Message "Created Database $Name"
+                    }
+                }
+                catch
+                {
+                    throw New-TerminatingError -ErrorType CreateDatabaseSetError `
+                        -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
+                        -ErrorCategory InvalidOperation `
+                        -InnerException $_.Exception
+                }
             }
         }
         else

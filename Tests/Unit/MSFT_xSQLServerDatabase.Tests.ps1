@@ -58,10 +58,24 @@ try
                         Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockSqlServerInstanceName -PassThru |
                         Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockSqlServerName -PassThru |
                         Add-Member -MemberType NoteProperty -Name Collation -Value $mockSqlDatabaseCollation -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name EnumCollations -Value {
+                            return @(
+                                ( New-Object Object |
+                                    Add-Member -MemberType NoteProperty Name -Value $mockSqlDatabaseCollation -PassThru
+                                ),
+                                ( New-Object Object |
+                                    Add-Member -MemberType NoteProperty Name -Value 'SQL_Latin1_General_CP1_CS_AS' -PassThru
+                                ),
+                                ( New-Object Object |
+                                    Add-Member -MemberType NoteProperty Name -Value 'SQL_Latin1_General_Pref_CP850_CI_AS' -PassThru
+                                )
+                            )
+                        } -PassThru -Force |
                         Add-Member -MemberType ScriptProperty -Name Databases -Value {
                             return @{
-                                $mockSqlDatabaseName = ( New-Object Object |
+                                    $mockSqlDatabaseName = ( New-Object Object |
                                     Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlDatabaseName -PassThru |
+                                    Add-Member -MemberType NoteProperty -Name Collation -Value $mockSqlDatabaseCollation -PassThru |
                                     Add-Member -MemberType ScriptMethod -Name Drop -Value {
                                         if ($mockInvalidOperationForDropMethod)
                                         {
@@ -74,7 +88,12 @@ try
                                                   -f $mockExpectedDatabaseNameToDrop, $this.Name
                                         }
                                     } -PassThru |
-                                    Add-Member -MemberType NoteProperty -Name Collation -Value $mockSqlDatabaseCollation -PassThru
+                                    Add-Member -MemberType ScriptMethod -Name Alter -Value {
+                                        if ($mockInvalidOperationForAlterMethod)
+                                        {
+                                            throw 'Mock Alter Method was called with invalid operation.'
+                                        }
+                                    } -PassThru
                                     )
                                 }
                             } -PassThru -Force
@@ -87,6 +106,7 @@ try
                 (
                     New-Object Object |
                         Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlDatabaseName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name Collation -Value '' -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Create -Value {
                             if ($mockInvalidOperationForCreateMethod)
                             {
@@ -288,12 +308,23 @@ try
                     { Set-TargetResource @testParameters } | Should Not Throw
                 }
 
+                It 'Should not throw when changing the database collation' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Name    = 'AdventureWorks'
+                        Ensure  = 'Present'
+                        Collation = 'SQL_Latin1_General_CP1_CS_AS'
+                    }
+
+                    { Set-TargetResource @testParameters } | Should Not Throw
+                }
+
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
 
                 It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Database' {
-                    Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter {
+                    Assert-MockCalled New-Object -Exactly -Times 2 -ParameterFilter {
                         $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Database'
                     } -Scope Context
                 }
@@ -319,6 +350,7 @@ try
             }
 
             $mockInvalidOperationForCreateMethod = $true
+            $mockInvalidOperationForAlterMethod  = $true
 
             Context 'When the system is not in the desired state and Ensure is set to Present' {
                 It 'Should throw the correct error when Create() method was called with invalid operation' {
@@ -334,8 +366,21 @@ try
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
 
+                It 'Should throw the correct error when invalid collation is specified' {
+                    $testParameters = $mockDefaultParameters
+                    $testParameters += @{
+                        Name    = 'NewDatabase'
+                        Ensure  = 'Present'
+                        Collation = 'InvalidCollation'
+                    }
+
+                    $throwInvalidOperation = ('Collation specified {3} is not a valid collation for database {2} on {0}\{1}.' -f $mockSqlServerName, $mockSqlServerInstanceName, $testParameters.Name, $testParameters.Collation)
+
+                    { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
+                }
+
                 It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
+                    Assert-MockCalled Connect-SQL -Exactly -Times 2 -Scope Context
                 }
 
                 It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Database' {
@@ -353,6 +398,7 @@ try
                 $testParameters += @{
                     Name    = 'AdventureWorks'
                     Ensure  = 'Absent'
+                    Collation = 'SQL_Latin1_General_CP1_CS_AS'
                 }
 
                 It 'Should throw the correct error when Drop() method was called with invalid operation' {
