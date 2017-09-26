@@ -311,7 +311,7 @@ try
                 It 'Should not throw when changing the database collation' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name    = 'AdventureWorks'
+                        Name    = 'Contoso'
                         Ensure  = 'Present'
                         Collation = 'SQL_Latin1_General_CP1_CS_AS'
                     }
@@ -324,7 +324,7 @@ try
                 }
 
                 It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Database' {
-                    Assert-MockCalled New-Object -Exactly -Times 2 -ParameterFilter {
+                    Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter {
                         $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Database'
                     } -Scope Context
                 }
