@@ -157,7 +157,7 @@ function Set-TargetResource
                     -FormatArgs @($SQLServer, $SQLInstanceName, $Name, $Collation) `
                     -ErrorCategory InvalidOperation
             }
-            $sqlDatabaseObject = $sqlServerObject.Databases.Where({$_.Name -eq $Name})
+            $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
             if ($sqlDatabaseObject)
             {
                 try
