@@ -647,8 +647,11 @@ function Test-TargetResource
 
             if ( $getTargetResourceResult.Ensure -eq 'Present' )
             {
-                # PsBoundParameters won't work here because it doesn't account for default values
-                foreach ( $parameter in $MyInvocation.MyCommand.Parameters.GetEnumerator() )
+                # Use $PSBoundParameters rather than $MyInvocation.MyCommand.Parameters.GetEnumerator()
+                # This allows us to only validate the supplied parameters
+                # If the parameter is not defined by the configuration, we don't care what
+                # it gets set to.
+                foreach ( $parameter in $PSBoundParameters.GetEnumerator() )
                 {
                     $parameterName = $parameter.Key
                     $parameterValue = Get-Variable -Name $parameterName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value
