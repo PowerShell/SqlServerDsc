@@ -367,49 +367,52 @@ function Set-TargetResource
             # Otherwise let's check each of the parameters passed and update the Availability Group accordingly
             else
             {
+                # Get the parameters that were submitted to the function
+                [array]$submittedParameters = $PSBoundParameters.Keys
+
                 # Make sure we're communicating with the primary replica
                 $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup
                 $availabilityGroup = $primaryServerObject.AvailabilityGroups[$Name]
 
-                if ( $AutomatedBackupPreference -ne $availabilityGroup.AutomatedBackupPreference )
+                if ( ( $submittedParameters -contains 'AutomatedBackupPreference' ) -and ( $AutomatedBackupPreference -ne $availabilityGroup.AutomatedBackupPreference ) )
                 {
                     $availabilityGroup.AutomatedBackupPreference = $AutomatedBackupPreference
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( $AvailabilityMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].AvailabilityMode )
+                if ( ( $submittedParameters -contains 'AvailabilityMode' ) -and ( $AvailabilityMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].AvailabilityMode ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].AvailabilityMode = $AvailabilityMode
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
                 }
 
-                if ( $BackupPriority -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].BackupPriority )
+                if ( ( $submittedParameters -contains 'BackupPriority' ) -and ( $BackupPriority -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].BackupPriority ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].BackupPriority = $BackupPriority
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
                 }
 
-                if ( ( $sqlMajorVersion -ge 13 ) -and ( $BasicAvailabilityGroup -ne $availabilityGroup.BasicAvailabilityGroup ) )
+                if ( ( $submittedParameters -contains 'BasicAvailabilityGroup' ) -and ( $sqlMajorVersion -ge 13 ) -and ( $BasicAvailabilityGroup -ne $availabilityGroup.BasicAvailabilityGroup ) )
                 {
                     $availabilityGroup.BasicAvailabilityGroup = $BasicAvailabilityGroup
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( ( $sqlMajorVersion -ge 13 ) -and ( $DatabaseHealthTrigger -ne $availabilityGroup.DatabaseHealthTrigger ) )
+                if ( ( $submittedParameters -contains 'DatabaseHealthTrigger' ) -and ( $sqlMajorVersion -ge 13 ) -and ( $DatabaseHealthTrigger -ne $availabilityGroup.DatabaseHealthTrigger ) )
                 {
                     $availabilityGroup.DatabaseHealthTrigger = $DatabaseHealthTrigger
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
                 # Make sure ConnectionModeInPrimaryRole has a value in order to avoid false positive matches when the parameter is not defined
-                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInPrimaryRole ) )
+                if ( ( $submittedParameters -contains 'ConnectionModeInPrimaryRole' ) -and ( -not [string]::IsNullOrEmpty($ConnectionModeInPrimaryRole) ) -and ( $ConnectionModeInPrimaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInPrimaryRole ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInPrimaryRole = $ConnectionModeInPrimaryRole
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
                 }
 
                 # Make sure ConnectionModeInSecondaryRole has a value in order to avoid false positive matches when the parameter is not defined
-                if ( ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInSecondaryRole ) )
+                if ( ( $submittedParameters -contains 'ConnectionModeInSecondaryRole' ) -and ( -not [string]::IsNullOrEmpty($ConnectionModeInSecondaryRole) ) -and ( $ConnectionModeInSecondaryRole -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInSecondaryRole ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInSecondaryRole = $ConnectionModeInSecondaryRole
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
@@ -425,7 +428,7 @@ function Set-TargetResource
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
                 }
 
-                if ( $EndpointHostName -ne $currentEndpointHostName )
+                if ( ( $submittedParameters -contains 'EndpointHostName' ) -and ( $EndpointHostName -ne $currentEndpointHostName ) )
                 {
                     $newEndpointUrl = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].EndpointUrl.Replace($currentEndpointHostName, $EndpointHostName)
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].EndpointUrl = $newEndpointUrl
@@ -440,19 +443,19 @@ function Set-TargetResource
                 }
 
                 # Make sure FailureConditionLevel has a value in order to avoid false positive matches when the parameter is not defined
-                if ( ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $availabilityGroup.FailureConditionLevel ) )
+                if ( ( $submittedParameters -contains 'FailureConditionLevel' ) -and ( -not [string]::IsNullOrEmpty($FailureConditionLevel) ) -and ( $FailureConditionLevel -ne $availabilityGroup.FailureConditionLevel ) )
                 {
                     $availabilityGroup.FailureConditionLevel = $FailureConditionLevel
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
                 }
 
-                if ( $FailoverMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].FailoverMode )
+                if ( ( $submittedParameters -contains 'FailoverMode' ) -and ( $FailoverMode -ne $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].FailoverMode ) )
                 {
                     $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].FailoverMode = $FailoverMode
                     Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName]
                 }
 
-                if ( $HealthCheckTimeout -ne $availabilityGroup.HealthCheckTimeout )
+                if ( ( $submittedParameters -contains 'HealthCheckTimeout' ) -and ( $HealthCheckTimeout -ne $availabilityGroup.HealthCheckTimeout ) )
                 {
                     $availabilityGroup.HealthCheckTimeout = $HealthCheckTimeout
                     Update-AvailabilityGroup -AvailabilityGroup $availabilityGroup
