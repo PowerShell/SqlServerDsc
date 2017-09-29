@@ -52,13 +52,13 @@ try
         $mockSqlServerParameters = @{
             Server1 = @{
                 FQDN = 'Server1.contoso.com'
-                IP = '192.168.1.1'
-                NetBIOS = 'Server1'
+                #IP = '192.168.1.1'
+                #NetBIOS = 'Server1'
             }
             Server2 = @{
                 FQDN = 'Server2.contoso.com'
-                IP = '192.168.1.2'
-                NetBIOS = 'Server2'
+                #IP = '192.168.1.2'
+                #NetBIOS = 'Server2'
             }
         }
 
