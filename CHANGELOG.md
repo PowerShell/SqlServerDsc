@@ -59,13 +59,21 @@
     later only). The feature currently can't be altered once the Availability
     Group is created.
   - Use the new helper function "Test-ClusterPermissions".
-  - Refactored the unit tests to allow them to be more user friendly.
-    Added the following read-only properties to the schema ([issue #476](https://github.com/PowerShell/xSQLServer/issues/476))
+  - Refactored the unit tests to allow them to be more user friendly and to test
+    additional SQLServer variations.
+    - Each test will utilize the Import-SQLModuleStub to ensure the correct
+      module is loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784))
+  - Added the following read-only properties to the schema ([issue #476](https://github.com/PowerShell/xSQLServer/issues/476))
     - EndpointPort
     - EndpointURL
     - SQLServerNetName
     - Version
-  - Use the Get-PrimaryReplicaServerObject helper function
+  - Use the Get-PrimaryReplicaServerObject helper function.
+  - Fixed an issue when setting the SQLServer parameter to a Fully Qualified
+    Domain Name (FQDN). ([issue #468](https://github.com/PowerShell/xSQLServer/issues/468))
+  - Fixed the logic so that if a parameter is not supplied to the resource, the
+    resource will not attempt to apply the defaults on subsequent checks.
+    ([issue #517](https://github.com/PowerShell/xSQLServer/issues/517))
 - Changes to xSQLServerAlwaysOnAvailabilityGroupReplica
   - Fixed the formatting for the AvailabilityGroupNotFound error.
   - Added the following read-only properties to the schema ([issue #477](https://github.com/PowerShell/xSQLServer/issues/477))
@@ -109,6 +117,9 @@
   - Added integration test ([issue #753](https://github.com/PowerShell/xSQLServer/issues/753)).
   - Added support for configuring URL reservations and virtual directory names
     ([issue #570](https://github.com/PowerShell/xSQLServer/issues/570))
+- Added the CommonTestHelper.psm1 to store common testing functions.
+  - Added the Import-SQLModuleStub function to ensure the correct version of the
+    module stubs are loaded. ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784))
 
 ## 8.1.0.0
 
