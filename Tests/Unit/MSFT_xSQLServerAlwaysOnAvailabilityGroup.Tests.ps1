@@ -466,6 +466,10 @@ try
 
             # Determine which SQL Server mock data we will use
             $mockSqlServer = ( $mockSqlServerParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $SQLServer } ).Name
+            if ( [string]::IsNullOrEmpty($mockSqlServer) )
+            {
+                $mockSqlServer = $SQLServer
+            }
             $mockCurrentServerObjectProperties = $mockServerObjectProperies.$mockSqlServer
 
             # Build the domain instance name
@@ -907,7 +911,8 @@ try
                         $assertUpdateAvailbilityGroupReplicaMockCalled = 1
                     }
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should Not Throw
+                    Set-TargetResource @setTargetResourceParameters
+                    #{ Set-TargetResource @setTargetResourceParameters } | Should Not Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 1 -Exactly
