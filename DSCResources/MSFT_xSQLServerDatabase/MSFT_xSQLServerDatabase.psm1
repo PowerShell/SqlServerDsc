@@ -147,7 +147,7 @@ function Set-TargetResource
 
         if ($Ensure -eq 'Present')
         {
-            if ([string]::IsNullOrWhiteSpace($Collation))
+            if (-not $PSBoundParameters.ContainsKey('Collation'))
             {
                 $Collation = $sqlServerObject.Collation
             }
@@ -157,15 +157,17 @@ function Set-TargetResource
                     -FormatArgs @($SQLServer, $SQLInstanceName, $Name, $Collation) `
                     -ErrorCategory InvalidOperation
             }
+
             $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
+
             if ($sqlDatabaseObject)
             {
                 try
                 {
-                    Write-Verbose -Message "Updating the database $Name with specified settings"
+                    Write-Verbose -Message "Updating the database $Name with specified settings."
                     $sqlDatabaseObject.Collation = $Collation
                     $sqlDatabaseObject.Alter()
-                    New-VerboseMessage -Message "Updated Database $Name"
+                    New-VerboseMessage -Message "Updated Database $Name."
                 }
                 catch
                 {
@@ -182,10 +184,10 @@ function Set-TargetResource
                     $sqlDatabaseObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $sqlServerObject, $Name
                     if ($sqlDatabaseObjectToCreate)
                     {
-                        Write-Verbose -Message "Adding to SQL the database $Name"
+                        Write-Verbose -Message "Adding to SQL the database $Name."
                         $sqlDatabaseObjectToCreate.Collation = $Collation
                         $sqlDatabaseObjectToCreate.Create()
-                        New-VerboseMessage -Message "Created Database $Name"
+                        New-VerboseMessage -Message "Created Database $Name."
                     }
                 }
                 catch
@@ -204,9 +206,9 @@ function Set-TargetResource
                 $sqlDatabaseObjectToDrop = $sqlServerObject.Databases[$Name]
                 if ($sqlDatabaseObjectToDrop)
                 {
-                    Write-Verbose -Message "Deleting to SQL the database $Name"
+                    Write-Verbose -Message "Deleting to SQL the database $Name."
                     $sqlDatabaseObjectToDrop.Drop()
-                    New-VerboseMessage -Message "Dropped Database $Name"
+                    New-VerboseMessage -Message "Dropped Database $Name."
                 }
             }
             catch
@@ -278,7 +280,7 @@ function Test-TargetResource
     $getTargetResourceResult = Get-TargetResource @PSBoundParameters
     $isDatabaseInDesiredState = $true
 
-    if ([string]::IsNullOrWhiteSpace($Collation))
+    if (-not $PSBoundParameters.ContainsKey('Collation'))
     {
         $Collation = $getTargetResourceResult.Collation
     }
@@ -303,7 +305,7 @@ function Test-TargetResource
             }
             elseif ($getTargetResourceResult.Collation -ne $Collation)
             {
-                New-VerboseMessage -Message "Database exists but is incorrect collation."
+                New-VerboseMessage -Message 'Database exist but has the wrong collation.'
                 $isDatabaseInDesiredState = $false
             }
         }

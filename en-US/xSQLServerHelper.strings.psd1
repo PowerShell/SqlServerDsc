@@ -142,7 +142,7 @@ ConvertFrom-StringData @'
     FailedToSetPermissionDatabase = Failed to set permission for login named {0} of the database named {1} on {2}\\{3}.
     FailedToEnumDatabasePermissions = Failed to get permission for login named {0} of the database named {1} on {2}\\{3}.
     UpdateDatabaseSetError = Failed to update database {1} on {0}\\{1} with specified changes.
-    InvalidCollationError = Collation specified {3} is not a valid collation for database {2} on {0}\\{1}.
+    InvalidCollationError = The specified collation '{3}' is not a valid collation for database {2} on {0}\\{1}.
 
     # SQLServerRole
     EnumMemberNamesServerRoleGetError = Failed to enumerate members of the server role named {2} on {0}\\{1}.

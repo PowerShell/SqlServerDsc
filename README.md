@@ -496,8 +496,7 @@ database, please read:
 * **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of database to be created or dropped.
-* **`[String]` Collation** _(Write)_: Collation to set for the database.
-  Defaults to server collation.
+* **`[String]` Collation** _(Write)_: The name of the SQL collation to use for the new database.
 * **`[String]` Ensure** _(Write)_: When set to 'Present', the database will be created.
   When set to 'Absent', the database will be dropped. { *Present* | Absent }.
 

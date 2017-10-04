@@ -39,6 +39,7 @@ try
         $mockSqlDatabaseName                 = 'AdventureWorks'
         $mockInvalidOperationForCreateMethod = $false
         $mockInvalidOperationForDropMethod   = $false
+        $mockInvalidOperationForAlterMethod  = $false
         $mockExpectedDatabaseNameToCreate    = 'Contoso'
         $mockExpectedDatabaseNameToDrop      = 'Sales'
         $mockSqlDatabaseCollation            = 'SQL_Latin1_General_CP1_CI_AS'
@@ -202,7 +203,7 @@ try
                     $result | Should Be $false
                 }
 
-                It 'Should return the state as false when desired database exists but is the incorrect collation' {
+                It 'Should return the state as false when desired database exists but has the incorrect collation' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name    = 'AdventureWorks'
@@ -249,7 +250,7 @@ try
                     $result | Should Be $true
                 }
 
-                It 'Should return the state as true when desired database exists and is correct collation' {
+                It 'Should return the state as true when desired database exists and has correct collation' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name    = 'AdventureWorks'
@@ -369,7 +370,7 @@ try
                 It 'Should throw the correct error when invalid collation is specified' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name    = 'NewDatabase'
+                        Name    = 'Sales'
                         Ensure  = 'Present'
                         Collation = 'InvalidCollation'
                     }

@@ -111,7 +111,7 @@
     ([issue #570](https://github.com/PowerShell/xSQLServer/issues/570))
 - Changes to xSQLServerDatabase
   - Added parameter to specify collation for a database to be different from server
-    collation([issue #767](https://github.com/PowerShell/xSQLServer/issues/767)).
+    collation ([issue #767](https://github.com/PowerShell/xSQLServer/issues/767)).
   - Fixed unit tests for Get-TargetResource to ensure correctly testing return
     values ([issue #849](https://github.com/PowerShell/xSQLServer/issues/849))
 
