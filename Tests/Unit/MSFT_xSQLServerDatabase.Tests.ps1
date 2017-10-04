@@ -375,7 +375,7 @@ try
                         Collation = 'InvalidCollation'
                     }
 
-                    $throwInvalidOperation = ('Collation specified {3} is not a valid collation for database {2} on {0}\{1}.' -f $mockSqlServerName, $mockSqlServerInstanceName, $testParameters.Name, $testParameters.Collation)
+                    $throwInvalidOperation = ("The specified collation '{3}' is not a valid collation for database {2} on {0}\{1}." -f $mockSqlServerName, $mockSqlServerInstanceName, $testParameters.Name, $testParameters.Collation)
 
                     { Set-TargetResource @testParameters } | Should Throw $throwInvalidOperation
                 }
