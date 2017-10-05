@@ -14,12 +14,12 @@ function Import-SQLModuleStub
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Version')]
-        [UInt32]
+        [System.UInt32]
         $SQLVersion,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Module')]
+        [Parameter(ParameterSetName = 'Module')]
         [ValidateSet('SQLPS','SQLServer')]
-        [String]
+        [System.String]
         $ModuleName = 'SQLServer'
     )
 
@@ -46,13 +46,11 @@ function Import-SQLModuleStub
     $stubModuleName = $modulesAndStubs.$ModuleName
 
     # Ensure none of the other stub modules are loaded
-    [array]$otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript { $_ -ne $stubModuleName }
+    [System.Array]$otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript { $_ -ne $stubModuleName }
 
-    $otherStubModules | Foreach-Object -Process {
-        if ( Get-Module -Name $_ )
-        {
-            Remove-Module -Name $_
-        }
+    if ( Get-Module -Name $otherStubModules )
+    {
+        Remove-Module -Name $otherStubModules
     }
 
     # If the desired module is not loaded, load it now
