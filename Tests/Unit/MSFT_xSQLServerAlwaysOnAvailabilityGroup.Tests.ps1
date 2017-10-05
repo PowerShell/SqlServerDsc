@@ -55,6 +55,7 @@ try
                 #IP = '192.168.1.1'
                 #NetBIOS = 'Server1'
             }
+
             Server2 = @{
                 FQDN = 'Server2.contoso.com'
                 #IP = '192.168.1.2'
@@ -79,6 +80,7 @@ try
             Server1 = @{
                 NetName = 'Server1'
             }
+
             Server2 = @{
                 NetName = 'Server2'
             }
@@ -108,6 +110,7 @@ try
                 Name = $mockServerObjectProperies.Server1.NetName
                 Role = 'Primary'
             }
+
             Server2 = @{
                 AvailabilityMode = 'SynchronousCommit' # Not the default parameter value
                 BackupPriority = 49 # Not the default parameter value
