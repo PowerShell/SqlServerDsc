@@ -20,6 +20,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
+    Defaults to server collation.
 #>
 
 function Get-TargetResource
@@ -107,6 +108,7 @@ function Get-TargetResource
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
+    Defaults to server collation.
 #>
 function Set-TargetResource
 {
@@ -241,6 +243,7 @@ function Set-TargetResource
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
+    Defaults to server collation.
 #>
 function Test-TargetResource
 {
