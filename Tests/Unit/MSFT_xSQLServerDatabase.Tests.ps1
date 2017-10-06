@@ -250,7 +250,7 @@ try
                     $result | Should Be $true
                 }
 
-                It 'Should return the state as true when desired database exists and has correct collation' {
+                It 'Should return the state as true when desired database exists and has the correct collation' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Name    = 'AdventureWorks'
