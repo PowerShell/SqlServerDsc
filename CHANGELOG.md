@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Changes to xSQLServerAlwaysOnAvailabilityGroup
+  - Refactored the unit tests to allow them to be more user friendly and to test
+    additional SQLServer variations.
+    - Each test will utilize the Import-SQLModuleStub to ensure the correct
+      module is loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784)).
+  - Fixed an issue when setting the SQLServer parameter to a Fully Qualified
+    Domain Name (FQDN) ([issue #468](https://github.com/PowerShell/xSQLServer/issues/468)).
+  - Fixed the logic so that if a parameter is not supplied to the resource, the
+    resource will not attempt to apply the defaults on subsequent checks
+    ([issue #517](https://github.com/PowerShell/xSQLServer/issues/517)).
+- Added the CommonTestHelper.psm1 to store common testing functions.
+  - Added the Import-SQLModuleStub function to ensure the correct version of the
+    module stubs are loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784)).
+
 ## 8.2.0.0
 
 - Changes to xSQLServer
@@ -25,7 +39,7 @@
       because SQLPS was not found after installation because the PSModulePath
       environment variable in the (LCM) PowerShell session did not contain the new
       module path.
-  - Added new helper function "Test-ClusterPermissions" ([issue #446](https://github.com/PowerShell/xSQLServer/issues/446)).
+  - Added new helper function "Test-ClusterPermissions" ([issue #446](https://github.com/PowerShell/xSQLServer/issues/446).
 - Changes to xSQLServerSetup
   - Fixed an issue with trailing slashes in the 'UpdateSource' property
     ([issue #720](https://github.com/PowerShell/xSQLServer/issues/720)).
@@ -71,11 +85,6 @@
     - SQLServerNetName
     - Version
   - Use the Get-PrimaryReplicaServerObject helper function.
-  - Fixed an issue when setting the SQLServer parameter to a Fully Qualified
-    Domain Name (FQDN) ([issue #468](https://github.com/PowerShell/xSQLServer/issues/468)).
-  - Fixed the logic so that if a parameter is not supplied to the resource, the
-    resource will not attempt to apply the defaults on subsequent checks
-    ([issue #517](https://github.com/PowerShell/xSQLServer/issues/517)).
 - Changes to xSQLServerAlwaysOnAvailabilityGroupReplica
   - Fixed the formatting for the AvailabilityGroupNotFound error.
   - Added the following read-only properties to the schema ([issue #477](https://github.com/PowerShell/xSQLServer/issues/477))
@@ -119,9 +128,6 @@
   - Added integration test ([issue #753](https://github.com/PowerShell/xSQLServer/issues/753)).
   - Added support for configuring URL reservations and virtual directory names
     ([issue #570](https://github.com/PowerShell/xSQLServer/issues/570))
-- Added the CommonTestHelper.psm1 to store common testing functions.
-  - Added the Import-SQLModuleStub function to ensure the correct version of the
-    module stubs are loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784)).
 
 ## 8.1.0.0
 
