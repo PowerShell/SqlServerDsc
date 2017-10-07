@@ -368,7 +368,7 @@ function Set-TargetResource
             else
             {
                 # Get the parameters that were submitted to the function
-                [System.Array]$submittedParameters = $PSBoundParameters.Keys
+                [System.Array] $submittedParameters = $PSBoundParameters.Keys
 
                 # Make sure we're communicating with the primary replica
                 $primaryServerObject = Get-PrimaryReplicaServerObject -ServerObject $serverObject -AvailabilityGroup $availabilityGroup

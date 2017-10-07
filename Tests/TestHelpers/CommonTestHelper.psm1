@@ -46,7 +46,7 @@ function Import-SQLModuleStub
     $stubModuleName = $modulesAndStubs.$ModuleName
 
     # Ensure none of the other stub modules are loaded
-    [System.Array]$otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript { $_ -ne $stubModuleName }
+    [System.Array] $otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript { $_ -ne $stubModuleName }
 
     if ( Get-Module -Name $otherStubModules )
     {
