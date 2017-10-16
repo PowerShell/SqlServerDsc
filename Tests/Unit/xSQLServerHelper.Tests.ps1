@@ -1683,4 +1683,49 @@ InModuleScope $script:moduleName {
             }
         }
     }
+
+    Describe 'Testing Test-ActiveNode' {
+        BeforeAll {
+            $mockServerObject = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server
+
+            $failoverClusterInstanceTestCases = @(
+                @{
+                    ComputerNamePhysicalNetBIOS = $env:COMPUTERNAME
+                    Result = $true
+                },
+                @{
+                    ComputerNamePhysicalNetBIOS = 'AnotherNode'
+                    Result = $false
+                }
+            )
+        }
+
+        Context 'When function is executed on a standalone instance' {
+            BeforeAll {
+                $mockServerObject.IsMemberOfWsfcCluster = $false
+            }
+
+            It 'Should return "$true"' {
+                Test-ActiveNode -ServerObject $mockServerObject | Should Be $true
+            }
+        }
+
+        Context 'When function is executed on a failover cluster instance (FCI)' {
+            BeforeAll {
+                $mockServerObject.IsMemberOfWsfcCluster = $true
+            }
+
+            It 'Should return "<Result>" when the node name is "<ComputerNamePhysicalNetBIOS>"' -TestCases $failoverClusterInstanceTestCases {
+                param
+                (
+                    $ComputerNamePhysicalNetBIOS,
+                    $Result
+                )
+
+                $mockServerObject.ComputerNamePhysicalNetBIOS = $ComputerNamePhysicalNetBIOS
+
+                Test-ActiveNode -ServerObject $mockServerObject | Should Be $Result
+            }
+        }
+    }
 }

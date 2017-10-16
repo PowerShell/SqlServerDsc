@@ -248,6 +248,7 @@ namespace Microsoft.SqlServer.Management.Smo
         public string InstanceName;
         public bool IsClustered = false;
         public bool IsHadrEnabled = false;
+        public bool IsMemberOfWsfcCluster = false;
         public Hashtable Logins = new Hashtable();
         public string Name;
         public string NetName;
