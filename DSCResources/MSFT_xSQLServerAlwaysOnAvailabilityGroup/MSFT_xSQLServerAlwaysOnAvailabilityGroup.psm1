@@ -50,27 +50,34 @@ function Get-TargetResource
     # Get the Availability Group
     $availabilityGroup = $serverObject.AvailabilityGroups[$Name]
 
+    # Is this node actively hosting the SQL instance?
+    $isActiveNode = Test-ActiveNode -ServerObject $serverObject
+
+    # Create the return object. Default ensure to Absent.
+    $alwaysOnAvailabilityGroupResource = @{
+        Name            = $Name
+        SQLServer       = $SQLServer
+        SQLInstanceName = $SQLInstanceName
+        Ensure          = 'Absent'
+        IsActiveNode      = $isActiveNode
+    }
+
     if ( $availabilityGroup )
     {
         # Get all of the properties that can be set using this resource
-        $alwaysOnAvailabilityGroupResource = @{
-            Name                          = $Name
-            SQLServer                     = $SQLServer
-            SQLInstanceName               = $SQLInstanceName
-            Ensure                        = 'Present'
-            AutomatedBackupPreference     = $availabilityGroup.AutomatedBackupPreference
-            AvailabilityMode              = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].AvailabilityMode
-            BackupPriority                = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].BackupPriority
-            ConnectionModeInPrimaryRole   = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInPrimaryRole
-            ConnectionModeInSecondaryRole = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInSecondaryRole
-            FailureConditionLevel         = $availabilityGroup.FailureConditionLevel
-            FailoverMode                  = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].FailoverMode
-            HealthCheckTimeout            = $availabilityGroup.HealthCheckTimeout
-            EndpointURL                   = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].EndpointUrl
-            EndpointPort                  = $endpointPort
-            SQLServerNetName              = $serverObject.NetName
-            Version                       = $sqlMajorVersion
-        }
+        $alwaysOnAvailabilityGroupResource.Ensure = 'Present'
+        $alwaysOnAvailabilityGroupResource.AutomatedBackupPreference = $availabilityGroup.AutomatedBackupPreference
+        $alwaysOnAvailabilityGroupResource.AvailabilityMode = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].AvailabilityMode
+        $alwaysOnAvailabilityGroupResource.BackupPriority = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].BackupPriority
+        $alwaysOnAvailabilityGroupResource.ConnectionModeInPrimaryRole = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInPrimaryRole
+        $alwaysOnAvailabilityGroupResource.ConnectionModeInSecondaryRole = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].ConnectionModeInSecondaryRole
+        $alwaysOnAvailabilityGroupResource.FailureConditionLevel = $availabilityGroup.FailureConditionLevel
+        $alwaysOnAvailabilityGroupResource.FailoverMode = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].FailoverMode
+        $alwaysOnAvailabilityGroupResource.HealthCheckTimeout = $availabilityGroup.HealthCheckTimeout
+        $alwaysOnAvailabilityGroupResource.EndpointURL = $availabilityGroup.AvailabilityReplicas[$serverObject.DomainInstanceName].EndpointUrl
+        $alwaysOnAvailabilityGroupResource.EndpointPort = $endpointPort
+        $alwaysOnAvailabilityGroupResource.SQLServerNetName = $serverObject.NetName
+        $alwaysOnAvailabilityGroupResource.Version = $sqlMajorVersion
 
         # Add properties that are only present in SQL 2016 or newer
         if ( $sqlMajorVersion -ge 13 )
@@ -78,16 +85,6 @@ function Get-TargetResource
             $alwaysOnAvailabilityGroupResource.Add('BasicAvailabilityGroup', $availabilityGroup.BasicAvailabilityGroup)
             $alwaysOnAvailabilityGroupResource.Add('DatabaseHealthTrigger', $availabilityGroup.DatabaseHealthTrigger)
             $alwaysOnAvailabilityGroupResource.Add('DtcSupportEnabled', $availabilityGroup.DtcSupportEnabled)
-        }
-    }
-    else
-    {
-        # Return the minimum amount of properties showing that the Availability Group is absent
-        $alwaysOnAvailabilityGroupResource = @{
-            Name            = $Name
-            SQLServer       = $SQLServer
-            SQLInstanceName = $SQLInstanceName
-            Ensure          = 'Absent'
         }
     }
 
@@ -142,6 +139,9 @@ function Get-TargetResource
 
     .PARAMETER HealthCheckTimeout
         Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
+
+    .PARAMETER ProcessOnlyOnActiveNode
+        Specifies whether to process the resource if the current node is not the active host of the SQL Server Instance.
 #>
 function Set-TargetResource
 {
@@ -224,7 +224,11 @@ function Set-TargetResource
 
         [Parameter()]
         [UInt32]
-        $HealthCheckTimeout = 30000
+        $HealthCheckTimeout = 30000,
+
+        [Parameter()]
+        [Boolean]
+        $ProcessOnlyOnActiveNode
     )
 
     Import-SQLPSModule
@@ -513,6 +517,9 @@ function Set-TargetResource
 
     .PARAMETER HealthCheckTimeout
         Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30,000.
+
+    .PARAMETER ProcessOnlyOnActiveNode
+        Specifies whether to process the resource if the current node is not the active host of the SQL Server Instance.
 #>
 function Test-TargetResource
 {
@@ -590,7 +597,11 @@ function Test-TargetResource
 
         [Parameter()]
         [UInt32]
-        $HealthCheckTimeout = 30000
+        $HealthCheckTimeout = 30000,
+
+        [Parameter()]
+        [Boolean]
+        $ProcessOnlyOnActiveNode
     )
 
     $getTargetResourceParameters = @{
@@ -603,6 +614,13 @@ function Test-TargetResource
     $result = $true
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    # If this is supposed to process only the active node, and this is not the
+    # active node, don't bother evaluating the test.
+    if ( $ProcessOnlyActiveNode -and -not $getTargetResourceResult.IsActiveNode )
+    {
+        return $result
+    }
 
     # Define current version for check compatibility
     $sqlMajorVersion = $getTargetResourceResult.Version

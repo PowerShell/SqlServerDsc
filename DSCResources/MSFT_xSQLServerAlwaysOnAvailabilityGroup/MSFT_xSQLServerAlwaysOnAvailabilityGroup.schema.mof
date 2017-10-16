@@ -17,8 +17,10 @@ class MSFT_xSQLServerAlwaysOnAvailabilityGroup : OMI_BaseResource
     [Write, Description("Specifies the automatic failover behavior of the availability group."), ValueMap{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}, Values{"OnServerDown","OnServerUnresponsive","OnCriticalServerErrors","OnModerateServerErrors","OnAnyQualifiedFailureCondition"}] String FailureConditionLevel;
     [Write, Description("Specifies the failover mode. Default is 'Manual'."), ValueMap{"Automatic","Manual"}, Values{"Automatic","Manual"}] String FailoverMode;
     [Write, Description("Specifies the length of time, in milliseconds, after which AlwaysOn availability groups declare an unresponsive server to be unhealthy. Default is 30000.")] UInt32 HealthCheckTimeout;
+    [Write, Description("Specifies whether to process the resource if the current node is not the active host of the SQL Server Instance.")] Boolean ProcessOnlyOnActiveNode;
     [Read, Description("Gets the Endpoint URL of the availability group replica endpoint.")] String EndpointUrl;
     [Read, Description("Gets the port the database mirroring endpoint is listening on.")] UInt32 EndpointPort;
     [Read, Description("Gets the hostname the SQL Server instance is listening on.")] String SQLServerNetName;
     [Read, Description("Gets the major version of the SQL Server instance.")] UInt32 Version;
+    [Read, Description("Determines if the current node is actively hosting the SQL Server instance.")] Boolean IsActiveNode;
 };

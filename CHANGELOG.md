@@ -17,6 +17,8 @@
   - Fixed the logic so that if a parameter is not supplied to the resource, the
     resource will not attempt to apply the defaults on subsequent checks
     ([issue #517](https://github.com/PowerShell/xSQLServer/issues/517)).
+  - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
+    the resource will not execute the test or set functions ([issue #868](https://github.com/PowerShell/xSQLServer/issues/868)).
 - Added the CommonTestHelper.psm1 to store common testing functions.
   - Added the Import-SQLModuleStub function to ensure the correct version of the
     module stubs are loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784)).
