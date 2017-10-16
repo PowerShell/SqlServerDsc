@@ -163,7 +163,7 @@ try
         ( Get-Command -Name Test-TargetResource ).Parameters.Values | Where-Object -FilterScript {
             (
                 # Ignore these specific parameters. These get tested enough.
-                @('Ensure', 'Name', 'SQLServer', 'SQLInstanceName', 'DtcSupportEnabled') -notcontains $_.Name
+                @('Ensure', 'Name', 'SQLServer', 'SQLInstanceName', 'DtcSupportEnabled', 'ProcessOnlyOnActiveNode') -notcontains $_.Name
             ) -and (
                 # Ignore the CmdletBinding parameters
                 $_.Attributes.TypeId.Name -notcontains 'AliasAttribute'
