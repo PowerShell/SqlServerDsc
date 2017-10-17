@@ -617,7 +617,7 @@ function Test-TargetResource
 
     # If this is supposed to process only the active node, and this is not the
     # active node, don't bother evaluating the test.
-    if ( $ProcessOnlyActiveNode -and -not $getTargetResourceResult.IsActiveNode )
+    if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
         return $result
     }

@@ -69,6 +69,8 @@ try
             'NamedInstance'
         )
 
+        $mockProcessOnlyOnActiveNode = $true
+
         #endregion parameter mocks
 
         #region property mocks
@@ -148,6 +150,7 @@ try
         $testTargetResourceEndpointIncorrectTestCases = @()
         $testTargetResourcePresentTestCases = @()
         $testTargetResourcePropertyIncorrectTestCases = @()
+        $testTargetResourceProcessOnlyOnActiveNodeTestCases = @()
 
         $majorVersionsToTest = @(12,13)
         $ensureCasesToTest = @('Absent','Present')
@@ -282,6 +285,18 @@ try
                             SQLServer = $mockSqlServerParameter
                             SQLInstanceName = $mockSqlInstanceNameParameter
                             Version = $majorVersionToTest
+                        }
+
+                        foreach ( $processOnlyOnActiveNode in @($true,$false) )
+                        {
+                            $testTargetResourceProcessOnlyOnActiveNodeTestCases += @{
+                                Ensure = 'Present'
+                                Name = $mockNameParameters.PresentAvailabilityGroup
+                                ProcessOnlyOnActiveNode = $processOnlyOnActiveNode
+                                SQLServer = $mockSqlServerParameter
+                                SQLInstanceName = $mockSqlInstanceNameParameter
+                                Version = $majorVersionToTest
+                            }
                         }
 
                         # Create test cases for Absent/Present
@@ -1193,6 +1208,7 @@ try
         Describe 'xSQLServerAlwaysOnAvailabilityGroup\Test-TargetResource' -Tag 'Test' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
+                Mock -CommandName Test-ActiveNode -MockWith { $mockProcessOnlyOnActiveNode } -Verifiable
             }
 
             Context 'When the Availability Group is Absent' {
@@ -1220,6 +1236,7 @@ try
                     Test-TargetResource @testTargetResourceParameters | Should Be $Result
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Test-ActiveNode -Scope It -Times 1 -Exactly
                 }
             }
 
@@ -1248,6 +1265,7 @@ try
                     Test-TargetResource @testTargetResourceParameters | Should Be $Result
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Test-ActiveNode -Scope It -Times 1 -Exactly
                 }
             }
 
@@ -1279,6 +1297,7 @@ try
                     Test-TargetResource @testTargetResourceParameters | Should Be $Result
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Test-ActiveNode -Scope It -Times 1 -Exactly
                 }
             }
 
@@ -1324,6 +1343,46 @@ try
                     Test-TargetResource @testTargetResourceParameters | Should Be $Result
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Test-ActiveNode -Scope It -Times 1 -Exactly
+                }
+            }
+
+            Context 'When the ProcessOnlyOnActiveNode parameter is passed' {
+                AfterAll {
+                    $mockProcessOnlyOnActiveNode = $mockProcessOnlyOnActiveNodeOriginal
+                }
+
+                BeforeAll {
+                    $mockProcessOnlyOnActiveNodeOriginal = $mockProcessOnlyOnActiveNode
+                    $mockProcessOnlyOnActiveNode = $false
+                }
+
+                It 'Should be "true" when ProcessOnlyOnActiveNode is "<ProcessOnlyOnActiveNode>", Ensure is "<Ensure>", Name is "<Name>", SQLServer is "<SQLServer>", SQLInstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceProcessOnlyOnActiveNodeTestCases {
+                    param
+                    (
+                        $Ensure,
+                        $Name,
+                        $ProcessOnlyOnActiveNode,
+                        $SQLServer,
+                        $SQLInstanceName,
+                        $Version
+                    )
+
+                    # Ensure the correct stubs are loaded for the SQL version
+                    Import-SQLModuleStub -SQLVersion $Version
+
+                    $testTargetResourceParameters = @{
+                        Ensure = $Ensure
+                        Name = $Name
+                        ProcessOnlyOnActiveNode = $ProcessOnlyOnActiveNode
+                        SQLServer = $SQLServer
+                        SQLInstanceName = $SQLInstanceName
+                    }
+
+                    Test-TargetResource @testTargetResourceParameters | Should Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Test-ActiveNode -Scope It -Times 1 -Exactly
                 }
             }
         }
