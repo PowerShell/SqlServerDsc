@@ -8,6 +8,7 @@ $ConfigurationData = @{
         @{
             NodeName                      = '*'
             SQLInstanceName               = 'MSSQLSERVER'
+            ProcessOnlyOnActiveNode       = $true
 
             AutomatedBackupPreference     = 'Primary'
             AvailabilityMode              = 'SynchronousCommit'
@@ -16,7 +17,7 @@ $ConfigurationData = @{
             ConnectionModeInSecondaryRole = 'AllowNoConnections'
             FailoverMode                  = 'Automatic'
             HealthCheckTimeout            = 15000
-            
+
             BasicAvailabilityGroup        = $False
             DatabaseHealthTrigger         = $True
             DtcSupportEnabled             = $True
@@ -83,7 +84,8 @@ Configuration Example
                 Name                          = 'TestAG'
                 SQLInstanceName               = $Node.SQLInstanceName
                 SQLServer                     = $Node.NodeName
-                
+                ProcessOnlyOnActiveNode       = $Node.ProcessOnlyOnActiveNode
+
                 AutomatedBackupPreference     = $Node.AutomatedBackupPreference
                 AvailabilityMode              = $Node.AvailabilityMode
                 BackupPriority                = $Node.BackupPriority
@@ -91,7 +93,7 @@ Configuration Example
                 ConnectionModeInSecondaryRole = $Node.ConnectionModeInSecondaryRole
                 FailoverMode                  = $Node.FailoverMode
                 HealthCheckTimeout            = $Node.HealthCheckTimeout
-                
+
                 # sql server 2016 or later only
                 BasicAvailabilityGroup        = $Node.BasicAvailabilityGroup
                 DatabaseHealthTrigger         = $Node.DatabaseHealthTrigger
