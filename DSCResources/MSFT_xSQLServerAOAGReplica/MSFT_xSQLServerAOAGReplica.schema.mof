@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAlwaysOnAvailabilityGroupReplica")]
-class MSFT_xSQLServerAlwaysOnAvailabilityGroupReplica : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAOAGReplica")]
+class MSFT_xSQLServerAOAGReplica : OMI_BaseResource
 {
     [Key, Description("The name of the availability group replica. For named instances this must be in the following format SQLServer\\InstanceName.")] String Name;
     [Key, Description("The name of the availability group.")] String AvailabilityGroupName;

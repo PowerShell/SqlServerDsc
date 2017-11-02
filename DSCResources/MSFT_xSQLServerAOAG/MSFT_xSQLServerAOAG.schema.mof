@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAlwaysOnAvailabilityGroup")]
-class MSFT_xSQLServerAlwaysOnAvailabilityGroup : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAOAG")]
+class MSFT_xSQLServerAOAG : OMI_BaseResource
 {
     [Key, Description("The name of the availability group.")] String Name;
     [Required, Description("Hostname of the SQL Server to be configured.")] String SQLServer;
