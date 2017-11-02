@@ -1,6 +1,6 @@
-# Contributing to xSQLServer
+# Contributing to SqlServerDSC
 
-If you are keen to make xSQLServer better, why not consider contributing your work
+If you are keen to make SqlServerDSC better, why not consider contributing your work
 to the project? Every little change helps us make a better resource for everyone
 to use, and we would love to have contributions from the community.
 
@@ -10,7 +10,7 @@ We follow all of the standard contribution guidelines for DSC resources
 [outlined in DscResources repository](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md),
 so please review these as a baseline for contributing.
 
-## xSQLServer specific guidelines
+## SqlServerDSC specific guidelines
 
 ### Automatic formatting with VS Code
 
@@ -37,7 +37,7 @@ Those SQL Server products that are still supported can be listed at the
 #### mof-based resource
 
 All mof-based resource (with Get/Set/Test-TargetResource) should be prefixed with
-'MSFT\_xSQLServer'. I.e. MSFT\_xSQLServerConfiguration
+'MSFT\_SqlServer'. I.e. MSFT\_SqlServerConfiguration
 
 Please note that not all places should contain the prefix 'MSFT\_'.
 
@@ -49,14 +49,14 @@ This is to make those folders more user friendly, to resemble the name the user
 would use in the configuration file.
 
 ```Text
-DSCResources/MSFT_xSQLServerConfiguration/MSFT_xSQLServerConfiguration.psm1
-DSCResources/MSFT_xSQLServerConfiguration/MSFT_xSQLServerConfiguration.schema.mof
-DSCResources/MSFT_xSQLServerConfiguration/en-US/MSFT_xSQLServerConfiguration.strings.psd1
+DSCResources/MSFT_SqlServerConfiguration/MSFT_SqlServerConfiguration.psm1
+DSCResources/MSFT_SqlServerConfiguration/MSFT_SqlServerConfiguration.schema.mof
+DSCResources/MSFT_SqlServerConfiguration/en-US/MSFT_SqlServerConfiguration.strings.psd1
 
-Tests/Unit/MSFT_xSQLServerConfiguration.Tests.ps1
+Tests/Unit/MSFT_SqlServerConfiguration.Tests.ps1
 
-Examples/Resources/xSQLServerConfiguration/1-AddConfigurationOption.ps1
-Examples/Resources/xSQLServerConfiguration/2-RemoveConfigurationOption.ps1
+Examples/Resources/SqlServerConfiguration/1-AddConfigurationOption.ps1
+Examples/Resources/SqlServerConfiguration/2-RemoveConfigurationOption.ps1
 ```
 
 ##### Schema mof file
@@ -65,8 +65,8 @@ Please note that the `FriendlyName` in the schema mof file should not contain th
 prefix `MSFT\_`.
 
 ```powershell
-[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerConfiguration")]
-class MSFT_xSQLServerConfiguration : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("SqlServerConfiguration")]
+class MSFT_SqlServerConfiguration : OMI_BaseResource
 {
     # Properties removed for readability.
 };
@@ -75,7 +75,7 @@ class MSFT_xSQLServerConfiguration : OMI_BaseResource
 #### Composite or class-based resource
 
 Any composite (with a Configuration) or class-based resources should be prefixed
-with just 'xSQLServer'
+with just 'Sql'
 
 ### Localization
 
@@ -87,7 +87,7 @@ In each resource folder there should be, at least, a localization folder for
 english language 'en-US'.
 In the 'en-US' (and any other language folder) there should be a file named
 'MSFT_ResourceName.strings.psd1', i.e.
-'MSFT_xSQLServerSetup.strings.psd1'.
+'MSFT_SqlSetup.strings.psd1'.
 At the top of each resource the localized strings should be loaded, see the helper
 function `Get-LocalizedData` for more information on how this is done.
 
@@ -95,7 +95,7 @@ The localized string file should contain the following (beside the localization
 strings)
 
 ```powershell
-# Localized resources for xSQLServerSetup
+# Localized resources for SqlSetup
 
 ConvertFrom-StringData @'
     InstallingUsingPathMessage = Installing using path '{0}'.
@@ -272,7 +272,7 @@ This should be used at the top of each resource like this.
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
                                -ChildPath 'CommonResourceHelper.psm1')
 
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerSetup'
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlSetup'
 ```
 
 #### Old localization helper function
@@ -280,7 +280,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xSQLServerSetup'
 To be able to support localization we have added wrappers for the cmdlets
 `Write-Verbose` and `Write-Warning`, and also for creating a terminating error
 message.
-The localized strings are placed in a file named 'xSQLServerHelper.strings.psd1'
+The localized strings are placed in a file named 'SqlServerDSCHelper.strings.psd1'
 which are located in each language folder in the root of the module. For English
 language strings the folder is ['en-US'](https://github.com/PowerShell/xSQLServer/blob/dev/en-US).
 
@@ -305,7 +305,7 @@ Helper functions or wrapper functions that are used by the resource can preferab
 be placed in the resource module file. If the functions are of a type that could
 be used by more than
 one resource, then the functions can also be placed in the common
-[xSQLServerHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/xSQLServerHelper.psm1)
+[SqlServerDSCHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/SqlServerDSCHelper.psm1)
 module file.
 
 ### Tests
@@ -340,12 +340,12 @@ When sending in a Pull Request (PR) all example files will be tested so they can
 be compiled to a .mof file. If the tests find any errors the build will fail.
 Before the test runs in AppVeyor the module will be copied to the first path of
 `$env:PSModulePath`.
-To run this test locally, make sure you have the xSQLServer module deployed to a
+To run this test locally, make sure you have the SqlServerDSC module deployed to a
 path where it can be used. See `$env:PSModulePath` to view the existing paths.
 
 #### Using SMO stub classes
 
-There are [stub classes](https://github.com/PowerShell/xSQLServer/blob/dev/Tests/Unit/Stubs/SMO.cs)
+There are [stub classes](https://github.com/PowerShell/SqlServerDSC/blob/dev/Tests/Unit/Stubs/SMO.cs)
 for the SMO classes which can be used and improved on when creating tests where
 SMO classes are used in the code being tested.
 

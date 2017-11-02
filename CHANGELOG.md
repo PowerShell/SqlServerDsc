@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Significant rename to reduce length of Resource names
+  - BREAKING CHANGE
+  - Impact to all resources
 - Changes to xSQLServer
   - Updated Pester syntax to v4
   - Fixes broken links to issues in the CHANGELOG.md.

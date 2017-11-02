@@ -5,7 +5,7 @@ param ()
 
 Configuration SQL
 {
-    Import-DscResource -Module xSQLServer
+    Import-DscResource -Module SqlServerDSC
     Import-DscResource -Module xFailoverCluster
 
     Node $AllNodes.NodeName
@@ -126,8 +126,8 @@ Configuration SQL
                 RetryIntervalSec = 5
                 RetryCount = 720
             }
-            
-            xSQLServerFailoverClusterSetup "CompleteMSSQLSERVER"
+
+            SqlServerDSCFailoverClusterSetup "CompleteMSSQLSERVER"
             {
                 DependsOn = @(
                     "[WaitForAll]Cluster",
