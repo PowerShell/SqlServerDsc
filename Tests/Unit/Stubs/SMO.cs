@@ -14,7 +14,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginCreateOptions
     // Used by:
-    //  MSFT_xSQLServerLogin.Tests.ps1
+    //  MSFT_SqlServerLogin.Tests.ps1
     public enum LoginCreateOptions
     {
         None = 0,
@@ -25,7 +25,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginType
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_xSQLServerLogin
+    //  MSFT_SqlServerLogin
     public enum LoginType
     {
         AsymmetricKey = 4,
@@ -60,7 +60,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.EndpointType
     // Used by:
-    //  xSQLServerEndpoint
+    //  SqlServerEndpoint
     public enum EndpointType
     {
         DatabaseMirroring,
@@ -71,7 +71,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.ProtocolType
     // Used by:
-    //  xSQLServerEndpoint
+    //  SqlServerEndpoint
     public enum ProtocolType
     {
         Http,
@@ -83,7 +83,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.ServerMirroringRole
     // Used by:
-    //  xSQLServerEndpoint
+    //  SqlServerEndpoint
     public enum ServerMirroringRole
     {
         All,
@@ -94,7 +94,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.EndpointEncryption
     // Used by:
-    //  xSQLServerEndpoint
+    //  SqlServerEndpoint
     public enum EndpointEncryption
     {
         Disabled,
@@ -104,7 +104,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.EndpointEncryptionAlgorithm
     // Used by:
-    //  xSQLServerEndpoint
+    //  SqlServerEndpoint
     public enum EndpointEncryptionAlgorithm
     {
         Aes,
@@ -127,7 +127,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // Typename: Microsoft.SqlServer.Management.Smo.ObjectPermissionSet
     // BaseType: Microsoft.SqlServer.Management.Smo.PermissionSetBase
     // Used by:
-    //  xSQLServerEndpointPermission.Tests.ps1
+    //  SqlServerEndpointPermission.Tests.ps1
     public class ObjectPermissionSet
     {
         public ObjectPermissionSet(){}
@@ -144,7 +144,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.ServerPermissionSet
     // BaseType: Microsoft.SqlServer.Management.Smo.PermissionSetBase
     // Used by:
-    //  xSQLServerPermission.Tests.ps1
+    //  SqlServerPermission.Tests.ps1
     public class ServerPermissionSet
     {
         public ServerPermissionSet(){}
@@ -170,7 +170,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.ServerPermissionInfo
     // BaseType: Microsoft.SqlServer.Management.Smo.PermissionInfo
     // Used by:
-    //  xSQLServerPermission.Tests.ps1
+    //  SqlServerPermission.Tests.ps1
     public class ServerPermissionInfo
     {
         public ServerPermissionInfo()
@@ -192,7 +192,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabasePermissionSet
     // BaseType: Microsoft.SqlServer.Management.Smo.PermissionSetBase
     // Used by:
-    //  xSQLServerDatabasePermission.Tests.ps1
+    //  SqlDatabasePermission.Tests.ps1
     public class DatabasePermissionSet
     {
         public DatabasePermissionSet(){}
@@ -210,7 +210,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabasePermissionInfo
     // BaseType: Microsoft.SqlServer.Management.Smo.PermissionInfo
     // Used by:
-    //  xSQLServerDatabasePermission.Tests.ps1
+    //  SqlDatabasePermission.Tests.ps1
     public class DatabasePermissionInfo
     {
         public DatabasePermissionInfo()
@@ -231,8 +231,8 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.Server
     // BaseType: Microsoft.SqlServer.Management.Smo.SqlSmoObject
     // Used by:
-    //  xSQLServerPermission
-    //  MSFT_xSQLServerLogin
+    //  SqlServerPermission
+    //  MSFT_SqlServerLogin
     public class Server
     {
         public string MockGranteeName;
@@ -340,7 +340,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.Login
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_xSQLServerLogin
+    //  MSFT_SqlServerLogin
     public class Login
     {
         private bool _mockPasswordPassed = false;
@@ -524,7 +524,7 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.ServerRole
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_xSQLServerRole
+    //  MSFT_SqlServerRole
     public class ServerRole
     {
         public ServerRole( Server server, string name ) {
@@ -542,9 +542,9 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
-    //  MSFT_xSQLServerDatabase
-    //  MSFT_xSQLServerDatabasePermission
+    //  MSFT_SqlAGDatabaseMembership
+    //  MSFT_SqlDatabase
+    //  MSFT_SqlDatabasePermission
 	public class Database
 	{
         public bool AutoClose = false;
@@ -630,7 +630,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.User
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  xSQLServerDatabaseRole.Tests.ps1
+    //  SqlDatabaseRole.Tests.ps1
     public class User
     {
         public User( Server server, string name )
@@ -697,7 +697,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroup
     // BaseType: Microsoft.SqlServer.Management.Smo.NamedSmoObject
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroup
+    //  SqlServerAG
     public class AvailabilityGroup
     {
         public AvailabilityGroup()
@@ -748,7 +748,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplica
     // BaseType: Microsoft.SqlServer.Management.Smo.NamedSmoObject
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroup
+    //  SqlAG
     public class AvailabilityReplica
     {
         public AvailabilityReplica()
@@ -782,7 +782,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Common.ServerConnection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabases
     public class ConnectionContext
     {
         public string TrueLogin;
@@ -793,7 +793,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabase
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabases
     public class AvailabilityDatabase
     {
         public string Name;
@@ -803,7 +803,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseCollection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabases
     public class DatabaseCollection : Collection<Database>
     {
         public Database this[string name]
@@ -825,7 +825,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplicaCollection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabases
     public class AvailabilityReplicaCollection : Collection<AvailabilityReplica>
     {
         public AvailabilityReplica this[string name]
@@ -847,7 +847,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseEncryptionKey
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabases
     public class DatabaseEncryptionKey
     {
         public string EncryptorName;
@@ -856,7 +856,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Certificate
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabaseMembership
     public class Certificate
     {
         public byte[] Thumbprint;
@@ -864,7 +864,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabaseCollection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+    //  SqlAGDatabaseMembership
     public class AvailabilityDatabaseCollection : Collection<AvailabilityDatabase>
     {
         public AvailabilityDatabase this[string name]
@@ -886,7 +886,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupCollection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroup
+    //  SqlAG
     public class AvailabilityGroupCollection : Collection<AvailabilityGroup>
     {
         public AvailabilityGroup this[string name]
@@ -908,7 +908,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroup
+    //  SqlAG
     public class Endpoint
     {
         public string Name;
@@ -918,7 +918,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.EndpointCollection
     // Used by:
-    //  xSQLServerAlwaysOnAvailabilityGroup
+    //  SqlAG
     public class EndpointCollection : Collection<Endpoint>
     {
         public Endpoint this[string name]
@@ -947,7 +947,7 @@ namespace Microsoft.SqlServer.Management.Smo.Wmi
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
     // Used by:
-    //  MSFT_xSQLServerServiceAccount.Tests.ps1
+    //  MSFT_SqlServerServiceAccount.Tests.ps1
     public enum ManagedServiceType
     {
         SqlServer = 1,

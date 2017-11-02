@@ -1,7 +1,7 @@
-# xSQLServer
+# SqlServerDSC
 
-The **xSQLServer** module contains DSC resources for deployment and configuration
-of SQL Server.
+The **SqlServerDSC** module contains DSC resources
+for deployment and configuration of SQL Server.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
@@ -15,39 +15,44 @@ questions or comments.
 [![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/master)
 [![codecov](https://codecov.io/gh/PowerShell/xSQLServer/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/xSQLServer/branch/master)
 
-This is the branch containing the latest release - no contributions should be made
-directly to this branch.
+This is the branch containing the latest release -
+no contributions should be made directly to this branch.
 
 ### dev
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/dev)
 [![codecov](https://codecov.io/gh/PowerShell/xSQLServer/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/xSQLServer/branch/dev)
 
-This is the development branch to which contributions should be proposed by contributors
-as pull requests. This development branch will periodically be merged to the master
-branch, and be released to [PowerShell Gallery](https://www.powershellgallery.com/).
+This is the development branch
+to which contributions should be proposed by contributors as pull requests.
+This development branch will periodically be merged to the master branch,
+and be released to [PowerShell Gallery](https://www.powershellgallery.com/).
 
 ## Contributing
 
-Regardless of the way you want to contribute we are tremendously happy to have you
-here.
+Regardless of the way you want to contribute
+we are tremendously happy to have you here.
 
-There are several ways you can contribute. You can submit an issue to report a bug.
-You can submit an issue to request an improvement. You can take part in discussions
-for issues. You can review pull requests and comment on other contributors changes.
-You can also improve the resources and tests, or even create new resources, by
-sending in pull requests yourself.
+There are several ways you can contribute.
+You can submit an issue to report a bug.
+You can submit an issue to request an improvement.
+You can take part in discussions for issues.
+You can review pull requests and comment on other contributors changes.
+You can also improve the resources and tests,
+or even create new resources,
+by sending in pull requests yourself.
 
-* If you want to submit an issue or take part in discussions, please browse the
-  list of [issues](https://github.com/PowerShell/xSQLServer/issues). Please check
-  out [Contributing to the DSC Resource Kit](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md)
+* If you want to submit an issue or take part in discussions,
+  please browse the list of [issues](https://github.com/PowerShell/xSQLServer/issues).
+  Please check out [Contributing to the DSC Resource Kit](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md)
   on how to work with issues.
-* If you want to review pull requests, please first check out the
-  [Review Pull Request guidelines](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md#reviewing-pull-requests),
+* If you want to review pull requests,
+  please first check out the [Review Pull Request guidelines](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md#reviewing-pull-requests),
   and the browse the list of [pull requests](https://github.com/PowerShell/xSQLServer/pulls)
   and look for those pull requests with label 'needs review'.
-* If you want to improve the resources or tests, or create a new resource, then
-  please check out the following guidelines.
+* If you want to improve the resources or tests,
+  or create a new resource,
+  then please check out the following guidelines.
   * The [Contributing to the DSC Resource Kit](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md)
     guidelines.
   * The specific [Contributing to xSQLServer](https://github.com/PowerShell/xSQLServer/blob/dev/CONTRIBUTING.md)
@@ -56,45 +61,47 @@ sending in pull requests yourself.
   * The common [Best Practices](https://github.com/PowerShell/DscResources/blob/master/BestPractices.md)
     guidelines.
   * The common [Testing Guidelines](https://github.com/PowerShell/DscResources/blob/master/TestsGuidelines.md).
-  * If you are new to GitHub (and git), then please check out
-    [Getting Started with GitHub](https://github.com/PowerShell/DscResources/blob/master/GettingStartedWithGitHub.md).
+  * If you are new to GitHub (and git),
+    then please check out [Getting Started with GitHub](https://github.com/PowerShell/DscResources/blob/master/GettingStartedWithGitHub.md).
   * If you are new to Pester and writing test, then please check out
     [Getting started with Pester](https://github.com/PowerShell/DscResources/blob/master/GettingStartedWithPester.md).
 
-If you need any help along the way, don't be afraid to ask. We are here for each
-other.
+If you need any help along the way,
+don't be afraid to ask.
+We are here for each other.
 
 ## Installation
 
-To manually install the module, download the source code and unzip the contents
-of the '\Modules\xSQLServer' directory to the
+To manually install the module,
+download the source code and unzip the contents
+of the '\Modules\SqlServerDSC' directory to the
 '$env:ProgramFiles\WindowsPowerShell\Modules' folder.
 
-To install from the PowerShell gallery using PowerShellGet (in PowerShell 5.0) run
-the following command:
+To install from the PowerShell gallery using PowerShellGet (in PowerShell 5.0)
+run the following command:
 
 ```powershell
-Find-Module -Name xSQLServer -Repository PSGallery | Install-Module
+Find-Module -Name SqlServerDSC -Repository PSGallery | Install-Module
 ```
 
 To confirm installation, run the below command and ensure you see the SQL Server
 DSC resources available:
 
 ```powershell
-Get-DscResource -Module xSQLServer
+Get-DscResource -Module SqlServerDSC
 ```
 
 ## Requirements
 
-The minimum Windows Management Framework (PowerShell) version required is 5.0 or
-higher, which ships with Windows 10 or Windows Server 2016, but can also be
-installed on Windows 7 SP1, Windows 8.1, Windows Server 2008 R2 SP1,
+The minimum Windows Management Framework (PowerShell) version required is 5.0 or higher,
+which ships with Windows 10 or Windows Server 2016,
+but can also be installed on Windows 7 SP1, Windows 8.1, Windows Server 2008 R2 SP1,
 Windows Server 2012 and Windows Server 2012 R2.
 
 ## Examples
 
-You can review the [Examples](/Examples) directory in the xSQLServer module for
-some general use scenarios for all of the resources that are in the module.
+You can review the [Examples](/Examples) directory in the SqlServerDSC module
+for some general use scenarios for all of the resources that are in the module.
 
 ## Change log
 
@@ -102,62 +109,62 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
-* [**xSQLServerAlias**](#xsqlserveralias) resource to manage SQL Server client Aliases.
-* [**xSQLServerAlwaysOnAvailabilityGroup**](#xsqlserveralwaysonavailabilitygroup)
+* [**SqlAlias**](#sqlalias) resource to manage SQL Server client Aliases.
+* [**SqlAG**](#sqlag)
   resource to ensure an availability group is present or absent.
-* [**xSQLServerAlwayOnAvailabilityGroupDatabaseMembership**](#xsqlserveralwaysonavailabilitygroupdatabasemembership)
+* [**SqlAGDatabases**](#sqlagdatabases)
   to manage the database membership in Availability Groups.
-* [**xSQLServerAlwaysOnAvailabilityGroupReplica**](#xsqlserveralwaysonavailabilitygroupreplica)
+* [**SqlAGReplica**](#sqlagreplica)
   resource to ensure an availability group replica is present or absent.
-* [**xSQLServerAlwaysOnService**](#xsqlserveralwaysonservice) resource to enable
+* [**SqlAlwaysOnService**](#sqlalwaysonservice) resource to enable
   always on on a SQL Server.
-* [**xSQLServerAvailabilityGroupListener**](#xsqlserveravailabilitygrouplistener)
+* [**SqlAGListener**](#sqlaglistener)
   Create or remove an availability group listener.
-* [**xSQLServerConfiguration**](#xsqlserverconfiguration) resource to manage
+* [**SqlServerConfiguration**](#sqlserverconfiguration) resource to manage
   [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
-* [**xSQLServerDatabase**](#xsqlserverdatabase) resource to manage ensure database
+* [**SqlDatabase**](#sqldatabase) resource to manage ensure database
   is present or absent.
-* [**xSQLServerDatabaseDefaultLocation**](#xsqlserverdatabasedefaultlocation) resource
+* [**SqlDatabaseDefaultLocation**](#sqldatabasedefaultlocation) resource
   to manage default locations for Data, Logs, and Backups for SQL Server
-* [**xSQLServerDatabaseOwner**](#xsqlserverdatabaseowner) resource to manage SQL
+* [**SqlDatabaseOwner**](#sqldatabaseowner) resource to manage SQL
   database owners.
-* [**xSQLServerDatabasePermission**](#xsqlserverdatabasepermission) resource to
+* [**SqlDatabasePermission**](#sqldatabasepermission) resource to
   manage SQL database permissions.
-* [**xSQLServerDatabaseRecoveryModel**](#xsqlserverdatabaserecoverymodel) resource
+* [**SqlDatabaseRecoveryModel**](#sqlserverrecoverymodel) resource
   to manage database recovery model.
-* [**xSQLServerDatabaseRole**](#xsqlserverdatabaserole) resource to manage SQL
+* [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
   database roles.
-* [**xSQLServerEndpoint**](#xsqlserverendpoint) resource to ensure database endpoint
+* [**SqlServerEndpoint**](#sqlserverendpoint) resource to ensure database endpoint
   is present or absent.
-* [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission) Grant or revoke
+* [**SqlServerEndpointPermission**](#sqlserverendpointpermission) Grant or revoke
   permission on the endpoint.
-* [**xSQLServerEndpointState**](#xsqlserverendpointstate) Change state of the endpoint.
-* [**xSQLServerFirewall**](#xsqlserverfirewall) configures firewall settings to
+* [**SqlServerEndpointState**](#sqlserverendpointstate) Change state of the endpoint.
+* [**SqlWindowsFirewall**](#sqlwindowsfirewall) configures firewall settings to
   allow remote access to a SQL Server instance.
-* [**xSQLServerLogin**](#xsqlserverlogin) resource to manage SQL logins.
-* [**xSQLServerMaxDop**](#xsqlservermaxdop) resource to manage MaxDegree of Parallelism
+* [**SqlServerLogin**](#sqlserverlogin) resource to manage SQL logins.
+* [**SqlServerMaxDop**](#sqlservermaxdop) resource to manage MaxDegree of Parallelism
   for SQL Server.
-* [**xSQLServerMemory**](#xsqlservermemory) resource to manage Memory for SQL Server.
-* [**xSQLServerNetwork**](#xsqlservernetwork) resource to manage SQL Server Network
+* [**SqlServerMemory**](#sqlservermemory) resource to manage Memory for SQL Server.
+* [**SqlServerNetwork**](#sqlservernetwork) resource to manage SQL Server Network
   Protocols.
-* [**xSQLServerPermission**](#xsqlserverpermission) Grant or revoke permission on
+* [**SqlServerPermission**](#sqlserverpermission) Grant or revoke permission on
   the SQL Server.
-* [**xSQLServerRole**](#xsqlserverrole) resource to manage SQL server roles.
-* [**xSQLServerReplication**](#xsqlserverreplication) resource to manage SQL Replication
+* [**SqlServerRole**](#sqlserverrole) resource to manage SQL server roles.
+* [**SqlServerReplication**](#sqlserverreplication) resource to manage SQL Replication
   distribution and publishing.
-* [**xSQLServerRSConfig**](#xsqlserverrsconfig) configures SQL Server Reporting
+* [**SqlRS**](#sqlrs) configures SQL Server Reporting
   Services to use a database engine in another instance.
-* [**xSQLServerRSSecureConnectionLevel**](#xsqlserverrssecureconnectionlevel) sets
+* [**SqlRSSecureConnectionLevel**](#sqlrssecureconnectionlevel) sets
   the secure connection level for SQL Server Reporting Services.
-* [**xSQLServerScript**](#xsqlserverscript) resource to extend DSC Get/Set/Test
+* [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
   functionality to T-SQL.
-* [**xSQLServerServiceAccount**](#xsqlserverserviceaccount) Manage the service account
+* [**SqlServerServiceAccount**](#sqlserverserviceaccount) Manage the service account
   for SQL Server services.
-* [**xSQLServerSetup**](#xsqlserversetup) installs a standalone SQL Server instance.
-* [**xWaitForAvailabilityGroup**](#xwaitforavailabilitygroup) resource to wait until
+* [**SqlSetup**](#sqlsetup) installs a standalone SQL Server instance.
+* [**SqlWaitForAvailabilityGroup**](#sqlwaitforavailabilitygroup) resource to wait until
   availability group is created on primary server.
 
-### xSQLServerAlias
+### SqlAlias
 
 No description.
 
@@ -187,10 +194,10 @@ No description.
 
 #### Examples
 
-* [Add an SQL Server alias](/Examples/Resources/xSQLServerAlias/1-AddSQLServerAlias.ps1)
-* [Remove an SQL Server alias](/Examples/Resources/xSQLServerAlias/2-RemoveSQLServerAlias.ps1)
+* [Add an SQL Server alias](/Examples/Resources/SqlAlias/1-AddSqlAlias.ps1)
+* [Remove an SQL Server alias](/Examples/Resources/SqlAlias/2-RemoveSqlAlias.ps1)
 
-### xSQLServerAlwaysOnAvailabilityGroup
+### SqlAG
 
 This resource is used to create, remove, and update an Always On Availability Group.
 It will also manage the Availability Group replica on the specified node.
@@ -264,11 +271,11 @@ It will also manage the Availability Group replica on the specified node.
 
 #### Examples
 
-* [Add a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/1-CreateAvailabilityGroup.ps1)
-* [Add a SQL Server Always On Availability Group and explicitly defines its properties](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/3-CreateAvailabilityGroupDetailed.ps1)
-* [Remove a SQL Server Always On Availability Group](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroup/2-RemoveAvailabilityGroup.ps1)
+* [Add a SQL Server Always On Availability Group](/Examples/Resources/SqlAG/1-CreateAvailabilityGroup.ps1)
+* [Add a SQL Server Always On Availability Group and explicitly defines its properties](/Examples/Resources/SqlAG/3-CreateAvailabilityGroupDetailed.ps1)
+* [Remove a SQL Server Always On Availability Group](/Examples/Resources/SqlAG/2-RemoveAvailabilityGroup.ps1)
 
-### xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+### SqlAGDatabaseMembership
 
 This resource is used to add and/or remove databases to a specified availability
 group.
@@ -323,7 +330,7 @@ group.
 * **`[Boolean]` IsActiveNode** _(Read)_: Determines if the current node is
   actively hosting the SQL Server instance.
 
-### xSQLServerAlwaysOnAvailabilityGroupReplica
+### SqlAGReplica
 
 This resource is used to create, remove, and update an
 Always On Availability Group Replica.
@@ -391,10 +398,10 @@ Always On Availability Group Replica.
 
 #### Examples
 
-* [Add a SQL Server Always On Availability Group Replica](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroupReplica/1-CreateAvailabilityGroupReplica.ps1)
-* [Remove a SQL Server Always On Availability Group Replica](/Examples/Resources/xSQLServerAlwaysOnAvailabilityGroupReplica/2-RemoveAvailabilityGroupReplica.ps1)
+* [Add a SQL Server Always On Availability Group Replica](/Examples/Resources/SqlAGReplica/1-CreateAvailabilityGroupReplica.ps1)
+* [Remove a SQL Server Always On Availability Group Replica](/Examples/Resources/SqlAGReplica/2-RemoveAvailabilityGroupReplica.ps1)
 
-### xSQLServerAlwaysOnService
+### SqlAlwaysOnService
 
 Enables or disabled SQL Server Always On high availability and disaster recovery
 (Always On HADR).
@@ -421,10 +428,10 @@ Enables or disabled SQL Server Always On high availability and disaster recovery
 
 #### Examples
 
-* [Enable SQL Server Always On](/Examples/Resources/xSQLServerAlwaysOnService/1-EnableAlwaysOn.ps1)
-* [Disable SQL Server Always On](/Examples/Resources/xSQLServerAlwaysOnService/1-DisableAlwaysOn.ps1)
+* [Enable SQL Server Always On](/Examples/Resources/SqlAlwaysOnService/1-EnableAlwaysOn.ps1)
+* [Disable SQL Server Always On](/Examples/Resources/SqlAlwaysOnService/1-DisableAlwaysOn.ps1)
 
-### xSQLServerAvailabilityGroupListener
+### SqlAGListener
 
 No description.
 
@@ -460,17 +467,17 @@ No description.
 #### Examples
 
 * [Adds an Availability Group listener with the same name as the
-  Availability Group VCO](/Examples/Resources/xSQLServerAvailabilityGroupListener/1-AddAvailabilityGroupListenerWithSameNameAsVCO.ps1)
+  Availability Group VCO](/Examples/Resources/SqlAGListener/1-AddAvailabilityGroupListenerWithSameNameAsVCO.ps1)
 * [Adds an Availability Group listener with a different name than the
-  Availability Group VCO](/Examples/Resources/xSQLServerAvailabilityGroupListener/2-AddAvailabilityGroupListenerWithDifferentNameAsVCO.ps1)
+  Availability Group VCO](/Examples/Resources/SqlAGListener/2-AddAvailabilityGroupListenerWithDifferentNameAsVCO.ps1)
 * [Removes an Availability Group listener with the same name as the
-  Availability Group VCO](/Examples/Resources/xSQLServerAvailabilityGroupListener/3-RemoveAvailabilityGroupListenerWithSameNameAsVCO.ps1)
+  Availability Group VCO](/Examples/Resources/SqlAGListener/3-RemoveAvailabilityGroupListenerWithSameNameAsVCO.ps1)
 * [Removes an Availability Group listener with a different name than the
-  Availability Group VCO](/Examples/Resources/xSQLServerAvailabilityGroupListener/4-RemoveAvailabilityGroupListenerWithDifferentNameAsVCO.ps1)
-* [Adds an Availability Group listener using DHCP on the default server subnet](/Examples/Resources/xSQLServerAvailabilityGroupListener/5-AddAvailabilityGroupListenerUsingDHCPWithDefaultServerSubnet.ps1)
-* [Adds an Availability Group listener using DHCP with a specific subnet](/Examples/Resources/xSQLServerAvailabilityGroupListener/6-AddAvailabilityGroupListenerUsingDHCPWithSpecificSubnet.ps1)
+  Availability Group VCO](/Examples/Resources/SqlAGListener/4-RemoveAvailabilityGroupListenerWithDifferentNameAsVCO.ps1)
+* [Adds an Availability Group listener using DHCP on the default server subnet](/Examples/Resources/SqlAGListener/5-AddAvailabilityGroupListenerUsingDHCPWithDefaultServerSubnet.ps1)
+* [Adds an Availability Group listener using DHCP with a specific subnet](/Examples/Resources/SqlAGListener/6-AddAvailabilityGroupListenerUsingDHCPWithSpecificSubnet.ps1)
 
-### xSQLServerConfiguration
+### SqlServerConfiguration
 
 No description.
 
@@ -495,10 +502,10 @@ No description.
 
 #### Examples
 
-* [Configure two instances on the same server to have CLR enabled](/Examples/Resources/xSQLServerConfiguration/1-ConfigureTwoInstancesOnTheSameServerToEnableClr.ps1)
-* [Configure a instance to have 'Priority Boost' enabled](/Examples/Resources/xSQLServerConfiguration/2-ConfigureInstanceToEnablePriorityBoost.ps1)
+* [Configure two instances on the same server to have CLR enabled](/Examples/Resources/SqlServerConfiguration/1-ConfigureTwoInstancesOnTheSameServerToEnableClr.ps1)
+* [Configure a instance to have 'Priority Boost' enabled](/Examples/Resources/SqlServerConfiguration/2-ConfigureInstanceToEnablePriorityBoost.ps1)
 
-### xSQLServerDatabase
+### SqlDatabase
 
 This resource is used to create or delete a database. For more information about
 database, please read:
@@ -523,10 +530,10 @@ database, please read:
 
 #### Examples
 
-* [Create a Database](/Examples/Resources/xSQLServerDatabase/1-CreateDatabase.ps1)
-* [Delete a database](/Examples/Resources/xSQLServerDatabase/2-DeleteDatabase.ps1)
+* [Create a Database](/Examples/Resources/SqlDatabase/1-CreateDatabase.ps1)
+* [Delete a database](/Examples/Resources/SqlDatabase/2-DeleteDatabase.ps1)
 
-### xSQLServerDatabaseDefaultLocation
+### SqlDatabaseDefaultLocation
 
 This resource is used to configure default locations for user databases. The
 types of default locations that can be changed are Data, Log, and Backup. For
@@ -560,9 +567,9 @@ more information about database default locations, please read the article
 
 #### Examples
 
-* [Set database default locations](/Examples/Resources/xSQLServerDatabaseDefaultLocation/1-SetDatabaseDefaultLocation.ps1)
+* [Set database default locations](/Examples/Resources/SqlDatabaseDefaultLocation/1-SetDatabaseDefaultLocation.ps1)
 
-### xSQLServerDatabaseOwner
+### SqlDatabaseOwner
 
 This resource is used to configure the owner of a database.
 For more information about database owner, please read the article
@@ -583,9 +590,9 @@ For more information about database owner, please read the article
 
 #### Examples
 
-* [Set database owner](/Examples/Resources/xSQLServerDatabaseOwner/1-SetDatabaseOwner.ps1)
+* [Set database owner](/Examples/Resources/SqlDatabaseOwner/1-SetDatabaseOwner.ps1)
 
-### xSQLServerDatabasePermission
+### SqlDatabasePermission
 
 This resource is used to grant, deny or revoke permissions for a user in a database.
 For more information about permissions, please read the article
@@ -619,11 +626,11 @@ will also get their permission revoked.
 
 #### Examples
 
-* [Grant Database Permission](/Examples/Resources/xSQLServerDatabasePermission/1-GrantDatabasePermissions.ps1)
-* [Revoke Database Permission](/Examples/Resources/xSQLServerDatabasePermission/2-RevokeDatabasePermissions.ps1)
-* [Deny Database Permission](/Examples/Resources/xSQLServerDatabasePermission/3-DenyDatabasePermissions.ps1)
+* [Grant Database Permission](/Examples/Resources/SqlDatabasePermission/1-GrantDatabasePermissions.ps1)
+* [Revoke Database Permission](/Examples/Resources/SqlDatabasePermission/2-RevokeDatabasePermissions.ps1)
+* [Deny Database Permission](/Examples/Resources/SqlDatabasePermission/3-DenyDatabasePermissions.ps1)
 
-### xSQLServerDatabaseRecoveryModel
+### SqlDatabaseRecoveryModel
 
 This resource set the recovery model for a database. The recovery model controls
 how transactions are logged, whether the transaction log requires (and allows)
@@ -647,9 +654,9 @@ Read more about recovery model in this article
 
 #### Examples
 
-* [Set the RecoveryModel of a database](/Examples/Resources/xSQLServerDatabaseRecoveryModel/1-SetDatabaseRecoveryModel.ps1)
+* [Set the RecoveryModel of a database](/Examples/Resources/SqlDatabaseRecoveryModel/1-SetDatabaseRecoveryModel.ps1)
 
-### xSQLServerDatabaseRole
+### SqlDatabaseRole
 
 This resource is used to add or remove role for a login in a database.
 Read more about database role in this article [CREATE ROLE (Transact-SQL)](https://msdn.microsoft.com/en-us/library/ms187936.aspx)
@@ -675,18 +682,18 @@ Read more about database role in this article [CREATE ROLE (Transact-SQL)](https
 
 #### Examples
 
-* [Add Role of a database](/Examples/Resources/xSQLServerDatabaseRole/1-AddDatabaseRole.ps1)
-* [Remove Role of a database](/Examples/Resources/xSQLServerDatabaseRole/2-RemoveDatabaseRole.ps1)
+* [Add Role of a database](/Examples/Resources/SqlDatabaseRole/1-AddDatabaseRole.ps1)
+* [Remove Role of a database](/Examples/Resources/SqlDatabaseRole/2-RemoveDatabaseRole.ps1)
 
-### xSQLServerEndpoint
+### SqlServerEndpoint
 
 This resource is used to create an endpoint. Currently it only supports creating
 a database mirror endpoint which can be used by, for example, AlwaysOn.
 
 >Note: The endpoint will be started after creation, but will not be enforced. Please
-use [**xSQLServerEndpointState**](#xsqlserverendpointstate) to make sure the endpoint
+use [**SqlServerEndpointState**](#xsqlserverendpointstate) to make sure the endpoint
 remains in started state. To set connect permission to the endpoint, please use
-the resource [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission).
+the resource [**SqlServerEndpointPermission**](#xsqlserverendpointpermission).
 
 #### Requirements
 
@@ -715,7 +722,7 @@ the resource [**xSQLServerEndpointPermission**](#xsqlserverendpointpermission).
 
 None.
 
-### xSQLServerEndpointPermission
+### SqlServerEndpointPermission
 
 This resource is used to give connect permission to an endpoint for a user (login).
 
@@ -737,15 +744,15 @@ This resource is used to give connect permission to an endpoint for a user (logi
 
 #### Examples
 
-* [Add connect permission to an Endpoint](/Examples/Resources/xSQLServerEndpointPermission/1-AddConnectPermission.ps1)
-* [Remove the connect permission for an Endpoint](/Examples/Resources/xSQLServerEndpointPermission/2-RemoveConnectPermission.ps1)
+* [Add connect permission to an Endpoint](/Examples/Resources/SqlServerEndpointPermission/1-AddConnectPermission.ps1)
+* [Remove the connect permission for an Endpoint](/Examples/Resources/SqlServerEndpointPermission/2-RemoveConnectPermission.ps1)
 * [Add connect permission to both an Always On primary replica and an Always On
-  secondary replica, and where each replica has a different SQL service account](/Examples/Resources/xSQLServerEndpointPermission/3-AddConnectPermissionToAlwaysOnPrimaryAndSecondaryReplicaEachWithDifferentSqlServiceAccounts.ps1)
+  secondary replica, and where each replica has a different SQL service account](/Examples/Resources/SqlServerEndpointPermission/3-AddConnectPermissionToAlwaysOnPrimaryAndSecondaryReplicaEachWithDifferentSqlServiceAccounts.ps1)
 * [Remove connect permission to both an Always On primary replica and an
   Always On secondary replica, and where each replica has a different SQL service
-  account](/Examples/Resources/xSQLServerEndpointPermission/4-RemoveConnectPermissionToAlwaysOnPrimaryAndSecondaryReplicaEachWithDifferentSqlServiceAccounts.ps1)
+  account](/Examples/Resources/SqlServerEndpointPermission/4-RemoveConnectPermissionToAlwaysOnPrimaryAndSecondaryReplicaEachWithDifferentSqlServiceAccounts.ps1)
 
-### xSQLServerEndpointState
+### SqlServerEndpointState
 
 This resource is used to set the state of an endpoint.
 
@@ -770,10 +777,10 @@ This resource is used to set the state of an endpoint.
 
 #### Examples
 
-* [Make sure that an endpoint is started](/Examples/Resources/xSQLServerEndpointState/1-MakeSureEndpointIsStarted.ps1)
-* [Make sure that an endpoint is stopped](/Examples/Resources/xSQLServerEndpointState/2-MakeSureEndpointIsStopped.ps1)
+* [Make sure that an endpoint is started](/Examples/Resources/SqlServerEndpointState/1-MakeSureEndpointIsStarted.ps1)
+* [Make sure that an endpoint is stopped](/Examples/Resources/SqlServerEndpointState/2-MakeSureEndpointIsStopped.ps1)
 
-### xSQLServerFirewall
+### SqlWindowsFirewall
 
 This will set default firewall rules for the supported features. Currently the
 features supported are Database Engine, Analysis Services, SQL Browser,
@@ -855,10 +862,10 @@ Port: tcp/135 | SQL Server Integration Services Port
 
 #### Examples
 
-* [Create inbound firewall rules](/Examples/Resources/xSQLServerFirewall/1-CreateInboundFirewallRules.ps1)
-* [Remove inbound firewall rules](/Examples/Resources/xSQLServerFirewall/2-RemoveInboundFirewallRules.ps1)
+* [Create inbound firewall rules](/Examples/Resources/SqlWindowsFirewall/1-CreateInboundFirewallRules.ps1)
+* [Remove inbound firewall rules](/Examples/Resources/SqlWindowsFirewall/2-RemoveInboundFirewallRules.ps1)
 
-### xSQLServerLogin
+### SqlServerLogin
 
 No description.
 
@@ -896,7 +903,7 @@ No description.
 
 None.
 
-### xSQLServerMaxDop
+### SqlServerMaxDop
 
 This resource set the max degree of parallelism server configuration option.
 The max degree of parallelism option is used to limit the number of processors to
@@ -946,11 +953,11 @@ Read more about max degree of parallelism in this article
 
 #### Examples
 
-* [Set SQLServerMaxDop to 1](/Examples/Resources/xSQLServerMaxDop/1-SetMaxDopToOne.ps1)
-* [Set SQLServerMaxDop to Auto](/Examples/Resources/xSQLServerMaxDop/2-SetMaxDopToAuto.ps1)
-* [Set SQLServerMaxDop to Default](/Examples/Resources/xSQLServerMaxDop/3-SetMaxDopToDefault.ps1)
+* [Set SQLServerMaxDop to 1](/Examples/Resources/SqlServerMaxDop/1-SetMaxDopToOne.ps1)
+* [Set SQLServerMaxDop to Auto](/Examples/Resources/SqlServerMaxDop/2-SetMaxDopToAuto.ps1)
+* [Set SQLServerMaxDop to Default](/Examples/Resources/SqlServerMaxDop/3-SetMaxDopToDefault.ps1)
 
-### xSQLServerMemory
+### SqlServerMemory
 
 This resource sets the minimum server memory and maximum server memory configuration
 option.
@@ -1021,12 +1028,12 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) -
 
 #### Examples
 
-* [Set SQLServerMaxMemory to 12GB](/Examples/Resources/xSQLServerMemory/1-SetMaxMemoryTo12GB.ps1)
-* [Set SQLServerMaxMemory to Auto](/Examples/Resources/xSQLServerMemory/2-SetMaxMemoryToAuto.ps1)
-* [Set SQLServerMinMemory to 2GB and SQLServerMaxMemory to Auto](/Examples/Resources/xSQLServerMemory/3-SetMinMemoryToFixedValueAndMaxMemoryToAuto.ps1)
-* [Set SQLServerMaxMemory to Default](/Examples/Resources/xSQLServerMemory/3-SetMaxMemoryToDefault.ps1)
+* [Set SQLServerMaxMemory to 12GB](/Examples/Resources/SqlServerMemory/1-SetMaxMemoryTo12GB.ps1)
+* [Set SQLServerMaxMemory to Auto](/Examples/Resources/SqlServerMemory/2-SetMaxMemoryToAuto.ps1)
+* [Set SQLServerMinMemory to 2GB and SQLServerMaxMemory to Auto](/Examples/Resources/SqlServerMemory/3-SetMinMemoryToFixedValueAndMaxMemoryToAuto.ps1)
+* [Set SQLServerMaxMemory to Default](/Examples/Resources/SqlServerMemory/3-SetMaxMemoryToDefault.ps1)
 
-### xSQLServerNetwork
+### SqlServerNetwork
 
 This resource is used to change the network settings for the instance.
 
@@ -1063,10 +1070,10 @@ Read more about the network settings in the article
 
 #### Examples
 
-* [Enable TCP/IP with static port and restart SQL Server](/Examples/Resources/xSQLServerNetwork/1-EnableTcpIpWithStaticPort.ps1)
-* [Enable TCP/IP with dynamic port](/Examples/Resources/xSQLServerNetwork/2-EnableTcpIpWithDynamicPort.ps1)
+* [Enable TCP/IP with static port and restart SQL Server](/Examples/Resources/SqlServerNetwork/1-EnableTcpIpWithStaticPort.ps1)
+* [Enable TCP/IP with dynamic port](/Examples/Resources/SqlServerNetwork/2-EnableTcpIpWithDynamicPort.ps1)
 
-### xSQLServerPermission
+### SqlServerPermission
 
 This resource sets server permissions to a user (login).
 
@@ -1094,10 +1101,10 @@ AlterAnyEndPoint and ViewServerState.
 
 #### Examples
 
-* [Add server permission for a login](/Examples/Resources/xSQLServerPermission/1-AddServerPermissionForLogin.ps1)
-* [Remove server permission for a login](/Examples/Resources/xSQLServerPermission/2-RemoveServerPermissionForLogin.ps1)
+* [Add server permission for a login](/Examples/Resources/SqlServerPermission/1-AddServerPermissionForLogin.ps1)
+* [Remove server permission for a login](/Examples/Resources/SqlServerPermission/2-RemoveServerPermissionForLogin.ps1)
 
-### xSQLServerReplication
+### SqlServerReplication
 
 No description.
 
@@ -1130,10 +1137,10 @@ No description.
 
 #### Examples
 
-* [Configure a instance as the distributor](/Examples/Resources/xSQLServerReplication/1-ConfigureInstanceAsDistributor.ps1)
-* [Configure a instance as the publisher](/Examples/Resources/xSQLServerReplication/2-ConfigureInstanceAsPublisher.ps1)
+* [Configure a instance as the distributor](/Examples/Resources/SqlServerReplication/1-ConfigureInstanceAsDistributor.ps1)
+* [Configure a instance as the publisher](/Examples/Resources/SqlServerReplication/2-ConfigureInstanceAsPublisher.ps1)
 
-### xSQLServerRole
+### SqlServerRole
 
 This resource is used to create a server role, when Ensure is set to 'Present'.
 Or remove a server role, when Ensure is set to 'Absent'. The resource also manages
@@ -1169,13 +1176,13 @@ server roles, please read the below articles.
 
 #### Examples
 
-* [Add server role](/Examples/Resources/xSQLServerRole/1-AddServerRole.ps1)
-* [Remove server role](/Examples/Resources/xSQLServerRole/2-RemoveServerRole.ps1)
-* [Add members to server role](/Examples/Resources/xSQLServerRole/3-AddMembersToServerRole.ps1)
-* [Members to include in server role](/Examples/Resources/xSQLServerRole/4-MembersToIncludeInServerRole.ps1)
-* [Members to exclude from server role](/Examples/Resources/xSQLServerRole/5-MembersToExcludeInServerRole.ps1)
+* [Add server role](/Examples/Resources/SqlServerRole/1-AddServerRole.ps1)
+* [Remove server role](/Examples/Resources/SqlServerRole/2-RemoveServerRole.ps1)
+* [Add members to server role](/Examples/Resources/SqlServerRole/3-AddMembersToServerRole.ps1)
+* [Members to include in server role](/Examples/Resources/SqlServerRole/4-MembersToIncludeInServerRole.ps1)
+* [Members to exclude from server role](/Examples/Resources/SqlServerRole/5-MembersToExcludeInServerRole.ps1)
 
-### xSQLServerRSConfig
+### SqlRS
 
 Initializes and configures SQL Reporting Services server.
 
@@ -1212,10 +1219,10 @@ Initializes and configures SQL Reporting Services server.
 
 #### Examples
 
-* [Default configuration](Examples/Resources/xSQLServerRSConfig/1-DefaultConfiguration.ps1)
-* [Custom virtual directories and reserved URLs](Examples/Resources/xSQLServerRSConfig/2-CustomConfiguration.ps1)
+* [Default configuration](Examples/Resources/SqlRS/1-DefaultConfiguration.ps1)
+* [Custom virtual directories and reserved URLs](Examples/Resources/SqlRS/2-CustomConfiguration.ps1)
 
-### xSQLServerRSSecureConnectionLevel
+### SqlRSSecureConnectionLevel
 
 No description.
 
@@ -1237,7 +1244,7 @@ No description.
 
 None.
 
-### xSQLServerScript
+### SqlScript
 
 Provides the means to run a user generated T-SQL script on the SQL Server instance.
 Three scripts are required; Get T-SQL script, Set T-SQL script and the Test T-SQL
@@ -1306,10 +1313,10 @@ See [issue #273](https://github.com/PowerShell/xSQLServer/issues/273) for more i
 
 #### Examples
 
-* [Run a script using SQL Authentication](/Examples/Resources/xSQLServerScript/1-RunScriptUsingSQLAuthentication.ps1)
-* [Run a script using Windows Authentication](/Examples/Resources/xSQLServerScript/2-RunScriptUsingWindowsAuthentication.ps1)
+* [Run a script using SQL Authentication](/Examples/Resources/SqlScript/1-RunScriptUsingSQLAuthentication.ps1)
+* [Run a script using Windows Authentication](/Examples/Resources/SqlScript/2-RunScriptUsingWindowsAuthentication.ps1)
 
-### xSQLServerServiceAccount
+### SqlServerServiceAccount
 
 Manage the service account for SQL Server services.
 
@@ -1336,10 +1343,10 @@ Manage the service account for SQL Server services.
 
 #### Examples
 
-* [Run service under a user account](/Examples/Resources/xSQLServerServiceAccount/1-ConfigureServiceAccount-UserAccount.ps1)
-* [Run service with a virtual account](/Examples/Resources/xSQLServerServiceAccount/2-ConfigureServiceAccount-VirtualAccount.ps1)
+* [Run service under a user account](/Examples/Resources/SqlServerServiceAccount/1-ConfigureServiceAccount-UserAccount.ps1)
+* [Run service with a virtual account](/Examples/Resources/SqlServerServiceAccount/2-ConfigureServiceAccount-VirtualAccount.ps1)
 
-### xSQLServerSetup
+### SqlSetup
 
 Installs SQL Server on the target node.
 
@@ -1483,15 +1490,15 @@ installing feature Database Engine and Analysis Services respectively.
 
 #### Examples
 
-* [Install a default instance on a single server](/Examples/Resources/xSQLServerSetup/1-InstallDefaultInstanceSingleServer.ps1)
-* [Install a named instance on a single server](/Examples/Resources/xSQLServerSetup/2-InstallNamedInstanceSingleServer.ps1)
-* [Install a named instance on a single server from an UNC path using SourceCredential](/Examples/Resources/xSQLServerSetup/3-InstallNamedInstanceSingleServerFromUncPathUsingSourceCredential.ps1)
-* [Install a named instance as the first node in SQL Server Failover Cluster](/Examples/Resources/xSQLServerSetup/4-InstallNamedInstanceInFailoverClusterFirstNode.ps1)
-* [Install a named instance as the second node in SQL Server Failover Cluster](/Examples/Resources/xSQLServerSetup/5-InstallNamedInstanceInFailoverClusterSecondNode.ps1)
+* [Install a default instance on a single server](/Examples/Resources/SqlSetup/1-InstallDefaultInstanceSingleServer.ps1)
+* [Install a named instance on a single server](/Examples/Resources/SqlSetup/2-InstallNamedInstanceSingleServer.ps1)
+* [Install a named instance on a single server from an UNC path using SourceCredential](/Examples/Resources/SqlSetup/3-InstallNamedInstanceSingleServerFromUncPathUsingSourceCredential.ps1)
+* [Install a named instance as the first node in SQL Server Failover Cluster](/Examples/Resources/SqlSetup/4-InstallNamedInstanceInFailoverClusterFirstNode.ps1)
+* [Install a named instance as the second node in SQL Server Failover Cluster](/Examples/Resources/SqlSetup/5-InstallNamedInstanceInFailoverClusterSecondNode.ps1)
 
 #### Known issues
 
-All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/xSQLServer/issues?q=is%3Aissue%20is%3Aopen%20xSQLServerSetup).
+All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/xSQLServer/issues?q=is%3Aissue%20is%3Aopen%20SqlSetup).
 
 ##### Severe known issues
 
@@ -1499,7 +1506,7 @@ This is a list of known issues that severely impact the use of the resource.
 
 There are currently no known severe issues.
 
-### xWaitForAvailabilityGroup
+### SqlWaitForAvailabilityGroup
 
 This resource will wait for a cluster role/group to be created. This is used to
 wait for an Availability Group to create the cluster role/group in the cluster.
@@ -1538,5 +1545,5 @@ or that it has finished creating the Availability Group.
 
 #### Examples
 
-* [Wait for a cluster role/group to be available](/Examples/Resources/xWaitForAvailabilityGroup/1-WaitForASingleClusterGroup.ps1)
-* [Wait for multiple cluster roles/groups to be available](/Examples/Resources/xWaitForAvailabilityGroup/2-WaitForMultipleClusterGroups.ps1)
+* [Wait for a cluster role/group to be available](/Examples/Resources/SqlWaitForAvailabilityGroup/1-WaitForASingleClusterGroup.ps1)
+* [Wait for multiple cluster roles/groups to be available](/Examples/Resources/SqlWaitForAvailabilityGroup/2-WaitForMultipleClusterGroups.ps1)

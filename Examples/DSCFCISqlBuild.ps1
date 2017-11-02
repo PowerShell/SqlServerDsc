@@ -5,7 +5,7 @@ $OutputPath = 'F:\DSCConfig'
 Configuration FCISQL
 {
     Import-DscResource –Module PSDesiredStateConfiguration
-    Import-DscResource -Module xSQLServer
+    Import-DscResource -Module SqlServerDSC
     Import-DscResource -Module xFailoverCluster
 
     Node $AllNodes.NodeName
