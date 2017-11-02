@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership")]
-class MSFT_xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("xSQLServerAOAGDatabaseMembership")]
+class MSFT_xSQLServerAOAGDatabaseMembership : OMI_BaseResource
 {
     [Required, Description("The name of the database(s) to add to the availability group. This accepts wildcards.")] String DatabaseName[];
     [Key, Description("Hostname of the SQL Server where the primary replica of the availability group lives. If the availability group is not currently on this server, the resource will attempt to connect to the server where the primary replica lives.")] String SQLServer;

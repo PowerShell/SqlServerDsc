@@ -1,4 +1,4 @@
-# Localized resources for xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+# Localized resources for xSQLServerAOAGDatabaseMembership
 
 ConvertFrom-StringData @'
     AddingDatabasesToAvailabilityGroup = Adding the following databases to the '{0}' availability group: {1}.
