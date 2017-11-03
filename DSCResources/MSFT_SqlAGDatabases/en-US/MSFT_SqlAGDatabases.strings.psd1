@@ -1,4 +1,4 @@
-# Localized resources for SqlServerAGDatabaseMembership
+# Localized resources for SqlAGDatabases
 
 ConvertFrom-StringData @'
     AddingDatabasesToAvailabilityGroup = Adding the following databases to the '{0}' availability group: {1}.

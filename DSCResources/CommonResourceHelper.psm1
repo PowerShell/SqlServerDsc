@@ -204,7 +204,7 @@ function New-InvalidResultException
             For WindowsOptionalFeature: MSFT_WindowsOptionalFeature
             For Service: MSFT_ServiceResource
             For Registry: MSFT_RegistryResource
-            For Helper: SqlServerHelper
+            For Helper: SqlServerDSCHelper
 
     .PARAMETER ScriptRoot
         Optional. The root path where to expect to find the culture folder. This is only needed

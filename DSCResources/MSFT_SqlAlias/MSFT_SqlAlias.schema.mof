@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("SQLAlias")]
-class MSFT_SQLAlias : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("SqlAlias")]
+class MSFT_SqlAlias : OMI_BaseResource
 {
     [Key, Description("The name of Alias (e.g. svr01\\inst01).")] String Name;
     [Write, Description("Protocol to use when connecting. Valid values are 'TCP' or 'NP' (Named Pipes). Default value is 'TCP'."), ValueMap{"TCP","NP"}, Values{"TCP","NP"}] String Protocol;

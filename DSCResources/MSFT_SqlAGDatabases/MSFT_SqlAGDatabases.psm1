@@ -5,7 +5,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
         -ChildPath 'CommonResourceHelper.psm1')
 
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerAGDatabaseMembership'
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAGDatabases'
 
 <#
     .SYNOPSIS
