@@ -1,4 +1,4 @@
-# Localized resources for helper module SqlServerHelper.
+# Localized resources for helper module SqlServerDSCHelper.
 
 ConvertFrom-StringData @'
     ConnectedToDatabaseEngineInstance = Connected to SQL instance '{0}'.

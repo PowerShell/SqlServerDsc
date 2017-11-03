@@ -3,7 +3,7 @@ Import-Module -Name (Join-Path -Path (Join-Path -Path $PSScriptRoot `
                                                 -ChildPath 'DscResources') `
                                -ChildPath 'CommonResourceHelper.psm1')
 
-$script:localizedData = Get-LocalizedData -ResourceName 'SqlServerHelper' -ScriptRoot $PSScriptRoot
+$script:localizedData = Get-LocalizedData -ResourceName 'SqlServerDSCHelper' -ScriptRoot $PSScriptRoot
 
 <#
     .SYNOPSIS
