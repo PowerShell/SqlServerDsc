@@ -2,7 +2,7 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param()
 
-$script:DSCModuleName      = 'SQLServerDSC'
+$script:DSCModuleName      = 'SQLServerDsc'
 $script:DSCResourceName    = 'MSFT_SqlSetup'
 
 #region HEADER
