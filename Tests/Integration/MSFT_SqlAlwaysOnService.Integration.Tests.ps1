@@ -1,4 +1,4 @@
-$script:DSCModuleName = 'SQLServerDsc'
+$script:DSCModuleName = 'SqlServerDsc'
 $script:DSCResourceFriendlyName = 'SqlAlwaysOnService'
 $script:DSCResourceName = "MSFT_$($script:DSCResourceFriendlyName)"
 

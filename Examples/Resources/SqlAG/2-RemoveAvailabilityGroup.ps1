@@ -25,7 +25,7 @@ Configuration Example
         $SysAdminAccount
     )
 
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     Node $AllNodes.NodeName {
         if ( $Node.Role -eq 'PrimaryReplica' )

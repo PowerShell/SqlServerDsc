@@ -1,4 +1,4 @@
-$script:DSCModuleName      = 'SQLServerDsc'
+$script:DSCModuleName      = 'SqlServerDsc'
 $script:DSCResourceName    = 'MSFT_SqlServerMemory'
 
 #region HEADER

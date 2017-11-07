@@ -1,4 +1,4 @@
-$script:DSCModuleName = 'SQLServerDsc'
+$script:DSCModuleName = 'SqlServerDsc'
 $script:DSCResourceFriendlyName = 'SqlDatabaseDefaultLocation'
 $script:DSCResourceName = "MSFT_$($script:DSCResourceFriendlyName)"
 

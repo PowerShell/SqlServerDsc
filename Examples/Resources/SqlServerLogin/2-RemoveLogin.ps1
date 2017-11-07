@@ -11,7 +11,7 @@ This example shows how to remove the SQL Login 'SqlLogin'.
 
 Configuration Example
 {
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost {
         SqlServerLogin Remove_WindowsUser

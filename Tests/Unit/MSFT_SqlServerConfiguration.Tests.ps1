@@ -1,4 +1,4 @@
-$script:DSCModuleName      = 'SQLServerDsc'
+$script:DSCModuleName      = 'SqlServerDsc'
 $script:DSCResourceName    = 'MSFT_SqlServerDSCConfiguration'
 
 # Unit Test Template Version: 1.1.0

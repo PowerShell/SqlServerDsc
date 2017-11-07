@@ -1,4 +1,4 @@
-$script:DSCModuleName      = 'SQLServerDsc'
+$script:DSCModuleName      = 'SqlServerDsc'
 $script:DSCResourceName    = 'MSFT_SqlAlwaysOnService'
 
 # Unit Test Template Version: 1.1.0

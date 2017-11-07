@@ -38,7 +38,7 @@ Configuration Example
         $SysAdminAccount
     )
 
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     Node $AllNodes.NodeName {
         # Adding the required service account to allow the cluster to log into SQL
