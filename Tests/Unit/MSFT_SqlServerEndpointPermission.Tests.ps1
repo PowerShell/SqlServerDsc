@@ -93,7 +93,7 @@ try
 
         Describe 'MSFT_SqlServerEndpointPermission\Get-TargetResource' -Tag 'Get' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -169,7 +169,7 @@ try
 
         Describe 'MSFT_SqlServerEndpointPermission\Test-TargetResource' -Tag 'Test' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -178,10 +178,8 @@ try
                 $mockDynamicPrincipal = $mockOtherPrincipal
 
                 It 'Should return that desired state is absent when wanted desired state is to be Present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -192,10 +190,8 @@ try
                 $mockDynamicPrincipal = $mockPrincipal
 
                 It 'Should return that desired state is absent when wanted desired state is to be Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -208,10 +204,8 @@ try
                 $mockDynamicPrincipal = $mockPrincipal
 
                 It 'Should return that desired state is present when wanted desired state is to be Present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -222,10 +216,8 @@ try
                 $mockDynamicPrincipal = $mockOtherPrincipal
 
                 It 'Should return that desired state is present when wanted desired state is to be Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -239,7 +231,7 @@ try
 
         Describe 'MSFT_SqlServerEndpointPermission\Set-TargetResource' -Tag 'Set' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -250,10 +242,8 @@ try
                 $script:mockMethodRevokeRan = $false
 
                 It 'Should call the the method Grant when desired state is to be Present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodGrantRan | Should -Be $true
@@ -267,10 +257,8 @@ try
                 $script:mockMethodRevokeRan = $false
 
                 It 'Should call the the method Revoke when desired state is to be Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodGrantRan | Should -Be $false
@@ -304,10 +292,8 @@ try
                 $script:mockMethodRevokeRan = $false
 
                 It 'Should not call Grant() or Revoke() method when desired state is already Present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodGrantRan | Should -Be $false
@@ -321,10 +307,8 @@ try
                 $script:mockMethodRevokeRan = $false
 
                 It 'Should not call Grant() or Revoke() method when desired state is already Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                        Permission = 'CONNECT'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
+                    $testParameters['Permission'] = 'CONNECT'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodGrantRan | Should -Be $false

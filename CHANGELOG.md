@@ -54,6 +54,12 @@
 - Added resource
   - xSQLServerDatabaseDefaultLocation
     ([issue #656](https://github.com/PowerShell/xSQLServer/issues/656))
+- Changes to xSQLServerEndpointPermission
+  - Fixed a problem when running the tests locally in a PowerShell console it
+    would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
+- Changes to xSQLServerAvailabilityGroupListener
+  - Fixed a problem when running the tests locally in a PowerShell console it
+    would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 
 ## 8.2.0.0
 

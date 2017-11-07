@@ -95,7 +95,7 @@ try
 
         Describe 'SqlServerDSCAvailabilityGroupListener\Get-TargetResource' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
             }
@@ -226,17 +226,15 @@ try
 
         Describe 'SqlServerDSCAvailabilityGroupListener\Test-TargetResource' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
             }
 
             Context 'When the system is not in the desired state (for static IP)' {
                 It 'Should return that desired state is absent when wanted desired state is to be Present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.10.45/255.255.252.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {} -Verifiable
 
@@ -263,9 +261,7 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is absent when wanted desired state is to be Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -274,12 +270,10 @@ try
                 }
 
                 It 'Should return that desired state is absent when IP address is different' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.10.45/255.255.252.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -288,12 +282,10 @@ try
                 }
 
                 It 'Should return that desired state is absent when DHCP is absent but should be present' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
-                        DHCP = $true
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $true
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -302,9 +294,7 @@ try
                 }
 
                 It 'Should return that desired state is absent when DHCP is the only set parameter' {
-                    $testParameters += @{
-                        DHCP = $true
-                    }
+                    $testParameters['DHCP'] = $true
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -329,12 +319,10 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is absent when port is different' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -361,12 +349,10 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is absent when DHCP is present but should be absent' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.100/255.255.255.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.100/255.255.255.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -375,9 +361,7 @@ try
                 }
 
                 It 'Should return that desired state is absent when IP address is the only set parameter' {
-                    $testParameters += @{
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                    }
+                    $testParameters['IpAddress'] = '192.168.10.45/255.255.252.0'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -402,9 +386,7 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is absent when port is the only set parameter' {
-                    $testParameters += @{
-                        Port = 5030
-                    }
+                    $testParameters['Port'] = 5030
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $false
@@ -415,12 +397,10 @@ try
 
             Context 'When the system is in the desired state (for static IP)' {
                 It 'Should return that desired state is present when wanted desired state is to be Absent' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Absent'
+                    $testParameters['IpAddress'] = '192.168.10.45/255.255.252.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     Mock -CommandName Get-SQLAlwaysOnAvailabilityGroupListener -MockWith {} -Verifiable
 
@@ -447,12 +427,10 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is present when wanted desired state is to be Present, without DHCP' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -461,9 +439,7 @@ try
                 }
 
                 It 'Should return that desired state is present when IP address is the only set parameter' {
-                    $testParameters += @{
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                    }
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -472,9 +448,7 @@ try
                 }
 
                 It 'Should return that desired state is present when port is the only set parameter' {
-                    $testParameters += @{
-                        Port = 5030
-                    }
+                    $testParameters['Port'] = 5030
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -501,12 +475,10 @@ try
                 } -Verifiable
 
                 It 'Should return that desired state is present when wanted desired state is to be Present, with DHCP' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = 5030
-                        DHCP = $true
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $true
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -515,9 +487,7 @@ try
                 }
 
                 It 'Should return that desired state is present when DHCP is the only set parameter' {
-                    $testParameters += @{
-                        DHCP = $true
-                    }
+                    $testParameters['DHCP'] = $true
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
@@ -541,7 +511,7 @@ try
 
         Describe 'SqlServerDSCAvailabilityGroupListener\Set-TargetResource' {
             BeforeEach {
-                $testParameters = $defaultParameters
+                $testParameters = $defaultParameters.Clone()
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSql -Verifiable
                 Mock -CommandName New-SqlAvailabilityGroupListener -MockWith {} -Verifiable
@@ -553,12 +523,10 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using Static IP' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.10.45/255.255.252.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.10.45/255.255.252.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -571,12 +539,10 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using DHCP and specific DhcpSubnet' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.10.1/255.255.252.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $true
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.10.1/255.255.252.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $true
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -589,11 +555,9 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should call the cmdlet New-SqlAvailabilityGroupListener when system is not in desired state, when using DHCP and server default DhcpSubnet' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        Port = $mockKnownPortNumber
-                        DHCP = $true
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $true
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -608,11 +572,9 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should throw when trying to change an existing IP address' {
-                    $testParameters += @{
-                        IpAddress = '10.0.0.1/255.255.252.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['IpAddress'] = '10.0.0.1/255.255.252.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     { Set-TargetResource @testParameters } | Should -Throw
 
@@ -627,11 +589,9 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should throw when trying to change from static IP to DHCP' {
-                    $testParameters += @{
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $true
-                    }
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $true
 
                     { Set-TargetResource @testParameters } | Should -Throw
 
@@ -646,11 +606,9 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should call the cmdlet Add-SqlAvailabilityGroupListenerStaticIp, when adding another IP address, and system is not in desired state' {
-                    $testParameters += @{
-                        IpAddress = @('192.168.0.1/255.255.255.0','10.0.0.1/255.255.252.0')
-                        Port = 5030
-                        DHCP = $false
-                    }
+                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0','10.0.0.1/255.255.252.0')
+                    $testParameters['Port'] = 5030
+                    $testParameters['DHCP'] = $false
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -665,12 +623,10 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -684,9 +640,7 @@ try
                 $script:mockMethodDropRan = $false # This is set to $true when Drop() method is called. make sure we start the test with $false.
 
                 It 'Should not call the any cmdlet *-SqlAvailability* or the the Drop() method when system is in desired state and ensure is set to ''Absent''' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodDropRan | Should -Be $true # Should have made one call to the Drop() method.
@@ -701,12 +655,10 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should throw the correct error when availability group is not found and Ensure is set to ''Present''' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
@@ -718,9 +670,7 @@ try
                 }
 
                 It 'Should throw the correct error when availability group is not found and Ensure is set to ''Absent''' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
@@ -735,20 +685,16 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should throw the correct error when listener is not found and Ensure is set to ''Absent''' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
 
                     { Set-TargetResource @testParameters } | Should -Throw 'Trying to make a change to a listener that does not exist.'
                 }
 
                 It 'Should throw the correct error when listener is not found and Ensure is set to ''Present''' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
@@ -768,12 +714,10 @@ try
                 $mockDynamicListenerName = $mockUnknownListenerName
 
                 It 'Should throw the correct error when availability group is not found and Ensure is set to ''Present''' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                        DHCP = $false
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
+                    $testParameters['DHCP'] = $false
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
@@ -796,11 +740,9 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state' {
-                    $testParameters += @{
-                        Ensure = 'Present'
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                    }
+                    $testParameters['Ensure'] = 'Present'
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -815,10 +757,8 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should not call the any cmdlet *-SqlAvailability* when system is in desired state (without ensure parameter)' {
-                    $testParameters += @{
-                        IpAddress = '192.168.0.1/255.255.255.0'
-                        Port = $mockKnownPortNumber
-                    }
+                    $testParameters['IpAddress'] = '192.168.0.1/255.255.255.0'
+                    $testParameters['Port'] = $mockKnownPortNumber
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
@@ -832,9 +772,7 @@ try
                 $script:mockMethodDropRan = $false # This is set to $true when Drop() method is called. make sure we start the test with $false.
 
                 It 'Should not call the any cmdlet *-SqlAvailability* or the the Drop() method when system is in desired state and ensure is set to ''Absent''' {
-                    $testParameters += @{
-                        Ensure = 'Absent'
-                    }
+                    $testParameters['Ensure'] = 'Absent'
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                     $script:mockMethodDropRan | Should -Be $false # Should not have called Drop() method.
