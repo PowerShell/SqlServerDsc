@@ -12,7 +12,7 @@ Configuration Example
         $ServiceAccountCredential
     )
 
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     Node localhost {
         SqlServerServiceAccount SetServiceAcccount_User

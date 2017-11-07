@@ -9,7 +9,7 @@
 #>
 Configuration Example
 {
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost {
         SqlRS DefaultConfiguration

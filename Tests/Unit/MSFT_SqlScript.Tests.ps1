@@ -42,7 +42,7 @@ try
     Invoke-TestSetup
 
     InModuleScope 'MSFT_SqlScript' {
-        $script:DSCModuleName       = 'SQLServerDsc'
+        $script:DSCModuleName       = 'SqlServerDsc'
         $resourceName     = 'MSFT_SqlScript'
 
         $testParameters = @{

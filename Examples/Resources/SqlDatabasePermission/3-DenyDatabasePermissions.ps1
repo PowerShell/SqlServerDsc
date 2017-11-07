@@ -12,7 +12,7 @@ Configuration Example
         $SysAdminAccount
     )
 
-    Import-DscResource -ModuleName xSqlServer
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost {
         SqlServerLogin Add_SqlServerLogin_SQLAdmin
