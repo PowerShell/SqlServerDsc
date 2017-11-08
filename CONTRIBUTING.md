@@ -340,8 +340,9 @@ When sending in a Pull Request (PR) all example files will be tested so they can
 be compiled to a .mof file. If the tests find any errors the build will fail.
 Before the test runs in AppVeyor the module will be copied to the first path of
 `$env:PSModulePath`.
-To run this test locally, make sure you have the SqlServerDSC module deployed to a
-path where it can be used. See `$env:PSModulePath` to view the existing paths.
+To run this test locally, make sure you have the SqlServerDSC module
+deployed to a path where it can be used.
+See `$env:PSModulePath` to view the existing paths.
 
 #### Using SMO stub classes
 
