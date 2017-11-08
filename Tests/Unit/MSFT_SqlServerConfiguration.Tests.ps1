@@ -1,5 +1,5 @@
 $script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerDSCConfiguration'
+$script:DSCResourceName    = 'MSFT_SqlServerConfiguration'
 
 # Unit Test Template Version: 1.1.0
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
