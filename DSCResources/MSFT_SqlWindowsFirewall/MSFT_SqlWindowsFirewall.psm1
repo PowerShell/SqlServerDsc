@@ -1,5 +1,5 @@
 $script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
-Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'SqlServerDSCHelper.psm1')
+Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'SqlServerDscHelper.psm1')
 
 <#
     .SYNOPSIS

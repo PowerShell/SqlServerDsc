@@ -2,7 +2,7 @@ $currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Debug -Message "CurrentPath: $currentPath"
 
 # Load Common Code
-Import-Module $currentPath\..\..\SqlServerDSCHelper.psm1 -Verbose:$false -ErrorAction Stop
+Import-Module $currentPath\..\..\SqlServerDscHelper.psm1 -Verbose:$false -ErrorAction Stop
 
 function Get-TargetResource
 {

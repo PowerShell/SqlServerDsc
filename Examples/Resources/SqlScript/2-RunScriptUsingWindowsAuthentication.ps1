@@ -12,7 +12,7 @@ Configuration Example
         $WindowsCredential
     )
 
-    Import-DscResource -ModuleName SqlServerDSC
+    Import-DscResource -ModuleName SqlServerDsc
 
     Node localhost
     {
