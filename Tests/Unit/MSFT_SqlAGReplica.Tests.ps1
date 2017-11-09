@@ -13,7 +13,7 @@ Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -P
 Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
 
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName 'SqlServerDSC' `
+    -DSCModuleName 'SqlServerDsc' `
     -DSCResourceName 'MSFT_SqlAGReplica' `
     -TestType Unit
 

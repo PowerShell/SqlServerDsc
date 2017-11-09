@@ -1,5 +1,5 @@
 $script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlWaitForAvailabilityGroup'
+$script:DSCResourceName    = 'MSFT_SqlWaitForAG'
 
 #region HEADER
 

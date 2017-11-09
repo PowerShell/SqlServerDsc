@@ -30,7 +30,7 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Data_Config
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-    Import-DscResource -ModuleName 'SqlServerDSC'
+    Import-DscResource -ModuleName 'SqlServerDsc'
 
     node localhost {
         File 'SQLDataPath'
@@ -68,7 +68,7 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Log_Config
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-    Import-DscResource -ModuleName 'SqlServerDSC'
+    Import-DscResource -ModuleName 'SqlServerDsc'
 
     node localhost {
         File 'SQLLogPath'
@@ -106,7 +106,7 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Backup_Config
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-    Import-DscResource -ModuleName 'SqlServerDSC'
+    Import-DscResource -ModuleName 'SqlServerDsc'
 
     node localhost {
         File 'SQLBackupPath'

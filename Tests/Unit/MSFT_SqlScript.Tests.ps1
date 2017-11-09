@@ -20,7 +20,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName 'SqlServerDSC' `
+    -DSCModuleName 'SqlServerDsc' `
     -DSCResourceName 'MSFT_SqlScript'  `
     -TestType Unit
 

@@ -1,5 +1,5 @@
 $script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerServiceAccount'
+$script:DSCResourceName    = 'MSFT_SqlServiceAccount'
 
 #region HEADER
 

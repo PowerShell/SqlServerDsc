@@ -1,4 +1,4 @@
-$script:DSCModuleName      = 'SqlServerDSC'
+$script:DSCModuleName      = 'SqlServerDsc'
 $script:DSCResourceName    = 'MSFT_SqlDatabasePermission'
 
 #region HEADER

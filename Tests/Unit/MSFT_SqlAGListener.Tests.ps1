@@ -93,7 +93,7 @@ try
 
         #endregion Pester Test Initialization
 
-        Describe 'SqlServerDSCAvailabilityGroupListener\Get-TargetResource' {
+        Describe 'SqlServerAGListener\Get-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -224,7 +224,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'SqlServerDSCAvailabilityGroupListener\Test-TargetResource' {
+        Describe 'SqlServerAGListener\Test-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
             }
@@ -509,7 +509,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'SqlServerDSCAvailabilityGroupListener\Set-TargetResource' {
+        Describe 'SqlServerAGListener\Set-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 

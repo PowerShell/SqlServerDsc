@@ -5,7 +5,7 @@ param()
 
 $script:moduleRoot = Split-Path $PSScriptRoot -Parent
 
-Describe 'SqlServerDSC module common tests' {
+Describe 'SqlServerDsc module common tests' {
     Context -Name 'When there are example file for resource' {
             <#
                 For Appveyor builds copy the module to the system modules directory so it falls
@@ -13,7 +13,7 @@ Describe 'SqlServerDSC module common tests' {
             #>
             if ($env:APPVEYOR)
             {
-                $powershellModulePath = Join-Path -Path (($env:PSModulePath -split ';')[0]) -ChildPath 'SqlServerDSC'
+                $powershellModulePath = Join-Path -Path (($env:PSModulePath -split ';')[0]) -ChildPath 'SqlServerDsc'
                 Copy-item -Path $env:APPVEYOR_BUILD_FOLDER -Destination $powershellModulePath -Recurse -Force
             }
 
@@ -69,7 +69,7 @@ Describe 'SqlServerDSC module common tests' {
             Remove-item -Path $powershellModulePath -Recurse -Force -Confirm:$false
 
             # Restore the module in 'memory' to ensure other tests after this test have access to it
-            Import-Module -Name "$script:moduleRoot\SqlServerDSC.psd1" -Global -Force
+            Import-Module -Name "$script:moduleRoot\SqlServerDsc.psd1" -Global -Force
         }
     }
 }
