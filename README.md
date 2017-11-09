@@ -1,6 +1,6 @@
-# SqlServerDSC
+# SqlServerDsc
 
-The **SqlServerDSC** module contains DSC resources
+The **SqlServerDsc** module contains DSC resources
 for deployment and configuration of SQL Server.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
@@ -74,21 +74,21 @@ We are here for each other.
 
 To manually install the module,
 download the source code and unzip the contents
-of the '\Modules\SqlServerDSC' directory to the
+of the '\Modules\SqlServerDsc' directory to the
 '$env:ProgramFiles\WindowsPowerShell\Modules' folder.
 
 To install from the PowerShell gallery using PowerShellGet (in PowerShell 5.0)
 run the following command:
 
 ```powershell
-Find-Module -Name SqlServerDSC -Repository PSGallery | Install-Module
+Find-Module -Name SqlServerDsc -Repository PSGallery | Install-Module
 ```
 
 To confirm installation, run the below command and ensure you see the SQL Server
 DSC resources available:
 
 ```powershell
-Get-DscResource -Module SqlServerDSC
+Get-DscResource -Module SqlServerDsc
 ```
 
 ## Requirements
@@ -100,7 +100,7 @@ Windows Server 2008 R2 SP1, Windows Server 2012 and Windows Server 2012 R2.
 
 ## Examples
 
-You can review the [Examples](/Examples) directory in the SqlServerDSC module
+You can review the [Examples](/Examples) directory in the SqlServerDsc module
 for some general use scenarios for all of the resources that are in the module.
 
 ## Change log
