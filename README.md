@@ -13,7 +13,7 @@ questions or comments.
 ### master
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/master)
-[![codecov](https://codecov.io/gh/PowerShell/xSQLServer/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/xSQLServer/branch/master)
+[![codecov](https://codecov.io/gh/PowerShell/SqlServerDsc/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/SqlServerDsc/branch/master)
 
 This is the branch containing the latest release -
 no contributions should be made directly to this branch.
@@ -21,7 +21,7 @@ no contributions should be made directly to this branch.
 ### dev
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mxn453y284eab8li/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/xsqlserver/branch/dev)
-[![codecov](https://codecov.io/gh/PowerShell/xSQLServer/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/xSQLServer/branch/dev)
+[![codecov](https://codecov.io/gh/PowerShell/SqlServerDsc/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/SqlServerDsc/branch/dev)
 
 This is the development branch
 to which contributions should be proposed by contributors as pull requests.
@@ -43,19 +43,19 @@ or even create new resources,
 by sending in pull requests yourself.
 
 * If you want to submit an issue or take part in discussions,
-  please browse the list of [issues](https://github.com/PowerShell/xSQLServer/issues).
+  please browse the list of [issues](https://github.com/PowerShell/SqlServerDsc/issues).
   Please check out [Contributing to the DSC Resource Kit](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md)
   on how to work with issues.
 * If you want to review pull requests,
   please first check out the [Review Pull Request guidelines](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md#reviewing-pull-requests),
-  and the browse the list of [pull requests](https://github.com/PowerShell/xSQLServer/pulls)
+  and the browse the list of [pull requests](https://github.com/PowerShell/SqlServerDsc/pulls)
   and look for those pull requests with label 'needs review'.
 * If you want to improve the resources or tests,
   or create a new resource,
   then please check out the following guidelines.
   * The [Contributing to the DSC Resource Kit](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md)
     guidelines.
-  * The specific [Contributing to xSQLServer](https://github.com/PowerShell/xSQLServer/blob/dev/CONTRIBUTING.md)
+  * The specific [Contributing to SqlServerDsc](https://github.com/PowerShell/SqlServerDsc/blob/dev/CONTRIBUTING.md)
     guidelines.
   * The common [Style Guidelines](https://github.com/PowerShell/DscResources/blob/master/StyleGuidelines.md).
   * The common [Best Practices](https://github.com/PowerShell/DscResources/blob/master/BestPractices.md)
@@ -130,7 +130,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   database owners.
 * [**SqlDatabasePermission**](#sqldatabasepermission) resource to
   manage SQL database permissions.
-* [**SqlDatabaseRecoveryModel**](#sqlserverrecoverymodel) resource
+* [**SqlDatabaseRecoveryModel**](#sqldatabaserecoverymodel) resource
   to manage database recovery model.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
   database roles.
@@ -158,10 +158,10 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   the secure connection level for SQL Server Reporting Services.
 * [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
   functionality to T-SQL.
-* [**SqlServerServiceAccount**](#sqlserverserviceaccount) Manage the service account
+* [**SqlServiceAccount**](#sqlserviceaccount) Manage the service account
   for SQL Server services.
 * [**SqlSetup**](#sqlsetup) installs a standalone SQL Server instance.
-* [**SqlWaitForAvailabilityGroup**](#sqlwaitforavailabilitygroup) resource to
+* [**SqlWaitForAG**](#sqlwaitforag) resource to
   wait until availability group is created on primary server.
 
 ### SqlAlias
@@ -1275,7 +1275,7 @@ The Set T-SQL script performs the actual change when Test T-SQL script fails.
   PowerShell module.
 
 _Note: There is a known problem running this resource using PowerShell 4.0.
-See [issue #273](https://github.com/PowerShell/xSQLServer/issues/273) for more information._
+See [issue #273](https://github.com/PowerShell/SqlServerDsc/issues/273) for more information._
 
 #### Parameters
 
@@ -1316,7 +1316,7 @@ See [issue #273](https://github.com/PowerShell/xSQLServer/issues/273) for more i
 * [Run a script using SQL Authentication](/Examples/Resources/SqlScript/1-RunScriptUsingSQLAuthentication.ps1)
 * [Run a script using Windows Authentication](/Examples/Resources/SqlScript/2-RunScriptUsingWindowsAuthentication.ps1)
 
-### SqlServerServiceAccount
+### SqlServiceAccount
 
 Manage the service account for SQL Server services.
 
@@ -1343,8 +1343,8 @@ Manage the service account for SQL Server services.
 
 #### Examples
 
-* [Run service under a user account](/Examples/Resources/SqlServerServiceAccount/1-ConfigureServiceAccount-UserAccount.ps1)
-* [Run service with a virtual account](/Examples/Resources/SqlServerServiceAccount/2-ConfigureServiceAccount-VirtualAccount.ps1)
+* [Run service under a user account](/Examples/Resources/SqlServiceAccount/1-ConfigureServiceAccount-UserAccount.ps1)
+* [Run service with a virtual account](/Examples/Resources/SqlServiceAccount/2-ConfigureServiceAccount-VirtualAccount.ps1)
 
 ### SqlSetup
 
@@ -1498,7 +1498,7 @@ installing feature Database Engine and Analysis Services respectively.
 
 #### Known issues
 
-All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/xSQLServer/issues?q=is%3Aissue%20is%3Aopen%20SqlSetup).
+All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/SqlServerDsc/issues?q=is%3Aissue%20is%3Aopen%20SqlSetup).
 
 ##### Severe known issues
 
@@ -1506,7 +1506,7 @@ This is a list of known issues that severely impact the use of the resource.
 
 There are currently no known severe issues.
 
-### SqlWaitForAvailabilityGroup
+### SqlWaitForAG
 
 This resource will wait for a cluster role/group to be created. This is used to
 wait for an Availability Group to create the cluster role/group in the cluster.
@@ -1545,5 +1545,5 @@ or that it has finished creating the Availability Group.
 
 #### Examples
 
-* [Wait for a cluster role/group to be available](/Examples/Resources/SqlWaitForAvailabilityGroup/1-WaitForASingleClusterGroup.ps1)
-* [Wait for multiple cluster roles/groups to be available](/Examples/Resources/SqlWaitForAvailabilityGroup/2-WaitForMultipleClusterGroups.ps1)
+* [Wait for a cluster role/group to be available](/Examples/Resources/SqlWaitForAG/1-WaitForASingleClusterGroup.ps1)
+* [Wait for multiple cluster roles/groups to be available](/Examples/Resources/SqlWaitForAG/2-WaitForMultipleClusterGroups.ps1)

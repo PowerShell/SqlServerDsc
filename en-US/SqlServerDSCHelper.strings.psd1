@@ -17,7 +17,7 @@ ConvertFrom-StringData @'
     PropertiesDoesNotMatch = Found an array for property {0} in the current values, but this array does not match the desired state. Details of the changes are below.
     PropertyThatDoesNotMatch = {0} - {1}
     ValueOfTypeDoesNotMatch = {0} value for property {1} does not match. Current state is '{2}' and desired state is '{3}'.
-    UnableToCompareProperty = Unable to compare property {0} as the type {1} is not handled by the Test-SQLDscParameterState cmdlet.
+    UnableToCompareProperty = Unable to compare property {0} as the type {1} is not handled by the Test-SQLDSCParameterState cmdlet.
     PreferredModuleFound = Preferred module SqlServer found.
     PreferredModuleNotFound = Information: PowerShell module SqlServer not found, trying to use older SQLPS module.
     ImportingPowerShellModule = Importing PowerShell module {0}.

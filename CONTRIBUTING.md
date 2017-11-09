@@ -34,6 +34,8 @@ Those SQL Server products that are still supported can be listed at the
 
 ### Naming convention
 
+<Module Identifier>[<Component>][<Action>]<Scope>{<Feature> | <Property>}
+
 #### mof-based resource
 
 All mof-based resource (with Get/Set/Test-TargetResource) should be prefixed with
@@ -282,7 +284,7 @@ To be able to support localization we have added wrappers for the cmdlets
 message.
 The localized strings are placed in a file named 'SqlServerDscHelper.strings.psd1'
 which are located in each language folder in the root of the module. For English
-language strings the folder is ['en-US'](https://github.com/PowerShell/xSQLServer/blob/dev/en-US).
+language strings the folder is ['en-US'](https://github.com/PowerShell/SqlServerDsc/blob/dev/en-US).
 
 ##### New-TerminatingError
 
@@ -305,7 +307,7 @@ Helper functions or wrapper functions that are used by the resource can preferab
 be placed in the resource module file. If the functions are of a type that could
 be used by more than
 one resource, then the functions can also be placed in the common
-[SqlServerDscHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/SqlServerDscHelper.psm1)
+[SqlServerDscHelper.psm1](https://github.com/PowerShell/SqlServerDsc/blob/dev/SqlServerDscHelper.psm1)
 module file.
 
 ### Tests

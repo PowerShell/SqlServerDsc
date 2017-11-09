@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("SqlWaitForAvailabilityGroup")]
-class MSFT_SqlWaitForAvailabilityGroup : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("MSFT_SqlWaitForAG")]
+class MSFT_SqlWaitForAG : OMI_BaseResource
 {
     [Key, Description("Name of the cluster role/group to look for (normally the same as the Availability Group name).")] String Name;
     [Write, Description("The interval, in seconds, to check for the presence of the cluster role/group. Default value is 20 seconds. When the cluster role/group has been found the resource will wait for this amount of time once more before returning.")] Uint64 RetryIntervalSec;

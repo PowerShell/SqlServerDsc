@@ -1,6 +1,6 @@
 # Load Common Code
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
-        -ChildPath 'SqlServerDSCHelper.psm1') `
+        -ChildPath 'SqlServerDscHelper.psm1') `
     -Force
 <#
     .SYNOPSIS

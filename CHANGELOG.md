@@ -7,15 +7,15 @@
 - Significant rename to reduce length of Resource names
   - BREAKING CHANGE
   - Impact to all resources
-- Changes to xSQLServer
+- Changes to SqlServerDsc
   - Updated Pester syntax to v4
   - Fixes broken links to issues in the CHANGELOG.md.
-- Changes to xSQLServerDatabase
+- Changes to SqlDatabase
   - Added parameter to specify collation for a database to be different from server
     collation ([issue #767](https://github.com/PowerShell/xSQLServer/issues/767)).
   - Fixed unit tests for Get-TargetResource to ensure correctly testing return
     values ([issue #849](https://github.com/PowerShell/xSQLServer/issues/849))
-- Changes to xSQLServerAlwaysOnAvailabilityGroup
+- Changes to SqlAG
   - Refactored the unit tests to allow them to be more user friendly and to test
     additional SQLServer variations.
     - Each test will utilize the Import-SQLModuleStub to ensure the correct
@@ -28,22 +28,22 @@
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #868](https://github.com/PowerShell/xSQLServer/issues/868)).
-- Changes to xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
+- Changes to SqlAGDatabases
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #869](https://github.com/PowerShell/xSQLServer/issues/869)).
-- Changes to xSQLServerAlwaysOnAvailabilityGroupReplica
+- Changes to SqlAGReplica
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node is
     the active host of the SQL Server instance ([issue #870](https://github.com/PowerShell/xSQLServer/issues/870)).
 - Added the CommonTestHelper.psm1 to store common testing functions.
   - Added the Import-SQLModuleStub function to ensure the correct version of the
     module stubs are loaded ([issue #784](https://github.com/PowerShell/xSQLServer/issues/784)).
-- Changes to xSQLServerMemory
+- Changes to SqlServerMemory
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #867](https://github.com/PowerShell/xSQLServer/issues/867)).
-- Changes to xSQLServerNetwork
+- Changes to SqlServerNetwork
   - BREAKING CHANGE: Renamed parameter TcpDynamicPorts to TcpDynamicPort and
     changed type to Boolean ([issue #534](https://github.com/PowerShell/xSQLServer/issues/534)).
   - Resolved issue when switching from dynamic to static port.
@@ -51,15 +51,15 @@
   - Added localization (en-US) for all strings in resource and unit tests
     ([issue #618](https://github.com/PowerShell/xSQLServer/issues/618)).
   - Updated examples to reflect new parameters.
-- Changes to xSQLServerRSConfig
+- Changes to SqlRS
   - Added examples
 - Added resource
-  - xSQLServerDatabaseDefaultLocation
+  - SqlDatabaseDefaultLocation
     ([issue #656](https://github.com/PowerShell/xSQLServer/issues/656))
-- Changes to xSQLServerEndpointPermission
+- Changes to SqlServerEndpointPermission
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
-- Changes to xSQLServerAvailabilityGroupListener
+- Changes to SqlAGListener
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 - Changes to xSQLServerMaxDop

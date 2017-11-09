@@ -1,4 +1,4 @@
-# Localized resources for SqlServerServiceAccount
+# Localized resources for SqlServiceAccount
 
 ConvertFrom-StringData @'
     ForceServiceAccountUpdate = Force specified, skipping tests. With this configuration, Test-TargetResource will always return 'False'.

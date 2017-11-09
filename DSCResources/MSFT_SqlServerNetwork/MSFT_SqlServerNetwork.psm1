@@ -1,5 +1,5 @@
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
-        -ChildPath 'SqlServerDSCHelper.psm1') -Force
+        -ChildPath 'SqlServerDscHelper.psm1') -Force
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
         -ChildPath 'CommonResourceHelper.psm1')
 

@@ -43,7 +43,7 @@ Configuration Example
         $SqlServiceNode2Credential
     )
 
-    Import-DscResource -ModuleName SqlServerDSC
+    Import-DscResource -ModuleName SqlServerDsc
 
     node $AllNodes.Where{$_.Role -eq 'PrimaryReplica' }.NodeName
     {

@@ -13,7 +13,7 @@ Configuration Example
         $SysAdminAccount
     )
 
-    Import-DscResource -ModuleName SqlServerDSC
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost
     {
