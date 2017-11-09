@@ -104,7 +104,7 @@ Configuration SQL
             SQLSvcAccount = $Node.SQLServiceAccount
         }
 
-        xSqlServerFirewall "FirewallMSSQLSERVER"
+        SqlWindowsFirewall "FirewallMSSQLSERVER"
         {
             DependsOn = "[xSQLServerFailoverClusterSetup]PrepareMSSQLSERVER"
             SourcePath = $Node.SourcePath

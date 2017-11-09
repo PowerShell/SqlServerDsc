@@ -88,7 +88,7 @@ Configuration AlwaysOnCluster
              DependsOn = '[WindowsFeature]NET'
          }
 
-         xSqlServerFirewall ($Node.NodeName)
+         SqlWindowsFirewall ($Node.NodeName)
           {
              SourcePath = $Node.SourcePath
              InstanceName = $Node.InstanceName
@@ -224,7 +224,7 @@ Configuration AlwaysOnCluster
              DependsOn = '[WindowsFeature]NET'
          }
 
-         xSqlServerFirewall ($Node.NodeName)
+         SqlWindowsFirewall ($Node.NodeName)
          {
              SourcePath = $Node.SourcePath
              InstanceName = $Node.InstanceName
@@ -314,7 +314,7 @@ Configuration AlwaysOnCluster
            DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
        }
 
-       SqlWaitForAvailabilityGroup waitforAG
+       SqlWaitForAG waitforAG
        {
            Name = "MyAG"
            RetryIntervalSec = 20
@@ -330,7 +330,7 @@ Configuration AlwaysOnCluster
           SetupCredential = $Node.InstallerServiceAccount
           PsDscRunAsCredential = $Node.InstallerServiceAccount
 
-          DependsOn = ("[SqlWaitForAvailabilityGroup]waitforAG")
+          DependsOn = ("[SqlWaitForAG]waitforAG")
        }
 
     }

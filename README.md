@@ -1275,7 +1275,8 @@ The Set T-SQL script performs the actual change when Test T-SQL script fails.
   PowerShell module.
 
 _Note: There is a known problem running this resource using PowerShell 4.0.
-See [issue #273](https://github.com/PowerShell/SqlServerDsc/issues/273) for more information._
+See [issue #273](https://github.com/PowerShell/SqlServerDsc/issues/273)
+for more information._
 
 #### Parameters
 

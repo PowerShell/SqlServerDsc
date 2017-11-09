@@ -16,7 +16,7 @@ Configuration Example
 
     node localhost
     {
-        SqlWaitForAvailabilityGroup SQLConfigureAG-WaitAGTest1
+        SqlWaitForAG SQLConfigureAG-WaitAGTest1
         {
             Name                 = 'AGTest1'
             RetryIntervalSec     = 20

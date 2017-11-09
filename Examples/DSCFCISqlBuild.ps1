@@ -64,7 +64,7 @@ Configuration FCISQL
             SQLSvcAccount = $Node.InstallerServiceAccount
         }
 
-        xSqlServerFirewall "FirewallMSSQLSERVER"
+        SqlWindowsFirewall "FirewallMSSQLSERVER"
         {
             DependsOn = "[xSQLServerFailoverClusterSetup]PrepareMSSQLSERVER"
             SourcePath = $Node.SourcePath

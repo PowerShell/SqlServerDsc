@@ -79,7 +79,7 @@ Configuration SQLSA
                     ASConfigDir = "O:\Program Files\Microsoft SQL Server\MSAS11.MSSQLSERVER\OLAP\Config"
                 }
 
-                xSqlServerFirewall ($Node.NodeName + $SQLInstanceName)
+                SqlWindowsFirewall ($Node.NodeName + $SQLInstanceName)
                 {
                     DependsOn = ("[xSqlServerSetup]" + $Node.NodeName + $SQLInstanceName)
                     SourcePath = $Node.SourcePath

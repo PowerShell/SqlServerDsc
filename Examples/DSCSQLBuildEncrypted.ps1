@@ -106,7 +106,7 @@ Configuration SQLBuild
                SQLTempDBLogDir = "L:\MSSQL\Data"
                SQLBackupDir = "G:\MSSQL\Backup"
            }
-           xSqlServerFirewall ($Node.NodeName)
+           SqlWindowsFirewall ($Node.NodeName)
            {
               SourcePath = $Node.SourcePath
               InstanceName = $Node.InstanceName

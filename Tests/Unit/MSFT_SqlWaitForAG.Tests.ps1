@@ -78,7 +78,7 @@ try
             RetryCount = $mockRetryCount
         }
 
-        Describe 'MSFT_SqlWaitForAvailabilityGroup\Get-TargetResource' -Tag 'Get' {
+        Describe 'MSFT_SqlWaitForAG\Get-TargetResource' -Tag 'Get' {
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -142,7 +142,7 @@ try
         }
 
 
-        Describe 'MSFT_SqlWaitForAvailabilityGroup\Test-TargetResource' -Tag 'Test'{
+        Describe 'MSFT_SqlWaitForAG\Test-TargetResource' -Tag 'Test'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -191,7 +191,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlWaitForAvailabilityGroup\Set-TargetResource' -Tag 'Set'{
+        Describe 'MSFT_SqlWaitForAG\Set-TargetResource' -Tag 'Set'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
