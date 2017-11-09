@@ -71,7 +71,7 @@ Configuration SQLSA
                SQLBackupDir = "G:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data"
            }
 
-           xSqlServerFirewall ($Node.NodeName)
+           SqlWindowsFirewall ($Node.NodeName)
            {
                DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                SourcePath = $Node.SourcePath

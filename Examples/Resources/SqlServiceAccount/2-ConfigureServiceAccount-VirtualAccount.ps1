@@ -18,7 +18,7 @@ Configuration Example
     Import-DscResource -ModuleName SqlServerDsc
 
     Node localhost {
-        SqlServerServiceAccount SetServiceAcccount_User
+        SqlServiceAccount SetServiceAcccount_User
         {
             SQLServer = 'TestServer'
             SQLInstanceName = 'DSC'

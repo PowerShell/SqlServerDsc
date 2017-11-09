@@ -88,7 +88,7 @@ Configuration SQLBuild
              DependsOn = '[WindowsFeature]NET'
          }
 
-         xSqlServerFirewall ($Node.NodeName)
+         SqlWindowsFirewall ($Node.NodeName)
          {
              SourcePath = $Node.SourcePath
              InstanceName = $Node.InstanceName
