@@ -542,7 +542,7 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlAGDatabaseMembership
+    //  MSFT_SqlAGDatabases
     //  MSFT_SqlDatabase
     //  MSFT_SqlDatabasePermission
 	public class Database
@@ -697,7 +697,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroup
     // BaseType: Microsoft.SqlServer.Management.Smo.NamedSmoObject
     // Used by:
-    //  SqlServerAG
+    //  SqlAG
     public class AvailabilityGroup
     {
         public AvailabilityGroup()
@@ -856,7 +856,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Certificate
     // Used by:
-    //  SqlAGDatabaseMembership
+    //  SqlAGDatabases
     public class Certificate
     {
         public byte[] Thumbprint;
@@ -864,7 +864,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabaseCollection
     // Used by:
-    //  SqlAGDatabaseMembership
+    //  SqlAGDatabases
     public class AvailabilityDatabaseCollection : Collection<AvailabilityDatabase>
     {
         public AvailabilityDatabase this[string name]
@@ -947,7 +947,7 @@ namespace Microsoft.SqlServer.Management.Smo.Wmi
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
     // Used by:
-    //  MSFT_SqlServerServiceAccount.Tests.ps1
+    //  MSFT_SqlServiceAccount.Tests.ps1
     public enum ManagedServiceType
     {
         SqlServer = 1,

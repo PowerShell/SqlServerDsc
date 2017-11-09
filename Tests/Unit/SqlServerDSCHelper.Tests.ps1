@@ -4,7 +4,7 @@ param ()
 
 # Unit Test Template Version: 1.1.0
 
-$script:moduleName = 'SqlServerDSCHelper'
+$script:moduleName = 'SqlServerDscHelper'
 
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
@@ -14,7 +14,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
-Import-Module (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'SqlServerDSCHelper.psm1') -Scope Global -Force
+Import-Module (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -ChildPath 'SqlServerDscHelper.psm1') -Scope Global -Force
 
 # Loading mocked classes
 Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SMO.cs )
@@ -786,7 +786,7 @@ InModuleScope $script:moduleName {
         Assert-VerifiableMock
     }
 
-    $mockApplicationDomainName = 'SqlServerDSCHelperTests'
+    $mockApplicationDomainName = 'SqlServerDscHelperTests'
     $mockApplicationDomainObject = [System.AppDomain]::CreateDomain($mockApplicationDomainName)
 
     <#
@@ -836,7 +836,7 @@ InModuleScope $script:moduleName {
             } -Verifiable
 
             Mock -CommandName Register-SqlSmo -MockWith {
-                [System.AppDomain]::CreateDomain('SqlServerDSCHelper')
+                [System.AppDomain]::CreateDomain('SqlServerDscHelper')
             } -ParameterFilter {
                 $SQLInstanceName -eq $mockInstanceName
             } -Verifiable

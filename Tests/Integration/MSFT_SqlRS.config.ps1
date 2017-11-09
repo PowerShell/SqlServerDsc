@@ -52,7 +52,7 @@ Configuration MSFT_SqlRS_InstallReportingServices_Config
 
     Import-DscResource -ModuleName 'PSDscResources'
     Import-DscResource -ModuleName 'xStorage'
-    Import-DscResource -ModuleName 'SqlServerDSC'
+    Import-DscResource -ModuleName 'SqlServerDsc'
 
     node localhost {
         xMountImage 'MountIsoMedia'

@@ -35,7 +35,7 @@ Configuration Example
         $SqlAgentServiceCredential = $SqlServiceCredential
     )
 
-    Import-DscResource -ModuleName SqlServerDSC
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost
     {

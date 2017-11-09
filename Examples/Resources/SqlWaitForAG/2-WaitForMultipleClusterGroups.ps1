@@ -1,6 +1,6 @@
 <#
     .EXAMPLE
-        This example will wait for the cluster role/group 'AGTest1'.
+        This example will wait for both the cluster roles/groups 'AGTest1' and 'AGTest2'.
 #>
 Configuration Example
 {
@@ -12,13 +12,22 @@ Configuration Example
         $SysAdminAccount
     )
 
-    Import-DscResource -ModuleName SqlServerDSC
+    Import-DscResource -ModuleName SqlServerDsc
 
     node localhost
     {
-        SqlWaitForAvailabilityGroup SQLConfigureAG-WaitAGTest1
+        SqlWaitForAG SQLConfigureAG-WaitAGTest1
         {
             Name                 = 'AGTest1'
+            RetryIntervalSec     = 20
+            RetryCount           = 30
+
+            PsDscRunAsCredential = $SysAdminAccount
+        }
+
+        SqlWaitForAG SQLConfigureAG-WaitAGTest2
+        {
+            Name                 = 'AGTest2'
             RetryIntervalSec     = 20
             RetryCount           = 30
 
