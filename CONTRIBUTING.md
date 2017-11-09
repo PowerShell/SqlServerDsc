@@ -1,6 +1,6 @@
-# Contributing to SqlServerDSC
+# Contributing to SqlServerDsc
 
-If you are keen to make SqlServerDSC better, why not consider contributing your work
+If you are keen to make SqlServerDsc better, why not consider contributing your work
 to the project? Every little change helps us make a better resource for everyone
 to use, and we would love to have contributions from the community.
 
@@ -10,7 +10,7 @@ We follow all of the standard contribution guidelines for DSC resources
 [outlined in DscResources repository](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md),
 so please review these as a baseline for contributing.
 
-## SqlServerDSC specific guidelines
+## SqlServerDsc specific guidelines
 
 ### Automatic formatting with VS Code
 
@@ -280,7 +280,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlSetup'
 To be able to support localization we have added wrappers for the cmdlets
 `Write-Verbose` and `Write-Warning`, and also for creating a terminating error
 message.
-The localized strings are placed in a file named 'SqlServerDSCHelper.strings.psd1'
+The localized strings are placed in a file named 'SqlServerDscHelper.strings.psd1'
 which are located in each language folder in the root of the module. For English
 language strings the folder is ['en-US'](https://github.com/PowerShell/xSQLServer/blob/dev/en-US).
 
@@ -305,7 +305,7 @@ Helper functions or wrapper functions that are used by the resource can preferab
 be placed in the resource module file. If the functions are of a type that could
 be used by more than
 one resource, then the functions can also be placed in the common
-[SqlServerDSCHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/SqlServerDSCHelper.psm1)
+[SqlServerDscHelper.psm1](https://github.com/PowerShell/xSQLServer/blob/dev/SqlServerDscHelper.psm1)
 module file.
 
 ### Tests
@@ -340,13 +340,13 @@ When sending in a Pull Request (PR) all example files will be tested so they can
 be compiled to a .mof file. If the tests find any errors the build will fail.
 Before the test runs in AppVeyor the module will be copied to the first path of
 `$env:PSModulePath`.
-To run this test locally, make sure you have the SqlServerDSC module
+To run this test locally, make sure you have the SqlServerDsc module
 deployed to a path where it can be used.
 See `$env:PSModulePath` to view the existing paths.
 
 #### Using SMO stub classes
 
-There are [stub classes](https://github.com/PowerShell/SqlServerDSC/blob/dev/Tests/Unit/Stubs/SMO.cs)
+There are [stub classes](https://github.com/PowerShell/SqlServerDsc/blob/dev/Tests/Unit/Stubs/SMO.cs)
 for the SMO classes which can be used and improved on when creating tests where
 SMO classes are used in the code being tested.
 
