@@ -6,10 +6,10 @@ Please make sure you have read the contributing section
 at https://github.com/PowerShell/xSQLServer#contributing.
 
 Please prefix the PR title with the resource name,
-i.e. 'xSQLServerSetup: My short description'
+i.e. 'SqlSetup: My short description'
 If this is a breaking change, then also prefix the PR title
 with 'BREAKING CHANGE:',
-i.e. 'BREAKING CHANGE: xSQLServerSetup: My short description'
+i.e. 'BREAKING CHANGE: SqlSetup: My short description'
 -->
 **Pull Request (PR) description**
 <!-- Replace this with a description of your pull request -->

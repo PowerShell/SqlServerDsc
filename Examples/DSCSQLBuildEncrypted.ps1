@@ -70,7 +70,7 @@ foreach ($computer in $computers)
 Configuration SQLBuild
 {
     Import-DscResource –Module PSDesiredStateConfiguration
-    Import-DscResource -Module xSQLServer
+    Import-DscResource -Module SqlServerDSC
 
     Node $AllNodes.NodeName
     {
@@ -115,14 +115,14 @@ Configuration SQLBuild
               DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
            }
 
-           xSQLServerMemory ($Node.Nodename)
+           SqlServerMemory ($Node.Nodename)
            {
                Ensure = "Present"
                DynamicAlloc = $True
 
                DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
            }
-           xSQLServerMaxDop($Node.Nodename)
+           SqlServerMaxDop($Node.Nodename)
            {
                Ensure = "Present"
                DynamicAlloc = $true

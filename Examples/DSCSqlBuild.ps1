@@ -35,7 +35,7 @@ foreach ($computer in $computers)
 Configuration SQLBuild
 {
     Import-DscResource –ModuleName PSDesiredStateConfiguration
-    Import-DscResource -ModuleName xSQLServer
+    Import-DscResource -ModuleName SqlServerDSC
 
 
    Node $AllNodes.NodeName
@@ -97,14 +97,14 @@ Configuration SQLBuild
              DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
          }
 
-         xSQLServerMemory ($Node.Nodename)
+         SqlServerMemory ($Node.Nodename)
          {
              Ensure = "Present"
              DynamicAlloc = $True
 
              DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
          }
-         xSQLServerMaxDop($Node.Nodename)
+         SqlServerMaxDop($Node.Nodename)
          {
              Ensure = "Present"
              DynamicAlloc = $true
@@ -113,7 +113,7 @@ Configuration SQLBuild
          }
        }
 
-       xSQLServerEndpoint($Node.Nodename)
+       SqlServerEndpoint($Node.Nodename)
        {
            Ensure = "Present"
            Port = 5022

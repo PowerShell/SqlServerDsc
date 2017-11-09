@@ -33,7 +33,7 @@ foreach ($computer in $computers)
 Configuration SQLSA
 {
     Import-DscResource –Module PSDesiredStateConfiguration
-    Import-DscResource -Module xSQLServer
+    Import-DscResource -Module SqlServerDSC
 
     Node $AllNodes.NodeName
     {
@@ -79,7 +79,7 @@ Configuration SQLSA
                Features = $Node.Features
            }
 
-           xSQLServerMemory ($Node.Nodename)
+           SqlServerMemory ($Node.Nodename)
            {
                DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                Ensure = "Present"
@@ -87,13 +87,13 @@ Configuration SQLSA
                MinMemory = "256"
                MaxMemory ="1024"
            }
-           xSQLServerMaxDop($Node.Nodename)
+           SqlServerMaxDop($Node.Nodename)
            {
                DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                Ensure = "Present"
                DynamicAlloc = $true
            }
-           xSQLServerLogin($Node.Nodename+"TestUser2")
+           SqlServerLogin($Node.Nodename+"TestUser2")
            {
                 DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                 Ensure = "Present"
@@ -101,7 +101,7 @@ Configuration SQLSA
                 LoginCredential = $Node.InstallerServiceAccount
                 LoginType = "SQLLogin"
            }
-           xSQLServerLogin($Node.Nodename+"TestUser1")
+           SqlServerLogin($Node.Nodename+"TestUser1")
            {
                 DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                 Ensure = "Present"
@@ -109,7 +109,7 @@ Configuration SQLSA
                 LoginCredential = $Node.InstallerServiceAccount
                 LoginType = "SQLLogin"
            }
-           xSQLServerDatabaseRole($Node.Nodename)
+           SqlDatabaseRole($Node.Nodename)
            {
                 DependsOn = ("[xSqlServerSetup]" + $Node.NodeName)
                 Ensure = "Present"
@@ -123,18 +123,18 @@ Configuration SQLSA
                 RecoveryModel = "Full"
                 SqlServerInstance ="$($Node.NodeName)\$($Node.SQLInstanceName)"
            }
-           xSQLServerDatabaseOwner($Node.Nodename)
+           SqlDatabaseOwner($Node.Nodename)
            {
                 Database = "TestDB"
                 Name = "TestUser2"
            }
-           xSQLServerDatabasePermission($Node.Nodename)
+           SqlDatabasePermission($Node.Nodename)
            {
                 Database = "Model"
                 Name = "TestUser1"
                 Permissions ="SELECT","DELETE"
            }
-           xSQLServerDatabase($Node.Nodename)
+           SqlDatabase($Node.Nodename)
            {
                 Database = "Test3"
                 Ensure = "Present"
@@ -165,7 +165,7 @@ ForEach ($computer in $computers) {
 
     }
    $Destination = "\\"+$computer+"\\c$\Program Files\WindowsPowerShell\Modules"
-   Copy-Item 'C:\Program Files\WindowsPowerShell\Modules\xSQLServer' -Destination $Destination -Recurse -Force
+   Copy-Item 'C:\Program Files\WindowsPowerShell\Modules\SqlServerDSC' -Destination $Destination -Recurse -Force
 }
 
 SQLSA -ConfigurationData $ConfigurationData -OutputPath $OutputPath
