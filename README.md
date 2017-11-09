@@ -942,6 +942,14 @@ Read more about max degree of parallelism in this article
   parameter MaxDop must be set to $null or not be configured.
 * **`[Sint32]` MaxDop** _(Write)_: A numeric value to limit the number of processors
   used in parallel plan execution.
+* **`[Boolean]` ProcessOnlyOnActiveNode** _(Write)_: Specifies that the resource
+  will only determine if a change is needed if the target node is the active
+  host of the SQL Server instance.
+
+#### Read-Only Property from Get-TargetResource
+
+* **`[Boolean]` IsActiveNode** _(Read)_: Determines if the current node is
+  actively hosting the SQL Server instance.
 
 #### Examples
 

@@ -30,6 +30,9 @@ function Get-TargetResource
 
     $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
 
+    # Is this node actively hosting the SQL instance?
+    $isActiveNode = Test-ActiveNode -ServerObject $sqlServerObject
+
     if ($sqlServerObject)
     {
         Write-Verbose -Message 'Getting the max degree of parallelism server configuration option'
@@ -40,6 +43,7 @@ function Get-TargetResource
         SQLInstanceName = $SQLInstanceName
         SQLServer       = $SQLServer
         MaxDop          = $currentMaxDop
+        IsActiveNode    = $isActiveNode
     }
 
     $returnValue
@@ -65,6 +69,10 @@ function Get-TargetResource
 
     .PARAMETER MaxDop
     A numeric value to limit the number of processors used in parallel plan execution.
+
+    .PARAMETER ProcessOnlyOnActiveNode
+    Specifies that the resource will only determine if a change is needed if the target node is the active host of the SQL Server Instance.
+    Not used in Set-TargetResource.
 #>
 function Set-TargetResource
 {
@@ -93,7 +101,11 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Int32]
-        $MaxDop
+        $MaxDop,
+
+        [Parameter()]
+        [System.Boolean]
+        $ProcessOnlyOnActiveNode
     )
 
     $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
@@ -166,6 +178,9 @@ function Set-TargetResource
 
     .PARAMETER MaxDop
     A numeric value to limit the number of processors used in parallel plan execution.
+
+    .PARAMETER ProcessOnlyOnActiveNode
+    Specifies that the resource will only determine if a change is needed if the target node is the active host of the SQL Server Instance.
 #>
 function Test-TargetResource
 {
@@ -195,7 +210,11 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Int32]
-        $MaxDop
+        $MaxDop,
+
+        [Parameter()]
+        [System.Boolean]
+        $ProcessOnlyOnActiveNode
     )
 
     Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'
@@ -206,8 +225,19 @@ function Test-TargetResource
     }
 
     $currentValues = Get-TargetResource @parameters
+
     $getMaxDop = $currentValues.MaxDop
     $isMaxDopInDesiredState = $true
+
+    <#
+        If this is supposed to process only the active node, and this is not the
+        active node, don't bother evaluating the test.
+    #>
+    if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
+    {
+        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME,$SQLInstanceName )
+        return $isMaxDopInDesiredState
+    }
 
     switch ($Ensure)
     {

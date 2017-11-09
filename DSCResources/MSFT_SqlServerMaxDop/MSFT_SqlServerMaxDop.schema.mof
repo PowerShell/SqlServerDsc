@@ -6,4 +6,6 @@ class MSFT_SqlServerMaxDop : OMI_BaseResource
     [Write, Description("A numeric value to limit the number of processors used in parallel plan execution.")] Sint32 MaxDop;
     [Write, Description("The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String SQLServer;
     [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
+    [Write, Description("Specifies that the resource will only determine if a change is needed if the target node is the active host of the SQL Server instance.")] Boolean ProcessOnlyOnActiveNode;
+    [Read, Description("Determines if the current node is actively hosting the SQL Server instance.")] Boolean IsActiveNode;
 };

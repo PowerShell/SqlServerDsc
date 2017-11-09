@@ -61,6 +61,10 @@
 - Changes to SqlAGListener
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
+- Changes to xSQLServerMaxDop
+  - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
+    the resource will only determine if a change is needed if the target node
+    is the active host of the SQL Server instance ([issue #882](https://github.com/PowerShell/xSQLServer/issues/882)).
 
 ## 8.2.0.0
 
