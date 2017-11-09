@@ -34,7 +34,9 @@ Those SQL Server products that are still supported can be listed at the
 
 ### Naming convention
 
+```naming
 <Module Identifier>[<Component>][<Action>]<Scope>{<Feature> | <Property>}
+```
 
 #### mof-based resource
 
