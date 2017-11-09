@@ -1,4 +1,4 @@
-[ClassVersion("1.0.0.0"), FriendlyName("MSFT_SqlWaitForAG")]
+[ClassVersion("1.0.0.0"), FriendlyName("SqlWaitForAG")]
 class MSFT_SqlWaitForAG : OMI_BaseResource
 {
     [Key, Description("Name of the cluster role/group to look for (normally the same as the Availability Group name).")] String Name;
