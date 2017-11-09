@@ -275,7 +275,7 @@ It will also manage the Availability Group replica on the specified node.
 * [Add a SQL Server Always On Availability Group and explicitly defines its properties](/Examples/Resources/SqlAG/3-CreateAvailabilityGroupDetailed.ps1)
 * [Remove a SQL Server Always On Availability Group](/Examples/Resources/SqlAG/2-RemoveAvailabilityGroup.ps1)
 
-### SqlAGDatabaseMembership
+### SqlAGDatabases
 
 This resource is used to add and/or remove databases to a specified availability
 group.
