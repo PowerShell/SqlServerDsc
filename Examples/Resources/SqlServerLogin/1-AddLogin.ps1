@@ -29,8 +29,8 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'CONTOSO\WindowsUser'
             LoginType            = 'WindowsUser'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'TestServer.company.local'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -39,8 +39,8 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'CONTOSO\WindowsUser2'
             LoginType            = 'WindowsUser'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'TestServer.company.local'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
             Disabled             = $true
         }
@@ -50,8 +50,8 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'CONTOSO\WindowsGroup'
             LoginType            = 'WindowsGroup'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'TestServer.company.local'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -60,8 +60,8 @@ Configuration Example
             Ensure                         = 'Present'
             Name                           = 'SqlLogin'
             LoginType                      = 'SqlLogin'
-            SQLServer                      = 'SQLServer'
-            SQLInstanceName                = 'DSC'
+            ServerName                     = 'TestServer.company.local'
+            InstanceName                   = 'DSC'
             LoginCredential                = $LoginCredential
             LoginMustChangePassword        = $false
             LoginPasswordExpirationEnabled = $true

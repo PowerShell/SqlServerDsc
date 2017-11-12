@@ -54,8 +54,8 @@ try
         $mockSqlLoginCredentialOtherPassword = New-Object System.Management.Automation.PSCredential( $mockSqlLoginUser, $mockSqlLoginOtherPassword )
 
         $instanceParameters = @{
-            SQLInstanceName = 'MSSQLSERVER'
-            SQLServer = 'Server1'
+            InstanceName = 'MSSQLSERVER'
+            ServerName = 'Server1'
         }
 
         $getTargetResource_UnknownSqlLogin = $instanceParameters.Clone()

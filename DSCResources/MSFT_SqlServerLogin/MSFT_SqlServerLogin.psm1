@@ -9,10 +9,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER Name
     The name of the login to retrieve.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server to retrieve the login from.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance to retrieve the login from.
 #>
 function Get-TargetResource
@@ -27,17 +27,17 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     Write-Verbose 'Getting SQL logins'
-    New-VerboseMessage -Message "Getting the login '$Name' from '$SQLServer\$SQLInstanceName'"
+    New-VerboseMessage -Message "Getting the login '$Name' from '$ServerName\$InstanceName'"
 
     $login = $serverObject.Logins[$Name]
 
@@ -50,15 +50,15 @@ function Get-TargetResource
         $Ensure = 'Absent'
     }
 
-    New-VerboseMessage -Message "The login '$Name' is $ensure from the '$SQLServer\$SQLInstanceName' instance."
+    New-VerboseMessage -Message "The login '$Name' is $ensure from the '$ServerName\$InstanceName' instance."
 
     $returnValue = @{
-        Ensure          = $Ensure
-        Name            = $Name
-        LoginType       = $login.LoginType
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
-        Disabled        = $login.IsDisabled
+        Ensure       = $Ensure
+        Name         = $Name
+        LoginType    = $login.LoginType
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
+        Disabled     = $login.IsDisabled
     }
 
     if ( $login.LoginType -eq 'SqlLogin' )
@@ -84,10 +84,10 @@ function Get-TargetResource
     .PARAMETER LoginType
     The type of login to create. Default is 'WindowsUser'
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server to create the login on.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance to create the login on.
 
     .PARAMETER LoginCredential
@@ -134,11 +134,11 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -161,7 +161,7 @@ function Set-TargetResource
         $Disabled
     )
 
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     switch ( $Ensure )
     {
@@ -175,14 +175,14 @@ function Set-TargetResource
                 {
                     if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
                     {
-                        New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                        New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$ServerName\$InstanceName' instance."
                         $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
                         Update-SQLServerLogin -Login $login
                     }
 
                     if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
                     {
-                        New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                        New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$ServerName\$InstanceName' instance."
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
                         Update-SQLServerLogin -Login $login
                     }
@@ -196,7 +196,7 @@ function Set-TargetResource
 
                 if ( $PSBoundParameters.ContainsKey('Disabled') -and ($login.IsDisabled -ne $Disabled) )
                 {
-                    New-VerboseMessage -Message "Setting IsDisabled to '$Disabled' for the login '$Name' on the '$SQLServer\$SQLInstanceName' instance."
+                    New-VerboseMessage -Message "Setting IsDisabled to '$Disabled' for the login '$Name' on the '$ServerName\$InstanceName' instance."
                     if ( $Disabled )
                     {
                         $login.Disable()
@@ -220,7 +220,7 @@ function Set-TargetResource
                     throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
                 }
 
-                New-VerboseMessage -Message "Adding the login '$Name' to the '$SQLServer\$SQLInstanceName' instance."
+                New-VerboseMessage -Message "Adding the login '$Name' to the '$ServerName\$InstanceName' instance."
 
                 $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject, $Name
                 $login.LoginType = $LoginType
@@ -232,7 +232,7 @@ function Set-TargetResource
                         # Verify the instance is in Mixed authentication mode
                         if ( $serverObject.LoginMode -notmatch 'Mixed|Integrated' )
                         {
-                            throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $SQLServer, $SQLInstanceName, $serverObject.LoginMode -ErrorCategory NotImplemented
+                            throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $ServerName, $InstanceName, $serverObject.LoginMode -ErrorCategory NotImplemented
                         }
 
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
@@ -267,7 +267,7 @@ function Set-TargetResource
         {
             if ( $serverObject.Logins[$Name] )
             {
-                New-VerboseMessage -Message "Dropping the login '$Name' from the '$SQLServer\$SQLInstanceName' instance."
+                New-VerboseMessage -Message "Dropping the login '$Name' from the '$ServerName\$InstanceName' instance."
                 Remove-SQLServerLogin -Login $serverObject.Logins[$Name]
             }
         }
@@ -287,10 +287,10 @@ function Set-TargetResource
     .PARAMETER LoginType
     The type of login. Default is 'WindowsUser'
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance.
 
     .PARAMETER LoginCredential
@@ -337,11 +337,11 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -368,16 +368,16 @@ function Test-TargetResource
     $testPassed = $true
 
     $getParams = @{
-        Name            = $Name
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
+        Name         = $Name
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
     }
 
     $loginInfo = Get-TargetResource @getParams
 
     if ( $Ensure -ne $loginInfo.Ensure )
     {
-        New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' is $($loginInfo.Ensure) rather than $Ensure"
+        New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' is $($loginInfo.Ensure) rather than $Ensure"
         $testPassed = $false
     }
 
@@ -385,13 +385,13 @@ function Test-TargetResource
     {
         if ( $LoginType -ne $loginInfo.LoginType )
         {
-            New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' is a $($loginInfo.LoginType) rather than $LoginType"
+            New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' is a $($loginInfo.LoginType) rather than $LoginType"
             $testPassed = $false
         }
 
         if ( $PSBoundParameters.ContainsKey('Disabled') -and ($loginInfo.Disabled -ne $Disabled) )
         {
-            New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has IsDisabled set to $($loginInfo.Disabled) rather than $Disabled"
+            New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has IsDisabled set to $($loginInfo.Disabled) rather than $Disabled"
             $testPassed = $false
         }
 
@@ -399,13 +399,13 @@ function Test-TargetResource
         {
             if ( $LoginPasswordExpirationEnabled -ne $loginInfo.LoginPasswordExpirationEnabled )
             {
-                New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has PasswordExpirationEnabled set to $($loginInfo.LoginPasswordExpirationEnabled) rather than $LoginPasswordExpirationEnabled"
+                New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has PasswordExpirationEnabled set to $($loginInfo.LoginPasswordExpirationEnabled) rather than $LoginPasswordExpirationEnabled"
                 $testPassed = $false
             }
 
             if ( $LoginPasswordPolicyEnforced -ne $loginInfo.LoginPasswordPolicyEnforced )
             {
-                New-VerboseMessage -Message "The login '$Name' on the instance '$SQLServer\$SQLInstanceName' has PasswordPolicyEnforced set to $($loginInfo.LoginPasswordPolicyEnforced) rather than $LoginPasswordPolicyEnforced"
+                New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has PasswordPolicyEnforced set to $($loginInfo.LoginPasswordPolicyEnforced) rather than $LoginPasswordPolicyEnforced"
                 $testPassed = $false
             }
 
@@ -416,7 +416,7 @@ function Test-TargetResource
 
                 try
                 {
-                    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -SetupCredential $userCred
+                    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName -SetupCredential $userCred
                 }
                 catch
                 {
