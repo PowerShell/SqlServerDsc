@@ -212,8 +212,8 @@ It will also manage the Availability Group replica on the specified node.
 #### Parameters
 
 * **`[String]` Name** _(Key)_: The name of the availability group.
-* **`[String]` SQLServer** _(Required)_: Hostname of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Required)_: Hostname of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Write)_: Specifies if the availability group should be
   present or absent. Default is Present. { *Present* | Absent }
 * **`[String]` AutomatedBackupPreference** _(Write)_: Specifies the automated backup

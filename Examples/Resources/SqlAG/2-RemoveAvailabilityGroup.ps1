@@ -6,8 +6,8 @@ This example shows how to ensure that the Availability Group 'TestAG' does not e
 $ConfigurationData = @{
     AllNodes = @(
         @{
-            NodeName        = '*'
-            SQLInstanceName = 'MSSQLSERVER'
+            NodeName     = '*'
+            InstanceName = 'MSSQLSERVER'
         },
 
         @{
@@ -35,8 +35,8 @@ Configuration Example
             {
                 Ensure               = 'Absent'
                 Name                 = 'TestAG'
-                SQLInstanceName      = $Node.SQLInstanceName
-                SQLServer            = $Node.NodeName
+                InstanceName         = $Node.InstanceName
+                ServerName           = $Node.NodeName
                 PsDscRunAsCredential = $SysAdminAccount
             }
         }

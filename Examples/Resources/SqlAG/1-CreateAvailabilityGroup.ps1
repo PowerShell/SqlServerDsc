@@ -6,8 +6,8 @@
 $ConfigurationData = @{
     AllNodes = @(
         @{
-            NodeName        = '*'
-            SQLInstanceName = 'MSSQLSERVER'
+            NodeName     = '*'
+            InstanceName = 'MSSQLSERVER'
         },
 
         @{
@@ -34,8 +34,8 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'NT SERVICE\ClusSvc'
             LoginType            = 'WindowsUser'
-            SQLServer            = $Node.NodeName
-            SQLInstanceName      = $Node.SQLInstanceName
+            ServerName           = $Node.NodeName
+            InstanceName         = $Node.InstanceName
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -45,7 +45,7 @@ Configuration Example
             DependsOn            = '[SqlServerLogin]AddNTServiceClusSvc'
             Ensure               = 'Present'
             NodeName             = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Principal            = 'NT SERVICE\ClusSvc'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'
             PsDscRunAsCredential = $SysAdminAccount
@@ -57,8 +57,8 @@ Configuration Example
             EndPointName         = 'HADR'
             Ensure               = 'Present'
             Port                 = 5022
-            SQLServer            = $Node.NodeName
-            SQLInstanceName      = $Node.SQLInstanceName
+            ServerName           = $Node.NodeName
+            InstanceName         = $Node.InstanceName
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -69,8 +69,8 @@ Configuration Example
             {
                 Ensure               = 'Present'
                 Name                 = 'TestAG'
-                SQLInstanceName      = $Node.SQLInstanceName
-                SQLServer            = $Node.NodeName
+                InstanceName         = $Node.InstanceName
+                ServerName           = $Node.NodeName
                 DependsOn            = '[SqlServerEndpoint]HADREndpoint', '[SqlServerPermission]AddNTServiceClusSvcPermissions'
                 PsDscRunAsCredential = $SysAdminAccount
             }

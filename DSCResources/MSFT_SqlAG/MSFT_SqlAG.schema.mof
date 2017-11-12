@@ -2,8 +2,8 @@
 class MSFT_SqlAG : OMI_BaseResource
 {
     [Key, Description("The name of the availability group.")] String Name;
-    [Required, Description("Hostname of the SQL Server to be configured.")] String SQLServer;
-    [Key, Description("Name of the SQL instance to be configured.")] String SQLInstanceName;
+    [Required, Description("Hostname of the SQL Server to be configured.")] String ServerName;
+    [Key, Description("Name of the SQL instance to be configured.")] String InstanceName;
     [Write, Description("Specifies if the availability group should be present or absent. Default is Present."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("Specifies the automated backup preference for the availability group. Default is None"), ValueMap{"Primary","SecondaryOnly","Secondary","None"}, Values{"Primary","SecondaryOnly","Secondary","None"}] String AutomatedBackupPreference;
     [Write, Description("Specifies the replica availability mode. Default is 'AsynchronousCommit'."), ValueMap{"AsynchronousCommit","SynchronousCommit"}, Values{"AsynchronousCommit","SynchronousCommit"}] String AvailabilityMode;

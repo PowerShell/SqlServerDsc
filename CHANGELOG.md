@@ -18,6 +18,8 @@
   - Fixed unit tests for Get-TargetResource to ensure correctly testing return
     values ([issue #849](https://github.com/PowerShell/xSQLServer/issues/849))
 - Changes to xSQLServerAlwaysOnAvailabilityGroup
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Refactored the unit tests to allow them to be more user friendly and to test
     additional SQLServer variations.
     - Each test will utilize the Import-SQLModuleStub to ensure the correct
