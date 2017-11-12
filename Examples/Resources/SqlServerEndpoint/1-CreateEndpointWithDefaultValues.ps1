@@ -20,7 +20,7 @@ Configuration Example
         SqlServerEndpoint SQLConfigureEndpoint-Instance1
         {
             EndpointName         = 'HADR'
-            SQLInstanceName      = 'INST1'
+            InstanceName         = 'INST1'
 
             PsDscRunAsCredential = $SysAdminAccount
         }
@@ -28,7 +28,7 @@ Configuration Example
         SqlServerEndpoint SQLConfigureEndpoint-Instances2
         {
             EndpointName         = 'HADR'
-            SQLInstanceName      = 'INST2'
+            InstanceName         = 'INST2'
 
             PsDscRunAsCredential = $SysAdminAccount
         }

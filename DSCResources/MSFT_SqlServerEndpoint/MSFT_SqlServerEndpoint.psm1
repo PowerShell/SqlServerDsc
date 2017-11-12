@@ -8,10 +8,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER EndpointName
         The name of the endpoint.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 #>
 function Get-TargetResource
@@ -26,26 +26,26 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
     $getTargetResourceReturnValues = @{
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
-        Ensure          = 'Absent'
-        EndpointName    = ''
-        Port            = ''
-        IpAddress       = ''
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
+        Ensure       = 'Absent'
+        EndpointName = ''
+        Port         = ''
+        IpAddress    = ''
     }
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
     if ($sqlServerObject)
     {
-        Write-Verbose -Message ('Connected to {0}\{1}' -f $SQLServer, $SQLInstanceName)
+        Write-Verbose -Message ('Connected to {0}\{1}' -f $ServerName, $InstanceName)
 
         $endpointObject = $sqlServerObject.Endpoints[$EndpointName]
         if ($endpointObject.Name -eq $EndpointName)
@@ -73,7 +73,7 @@ function Get-TargetResource
     else
     {
         throw New-TerminatingError -ErrorType NotConnectedToInstance `
-            -FormatArgs @($SQLServer, $SQLInstanceName) `
+            -FormatArgs @($ServerName, $InstanceName) `
             -ErrorCategory InvalidOperation
     }
 
@@ -93,10 +93,10 @@ function Get-TargetResource
     .PARAMETER Port
         The network port the endpoint is listening on. Default value is 5022.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER IpAddress
@@ -122,20 +122,20 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.String]
         $IpAddress = '0.0.0.0'
     )
 
-    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -ServerName $ServerName -InstanceName $InstanceName
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
     if ($sqlServerObject)
     {
         if ($Ensure -eq 'Present' -and $getTargetResourceResult.Ensure -eq 'Absent')
@@ -196,7 +196,7 @@ function Set-TargetResource
     else
     {
         throw New-TerminatingError -ErrorType NotConnectedToInstance `
-            -FormatArgs @($SQLServer, $SQLInstanceName) `
+            -FormatArgs @($ServerName, $InstanceName) `
             -ErrorCategory InvalidOperation
     }
 }
@@ -214,10 +214,10 @@ function Set-TargetResource
     .PARAMETER Port
         The network port the endpoint is listening on. Default value is 5022.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER IpAddress
@@ -244,18 +244,18 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.String]
         $IpAddress = '0.0.0.0'
     )
 
-    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -ServerName $ServerName -InstanceName $InstanceName
     if ($getTargetResourceResult.Ensure -eq $Ensure)
     {
         $result = $true

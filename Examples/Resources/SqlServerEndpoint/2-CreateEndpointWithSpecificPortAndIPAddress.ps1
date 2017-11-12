@@ -24,8 +24,8 @@ Configuration Example
             Port                 = 9001
             IpAddress            = '192.168.0.20'
 
-            SQLServer            = 'server1.company.local'
-            SQLInstanceName      = 'INST1'
+            ServerName           = 'server1.company.local'
+            InstanceName         = 'INST1'
 
             PsDscRunAsCredential = $SysAdminAccount
         }

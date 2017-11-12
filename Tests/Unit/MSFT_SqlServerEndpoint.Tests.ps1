@@ -35,7 +35,7 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockNodeName = 'localhost'
+        $mockServerName = 'localhost'
         $mockInstanceName = 'INSTANCE1'
         $mockPrincipal = 'COMPANY\SqlServiceAcct'
         $mockOtherPrincipal = 'COMPANY\OtherAcct'
@@ -136,8 +136,8 @@ try
         }
 
         $defaultParameters = @{
-            SQLInstanceName = $mockInstanceName
-            SQLServer = $mockNodeName
+            InstanceName = $mockInstanceName
+            ServerName = $mockServerName
             EndpointName = $mockEndpointName
         }
 
@@ -159,8 +159,8 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.SQLServer | Should -Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should -Be $testParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $testParameters.ServerName
+                    $result.InstanceName | Should -Be $testParameters.InstanceName
                 }
 
                 It 'Should not return any values in the properties for the endpoint' {
@@ -187,8 +187,8 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.SQLServer | Should -Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should -Be $testParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $testParameters.ServerName
+                    $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.EndpointName | Should -Be $testParameters.EndpointName
                     $result.Port | Should -Be $mockEndpointListenerPort
                     $result.IpAddress | Should -Be $mockEndpointListenerIpAddress

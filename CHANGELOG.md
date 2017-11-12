@@ -76,6 +76,9 @@
 - Changes to SqlServerPermission
   - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
     ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlServerEndpoint
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
 
 ## 8.2.0.0
 
