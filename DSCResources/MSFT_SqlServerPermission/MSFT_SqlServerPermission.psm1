@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Principal
@@ -29,7 +29,7 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -45,7 +45,7 @@ function Get-TargetResource
 
     try
     {
-        $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
         # Gets a set of permissions granted based on the desired permissions in $Permission
         $desiredPermissionSet = Get-SQLServerPermissionSet -Permission $Permission
@@ -82,7 +82,7 @@ function Get-TargetResource
 
     return @{
         InstanceName = [System.String] $InstanceName
-        NodeName     = [System.String] $NodeName
+        ServerName   = [System.String] $ServerName
         Ensure       = [System.String] $ensure
         Principal    = [System.String] $Principal
         Permission   = [System.String[]] $grantedPermission
@@ -96,7 +96,7 @@ function Get-TargetResource
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Ensure
@@ -119,7 +119,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -138,7 +138,7 @@ function Set-TargetResource
 
     $getTargetResourceParameters = @{
         InstanceName = [System.String] $InstanceName
-        NodeName     = [System.String] $NodeName
+        ServerName   = [System.String] $ServerName
         Principal    = [System.String] $Principal
         Permission   = [System.String[]] $Permission
     }
@@ -149,7 +149,7 @@ function Set-TargetResource
     {
         try
         {
-            $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+            $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
             $permissionSet = Get-SQLServerPermissionSet -Permission $Permission
 
@@ -184,7 +184,7 @@ function Set-TargetResource
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Ensure
@@ -208,7 +208,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -227,7 +227,7 @@ function Test-TargetResource
 
     $getTargetResourceParameters = @{
         InstanceName = $InstanceName
-        NodeName     = $NodeName
+        ServerName   = $ServerName
         Principal    = $Principal
         Permission   = $Permission
     }

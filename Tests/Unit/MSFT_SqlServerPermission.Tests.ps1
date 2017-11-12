@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerPermission'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerPermission'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -20,12 +20,14 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
     # Loading mocked classes
     Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -35,19 +37,19 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockNodeName = 'localhost'
+        $mockServerName = 'localhost'
         $mockInstanceName = 'DEFAULT'
         $mockPrincipal = 'COMPANY\SqlServiceAcct'
         $mockOtherPrincipal = 'COMPANY\OtherAccount'
-        $mockPermission = @('ConnectSql','AlterAnyAvailabilityGroup','ViewServerState')
+        $mockPermission = @('ConnectSql', 'AlterAnyAvailabilityGroup', 'ViewServerState')
 
         #endregion Pester Test Initialization
 
         $defaultParameters = @{
             InstanceName = $mockInstanceName
-            NodeName = $mockNodeName
-            Principal = $mockPrincipal
-            Permission = $mockPermission
+            ServerName   = $mockServerName
+            Principal    = $mockPrincipal
+            Permission   = $mockPermission
         }
 
         Describe 'MSFT_SqlServerPermission\Get-TargetResource' {
@@ -56,7 +58,7 @@ try
 
                 Mock -CommandName Connect-SQL -MockWith {
                     $mockObjectSmoServer = New-Object Microsoft.SqlServer.Management.Smo.Server
-                    $mockObjectSmoServer.Name = "$mockNodeName\$mockInstanceName"
+                    $mockObjectSmoServer.Name = "$mockServerName\$mockInstanceName"
                     $mockObjectSmoServer.DisplayName = $mockInstanceName
                     $mockObjectSmoServer.InstanceName = $mockInstanceName
                     $mockObjectSmoServer.IsHadrEnabled = $False
@@ -77,7 +79,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $mockNodeName
+                        $result.ServerName | Should -Be$mockServerName
                         $result.InstanceName | Should -Be $mockInstanceName
                         $result.Principal | Should -Be $mockPrincipal
                     }
@@ -97,7 +99,7 @@ try
                     [Microsoft.SqlServer.Management.Smo.Globals]::GenerateMockData = $true
 
                     BeforeEach {
-                        $testParameters.Permission = @( 'AlterAnyAvailabilityGroup','ViewServerState','AlterAnyEndpoint')
+                        $testParameters.Permission = @( 'AlterAnyAvailabilityGroup', 'ViewServerState', 'AlterAnyEndpoint')
                     }
 
                     It 'Should return the desired state as absent' {
@@ -107,14 +109,14 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $mockNodeName
+                        $result.ServerName | Should -Be$mockServerName
                         $result.InstanceName | Should -Be $mockInstanceName
                         $result.Principal | Should -Be $mockPrincipal
                     }
 
                     It 'Should not return any permissions' {
                         $result = Get-TargetResource @testParameters
-                        $result.Permission | Should -Be @('AlterAnyAvailabilityGroup','ConnectSql', 'ViewServerState')
+                        $result.Permission | Should -Be @('AlterAnyAvailabilityGroup', 'ConnectSql', 'ViewServerState')
                     }
 
                     It 'Should call the mock function Connect-SQL' {
@@ -144,17 +146,21 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $mockNodeName
+                    $result.ServerName | Should -Be$mockServerName
                     $result.InstanceName | Should -Be $mockInstanceName
                     $result.Principal | Should -Be $mockPrincipal
                 }
 
                 It 'Should return the permissions passed as parameter' {
                     $result = Get-TargetResource @testParameters
-                    foreach ($currentPermission in $mockPermission) {
-                        if( $result.Permission -ccontains $currentPermission ) {
+                    foreach ($currentPermission in $mockPermission)
+                    {
+                        if ( $result.Permission -ccontains $currentPermission )
+                        {
                             $permissionState = $true
-                        } else {
+                        }
+                        else
+                        {
                             $permissionState = $false
                             break
                         }
@@ -178,7 +184,7 @@ try
 
                 Mock -CommandName Connect-SQL -MockWith {
                     $mockObjectSmoServer = New-Object Microsoft.SqlServer.Management.Smo.Server
-                    $mockObjectSmoServer.Name = "$mockNodeName\$mockInstanceName"
+                    $mockObjectSmoServer.Name = "$mockServerName\$mockInstanceName"
                     $mockObjectSmoServer.DisplayName = $mockInstanceName
                     $mockObjectSmoServer.InstanceName = $mockInstanceName
                     $mockObjectSmoServer.IsHadrEnabled = $False
@@ -246,7 +252,7 @@ try
 
                 Mock -CommandName Connect-SQL -MockWith {
                     $mockObjectSmoServer = New-Object Microsoft.SqlServer.Management.Smo.Server
-                    $mockObjectSmoServer.Name = "$mockNodeName\$mockInstanceName"
+                    $mockObjectSmoServer.Name = "$mockServerName\$mockInstanceName"
                     $mockObjectSmoServer.DisplayName = $mockInstanceName
                     $mockObjectSmoServer.InstanceName = $mockInstanceName
                     $mockObjectSmoServer.IsHadrEnabled = $False
@@ -303,7 +309,7 @@ try
                     It 'Should return the correct error message' {
                         Mock -CommandName Connect-SQL -MockWith {
                             $mockObjectSmoServer = New-Object Microsoft.SqlServer.Management.Smo.Server
-                            $mockObjectSmoServer.Name = "$mockNodeName\$mockInstanceName"
+                            $mockObjectSmoServer.Name = "$mockServerName\$mockInstanceName"
                             $mockObjectSmoServer.DisplayName = $mockInstanceName
                             $mockObjectSmoServer.InstanceName = $mockInstanceName
                             $mockObjectSmoServer.IsHadrEnabled = $False

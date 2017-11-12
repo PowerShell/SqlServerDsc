@@ -290,11 +290,11 @@ group.
 
 * **`[String]` DatabaseName** _(Required)_: The name of the database(s) to add to
   the availability group. This accepts wildcards.
-* **`[String]` SQLServer** _(Key)_: Hostname of the SQL Server where the primary
+* **`[String]` ServerName** _(Key)_: Hostname of the SQL Server where the primary
   replica of the availability group lives. If the availability group is not
   currently on this server, the resource will attempt to connect to the server
   where the primary replica lives.
-* **`[String]` SQLInstanceName** _(Key)_: Name of the SQL instance where the primary
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance where the primary
   replica of the availability group lives. If the availability group is not currently
   on this instance, the resource will attempt to connect to the instance where the
   primary replica lives.
@@ -347,8 +347,8 @@ Always On Availability Group Replica.
 * **`[String]` Name** _(Key)_: The name of the availability group replica. For named
   instances this must be in the following format SQLServer\InstanceName.
 * **`[String]` AvailabilityGroupName** _(Key)_: The name of the availability group.
-* **`[String]` SQLServer** _(Required)_: Hostname of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Required)_: Hostname of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` PrimaryReplicaSQLServer** _(Write)_: Hostname of the SQL Server where
   the primary replica is expected to be active. If the primary replica is not found
   here, the resource will attempt to find the host that holds the primary replica
@@ -413,8 +413,8 @@ Enables or disabled SQL Server Always On high availability and disaster recovery
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_: The hostname of the SQL Server to be configured.
-* **`[String]` SQLInstance** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Required)_: An enumerated value that describes if the SQL
   Server should have Always On high availability and disaster recovery (HADR)
   property enabled ('Present') or disabled ('Absent'). { Present | Absent }.
@@ -451,7 +451,7 @@ No description.
   replica.
 * **`[String]` AvailabilityGroup** _(Key)_: The name of the availability group to
   which the availability group listener is or will be connected.
-* **`[String]` NodeName** _(Write)_: The host name or FQDN of the primary replica.
+* **`[String]` ServerName** _(Write)_: The host name or FQDN of the primary replica.
 * **`[String]` Ensure** _(Write)_: If the availability group listener should be present
   or absent. Default value is 'Present'. { *Present* | Absent }.
 * **`[String]` Name** _(Write)_: The name of the availability group listener, max
@@ -488,8 +488,8 @@ No description.
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_: The hostname of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` OptionName** _(Key)_: The name of the SQL configuration option to
   be checked. For all possible values reference [MSDN](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
   or run sp_configure.
@@ -520,8 +520,8 @@ database, please read:
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of database to be created or dropped.
 * **`[String]` Collation** _(Write)_: The name of the SQL collation to use
   for the new database. Defaults to server collation.
@@ -547,8 +547,8 @@ more information about database default locations, please read the article
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to
   be configured.
 * **`[String]` Type** _(Key)_: The type of database default location to be
   configured. { Data | Log | Backup }
@@ -585,8 +585,8 @@ For more information about database owner, please read the article
 * **`[String]` Database** _(Key)_: The name of database to be configured.
 * **`[String]` Name** _(Required)_: The name of the login that will become a owner
   of the desired sql database.
-* **`[String]` SQLServer** _(Write)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstance** _(Write)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Write)_: The name of the SQL instance to be configured.
 
 #### Examples
 
@@ -609,9 +609,9 @@ will also get their permission revoked.
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
   Default values is '$env:COMPUTERNAME'.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
   Default value is 'MSSQLSERVER'.
 * **`[String]` Database** _(Key)_: The name of the database.
 * **`[String]` Name** _(Key)_: The name of the user that should be granted or denied
@@ -647,8 +647,8 @@ Read more about recovery model in this article
 #### Parameters
 
 * **`[String]` Name** _(Key)_: The SQL database name.
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` RecoveryModel** _(Required)_: The recovery model to use for the database.
   { Full | Simple | BulkLogged }.
 
@@ -670,8 +670,8 @@ Read more about database role in this article [CREATE ROLE (Transact-SQL)](https
 
 * **`[String]` Name** _(Key)_: The name of the login that will become a member, or
   removed as a member, of the role(s).
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Database** _(Key)_: The database in which the login (user) and role(s)
   exist.
 * **`[String]` Ensure** _(Write)_: If 'Present' (the default value) then the login
@@ -712,9 +712,9 @@ the resource [**SqlServerEndpointPermission**](#xsqlserverendpointpermission).
   Default values is 'Present'. { *Present* | Absent }.
 * **`[Uint16]` Port** _(Write)_: The network port the endpoint is listening on.
   Default value is 5022.
-* **`[String]` SQLServer** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` IpAddress** _(Write)_: The network IP address the endpoint is listening
   on. Defaults to '0.0.0.0' which means listen on any valid IP address.
 
@@ -734,7 +734,7 @@ This resource is used to give connect permission to an endpoint for a user (logi
 #### Parameters
 
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` NodeName** _(Required)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Required)_: The host name of the SQL Server to be configured.
 * **`[String]` Ensure** _(Write)_: If the permission should be present or absent.
   Default value is 'Present'. { *Present* | Absent }.
 * **`[String]` Name** _(Required)_: The name of the endpoint.
@@ -768,7 +768,7 @@ This resource is used to set the state of an endpoint.
 #### Parameters
 
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` NodeName** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
 * **`[String]` Name** _(Key)_: The name of the endpoint.
 * **`[String]` State** _(Write)_: The state of the endpoint. Valid states are Started,
@@ -876,8 +876,8 @@ No description.
 
 #### Parameters
 
-* **`[String]` SQLServer** _(Key)_:The hostname of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_:The hostname of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of the login.
 * **`[String]` Ensure** _(Write)_: The specified login is Present or Absent.
   { *Present* | Absent }.
@@ -929,8 +929,8 @@ Read more about max degree of parallelism in this article
 
 #### Parameters
 
-* **`[String]` SQLInstance** (Key): The name of the SQL instance to be configured.
-* **`[String]` SQLServer** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** (Key): The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
 * **`[String]` Ensure** _(Write)_: When set to 'Present' then max degree of parallelism
   will be set to either the value in parameter MaxDop or dynamically configured
@@ -1003,8 +1003,8 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) -
 
 #### Parameters
 
-* **`[String]` SQLInstance** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` SQLServer** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
 * **`[Boolean]` DynamicAlloc** _(Write)_: If set to $true then max memory will be
   dynamically configured. When this is set parameter is set to $true, the parameter
@@ -1052,7 +1052,7 @@ Read more about the network settings in the article
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` ProtocolName** _(Required)_: The name of network protocol to be configured.
   Only tcp is currently supported. { tcp }.
-* **`[String]` SQLServer** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
 * **`[Boolean]` IsEnabled** _(Write)_: Enables or disables the network protocol.
 * **`[Boolean]` TcpDynamicPort** _(Write)_: Specifies whether the SQL Server
@@ -1093,7 +1093,7 @@ AlterAnyEndPoint and ViewServerState.
 * **`[String]` Principal** _(Key)_: The login to which permission will be set.
 * **`[String]` Ensure** _(Write)_: If the permission should be present or absent.
   Default value is 'Present'. { Present | Absent }.
-* **`[String]` NodeName** _(Write)_: The host name of the SQL Server to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
 * **`[String[]]` Permission** _(Write)_: The permission to set for the login. Valid
   values are ConnectSql, AlterAnyAvailabilityGroup, ViewServerState or AlterAnyEndPoint.
@@ -1158,8 +1158,8 @@ server roles, please read the below articles.
 #### Parameters
 
 * **`[String]` ServerRoleName** _(Key)_: The name of of SQL role to add or remove.
-* **`[String]` SQLServer** _(Key)_: The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Write)_: An enumerated value that describes if the server
   role is added (Present) or dropped (Absent). Default value is 'Present'.
   { *Present* | Absent }.
@@ -1328,9 +1328,9 @@ Manage the service account for SQL Server services.
 
 #### Parameters
 
-* **`[String]` SQLServer** (Key): The host name of the SQL Server to be configured.
-* **`[String]` SQLInstanceName** (Key): The name of the SQL instance to be configured.
-* **`[String]` ServiceType** (Key): The service type for **SQLInstanceName**.
+* **`[String]` ServerName** (Key): The host name of the SQL Server to be configured.
+* **`[String]` InstanceName** (Key): The name of the SQL instance to be configured.
+* **`[String]` ServiceType** (Key): The service type for **InstanceName**.
   { DatabaseEngine | SQLServerAgent | Search | IntegrationServices
   | AnalysisServices | ReportingServices | SQLServerBrowser
   | NotificationServices }

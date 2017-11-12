@@ -21,7 +21,7 @@ Configuration Example
         SqlServerPermission SQLConfigureServerPermission
         {
             Ensure               = 'Absent'
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Principal            = 'NT AUTHORITY\SYSTEM'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'

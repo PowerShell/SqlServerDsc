@@ -21,7 +21,7 @@ Configuration Example
         SqlServerPermission 'SQLConfigureServerPermission-SYSTEM'
         {
             Ensure               = 'Present'
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Principal            = 'NT AUTHORITY\SYSTEM'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'
@@ -32,7 +32,7 @@ Configuration Example
         SqlServerPermission 'SQLConfigureServerPermission-ClusSvc'
         {
             Ensure               = 'Present'
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Principal            = 'NT SERVICE\ClusSvc'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'
