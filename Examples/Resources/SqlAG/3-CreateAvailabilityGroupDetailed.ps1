@@ -62,7 +62,7 @@ Configuration Example
         {
             DependsOn            = '[SqlServerLogin]AddNTServiceClusSvc'
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.InstanceName
             Principal            = 'NT SERVICE\ClusSvc'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'

@@ -40,8 +40,8 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'NT SERVICE\ClusSvc'
             LoginType            = 'WindowsUser'
-            SQLServer            = $Node.NodeName
-            SQLInstanceName      = $Node.SQLInstanceName
+            ServerName            = $Node.NodeName
+            InstanceName      = $Node.SQLInstanceName
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -50,7 +50,7 @@ Configuration Example
         {
             DependsOn            = '[SqlServerLogin]AddNTServiceClusSvc'
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName             = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Principal            = 'NT SERVICE\ClusSvc'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'
@@ -63,8 +63,8 @@ Configuration Example
             EndPointName         = 'HADR'
             Ensure               = 'Present'
             Port                 = 5022
-            SQLServer            = $Node.NodeName
-            SQLInstanceName      = $Node.SQLInstanceName
+            ServerName            = $Node.NodeName
+            InstanceName      = $Node.SQLInstanceName
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -75,8 +75,8 @@ Configuration Example
             {
                 Ensure               = 'Present'
                 Name                 = $Node.AvailabilityGroupName
-                SQLInstanceName      = $Node.SQLInstanceName
-                SQLServer            = $Node.NodeName
+                InstanceName      = $Node.SQLInstanceName
+                ServerName            = $Node.NodeName
                 DependsOn            = '[SqlServerEndpoint]HADREndpoint', '[SqlServerPermission]AddNTServiceClusSvcPermissions'
                 PsDscRunAsCredential = $SysAdminAccount
             }
