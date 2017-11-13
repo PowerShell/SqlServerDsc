@@ -109,19 +109,17 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 
 ## Resources
 
-* [**SqlAlias**](#sqlalias) resource to manage SQL Server client Aliases.
 * [**SqlAG**](#sqlag)
   resource to ensure an availability group is present or absent.
 * [**SqlAGDatabase**](#SqlAGDatabase)
   to manage the database membership in Availability Groups.
 * [**SqlAGReplica**](#sqlagreplica)
   resource to ensure an availability group replica is present or absent.
-* [**SqlAlwaysOnService**](#sqlalwaysonservice) resource to enable
-  always on on a SQL Server.
+* [**SqlAlias**](#sqlalias) resource to manage SQL Server client Aliases.
 * [**SqlAGListener**](#sqlaglistener)
   Create or remove an availability group listener.
-* [**SqlServerConfiguration**](#sqlserverconfiguration) resource to manage
-  [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
+* [**SqlAlwaysOnService**](#sqlalwaysonservice) resource to enable
+  always on on a SQL Server.
 * [**SqlDatabase**](#sqldatabase) resource to manage ensure database
   is present or absent.
 * [**SqlDatabaseDefaultLocation**](#sqldatabasedefaultlocation) resource
@@ -134,13 +132,15 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   to manage database recovery model.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
   database roles.
+* [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
+  functionality to T-SQL.
+* [**SqlServerConfiguration**](#sqlserverconfiguration) resource to manage
+  [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
 * [**SqlServerEndpoint**](#sqlserverendpoint) resource to ensure database endpoint
   is present or absent.
 * [**SqlServerEndpointPermission**](#sqlserverendpointpermission) Grant or revoke
   permission on the endpoint.
 * [**SqlServerEndpointState**](#sqlserverendpointstate) Change state of the endpoint.
-* [**SqlWindowsFirewall**](#sqlwindowsfirewall) configures firewall settings to
-  allow remote access to a SQL Server instance.
 * [**SqlServerLogin**](#sqlserverlogin) resource to manage SQL logins.
 * [**SqlServerMaxDop**](#sqlservermaxdop) resource to manage MaxDegree of Parallelism
   for SQL Server.
@@ -149,20 +149,20 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   Protocols.
 * [**SqlServerPermission**](#sqlserverpermission) Grant or revoke permission on
   the SQL Server.
-* [**SqlServerRole**](#sqlserverrole) resource to manage SQL server roles.
 * [**SqlServerReplication**](#sqlserverreplication) resource to manage SQL Replication
   distribution and publishing.
+* [**SqlServerRole**](#sqlserverrole) resource to manage SQL server roles.
+* [**SqlServiceAccount**](#sqlserviceaccount) Manage the service account
+  for SQL Server services.
+* [**SqlSetup**](#sqlsetup) installs a standalone SQL Server instance.
 * [**SqlRS**](#sqlrs) configures SQL Server Reporting
   Services to use a database engine in another instance.
 * [**SqlRSSecureConnectionLevel**](#sqlrssecureconnectionlevel) sets
   the secure connection level for SQL Server Reporting Services.
-* [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
-  functionality to T-SQL.
-* [**SqlServiceAccount**](#sqlserviceaccount) Manage the service account
-  for SQL Server services.
-* [**SqlSetup**](#sqlsetup) installs a standalone SQL Server instance.
 * [**SqlWaitForAG**](#sqlwaitforag) resource to
   wait until availability group is created on primary server.
+* [**SqlWindowsFirewall**](#sqlwindowsfirewall) configures firewall settings to
+  allow remote access to a SQL Server instance.
 
 ### SqlAlias
 

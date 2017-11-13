@@ -200,4 +200,3 @@ foreach($Node in $ConfigurationData.AllNodes)
 SQL -ConfigurationData $ConfigurationData
 Set-DscLocalConfigurationManager -Path .\SQL -Verbose
 Start-DscConfiguration -Path .\SQL -Verbose -Wait -Force
-
