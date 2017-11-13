@@ -22,7 +22,7 @@ Configuration Example
             Ensure               = 'Absent'
 
             EndpointName         = 'HADR'
-            SQLInstanceName      = 'INST1'
+            InstanceName      = 'INST1'
 
             PsDscRunAsCredential = $SysAdminAccount
         }
@@ -32,7 +32,7 @@ Configuration Example
             Ensure               = 'Absent'
 
             EndpointName         = 'HADR'
-            SQLInstanceName      = 'INST2'
+            InstanceName      = 'INST2'
 
             PsDscRunAsCredential = $SysAdminAccount
         }

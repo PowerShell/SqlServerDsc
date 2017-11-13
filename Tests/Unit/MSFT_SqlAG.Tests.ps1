@@ -49,7 +49,7 @@ try
         }
 
         # Define the values that could be passed into the ServerName parameter
-        $mockServerNameParameters = @{
+        $mockSqlServerParameters = @{
             Server1 = @{
                 FQDN = 'Server1.contoso.com'
                 #IP = '192.168.1.1'
@@ -64,7 +64,7 @@ try
         }
 
         # Define the values that could be passed into the InstanceName parameter
-        $mockInstanceNameParameters = @(
+        $mockSqlInstanceNameParameters = @(
             'MSSQLSERVER',
             'NamedInstance'
         )
@@ -189,38 +189,38 @@ try
 
         foreach ( $majorVersionToTest in $majorVersionsToTest )
         {
-            foreach ( $mockServerName in $mockServerNameParameters.GetEnumerator() )
+            foreach ( $mockSqlServer in $mockSqlServerParameters.GetEnumerator() )
             {
                 # Determine with SQL Server mock will be used
-                $mockServerNameToBeUsed = $mockServerName.Key
+                $mockSqlServerToBeUsed = $mockSqlServer.Key
 
-                foreach ( $mockServerNameParameter in $mockServerName.Value.Values )
+                foreach ( $mockSqlServerParameter in $mockSqlServer.Value.Values )
                 {
-                    foreach ( $mockInstanceNameParameter in $mockInstanceNameParameters )
+                    foreach ( $mockSqlInstanceNameParameter in $mockSqlInstanceNameParameters )
                     {
                         # Build the domain instance name
-                        if ( $mockInstanceNameParameter -eq 'MSSQLSERVER' )
+                        if ( $mockSqlInstanceNameParameter -eq 'MSSQLSERVER' )
                         {
-                            $domainInstanceNameProperty = $mockServerNameParameter
+                            $domainInstanceNameProperty = $mockSqlServerParameter
                         }
                         else
                         {
-                            $domainInstanceNameProperty = '{0}\{1}' -f $mockServerNameParameter,$mockInstanceNameParameter
+                            $domainInstanceNameProperty = '{0}\{1}' -f $mockSqlServerParameter,$mockSqlInstanceNameParameter
                         }
 
-                        if ( $mockServerNameToBeUsed -eq 'Server1' )
+                        if ( $mockSqlServerToBeUsed -eq 'Server1' )
                         {
                             $getTargetResourceAbsentTestCases += @{
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
                             $getTargetResourcePresentTestCases += @{
                                 Name = $mockNameParameters.PresentAvailabilityGroup
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -230,8 +230,8 @@ try
                                     ErrorResult = $createAvailabilityGroupFailureToTest.Value
                                     Ensure = 'Present'
                                     Name = $createAvailabilityGroupFailureToTest.Key
-                                    ServerName = $mockServerNameParameter
-                                    InstanceName = $mockInstanceNameParameter
+                                    ServerName = $mockSqlServerParameter
+                                    InstanceName = $mockSqlInstanceNameParameter
                                     Version = $majorVersionToTest
                                 }
                             }
@@ -240,8 +240,8 @@ try
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = 'DatabaseMirroringEndpointNotFound'
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -249,21 +249,21 @@ try
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = 'HadrNotEnabled'
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
                             $setTargetResourceRemoveAvailabilityGroupTestCases += @{
                                 Ensure = 'Absent'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
 
-                        switch ( $mockServerNameToBeUsed )
+                        switch ( $mockSqlServerToBeUsed )
                         {
                             'Server1'
                             {
@@ -282,8 +282,8 @@ try
                             ErrorResult = $setTargetResourceRemoveAvailabilityGroupErrorTestCaseErrorResult
                             Ensure = 'Absent'
                             Name = $setTargetResourceRemoveAvailabilityGroupErrorTestCaseName
-                            ServerName = $mockServerNameParameter
-                            InstanceName = $mockInstanceNameParameter
+                            ServerName = $mockSqlServerParameter
+                            InstanceName = $mockSqlInstanceNameParameter
                             Version = $majorVersionToTest
                         }
 
@@ -293,8 +293,8 @@ try
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 ProcessOnlyOnActiveNode = $processOnlyOnActiveNode
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -306,8 +306,8 @@ try
                                 Ensure = $ensureCaseToTest
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = ( $ensureCaseToTest -eq 'Absent' )
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -315,8 +315,8 @@ try
                                 Ensure = $ensureCaseToTest
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 Result = ( $ensureCaseToTest -eq 'Present' )
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -371,7 +371,7 @@ try
                                 }
                             }
 
-                            if ( $mockServerNameToBeUsed -eq 'Server1' )
+                            if ( $mockSqlServerToBeUsed -eq 'Server1' )
                             {
                                 $setTargetResourceCreateAvailabilityGroupWithParameterTestCases += @{
                                     DomainInstanceName = $domainInstanceNameProperty
@@ -379,8 +379,8 @@ try
                                     Name = $mockNameParameters.AbsentAvailabilityGroup
                                     ParameterName = $resourceParameter.Key
                                     ParameterValue = $testCaseParameterValue
-                                    ServerName = $mockServerNameParameter
-                                    InstanceName = $mockInstanceNameParameter
+                                    ServerName = $mockSqlServerParameter
+                                    InstanceName = $mockSqlInstanceNameParameter
                                     Version = $majorVersionToTest
                                 }
                             }
@@ -391,8 +391,8 @@ try
                                 ParameterName = $resourceParameter.Key
                                 ParameterValue = $testCaseParameterValue
                                 Result = $false
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -402,8 +402,8 @@ try
                                 ParameterName = $resourceParameter.Key
                                 ParameterValue = $testCaseParameterValue
                                 Result = $false
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -430,8 +430,8 @@ try
                                 EndpointPropertyValue = $endpointPropertyValue
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -441,8 +441,8 @@ try
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 Result = $false
-                                ServerName = $mockServerNameParameter
-                                InstanceName = $mockInstanceNameParameter
+                                ServerName = $mockSqlServerParameter
+                                InstanceName = $mockSqlInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -479,16 +479,16 @@ try
             # If this mock function is called from the Get-PrimaryReplicaServerObject command mock
             if ( [string]::IsNullOrEmpty($SQLServer) -and [string]::IsNullOrEmpty($SQLInstanceName) -and $AvailabilityGroup -and $ServerObject )
             {
-                $SQLServer,$InstanceName = $AvailabilityGroup.PrimaryReplicaServerName.Split('\')
+                $SQLServer,$SQLInstanceName = $AvailabilityGroup.PrimaryReplicaServerName.Split('\')
             }
 
             # Determine which SQL Server mock data we will use
-            $mockServerName = ( $mockServerNameParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $SQLServer } ).Name
-            if ( [string]::IsNullOrEmpty($mockServerName) )
+            $mockSqlServer = ( $mockSqlServerParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $SQLServer } ).Name
+            if ( [string]::IsNullOrEmpty($mockSqlServer) )
             {
-                $mockServerName = $SQLServer
+                $mockSqlServer = $SQLServer
             }
-            $mockCurrentServerObjectProperties = $mockServerObjectProperies.$mockServerName
+            $mockCurrentServerObjectProperties = $mockServerObjectProperies.$mockSqlServer
 
             # Build the domain instance name
             if ( ( $SQLInstanceName -eq 'MSSQLSERVER' ) -or [string]::IsNullOrEmpty($SQLInstanceName) )
@@ -688,12 +688,12 @@ try
 
             Context 'When the Availability Group is Absent' {
 
-                It 'Should not return an Availability Group when Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $getTargetResourceAbsentTestCases {
+                It 'Should not return an Availability Group when Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $getTargetResourceAbsentTestCases {
                     param
                     (
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -702,8 +702,8 @@ try
 
                     $getTargetResourceParameters = @{
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     $result = Get-TargetResource @getTargetResourceParameters
@@ -715,12 +715,12 @@ try
             }
 
             Context 'When the Availability Group is Present' {
-                It 'Should return the correct Availability Group properties when Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $getTargetResourcePresentTestCases {
+                It 'Should return the correct Availability Group properties when Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $getTargetResourcePresentTestCases {
                     param
                     (
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -729,27 +729,27 @@ try
 
                     $getTargetResourceParameters = @{
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     # Determine which SQL Server mock data will be used
-                    $mockServerName = ( $mockServerNameParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $ServerName } ).Name
+                    $mockSqlServer = ( $mockSqlServerParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $SQLServer } ).Name
 
                     $result = Get-TargetResource @getTargetResourceParameters
 
                     $result.Name | Should -Be $Name
-                    $result.ServerName | Should -Be $ServerName
-                    $result.InstanceName | Should -Be $InstanceName
+                    $result.ServerName | Should -Be $SQLServer
+                    $result.InstanceName | Should -Be $SQLInstanceName
                     $result.Ensure | Should -Be 'Present'
                     $result.AutomatedBackupPreference | Should -Be $mockAvailabilityGroupProperties.AutomatedBackupPreference
-                    $result.AvailabilityMode | Should -Be $mockAvailabilityGroupReplicaProperties.$mockServerName.AvailabilityMode
-                    $result.BackupPriority | Should -Be $mockAvailabilityGroupReplicaProperties.$mockServerName.BackupPriority
-                    $result.ConnectionModeInPrimaryRole | Should -Be $mockAvailabilityGroupReplicaProperties.$mockServerName.ConnectionModeInPrimaryRole
-                    $result.ConnectionModeInSecondaryRole | Should -Be $mockAvailabilityGroupReplicaProperties.$mockServerName.ConnectionModeInSecondaryRole
-                    $result.EndpointURL | Should -Be "$($mockAvailabilityGroupReplicaProperties.$mockServerName.EndpointProtocol)://$($mockAvailabilityGroupReplicaProperties.$mockServerName.EndpointHostName):$($mockAvailabilityGroupReplicaProperties.$mockServerName.EndpointPort)"
+                    $result.AvailabilityMode | Should -Be $mockAvailabilityGroupReplicaProperties.$mockSqlServer.AvailabilityMode
+                    $result.BackupPriority | Should -Be $mockAvailabilityGroupReplicaProperties.$mockSqlServer.BackupPriority
+                    $result.ConnectionModeInPrimaryRole | Should -Be $mockAvailabilityGroupReplicaProperties.$mockSqlServer.ConnectionModeInPrimaryRole
+                    $result.ConnectionModeInSecondaryRole | Should -Be $mockAvailabilityGroupReplicaProperties.$mockSqlServer.ConnectionModeInSecondaryRole
+                    $result.EndpointURL | Should -Be "$($mockAvailabilityGroupReplicaProperties.$mockSqlServer.EndpointProtocol)://$($mockAvailabilityGroupReplicaProperties.$mockSqlServer.EndpointHostName):$($mockAvailabilityGroupReplicaProperties.$mockSqlServer.EndpointPort)"
                     $result.FailureConditionLevel | Should -Be $mockAvailabilityGroupProperties.FailureConditionLevel
-                    $result.FailoverMode | Should -Be $mockAvailabilityGroupReplicaProperties.$mockServerName.FailoverMode
+                    $result.FailoverMode | Should -Be $mockAvailabilityGroupReplicaProperties.$mockSqlServer.FailoverMode
                     $result.HealthCheckTimeout | Should -Be $mockAvailabilityGroupProperties.HealthCheckTimeout
 
                     if ( $Version -ge 13 )
@@ -794,7 +794,7 @@ try
             }
 
             Context 'When the Availability Group is Absent and the desired state is Present and a parameter is supplied' {
-                It 'Should create the availability group "<Name>" with the parameter "<ParameterName>" set to "<ParameterValue>" when Ensure is "<Ensure>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceCreateAvailabilityGroupWithParameterTestCases {
+                It 'Should create the availability group "<Name>" with the parameter "<ParameterName>" set to "<ParameterValue>" when Ensure is "<Ensure>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceCreateAvailabilityGroupWithParameterTestCases {
                     param
                     (
                         $DomainInstanceName,
@@ -802,8 +802,8 @@ try
                         $Name,
                         $ParameterName,
                         $ParameterValue,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -813,8 +813,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                         $ParameterName = $ParameterValue
                     }
 
@@ -839,14 +839,14 @@ try
             }
 
             Context 'When the Availability Group is Absent, the desired state is Present, and creating the Availability Group fails' {
-                It 'Should throw "<ErrorResult>" when creating the availability group "<Name>" fails, Ensure is "<Ensure>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceCreateAvailabilityGroupFailedTestCases {
+                It 'Should throw "<ErrorResult>" when creating the availability group "<Name>" fails, Ensure is "<Ensure>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceCreateAvailabilityGroupFailedTestCases {
                     param
                     (
                         $ErrorResult,
                         $Ensure,
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -869,8 +869,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw "$($ErrorResult)"
@@ -894,7 +894,7 @@ try
             }
 
             Context 'When the Availability Group is Present and a value is passed to a parameter' {
-                It 'Should set "<ParameterName>" to "<ParameterValue>" when Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourcePropertyIncorrectTestCases {
+                It 'Should set "<ParameterName>" to "<ParameterValue>" when Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourcePropertyIncorrectTestCases {
                     param
                     (
                         $Ensure,
@@ -902,8 +902,8 @@ try
                         $ParameterName,
                         $ParameterValue,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -913,8 +913,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                         $ParameterName = $ParameterValue
                     }
 
@@ -951,13 +951,13 @@ try
             }
 
             Context 'When the Availability Group is Present and the desired state is Absent' {
-                It 'Should remove the Availability Group "<Name>" when Ensure is "<Ensure>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceRemoveAvailabilityGroupTestCases {
+                It 'Should remove the Availability Group "<Name>" when Ensure is "<Ensure>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceRemoveAvailabilityGroupTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -967,8 +967,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
@@ -992,14 +992,14 @@ try
             }
 
             Context 'When the Availability Group is Present and throws an error when removal is attempted' {
-                It 'Should throw "<ErrorResult>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceRemoveAvailabilityGroupErrorTestCases {
+                It 'Should throw "<ErrorResult>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceRemoveAvailabilityGroupErrorTestCases {
                     param
                     (
                         $ErrorResult,
                         $Ensure,
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1022,8 +1022,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw "$($ErrorResult)"
@@ -1055,14 +1055,14 @@ try
                     $mockIsHadrEnabled = $false
                 }
 
-                It 'Should throw "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceHadrDisabledTestCases {
+                It 'Should throw "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceHadrDisabledTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1072,8 +1072,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw $Result
@@ -1105,14 +1105,14 @@ try
                     $mockIsDatabaseMirroringEndpointPresent = $false
                 }
 
-                It 'Should throw "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceEndpointMissingTestCases {
+                It 'Should throw "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourceEndpointMissingTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1122,8 +1122,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw $Result
@@ -1159,15 +1159,15 @@ try
                     $mockAvailabilityGroupReplicaPropertiesServer2Original = $mockAvailabilityGroupReplicaProperties.Server2.Clone()
                 }
 
-                It 'Should set "<EndpointPropertyName>" to "<EndpointPropertyValue>" when Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourcesEndpointUrlTestCases {
+                It 'Should set "<EndpointPropertyName>" to "<EndpointPropertyValue>" when Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $setTargetResourcesEndpointUrlTestCases {
                     param
                     (
                         $EndpointPropertyName,
                         $EndpointPropertyValue,
                         $Ensure,
                         $Name,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1180,8 +1180,8 @@ try
                     $setTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
@@ -1214,14 +1214,14 @@ try
             }
 
             Context 'When the Availability Group is Absent' {
-                It 'Should be "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceAbsentTestCases {
+                It 'Should be "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceAbsentTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1231,8 +1231,8 @@ try
                     $testTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     Test-TargetResource @testTargetResourceParameters | Should -Be $Result
@@ -1243,14 +1243,14 @@ try
             }
 
             Context 'When the Availability Group is Present and the default parameters are passed' {
-                It 'Should be "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourcePresentTestCases {
+                It 'Should be "<Result>" when Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourcePresentTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1260,8 +1260,8 @@ try
                     $testTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     Test-TargetResource @testTargetResourceParameters | Should -Be $Result
@@ -1272,7 +1272,7 @@ try
             }
 
             Context 'When the Availability Group is Present and a value is passed to a parameter' {
-                It 'Should be "<Result>" when "<ParameterName>" is "<ParameterValue>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourcePropertyIncorrectTestCases {
+                It 'Should be "<Result>" when "<ParameterName>" is "<ParameterValue>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourcePropertyIncorrectTestCases {
                     param
                     (
                         $Ensure,
@@ -1280,8 +1280,8 @@ try
                         $ParameterName,
                         $ParameterValue,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1291,8 +1291,8 @@ try
                     $testTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                         $ParameterName = $ParameterValue
                     }
 
@@ -1316,7 +1316,7 @@ try
                     $mockAvailabilityGroupReplicaPropertiesServer2Original = $mockAvailabilityGroupReplicaProperties.Server2.Clone()
                 }
 
-                It 'Should be "<Result>" when "<EndpointPropertyName>" is "<EndpointPropertyValue>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceEndpointIncorrectTestCases {
+                It 'Should be "<Result>" when "<EndpointPropertyName>" is "<EndpointPropertyValue>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceEndpointIncorrectTestCases {
                     param
                     (
                         $EndpointPropertyName,
@@ -1324,8 +1324,8 @@ try
                         $Ensure,
                         $Name,
                         $Result,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1338,8 +1338,8 @@ try
                     $testTargetResourceParameters = @{
                         Ensure = $Ensure
                         Name = $Name
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     Test-TargetResource @testTargetResourceParameters | Should -Be $Result
@@ -1359,14 +1359,14 @@ try
                     $mockProcessOnlyOnActiveNode = $false
                 }
 
-                It 'Should be "true" when ProcessOnlyOnActiveNode is "<ProcessOnlyOnActiveNode>", Ensure is "<Ensure>", Name is "<Name>", ServerName is "<ServerName>", InstanceName is "<InstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceProcessOnlyOnActiveNodeTestCases {
+                It 'Should be "true" when ProcessOnlyOnActiveNode is "<ProcessOnlyOnActiveNode>", Ensure is "<Ensure>", Name is "<Name>", ServerName is "<SQLServer>", InstanceName is "<SQLInstanceName>", and the SQL version is "<Version>"' -TestCases $testTargetResourceProcessOnlyOnActiveNodeTestCases {
                     param
                     (
                         $Ensure,
                         $Name,
                         $ProcessOnlyOnActiveNode,
-                        $ServerName,
-                        $InstanceName,
+                        $SQLServer,
+                        $SQLInstanceName,
                         $Version
                     )
 
@@ -1377,8 +1377,8 @@ try
                         Ensure = $Ensure
                         Name = $Name
                         ProcessOnlyOnActiveNode = $ProcessOnlyOnActiveNode
-                        ServerName = $ServerName
-                        InstanceName = $InstanceName
+                        ServerName = $SQLServer
+                        InstanceName = $SQLInstanceName
                     }
 
                     Test-TargetResource @testTargetResourceParameters | Should Be $true

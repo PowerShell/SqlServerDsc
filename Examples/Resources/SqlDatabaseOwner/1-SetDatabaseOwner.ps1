@@ -31,7 +31,7 @@ Configuration Example
         {
             Name                 = 'CONTOSO\SQLAdmin'
             Database             = 'AdventureWorks'
-            ServerName           = 'SQLServer'
+            SQLServer            = 'SQLServer'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
