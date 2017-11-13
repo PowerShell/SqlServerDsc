@@ -99,7 +99,7 @@ Configuration Example
 
         if ( $Node.Role -eq 'PrimaryReplica' )
         {
-            SqlAGDatabases 'TestAGDatabaseMemberships'
+            SqlAGDatabase 'TestAGDatabaseMemberships'
             {
                 AvailabilityGroupName = $Node.AvailabilityGroupName
                 BackupPath            = '\\SQL1\AgInitialize'

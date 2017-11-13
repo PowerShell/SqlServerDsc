@@ -17,7 +17,7 @@ Add-Type -Path ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stub
 
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName 'SqlServerDsc' `
-    -DSCResourceName 'MSFT_SqlAGDatabases' `
+    -DSCResourceName 'MSFT_SqlAGDatabase' `
     -TestType Unit
 
 #endregion HEADER
@@ -37,7 +37,7 @@ try
 {
     Invoke-TestSetup
 
-    InModuleScope 'MSFT_SqlAGDatabases' {
+    InModuleScope 'MSFT_SqlAGDatabase' {
 
         #region Parameter Mocks
 
@@ -354,7 +354,7 @@ WITH NORECOVERY'
 
         #endregion Invoke Query Mock
 
-        Describe 'SqlAGDatabases\Get-TargetResource' {
+        Describe 'SqlAGDatabase\Get-TargetResource' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith { return $mockServerObject } -Verifiable
                 Mock -CommandName Import-SQLPSModule -MockWith {} -Verifiable
@@ -422,7 +422,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Set-TargetResource' {
+        Describe 'SqlAGDatabase\Set-TargetResource' {
             BeforeAll {
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server1' }
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServer2Object } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server2' }
@@ -1137,7 +1137,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Test-TargetResource' {
+        Describe 'SqlAGDatabase\Test-TargetResource' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith { return $mockServerObject } -Verifiable
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server1' }
@@ -1331,7 +1331,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Get-DatabasesToAddToAvailabilityGroup' {
+        Describe 'SqlAGDatabase\Get-DatabasesToAddToAvailabilityGroup' {
             BeforeEach {
                 $getDatabasesToAddToAvailabilityGroup = @{
                     DatabaseName = $mockDatabaseNameParameter.Clone()
@@ -1370,7 +1370,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Get-DatabasesToRemoveFromAvailabilityGroup' {
+        Describe 'SqlAGDatabase\Get-DatabasesToRemoveFromAvailabilityGroup' {
             BeforeEach {
                 $getDatabasesToRemoveFromAvailabilityGroupParameters = @{
                     DatabaseName = $mockDatabaseNameParameter.Clone()
@@ -1447,7 +1447,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Get-MatchingDatabaseNames' {
+        Describe 'SqlAGDatabase\Get-MatchingDatabaseNames' {
             BeforeEach {
                 $getMatchingDatabaseNamesParameters = @{
                     DatabaseName = $mockDatabaseNameParameter.Clone()
@@ -1479,7 +1479,7 @@ WITH NORECOVERY'
             }
         }
 
-        Describe 'SqlAGDatabases\Get-DatabaseNamesNotFoundOnTheInstance' {
+        Describe 'SqlAGDatabase\Get-DatabaseNamesNotFoundOnTheInstance' {
             Context 'When the Get-DatabaseNamesNotFoundOnTheInstance function is called' {
                 BeforeAll {
                     # The defined databases that should be identified as missing

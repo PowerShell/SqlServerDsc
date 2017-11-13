@@ -542,7 +542,7 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlAGDatabases
+    //  MSFT_SqlAGDatabase
     //  MSFT_SqlDatabase
     //  MSFT_SqlDatabasePermission
 	public class Database
@@ -782,7 +782,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Common.ServerConnection
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class ConnectionContext
     {
         public string TrueLogin;
@@ -793,7 +793,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabase
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class AvailabilityDatabase
     {
         public string Name;
@@ -803,7 +803,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseCollection
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class DatabaseCollection : Collection<Database>
     {
         public Database this[string name]
@@ -825,7 +825,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityReplicaCollection
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class AvailabilityReplicaCollection : Collection<AvailabilityReplica>
     {
         public AvailabilityReplica this[string name]
@@ -847,7 +847,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.DatabaseEncryptionKey
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class DatabaseEncryptionKey
     {
         public string EncryptorName;
@@ -856,7 +856,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Certificate
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class Certificate
     {
         public byte[] Thumbprint;
@@ -864,7 +864,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityDatabaseCollection
     // Used by:
-    //  SqlAGDatabases
+    //  SqlAGDatabase
     public class AvailabilityDatabaseCollection : Collection<AvailabilityDatabase>
     {
         public AvailabilityDatabase this[string name]

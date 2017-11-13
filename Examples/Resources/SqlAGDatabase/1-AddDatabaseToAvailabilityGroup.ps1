@@ -1,6 +1,11 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the databases 'DB*' and 'AdventureWorks' are not members of the Availability Group 'TestAG'.
+    This example shows how to ensure that the databases 'DB*' and 'AdventureWorks' are members in the Availability Group 'TestAG'.
+
+    In the event this is applied to a Failover Cluster Instance (FCI), the
+    ProcessOnlyOnActiveNode property will tell the Test-TargetResource function
+    to evaluate if any changes are needed if the node is actively hosting the
+    SQL Server Instance.
 #>
 
 $ConfigurationData = @{
@@ -99,15 +104,16 @@ Configuration Example
 
         if ( $Node.Role -eq 'PrimaryReplica' )
         {
-            SqlAGDatabases 'TestAGDatabaseMemberships'
+            SqlAGDatabase 'TestAGDatabaseMemberships'
             {
-                AvailabilityGroupName = $Node.AvailabilityGroupName
-                BackupPath            = '\\SQL1\AgInitialize'
-                DatabaseName          = 'DB*', 'AdventureWorks'
-                SQLInstanceName       = $Node.SQLInstanceName
-                SQLServer             = $Node.NodeName
-                Ensure                = 'Absent'
-                PsDscRunAsCredential  = $SysAdminAccount
+                AvailabilityGroupName   = $Node.AvailabilityGroupName
+                BackupPath              = '\\SQL1\AgInitialize'
+                DatabaseName            = 'DB*', 'AdventureWorks'
+                SQLInstanceName         = $Node.SQLInstanceName
+                SQLServer               = $Node.NodeName
+                Ensure                  = 'Present'
+                ProcessOnlyOnActiveNode = $true
+                PsDscRunAsCredential    = $SysAdminAccount
             }
         }
     }
