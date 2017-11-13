@@ -1,4 +1,4 @@
-# Change log for xSQLServer
+# Change log for SqlServerDsc
 
 ## Unreleased
 
