@@ -112,7 +112,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**SqlAlias**](#sqlalias) resource to manage SQL Server client Aliases.
 * [**SqlAG**](#sqlag)
   resource to ensure an availability group is present or absent.
-* [**SqlAGDatabases**](#sqlagdatabases)
+* [**SqlAGDatabase**](#SqlAGDatabase)
   to manage the database membership in Availability Groups.
 * [**SqlAGReplica**](#sqlagreplica)
   resource to ensure an availability group replica is present or absent.
@@ -275,7 +275,7 @@ It will also manage the Availability Group replica on the specified node.
 * [Add a SQL Server Always On Availability Group and explicitly defines its properties](/Examples/Resources/SqlAG/3-CreateAvailabilityGroupDetailed.ps1)
 * [Remove a SQL Server Always On Availability Group](/Examples/Resources/SqlAG/2-RemoveAvailabilityGroup.ps1)
 
-### SqlAGDatabases
+### SqlAGDatabase
 
 This resource is used to add and/or remove databases to a specified availability
 group.
