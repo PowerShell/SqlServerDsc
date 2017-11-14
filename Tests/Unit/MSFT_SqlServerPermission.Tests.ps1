@@ -79,7 +79,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.ServerName | Should -Be$mockServerName
+                        $result.ServerName | Should -Be $mockServerName
                         $result.InstanceName | Should -Be $mockInstanceName
                         $result.Principal | Should -Be $mockPrincipal
                     }
@@ -109,7 +109,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.ServerName | Should -Be$mockServerName
+                        $result.ServerName | Should -Be $mockServerName
                         $result.InstanceName | Should -Be $mockInstanceName
                         $result.Principal | Should -Be $mockPrincipal
                     }
@@ -146,7 +146,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.ServerName | Should -Be$mockServerName
+                    $result.ServerName | Should -Be $mockServerName
                     $result.InstanceName | Should -Be $mockInstanceName
                     $result.Principal | Should -Be $mockPrincipal
                 }
