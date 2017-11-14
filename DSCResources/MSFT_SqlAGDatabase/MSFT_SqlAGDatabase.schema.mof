@@ -2,8 +2,8 @@
 class MSFT_SqlAGDatabase : OMI_BaseResource
 {
     [Required, Description("The name of the database(s) to add to the availability group. This accepts wildcards.")] String DatabaseName[];
-    [Key, Description("Hostname of the SQL Server where the primary replica of the availability group lives. If the availability group is not currently on this server, the resource will attempt to connect to the server where the primary replica lives.")] String SQLServer;
-    [Key, Description("Name of the SQL instance to be configured.")] String SQLInstanceName;
+    [Key, Description("Hostname of the SQL Server where the primary replica of the availability group lives. If the availability group is not currently on this server, the resource will attempt to connect to the server where the primary replica lives.")] String ServerName;
+    [Key, Description("Name of the SQL instance to be configured.")] String InstanceName;
     [Key, Description("The name of the availability group in which to manage the database membership(s).")] String AvailabilityGroupName;
     [Required, Description("The path used to seed the availability group replicas. This should be a path that is accessible by all of the replicas")] String BackupPath;
     [Write, Description("Specifies the membership of the database(s) in the availability group. The options are: Present: The defined database(s) are added to the availability group. All other databases that may be a member of the availability group are ignored. Absent: The defined database(s) are removed from the availability group. All other databases that may be a member of the availability group are ignored. The default is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;

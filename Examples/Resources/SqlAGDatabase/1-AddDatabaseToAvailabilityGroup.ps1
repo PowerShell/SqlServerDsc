@@ -95,8 +95,8 @@ Configuration Example
                 Ensure                        = 'Present'
                 Name                          = $Node.NodeName
                 AvailabilityGroupName         = $Node.AvailabilityGroupName
-                SQLServer                     = $Node.NodeName
-                SQLInstanceName               = $Node.SQLInstanceName
+                ServerName                    = $Node.NodeName
+                InstanceName                  = $Node.SQLInstanceName
                 PrimaryReplicaSQLServer       = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).NodeName
                 PrimaryReplicaSQLInstanceName = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).SQLInstanceName
             }
@@ -109,8 +109,8 @@ Configuration Example
                 AvailabilityGroupName   = $Node.AvailabilityGroupName
                 BackupPath              = '\\SQL1\AgInitialize'
                 DatabaseName            = 'DB*', 'AdventureWorks'
-                SQLInstanceName         = $Node.SQLInstanceName
-                SQLServer               = $Node.NodeName
+                InstanceName            = $Node.SQLInstanceName
+                ServerName              = $Node.NodeName
                 Ensure                  = 'Present'
                 ProcessOnlyOnActiveNode = $true
                 PsDscRunAsCredential    = $SysAdminAccount

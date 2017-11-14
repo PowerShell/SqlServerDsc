@@ -14,12 +14,12 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAGDatabase'
     .PARAMETER DatabaseName
         The name of the database(s) to add to the availability group. This accepts wildcards.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server where the primary replica of the availability group lives. If the
         availability group is not currently on this server, the resource will attempt to connect to the
         server where the primary replica lives.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance where the primary replica of the availability group lives. If the
         availability group is not currently on this instance, the resource will attempt to connect to
         the instance where the primary replica lives.
@@ -43,11 +43,11 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -61,8 +61,8 @@ function Get-TargetResource
     # Create an object that reflects the current configuration
     $currentConfiguration = @{
         DatabaseName          = @()
-        SQLServer             = $SQLServer
-        SQLInstanceName       = $SQLInstanceName
+        ServerName             = $ServerName
+        InstanceName       = $InstanceName
         AvailabilityGroupName = ''
         BackupPath            = ''
         Ensure                = ''
@@ -72,7 +72,7 @@ function Get-TargetResource
     }
 
     # Connect to the instance
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Is this node actively hosting the SQL instance?
     $currentConfiguration.IsActiveNode = Test-ActiveNode -ServerObject $serverObject
@@ -102,12 +102,12 @@ function Get-TargetResource
     .PARAMETER DatabaseName
         The name of the database(s) to add to the availability group. This accepts wildcards.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server where the primary replica of the availability group lives. If the
         availability group is not currently on this server, the resource will attempt to connect to the
         server where the primary replica lives.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance where the primary replica of the availability group lives. If the
         availability group is not currently on this instance, the resource will attempt to connect to
         the instance where the primary replica lives.
@@ -159,11 +159,11 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -194,7 +194,7 @@ function Set-TargetResource
     Import-SQLPSModule
 
     # Connect to the defined instance
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Get the Availability Group
     $availabilityGroup = $serverObject.AvailabilityGroups[$AvailabilityGroupName]
@@ -568,12 +568,12 @@ function Set-TargetResource
     .PARAMETER DatabaseName
         The name of the database(s) to add to the availability group. This accepts wildcards.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server where the primary replica of the availability group lives. If the
         availability group is not currently on this server, the resource will attempt to connect to the
         server where the primary replica lives.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance where the primary replica of the availability group lives. If the
         availability group is not currently on this instance, the resource will attempt to connect to
         the instance where the primary replica lives.
@@ -625,11 +625,11 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -661,8 +661,8 @@ function Test-TargetResource
 
     $getTargetResourceParameters = @{
         DatabaseName          = $DatabaseName
-        SQLServer             = $SQLServer
-        SQLInstanceName       = $SQLInstanceName
+        ServerName             = $ServerName
+        InstanceName       = $InstanceName
         AvailabilityGroupName = $AvailabilityGroupName
         BackupPath            = $BackupPath
     }
@@ -674,12 +674,12 @@ function Test-TargetResource
     #>
     if ( $ProcessOnlyOnActiveNode -and -not $currentConfiguration.IsActiveNode )
     {
-        Write-Verbose -Message ( $script:localizedData.NotActiveNode -f $env:COMPUTERNAME,$SQLInstanceName )
+        Write-Verbose -Message ( $script:localizedData.NotActiveNode -f $env:COMPUTERNAME,$InstanceName )
         return $configurationInDesiredState
     }
 
     # Connect to the defined instance
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Get the Availability Group if it exists
     if ( -not [string]::IsNullOrEmpty($currentConfiguration.AvailabilityGroupName) )

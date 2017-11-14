@@ -363,8 +363,8 @@ WITH NORECOVERY'
             BeforeEach {
                 $getTargetResourceParameters = @{
                     DatabaseName = $mockDatabaseNameParameter.Clone()
-                    SqlServer = 'Server1'
-                    SQLInstanceName = 'MSSQLSERVER'
+                    ServerName = 'Server1'
+                    InstanceName = 'MSSQLSERVER'
                     AvailabilityGroupName = 'AvailabilityGroup1'
                     BackupPath = $($mockBackupPath)
                 }
@@ -376,8 +376,8 @@ WITH NORECOVERY'
 
                     $result = Get-TargetResource @getTargetResourceParameters
 
-                    $result.SqlServer | Should -Be $getTargetResourceParameters.SqlServer
-                    $result.SQLInstanceName | Should -Be $getTargetResourceParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $getTargetResourceParameters.ServerName
+                    $result.InstanceName | Should -Be $getTargetResourceParameters.InstanceName
                     $result.AvailabilityGroupName | Should -BeNullOrEmpty
                     $result.DatabaseName | Should -BeNullOrEmpty
 
@@ -390,8 +390,8 @@ WITH NORECOVERY'
 
                     $result = Get-TargetResource @getTargetResourceParameters
 
-                    $result.SqlServer | Should -Be $getTargetResourceParameters.SqlServer
-                    $result.SQLInstanceName | Should -Be $getTargetResourceParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $getTargetResourceParameters.ServerName
+                    $result.InstanceName | Should -Be $getTargetResourceParameters.InstanceName
                     $result.AvailabilityGroupName | Should -Be $mockAvailabilityGroupWithoutDatabasesObject.Name
                     $result.DatabaseName | Should -BeNullOrEmpty
 
@@ -402,8 +402,8 @@ WITH NORECOVERY'
                 It 'Should return databases when there are databases in the availability group' {
                     $result = Get-TargetResource @getTargetResourceParameters
 
-                    $result.SqlServer | Should -Be $getTargetResourceParameters.SqlServer
-                    $result.SQLInstanceName | Should -Be $getTargetResourceParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $getTargetResourceParameters.ServerName
+                    $result.InstanceName | Should -Be $getTargetResourceParameters.InstanceName
                     $result.AvailabilityGroupName | Should -Be $mockAvailabilityGroupObject.Name
 
                     foreach ( $resultDatabaseName in $result.DatabaseName )
@@ -439,8 +439,8 @@ WITH NORECOVERY'
             BeforeEach {
                 $mockSetTargetResourceParameters = @{
                     DatabaseName = $($mockDatabaseNameParameter)
-                    SQLServer = $($mockServerObject.DomainInstanceName)
-                    SQLInstanceName = $('MSSQLSERVER')
+                    ServerName = $($mockServerObject.DomainInstanceName)
+                    InstanceName = $('MSSQLSERVER')
                     AvailabilityGroupName = $($mockAvailabilityGroupObjectName)
                     BackupPath = $($mockBackupPath)
                     Ensure = 'Present'
@@ -1150,8 +1150,8 @@ WITH NORECOVERY'
             BeforeEach {
                 $mockTestTargetResourceParameters = @{
                     DatabaseName = $mockDatabaseNameParameter.Clone()
-                    SqlServer = $mockServerObject.DomainInstanceName
-                    SQLInstanceName = 'MSSQLSERVER'
+                    ServerName = $mockServerObject.DomainInstanceName
+                    InstanceName = 'MSSQLSERVER'
                     AvailabilityGroupName = $mockAvailabilityGroupObject.Name
                     BackupPath = $($mockBackupPath)
                     Ensure = 'Present'
