@@ -19,7 +19,7 @@ Configuration Example
         SqlAGListener RemoveAvailabilityGroupListenerWithDifferentNameAsVCO
         {
             Ensure               = 'Absent'
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             AvailabilityGroup    = 'AvailabilityGroup-01'
             Name                 = 'AG-01'

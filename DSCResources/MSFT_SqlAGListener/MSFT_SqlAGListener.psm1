@@ -1,6 +1,6 @@
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
-                               -ChildPath 'SqlServerDscHelper.psm1') `
-                               -Force
+        -ChildPath 'SqlServerDscHelper.psm1') `
+    -Force
 <#
     .SYNOPSIS
         Returns the current state of the Availability Group listener.
@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER InstanceName
         The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name or FQDN of the primary replica.
 
     .PARAMETER Name
@@ -29,10 +29,10 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $NodeName,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateLength(1,15)]
+        [ValidateLength(1, 15)]
         [System.String]
         $Name,
 
@@ -43,7 +43,7 @@ function Get-TargetResource
 
     try
     {
-        $availabilityGroupListener = Get-SQLAlwaysOnAvailabilityGroupListener -Name $Name -AvailabilityGroup $AvailabilityGroup -NodeName $NodeName -InstanceName $InstanceName
+        $availabilityGroupListener = Get-SQLAlwaysOnAvailabilityGroupListener -Name $Name -AvailabilityGroup $AvailabilityGroup -ServerName $ServerName -InstanceName $InstanceName
 
         if ($null -ne $availabilityGroupListener)
         {
@@ -77,14 +77,14 @@ function Get-TargetResource
     }
 
     return @{
-        InstanceName = [System.String] $InstanceName
-        NodeName = [System.String] $NodeName
-        Name = [System.String] $Name
-        Ensure = [System.String] $ensure
+        InstanceName      = [System.String] $InstanceName
+        ServerName        = [System.String] $ServerName
+        Name              = [System.String] $Name
+        Ensure            = [System.String] $ensure
         AvailabilityGroup = [System.String] $AvailabilityGroup
-        IpAddress = [System.String[]] $ipAddress
-        Port = [System.UInt16] $port
-        DHCP = [System.Boolean] $dhcp
+        IpAddress         = [System.String[]] $ipAddress
+        Port              = [System.UInt16] $port
+        DHCP              = [System.Boolean] $dhcp
     }
 }
 
@@ -95,7 +95,7 @@ function Get-TargetResource
     .PARAMETER InstanceName
         The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name or FQDN of the primary replica.
 
     .PARAMETER Name
@@ -127,15 +127,15 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $NodeName,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateLength(1,15)]
+        [ValidateLength(1, 15)]
         [System.String]
         $Name,
 
         [Parameter()]
-        [ValidateSet('Present','Absent')]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present',
 
@@ -157,9 +157,9 @@ function Set-TargetResource
     )
 
     $parameters = @{
-        InstanceName = [System.String] $InstanceName
-        NodeName = [System.String] $NodeName
-        Name = [System.String] $Name
+        InstanceName      = [System.String] $InstanceName
+        ServerName        = [System.String] $ServerName
+        Name              = [System.String] $Name
         AvailabilityGroup = [System.String] $AvailabilityGroup
     }
 
@@ -172,13 +172,13 @@ function Set-TargetResource
             {
                 New-VerboseMessage -Message "Create listener on $AvailabilityGroup"
 
-                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
                 {
                     $newListenerParams = @{
-                        Name = $Name
+                        Name        = $Name
                         InputObject = $availabilityGroupObject
                     }
 
@@ -213,14 +213,14 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup, $InstanceName) -ErrorCategory ObjectNotFound
                 }
             }
             else
             {
                 New-VerboseMessage -Message "Remove listener from $AvailabilityGroup"
 
-                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
@@ -237,7 +237,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup, $InstanceName) -ErrorCategory ObjectNotFound
                 }
             }
         }
@@ -260,11 +260,11 @@ function Set-TargetResource
                     # No new IP-address
                     if ($null -eq $IpAddress -or -not ( Compare-Object -ReferenceObject $IpAddress -DifferenceObject $availabilityGroupListenerState.IpAddress))
                     {
-                       $ipAddressEqual = $true
+                        $ipAddressEqual = $true
                     }
                     else
                     {
-                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerIPChangeError -FormatArgs @($($IpAddress -join ', '),$($availabilityGroupListenerState.IpAddress -join ', ')) -ErrorCategory InvalidOperation
+                        throw New-TerminatingError -ErrorType AvailabilityGroupListenerIPChangeError -FormatArgs @($($IpAddress -join ', '), $($availabilityGroupListenerState.IpAddress -join ', ')) -ErrorCategory InvalidOperation
                     }
                 }
 
@@ -273,7 +273,7 @@ function Set-TargetResource
                     throw New-TerminatingError -ErrorType AvailabilityGroupListenerDHCPChangeError -FormatArgs @( $DHCP, $($availabilityGroupListenerState.DHCP) ) -ErrorCategory InvalidOperation
                 }
 
-                $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
@@ -291,7 +291,7 @@ function Set-TargetResource
 
                                 $setListenerParams = @{
                                     InputObject = $availabilityGroupListenerObject
-                                    Port = $Port
+                                    Port        = $Port
                                 }
 
                                 Set-SqlAvailabilityGroupListener @setListenerParams -ErrorAction Stop | Out-Null
@@ -313,7 +313,7 @@ function Set-TargetResource
 
                                 $setListenerParams = @{
                                     InputObject = $availabilityGroupListenerObject
-                                    StaticIp = $newIpAddress
+                                    StaticIp    = $newIpAddress
                                 }
 
                                 Add-SqlAvailabilityGroupListenerStaticIp @setListenerParams -ErrorAction Stop | Out-Null
@@ -331,7 +331,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
+                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup, $InstanceName) -ErrorCategory ObjectNotFound
                 }
             }
         }
@@ -349,7 +349,7 @@ function Set-TargetResource
     .PARAMETER InstanceName
         The SQL Server instance name of the primary replica. Default value is 'MSSQLSERVER'.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name or FQDN of the primary replica.
 
     .PARAMETER Name
@@ -382,15 +382,15 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $NodeName,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateLength(1,15)]
+        [ValidateLength(1, 15)]
         [System.String]
         $Name,
 
         [Parameter()]
-        [ValidateSet('Present','Absent')]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present',
 
@@ -412,9 +412,9 @@ function Test-TargetResource
     )
 
     $parameters = @{
-        InstanceName = [System.String] $InstanceName
-        NodeName = [System.String] $NodeName
-        Name = [System.String] $Name
+        InstanceName      = [System.String] $InstanceName
+        ServerName        = [System.String] $ServerName
+        Name              = [System.String] $Name
         AvailabilityGroup = [System.String] $AvailabilityGroup
     }
 
@@ -479,12 +479,12 @@ function Get-SQLAlwaysOnAvailabilityGroupListener
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $NodeName
+        $ServerName
     )
 
     Write-Debug "Connecting to availability group $Name as $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
 
-    $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
     if ($availabilityGroupObject)
@@ -493,7 +493,7 @@ function Get-SQLAlwaysOnAvailabilityGroupListener
     }
     else
     {
-        throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup,$InstanceName) -ErrorCategory ObjectNotFound
+        throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs @($AvailabilityGroup, $InstanceName) -ErrorCategory ObjectNotFound
     }
 
     return $availabilityGroupListener

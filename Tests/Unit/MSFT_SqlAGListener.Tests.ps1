@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlAGListener'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlAGListener'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -20,12 +20,14 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
     # Loading stub cmdlets
     Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force -Global
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -44,7 +46,7 @@ try
         $mockUnknownPortNumber = 9001
 
         # Static parameter values
-        $mockNodeName = 'localhost'
+        $mockServerName = 'localhost'
         $mockInstanceName = 'MSSQLSERVER'
         $mockDynamicAvailabilityGroup = $mockKnownAvailabilityGroup
         $mockDynamicListenerName = $mockKnownListenerName
@@ -55,39 +57,39 @@ try
         $mockConnectSql = {
             return New-Object Object |
                 Add-Member ScriptProperty AvailabilityGroups {
-                    return @(
-                        @{
-                            $mockDynamicAvailabilityGroup = New-Object Object |
-                                Add-Member ScriptProperty AvailabilityGroupListeners {
-                                    @(
-                                        @{
-                                            $mockDynamicListenerName = New-Object Object |
-                                                Add-Member NoteProperty PortNumber $mockDynamicPortNumber -PassThru |
-                                                Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                                                    return @(
-                                                        # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                                        (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                                            Add-Member NoteProperty IsDHCP $mockDynamicIsDhcp -PassThru |
-                                                            Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
-                                                            Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                                        )
-                                                    )
-                                                } -PassThru |
-                                                Add-Member ScriptMethod Drop {
-                                                    $script:mockMethodDropRan = $true
-                                                } -PassThru -Force
-                                        }
-                                    )
-                                } -PassThru -Force
-                        }
-                    )
-                } -PassThru -Force
+                return @(
+                    @{
+                        $mockDynamicAvailabilityGroup = New-Object Object |
+                            Add-Member ScriptProperty AvailabilityGroupListeners {
+                            @(
+                                @{
+                                    $mockDynamicListenerName = New-Object Object |
+                                        Add-Member NoteProperty PortNumber $mockDynamicPortNumber -PassThru |
+                                        Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
+                                        return @(
+                                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                                                    Add-Member NoteProperty IsDHCP $mockDynamicIsDhcp -PassThru |
+                                                    Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
+                                                    Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
+                                            )
+                                        )
+                                    } -PassThru |
+                                        Add-Member ScriptMethod Drop {
+                                        $script:mockMethodDropRan = $true
+                                    } -PassThru -Force
+                                }
+                            )
+                        } -PassThru -Force
+                    }
+                )
+            } -PassThru -Force
         }
 
         $defaultParameters = @{
-            InstanceName = $mockInstanceName
-            NodeName = $mockNodeName
-            Name = $mockKnownListenerName
+            InstanceName      = $mockInstanceName
+            ServerName        = $mockServerName
+            Name              = $mockKnownListenerName
             AvailabilityGroup = $mockKnownAvailabilityGroup
         }
 
@@ -111,7 +113,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $testParameters.NodeName
+                    $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.Name | Should -Be $testParameters.Name
                     $result.AvailabilityGroup | Should -Be $testParameters.AvailabilityGroup
@@ -146,7 +148,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $testParameters.NodeName
+                    $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.Name | Should -Be $testParameters.Name
                     $result.AvailabilityGroup | Should -Be $testParameters.AvailabilityGroup
@@ -183,7 +185,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $testParameters.NodeName
+                    $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.Name | Should -Be $testParameters.Name
                     $result.AvailabilityGroup | Should -Be $testParameters.AvailabilityGroup
@@ -249,15 +251,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5030 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $false -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is absent when wanted desired state is to be Absent' {
@@ -307,15 +309,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5555 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $false -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is absent when port is different' {
@@ -337,15 +339,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5030 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $true -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is absent when DHCP is present but should be absent' {
@@ -374,15 +376,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5555 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $true -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is absent when port is the only set parameter' {
@@ -415,15 +417,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5030 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $false -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is present when wanted desired state is to be Present, without DHCP' {
@@ -463,15 +465,15 @@ try
                     return New-Object Object |
                         Add-Member NoteProperty PortNumber 5030 -PassThru |
                         Add-Member ScriptProperty AvailabilityGroupListenerIPAddresses {
-                            return @(
-                                # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
-                                (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
+                        return @(
+                            # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
+                            (New-Object Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member NoteProperty IsDHCP $true -PassThru |
                                     Add-Member NoteProperty IPAddress '192.168.0.1' -PassThru |
                                     Add-Member NoteProperty SubnetMask '255.255.255.0' -PassThru
-                                )
                             )
-                        } -PassThru -Force
+                        )
+                    } -PassThru -Force
                 } -Verifiable
 
                 It 'Should return that desired state is present when wanted desired state is to be Present, with DHCP' {
@@ -606,7 +608,7 @@ try
                 $mockDynamicPortNumber = $mockKnownPortNumber
 
                 It 'Should call the cmdlet Add-SqlAvailabilityGroupListenerStaticIp, when adding another IP address, and system is not in desired state' {
-                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0','10.0.0.1/255.255.252.0')
+                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0', '10.0.0.1/255.255.252.0')
                     $testParameters['Port'] = 5030
                     $testParameters['DHCP'] = $false
 
@@ -698,12 +700,12 @@ try
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            Ensure = 'Present'
-                            Name = $mockUnknownListenerName
+                            Ensure            = 'Present'
+                            Name              = $mockUnknownListenerName
                             AvailabilityGroup = $mockKnownAvailabilityGroup
-                            IpAddress = '192.168.0.1/255.255.255.0'
-                            Port = $mockKnownPortNumber
-                            DHCP = $false
+                            IpAddress         = '192.168.0.1/255.255.255.0'
+                            Port              = $mockKnownPortNumber
+                            DHCP              = $false
                         }
                     }
 
@@ -721,12 +723,12 @@ try
 
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            Ensure = 'Present'
-                            Name = $mockUnknownListenerName
+                            Ensure            = 'Present'
+                            Name              = $mockUnknownListenerName
                             AvailabilityGroup = $mockUnknownAvailabilityGroup
-                            IpAddress = '192.168.0.1/255.255.255.0'
-                            Port = $mockKnownPortNumber
-                            DHCP = $false
+                            IpAddress         = '192.168.0.1/255.255.255.0'
+                            Port              = $mockKnownPortNumber
+                            DHCP              = $false
                         }
                     }
 

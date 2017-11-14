@@ -19,7 +19,7 @@ Configuration Example
         SqlAGListener AvailabilityGroupListenerWithSameNameAsVCO
         {
             Ensure               = 'Present'
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             AvailabilityGroup    = 'AG-01'
             Name                 = 'AG-01'

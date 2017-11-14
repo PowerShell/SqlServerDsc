@@ -68,6 +68,8 @@
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 - Changes to xSQLServerAvailabilityGroupListener
+  - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
+    ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 - Changes to xSQLServerMaxDop
