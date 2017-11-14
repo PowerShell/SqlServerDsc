@@ -11,10 +11,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER Name
     The name of the login that will become a owner of the desired sql database.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Get-TargetResource
@@ -36,16 +36,16 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $InstanceName = 'MSSQLSERVER'
     )
 
     Write-Verbose -Message "Getting owner of database $Database"
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -53,7 +53,7 @@ function Get-TargetResource
         if ( -not ($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
         {
             throw New-TerminatingError -ErrorType NoDatabase `
-                -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
+                -FormatArgs @($Database, $ServerName, $InstanceName) `
                 -ErrorCategory ObjectNotFound
         }
 
@@ -65,16 +65,16 @@ function Get-TargetResource
         catch
         {
             throw New-TerminatingError -ErrorType FailedToGetOwnerDatabase `
-                -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
+                -FormatArgs @($Database, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidOperation
         }
     }
 
     $returnValue = @{
-        Database        = $Database
-        Name            = $sqlDatabaseOwner
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
+        Database     = $Database
+        Name         = $sqlDatabaseOwner
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
     }
 
     $returnValue
@@ -90,10 +90,10 @@ function Get-TargetResource
     .PARAMETER Name
     The name of the login that will become a owner of the desired sql database.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Set-TargetResource
@@ -114,29 +114,29 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $InstanceName = 'MSSQLSERVER'
     )
 
     Write-Verbose -Message "Setting owner $Name of database $Database"
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
         # Check database exists
         if ( -not ($sqlDatabaseObject = $sqlServerObject.Databases[$Database]) )
         {
-            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database, $SQLServer, $SQLInstanceName) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType NoDatabase -FormatArgs @($Database, $ServerName, $InstanceName) -ErrorCategory ObjectNotFound
         }
 
         # Check login exists
         if ( -not ($sqlServerObject.Logins[$Name]) )
         {
-            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name, $SQLServer, $SQLInstanceName) -ErrorCategory ObjectNotFound
+            throw New-TerminatingError -ErrorType LoginNotFound -FormatArgs @($Name, $ServerName, $InstanceName) -ErrorCategory ObjectNotFound
         }
 
         try
@@ -147,7 +147,7 @@ function Set-TargetResource
         catch
         {
             throw New-TerminatingError -ErrorType FailedToSetOwnerDatabase `
-                -FormatArgs @($Name, $Database, $SQLServer, $SQLInstanceName) `
+                -FormatArgs @($Name, $Database, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidOperation `
                 -InnerException $_.Exception
         }
@@ -164,10 +164,10 @@ function Set-TargetResource
     .PARAMETER Name
     The name of the login that will become a owner of the desired sql database.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Test-TargetResource
@@ -189,12 +189,12 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $InstanceName = 'MSSQLSERVER'
     )
 
     Write-Verbose -Message "Testing owner $Name of database $Database"
