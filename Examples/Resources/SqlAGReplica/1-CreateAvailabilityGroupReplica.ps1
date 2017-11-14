@@ -97,8 +97,8 @@ Configuration Example
                 Ensure                        = 'Present'
                 Name                          = $Node.NodeName
                 AvailabilityGroupName         = $Node.AvailabilityGroupName
-                SQLServer                     = $Node.NodeName
-                SQLInstanceName               = $Node.SQLInstanceName
+                ServerName                    = $Node.NodeName
+                InstanceName                  = $Node.SQLInstanceName
                 PrimaryReplicaSQLServer       = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).NodeName
                 PrimaryReplicaSQLInstanceName = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).SQLInstanceName
                 ProcessOnlyOnActiveNode       = $Node.ProcessOnlyOnActiveNode

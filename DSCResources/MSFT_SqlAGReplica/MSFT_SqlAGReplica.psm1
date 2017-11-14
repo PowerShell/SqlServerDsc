@@ -12,10 +12,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER AvailabilityGroupName
         The name of the availability group.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance to be configued.
 #>
 function Get-TargetResource
@@ -34,15 +34,15 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName
+        $InstanceName
     )
 
     # Connect to the instance
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Is this node actively hosting the SQL instance?
     $isActiveNode = Test-ActiveNode -ServerObject $serverObject
@@ -68,8 +68,8 @@ function Get-TargetResource
         IsActiveNode                  = $isActiveNode
         ReadOnlyRoutingConnectionUrl  = ''
         ReadOnlyRoutingList           = @()
-        SQLServer                     = $SQLServer
-        SQLInstanceName               = $SQLInstanceName
+        ServerName                    = $ServerName
+        InstanceName                  = $InstanceName
         EndpointPort                  = $endpointPort
         SQLServerNetName              = $serverObject.NetName
     }
@@ -114,10 +114,10 @@ function Get-TargetResource
     .PARAMETER AvailabilityGroupName
         The name of the availability group.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance to be configued.
 
     .PARAMETER PrimaryReplicaSQLServer
@@ -172,11 +172,11 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [String]
@@ -236,12 +236,12 @@ function Set-TargetResource
     Import-SQLPSModule
 
     # Connect to the instance
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Determine if HADR is enabled on the instance. If not, throw an error
     if ( -not $serverObject.IsHadrEnabled )
     {
-        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure, $SQLInstanceName -ErrorCategory NotImplemented
+        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure, $InstanceName -ErrorCategory NotImplemented
     }
 
     # Get the Availability Group if it exists
@@ -288,7 +288,7 @@ function Set-TargetResource
             $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
             if ( -not $endpoint )
             {
-                throw New-TerminatingError -ErrorType DatabaseMirroringEndpointNotFound -FormatArgs $SQLServer, $SQLInstanceName -ErrorCategory ObjectNotFound
+                throw New-TerminatingError -ErrorType DatabaseMirroringEndpointNotFound -FormatArgs $ServerName, $InstanceName -ErrorCategory ObjectNotFound
             }
 
             # If a hostname for the endpoint was not specified, define it now.
@@ -377,7 +377,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType ReplicaNotFound -FormatArgs $Name, $SQLInstanceName -ErrorCategory ResourceUnavailable
+                    throw New-TerminatingError -ErrorType ReplicaNotFound -FormatArgs $Name, $InstanceName -ErrorCategory ResourceUnavailable
                 }
             }
             else
@@ -437,7 +437,7 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $Name, $SQLInstanceName -ErrorCategory OperationStopped -InnerException $_.Exception
+                        throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $Name, $InstanceName -ErrorCategory OperationStopped -InnerException $_.Exception
                     }
 
                     # Join the Availability Group Replica to the Availability Group
@@ -470,10 +470,10 @@ function Set-TargetResource
     .PARAMETER AvailabilityGroupName
         The name of the availability group.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance to be configued.
 
     .PARAMETER PrimaryReplicaSQLServer
@@ -528,11 +528,11 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [String]
@@ -590,8 +590,8 @@ function Test-TargetResource
     )
 
     $getTargetResourceParameters = @{
-        SQLInstanceName       = $SQLInstanceName
-        SQLServer             = $SQLServer
+        InstanceName          = $InstanceName
+        ServerName            = $ServerName
         Name                  = $Name
         AvailabilityGroupName = $AvailabilityGroupName
     }
@@ -608,7 +608,7 @@ function Test-TargetResource
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
         # Use localization if the resource has been converted
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME,$SQLInstanceName )
+        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
         return $result
     }
 
@@ -631,8 +631,8 @@ function Test-TargetResource
             $parametersToCheck = @(
                 'Name',
                 'AvailabilityGroupName',
-                'SQLServer',
-                'SQLInstanceName',
+                'ServerName',
+                'InstanceName',
                 'Ensure',
                 'AvailabilityMode',
                 'BackupPriority',

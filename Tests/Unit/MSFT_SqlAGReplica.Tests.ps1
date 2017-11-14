@@ -37,21 +37,21 @@ try
 
         #region parameter mocks
 
-        $mockSqlServer = 'Server1'
-        $mockSqlInstanceName = 'MSSQLSERVER'
+        $mockServerName = 'Server1'
+        $mockInstanceName = 'MSSQLSERVER'
         $mockPrimaryReplicaSQLServer = 'Server2'
         $mockPrimaryReplicaSQLInstanceName = 'MSSQLSERVER'
         $mockAvailabilityGroupName = 'AG_AllServers'
-        $mockAvailabilityGroupReplicaName = $mockSqlServer
+        $mockAvailabilityGroupReplicaName = $mockServerName
         $mockEnsure = 'Present'
         $mockAvailabilityMode = 'AsynchronousCommit'
         $mockBackupPriority = 50
         $mockConnectionModeInPrimaryRole = 'AllowAllConnections'
         $mockConnectionModeInSecondaryRole = 'AllowNoConnections'
-        $mockEndpointHostName = $mockSqlServer
+        $mockEndpointHostName = $mockServerName
         $mockFailoverMode = 'Manual'
-        $mockReadOnlyRoutingConnectionUrl = "TCP://$($mockSqlServer).domain.com:1433"
-        $mockReadOnlyRoutingList = @($mockSqlServer)
+        $mockReadOnlyRoutingConnectionUrl = "TCP://$($mockServerName).domain.com:1433"
+        $mockReadOnlyRoutingList = @($mockServerName)
         $mockProcessOnlyOnActiveNode = $false
 
         #endregion
@@ -85,16 +85,16 @@ try
         $mockAllLoginsAbsent = @{}
 
         $mockNtServiceClusSvcPresent = @{
-            $mockNtServiceClusSvcName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer, $mockNtServiceClusSvcName) )
+            $mockNtServiceClusSvcName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockServerName, $mockNtServiceClusSvcName) )
         }
 
         $mockNtAuthoritySystemPresent = @{
-            $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer, $mockNtAuthoritySystemName) )
+            $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockServerName, $mockNtAuthoritySystemName) )
         }
 
         $mockAllLoginsPresent = @{
-            $mockNtServiceClusSvcName  = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer, $mockNtServiceClusSvcName) )
-            $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockSqlServer, $mockNtAuthoritySystemName) )
+            $mockNtServiceClusSvcName  = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockServerName, $mockNtServiceClusSvcName) )
+            $mockNtAuthoritySystemName = ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($mockServerName, $mockNtAuthoritySystemName) )
         }
 
         #endregion
@@ -535,8 +535,8 @@ try
                 $getTargetResourceParameters = @{
                     Name                  = $mockAvailabilityGroupReplicaName
                     AvailabilityGroupName = $mockAvailabilityGroupName
-                    SQLServer             = $mockSqlServer
-                    SQLInstanceName       = $mockSqlInstanceName
+                    ServerName            = $mockServerName
+                    InstanceName          = $mockInstanceName
                 }
 
                 $mockDatabaseMirroringEndpoint = $true
@@ -565,9 +565,9 @@ try
                     $getTargetResourceResult.Name | Should -BeNullOrEmpty
                     $getTargetResourceResult.ReadOnlyRoutingConnectionUrl | Should -BeNullOrEmpty
                     $getTargetResourceResult.ReadOnlyRoutingList | Should -BeNullOrEmpty
-                    $getTargetResourceResult.SQLServer | Should -Be $mockSqlServer
-                    $getTargetResourceResult.SQLInstanceName | Should -Be $mockSqlInstanceName
-                    $getTargetResourceResult.SQLServerNetName | Should -Be $mockSqlServer
+                    $getTargetResourceResult.ServerName | Should -Be $mockServerName
+                    $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
+                    $getTargetResourceResult.SQLServerNetName | Should -Be $mockServerName
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
@@ -590,12 +590,12 @@ try
                     $getTargetResourceResult.EndpointPort | Should -Be $mockendpointPort
                     $getTargetResourceResult.Ensure | Should -Be $mockEnsure
                     $getTargetResourceResult.FailoverMode | Should -Be $mockFailoverMode
-                    $getTargetResourceResult.Name | Should -Be $mockSqlServer
+                    $getTargetResourceResult.Name | Should -Be $mockServerName
                     $getTargetResourceResult.ReadOnlyRoutingConnectionUrl | Should -Be $mockReadOnlyRoutingConnectionUrl
-                    $getTargetResourceResult.ReadOnlyRoutingList | Should -Be $mockSqlServer
-                    $getTargetResourceResult.SQLServer | Should -Be $mockSqlServer
-                    $getTargetResourceResult.SQLInstanceName | Should -Be $mockSqlInstanceName
-                    $getTargetResourceResult.SQLServerNetName | Should -Be $mockSqlServer
+                    $getTargetResourceResult.ReadOnlyRoutingList | Should -Be $mockServerName
+                    $getTargetResourceResult.ServerName | Should -Be $mockServerName
+                    $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
+                    $getTargetResourceResult.SQLServerNetName | Should -Be $mockServerName
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
@@ -649,10 +649,10 @@ try
 
                 BeforeEach {
                     $setTargetResourceParameters = @{
-                        Name                  = $mockSqlServer
+                        Name                  = $mockServerName
                         AvailabilityGroupName = $mockAvailabilityGroupName
-                        SQLServer             = $mockSqlServer
-                        SQLInstanceName       = $mockSqlInstanceName
+                        ServerName            = $mockServerName
+                        InstanceName          = $mockInstanceName
                         Ensure                = 'Absent'
                     }
                 }
@@ -733,10 +733,10 @@ try
 
                 BeforeEach {
                     $setTargetResourceParameters = @{
-                        Name                          = $mockSqlServer
+                        Name                          = $mockServerName
                         AvailabilityGroupName         = $mockAvailabilityGroup2Name
-                        SQLServer                     = $mockSqlServer
-                        SQLInstanceName               = $mockSqlInstanceName
+                        ServerName                    = $mockServerName
+                        InstanceName                  = $mockInstanceName
                         PrimaryReplicaSQLServer       = $mockPrimaryReplicaSQLServer
                         PrimaryReplicaSQLInstanceName = $mockPrimaryReplicaSQLInstanceName
                         Ensure                        = $mockEnsure
@@ -1072,10 +1072,10 @@ try
                     $mockAlternateEndpointProtocol = $false
 
                     $setTargetResourceParameters = @{
-                        Name                          = $mockSqlServer
+                        Name                          = $mockServerName
                         AvailabilityGroupName         = $mockAvailabilityGroupName
-                        SQLServer                     = $mockSqlServer
-                        SQLInstanceName               = $mockSqlInstanceName
+                        ServerName                    = $mockServerName
+                        InstanceName                  = $mockInstanceName
                         PrimaryReplicaSQLServer       = $mockPrimaryReplicaSQLServer
                         PrimaryReplicaSQLInstanceName = $mockPrimaryReplicaSQLInstanceName
                         Ensure                        = $mockEnsure
@@ -1274,10 +1274,10 @@ try
                 $mockDatabaseMirroringEndpoint = $true
 
                 $testTargetResourceParameters = @{
-                    Name                          = $mockSqlServer
+                    Name                          = $mockServerName
                     AvailabilityGroupName         = $mockAvailabilityGroupName
-                    SQLServer                     = $mockSqlServer
-                    SQLInstanceName               = $mockSqlInstanceName
+                    ServerName                    = $mockServerName
+                    InstanceName                  = $mockInstanceName
                     PrimaryReplicaSQLServer       = $mockPrimaryReplicaSQLServer
                     PrimaryReplicaSQLInstanceName = $mockPrimaryReplicaSQLInstanceName
                     Ensure                        = $mockEnsure
