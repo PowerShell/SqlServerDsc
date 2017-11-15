@@ -22,32 +22,32 @@ Configuration Example
     {
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Data
         {
-            SQLServer                       = 'SQLServer'
-            SQLInstanceName                 = 'DSC'
-            ProcessOnlyOnActiveNode         = $true
-            Type                            = 'Data'
-            Path                            = 'C:\Program Files\Microsoft SQL Server'
-            PsDscRunAsCredential            = $SysAdminAccount
+            ServerName              = 'SQLServer'
+            InstanceName            = 'DSC'
+            ProcessOnlyOnActiveNode = $true
+            Type                    = 'Data'
+            Path                    = 'C:\Program Files\Microsoft SQL Server'
+            PsDscRunAsCredential    = $SysAdminAccount
         }
 
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Log
         {
-            SQLServer                       = 'SQLServer'
-            SQLInstanceName                 = 'DSC'
-            ProcessOnlyOnActiveNode         = $true
-            Type                            = 'Log'
-            Path                            = 'C:\Program Files\Microsoft SQL Server'
-            PsDscRunAsCredential            = $SysAdminAccount
+            ServerName              = 'SQLServer'
+            InstanceName            = 'DSC'
+            ProcessOnlyOnActiveNode = $true
+            Type                    = 'Log'
+            Path                    = 'C:\Program Files\Microsoft SQL Server'
+            PsDscRunAsCredential    = $SysAdminAccount
         }
 
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Backup
         {
-            SQLServer                       = 'SQLServer'
-            SQLInstanceName                 = 'DSC'
-            ProcessOnlyOnActiveNode         = $true
-            Type                            = 'Backup'
-            Path                            = 'C:\Program Files\Microsoft SQL Server'
-            PsDscRunAsCredential            = $SysAdminAccount
+            ServerName              = 'SQLServer'
+            InstanceName            = 'DSC'
+            ProcessOnlyOnActiveNode = $true
+            Type                    = 'Backup'
+            Path                    = 'C:\Program Files\Microsoft SQL Server'
+            PsDscRunAsCredential    = $SysAdminAccount
         }
     }
 }

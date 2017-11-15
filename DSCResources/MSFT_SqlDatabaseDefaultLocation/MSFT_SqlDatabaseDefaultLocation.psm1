@@ -3,7 +3,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     -Force
 
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
-                               -ChildPath 'CommonResourceHelper.psm1')
+        -ChildPath 'CommonResourceHelper.psm1')
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseDefaultLocation'
 
@@ -11,10 +11,10 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseDefault
     .SYNOPSIS
         Returns the current path to the the desired default location for the Data, Log, or Backup files.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER Type
@@ -33,12 +33,12 @@ Function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Data', 'Log', 'Backup')]
@@ -51,10 +51,10 @@ Function Get-TargetResource
         $Path
     )
 
-    Write-Verbose -Message ($script:localizedData.GetCurrentPath -f $Type, $SQLInstanceName)
+    Write-Verbose -Message ($script:localizedData.GetCurrentPath -f $Type, $InstanceName)
 
     # Connect to the instance
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Is this node actively hosting the SQL instance?
     $isActiveNode = Test-ActiveNode -ServerObject $sqlServerObject
@@ -79,11 +79,11 @@ Function Get-TargetResource
     }
 
     return @{
-        SqlInstanceName     = $SQLInstanceName
-        SqlServer           = $SQLServer
-        Type                = $Type
-        Path                = $currentPath
-        IsActiveNode        = $isActiveNode
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
+        Type         = $Type
+        Path         = $currentPath
+        IsActiveNode = $isActiveNode
     }
 }
 
@@ -91,10 +91,10 @@ Function Get-TargetResource
     .SYNOPSIS
         This function sets the current path for the default SQL Instance location for the Data, Log, or Backups files.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER Type
@@ -119,12 +119,12 @@ Function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Data', 'Log', 'Backup')]
@@ -153,7 +153,7 @@ Function Set-TargetResource
     else
     {
         Write-Verbose -Message ($script:localizedData.SettingDefaultPath -f $Type)
-        $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
         # Check which default location is being updated
         switch ($Type)
@@ -187,8 +187,8 @@ Function Set-TargetResource
 
             if ($RestartService)
             {
-                Write-Verbose -Message ($script:localizedData.RestartSqlServer -f $SqlServer, $SQLInstanceName)
-                Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+                Write-Verbose -Message ($script:localizedData.RestartSqlServer -f $ServerName, $InstanceName)
+                Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName
             }
         }
         catch
@@ -207,10 +207,10 @@ Function Set-TargetResource
     .SYNOPSIS
         This function tests the current path to the default database location for the Data, Log, or Backups files.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER Type
@@ -235,12 +235,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Data', 'Log', 'Backup')]
@@ -264,10 +264,10 @@ function Test-TargetResource
     Write-Verbose -Message ($script:localizedData.TestingCurrentPath -f $Type)
 
     $getTargetResourceParameters = @{
-        SQLInstanceName     = $SQLInstanceName
-        SQLServer           = $SQLServer
-        Type                = $Type
-        Path                = $Path
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
+        Type         = $Type
+        Path         = $Path
     }
 
     $isDefaultPathInDesiredState = $true
@@ -279,7 +279,7 @@ function Test-TargetResource
     #>
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
-        Write-Verbose -Message ($script:localizedData.NotActiveClusterNode -f $env:COMPUTERNAME,$SQLInstanceName )
+        Write-Verbose -Message ($script:localizedData.NotActiveClusterNode -f $env:COMPUTERNAME, $InstanceName )
     }
     elseif ($getTargetResourceResult.Path -ne $Path)
     {
