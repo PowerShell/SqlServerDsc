@@ -11,10 +11,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER RecoveryModel
     This is the RecoveryModel of the SQL database
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is a the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is a the SQL instance for the database
 #>
 function Get-TargetResource
@@ -32,12 +32,12 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -45,7 +45,7 @@ function Get-TargetResource
         $Name
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -60,16 +60,16 @@ function Get-TargetResource
         else
         {
             throw New-TerminatingError -ErrorType NoDatabase `
-                -FormatArgs @($Name, $sqlServer, $sqlInstanceName) `
+                -FormatArgs @($Name, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidResult
         }
     }
 
     $returnValue = @{
-        Name            = $Name
-        RecoveryModel   = $sqlDatabaseRecoveryModel
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
+        Name          = $Name
+        RecoveryModel = $sqlDatabaseRecoveryModel
+        ServerName    = $ServerName
+        InstanceName  = $InstanceName
     }
 
     $returnValue
@@ -85,10 +85,10 @@ function Get-TargetResource
     .PARAMETER RecoveryModel
     This is the RecoveryModel of the SQL database
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is a the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is a the SQL instance for the database
 #>
 function Set-TargetResource
@@ -105,12 +105,12 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -118,7 +118,7 @@ function Set-TargetResource
         $Name
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -137,7 +137,7 @@ function Set-TargetResource
         else
         {
             throw New-TerminatingError -ErrorType NoDatabase `
-                -FormatArgs @($Name, $sqlServer, $sqlInstanceName) `
+                -FormatArgs @($Name, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidResult
         }
     }
@@ -153,10 +153,10 @@ function Set-TargetResource
     .PARAMETER RecoveryModel
     This is the RecoveryModel of the SQL database
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is a the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is a the SQL instance for the database
 #>
 function Test-TargetResource
@@ -174,12 +174,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

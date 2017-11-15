@@ -22,8 +22,8 @@ Configuration Example
         {
             Ensure               = 'Present'
             Name                 = 'Adventureworks'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -31,8 +31,8 @@ Configuration Example
         {
             Ensure               = 'Present'
             Name                 = 'AdventureWorks2012'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -40,8 +40,8 @@ Configuration Example
         {
             Name                 = 'Adventureworks'
             RecoveryModel        = 'Full'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -49,8 +49,8 @@ Configuration Example
         {
             Name                 = 'AdventureWorks2012'
             RecoveryModel        = 'Simple'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
