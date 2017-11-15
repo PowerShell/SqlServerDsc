@@ -42,8 +42,8 @@ Configuration Example
             Database             = 'AdventureWorks'
             PermissionState      = 'Grant'
             Permissions          = 'Connect', 'Update'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -54,8 +54,8 @@ Configuration Example
             Database             = 'AdventureWorks'
             PermissionState      = 'Grant'
             Permissions          = 'Connect', 'Update'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
 
@@ -66,8 +66,8 @@ Configuration Example
             Database             = 'AdventureWorksLT'
             PermissionState      = 'Grant'
             Permissions          = 'Connect', 'Update'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

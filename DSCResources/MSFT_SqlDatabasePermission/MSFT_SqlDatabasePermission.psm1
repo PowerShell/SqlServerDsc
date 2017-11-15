@@ -17,10 +17,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER Permissions
     This is a list that represents a SQL Server set of database permissions
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is the SQL instance for the database
 #>
 function Get-TargetResource
@@ -52,15 +52,15 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -96,7 +96,7 @@ function Get-TargetResource
                 catch
                 {
                     throw New-TerminatingError -ErrorType FailedToEnumDatabasePermissions `
-                        -FormatArgs @($Name, $Database, $SQLServer, $SQLInstanceName) `
+                        -FormatArgs @($Name, $Database, $ServerName, $InstanceName) `
                         -ErrorCategory InvalidOperation `
                         -InnerException $_.Exception
                 }
@@ -105,7 +105,7 @@ function Get-TargetResource
             else
             {
                 throw New-TerminatingError -ErrorType LoginNotFound `
-                    -FormatArgs @($Name, $SQLServer, $SQLInstanceName) `
+                    -FormatArgs @($Name, $ServerName, $InstanceName) `
                     -ErrorCategory ObjectNotFound `
                     -InnerException $_.Exception
             }
@@ -113,7 +113,7 @@ function Get-TargetResource
         else
         {
             throw New-TerminatingError -ErrorType NoDatabase `
-                -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
+                -FormatArgs @($Database, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidResult `
                 -InnerException $_.Exception
         }
@@ -135,8 +135,8 @@ function Get-TargetResource
         Name            = $Name
         PermissionState = $PermissionState
         Permissions     = $getSqlDatabasePermissionResult
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
+        ServerName      = $ServerName
+        InstanceName    = $InstanceName
     }
 
     $returnValue
@@ -161,10 +161,10 @@ function Get-TargetResource
     .PARAMETER Permissions
     This is a list that represents a SQL Server set of database permissions
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is the SQL instance for the database
 #>
 function Set-TargetResource
@@ -200,15 +200,15 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $InstanceName = 'MSSQLSERVER'
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -230,7 +230,7 @@ function Set-TargetResource
                     catch
                     {
                         throw New-TerminatingError -ErrorType AddLoginDatabaseSetError `
-                            -FormatArgs @($SQLServer, $SQLInstanceName, $Name, $Database) `
+                            -FormatArgs @($ServerName, $InstanceName, $Name, $Database) `
                             -ErrorCategory InvalidOperation `
                             -InnerException $_.Exception
                     }
@@ -252,7 +252,7 @@ function Set-TargetResource
                             'Present'
                             {
                                 New-VerboseMessage -Message ('{0} the permissions ''{1}'' to the database {2} on the server {3}\{4}' `
-                                        -f $PermissionState, ($Permissions -join ','), $Database, $SQLServer, $SQLInstanceName)
+                                        -f $PermissionState, ($Permissions -join ','), $Database, $ServerName, $InstanceName)
 
                                 switch ($PermissionState)
                                 {
@@ -276,7 +276,7 @@ function Set-TargetResource
                             'Absent'
                             {
                                 New-VerboseMessage -Message ('Revoking {0} permissions {1} to the database {2} on the server {3}\{4}' `
-                                        -f $PermissionState, ($Permissions -join ','), $Database, $SQLServer, $SQLInstanceName)
+                                        -f $PermissionState, ($Permissions -join ','), $Database, $ServerName, $InstanceName)
 
                                 if ($PermissionState -eq 'GrantWithGrant')
                                 {
@@ -292,7 +292,7 @@ function Set-TargetResource
                     catch
                     {
                         throw New-TerminatingError -ErrorType FailedToSetPermissionDatabase `
-                            -FormatArgs @($Name, $Database, $SQLServer, $SQLInstanceName) `
+                            -FormatArgs @($Name, $Database, $ServerName, $InstanceName) `
                             -ErrorCategory InvalidOperation `
                             -InnerException $_.Exception
                     }
@@ -301,7 +301,7 @@ function Set-TargetResource
             else
             {
                 throw New-TerminatingError -ErrorType LoginNotFound `
-                    -FormatArgs @($Name, $SQLServer, $SQLInstanceName) `
+                    -FormatArgs @($Name, $ServerName, $InstanceName) `
                     -ErrorCategory ObjectNotFound `
                     -InnerException $_.Exception
             }
@@ -309,7 +309,7 @@ function Set-TargetResource
         else
         {
             throw New-TerminatingError -ErrorType NoDatabase `
-                -FormatArgs @($Database, $SQLServer, $SQLInstanceName) `
+                -FormatArgs @($Database, $ServerName, $InstanceName) `
                 -ErrorCategory InvalidResult `
                 -InnerException $_.Exception
         }
@@ -335,10 +335,10 @@ function Set-TargetResource
     .PARAMETER Permissions
     This is a list that represents a SQL Server set of database permissions
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     This is the SQL Server for the database
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     This is the SQL instance for the database
 #>
 function Test-TargetResource
@@ -375,18 +375,18 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER'
+        $InstanceName = 'MSSQLSERVER'
     )
 
     Write-Verbose -Message "Testing permissions for user $Name in database $Database."
     $getTargetResourceParameters = @{
-        SQLInstanceName = $PSBoundParameters.SQLInstanceName
-        SQLServer       = $PSBoundParameters.SQLServer
+        InstanceName    = $PSBoundParameters.InstanceName
+        ServerName      = $PSBoundParameters.ServerName
         Database        = $PSBoundParameters.Database
         Name            = $PSBoundParameters.Name
         PermissionState = $PSBoundParameters.PermissionState
