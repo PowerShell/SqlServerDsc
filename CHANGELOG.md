@@ -13,6 +13,8 @@
   - Updated Pester syntax to v4
   - Fixes broken links to issues in the CHANGELOG.md.
 - Changes to xSQLServerDatabase
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Added parameter to specify collation for a database to be different from server
     collation ([issue #767](https://github.com/PowerShell/xSQLServer/issues/767)).
   - Fixed unit tests for Get-TargetResource to ensure correctly testing return

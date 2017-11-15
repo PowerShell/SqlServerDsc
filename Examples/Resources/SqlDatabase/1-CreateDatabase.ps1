@@ -22,19 +22,19 @@ Configuration Example
     {
         SqlDatabase Create_Database
         {
-            Ensure          = 'Present'
-            SQLServer       = 'SQLServer'
-            SQLInstanceName = 'DSC'
-            Name            = 'Contoso'
+            Ensure       = 'Present'
+            ServerName   = 'SQLServer'
+            InstanceName = 'DSC'
+            Name         = 'Contoso'
         }
 
         SqlDatabase Create_Database_with_different_collation
         {
-            Ensure          = 'Present'
-            SQLServer       = 'SQLServer'
-            SQLInstanceName = 'DSC'
-            Name            = 'AdventureWorks'
-            Collation       = 'SQL_Latin1_General_Pref_CP850_CI_AS'
+            Ensure       = 'Present'
+            ServerName   = 'SQLServer'
+            InstanceName = 'DSC'
+            Name         = 'AdventureWorks'
+            Collation    = 'SQL_Latin1_General_Pref_CP850_CI_AS'
         }
     }
 }

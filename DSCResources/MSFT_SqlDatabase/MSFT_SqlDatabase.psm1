@@ -12,10 +12,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER Name
     The name of database to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
@@ -43,12 +43,12 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -56,7 +56,7 @@ function Get-TargetResource
         $Collation
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -79,11 +79,11 @@ function Get-TargetResource
     }
 
     $returnValue = @{
-        Name            = $Name
-        Ensure          = $Ensure
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
-        Collation       = $sqlDatabaseCollation
+        Name         = $Name
+        Ensure       = $Ensure
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
+        Collation    = $sqlDatabaseCollation
     }
 
     $returnValue
@@ -100,10 +100,10 @@ function Get-TargetResource
     .PARAMETER Name
     The name of database to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
@@ -129,12 +129,12 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -142,7 +142,7 @@ function Set-TargetResource
         $Collation
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -156,7 +156,7 @@ function Set-TargetResource
             elseif ($Collation -notin $sqlServerObject.EnumCollations().Name)
             {
                 throw New-TerminatingError -ErrorType InvalidCollationError `
-                    -FormatArgs @($SQLServer, $SQLInstanceName, $Name, $Collation) `
+                    -FormatArgs @($ServerName, $InstanceName, $Name, $Collation) `
                     -ErrorCategory InvalidOperation
             }
 
@@ -174,7 +174,7 @@ function Set-TargetResource
                 catch
                 {
                     throw New-TerminatingError -ErrorType UpdateDatabaseSetError `
-                        -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
+                        -FormatArgs @($ServerName, $InstanceName, $Name) `
                         -ErrorCategory InvalidOperation `
                         -InnerException $_.Exception
                 }
@@ -195,7 +195,7 @@ function Set-TargetResource
                 catch
                 {
                     throw New-TerminatingError -ErrorType CreateDatabaseSetError `
-                        -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
+                        -FormatArgs @($ServerName, $InstanceName, $Name) `
                         -ErrorCategory InvalidOperation `
                         -InnerException $_.Exception
                 }
@@ -216,7 +216,7 @@ function Set-TargetResource
             catch
             {
                 throw New-TerminatingError -ErrorType DropDatabaseSetError `
-                    -FormatArgs @($SQLServer, $SQLInstanceName, $Name) `
+                    -FormatArgs @($ServerName, $InstanceName, $Name) `
                     -ErrorCategory InvalidOperation `
                     -InnerException $_.Exception
             }
@@ -235,10 +235,10 @@ function Set-TargetResource
     .PARAMETER Name
     The name of database to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
@@ -265,12 +265,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
