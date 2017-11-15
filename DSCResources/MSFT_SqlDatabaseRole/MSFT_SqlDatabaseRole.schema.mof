@@ -3,8 +3,8 @@ class MSFT_SqlDatabaseRole : OMI_BaseResource
 {
     [Write, Description("If 'Present' (the default value) then the login (user) will be added to the role(s). If 'Absent' then the login (user) will be removed from the role(s)."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Key, Description("The name of the login that will become a member, or removed as a member, of the role(s).")] String Name;
-    [Key, Description("The host name of the SQL Server to be configured.")] String SQLServer;
-    [Key, Description("The name of the SQL instance to be configured.")] String SQLInstanceName;
+    [Key, Description("The host name of the SQL Server to be configured.")] String ServerName;
+    [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
     [Key, Description("The database in which the login (user) and role(s) exist.")] String Database;
     [Required, Description("One or more roles to which the login (user) will be added or removed.")] String Role[];
 };
