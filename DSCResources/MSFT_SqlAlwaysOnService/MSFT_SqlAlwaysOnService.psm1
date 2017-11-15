@@ -14,10 +14,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     *** Not used in this function ***
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Get-TargetResource
@@ -33,14 +33,14 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     $isAlwaysOnEnabled = [System.Boolean] $sqlServerObject.IsHadrEnabled
     if ($isAlwaysOnEnabled -eq $true)
@@ -52,7 +52,7 @@ function Get-TargetResource
         $statusString = 'disabled'
     }
 
-    New-VerboseMessage -Message ( 'SQL Always On is {0} on "{1}\{2}".' -f $statusString, $SQLServer, $SQLInstanceName )
+    New-VerboseMessage -Message ( 'SQL Always On is {0} on "{1}\{2}".' -f $statusString, $ServerName, $InstanceName )
 
     return @{
         IsHadrEnabled = $isAlwaysOnEnabled
@@ -68,10 +68,10 @@ function Get-TargetResource
     availability and disaster recovery (HADR) property enabled ('Present') or
     disabled ('Absent').
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER RestartTimeout
@@ -89,11 +89,11 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.Uint32]
@@ -101,13 +101,13 @@ function Set-TargetResource
     )
 
     # Build the instance name to allow the Enable/Disable-Always On to connect to the instance
-    if ($SQLInstanceName -eq "MSSQLSERVER")
+    if ($InstanceName -eq "MSSQLSERVER")
     {
-        $serverInstance = $SQLServer
+        $serverInstance = $ServerName
     }
     else
     {
-        $serverInstance = "$SQLServer\$SQLInstanceName"
+        $serverInstance = "$ServerName\$InstanceName"
     }
 
     Import-SQLPSModule
@@ -128,10 +128,10 @@ function Set-TargetResource
         }
     }
 
-    New-VerboseMessage -Message ( 'SQL Always On has been {0} on "{1}\{2}". Restarting the service.' -f @{Absent = 'disabled'; Present = 'enabled'}[$Ensure], $SQLServer, $SQLInstanceName )
+    New-VerboseMessage -Message ( 'SQL Always On has been {0} on "{1}\{2}". Restarting the service.' -f @{Absent = 'disabled'; Present = 'enabled'}[$Ensure], $ServerName, $InstanceName )
 
     # Now restart the SQL service so that all dependent services are also returned to their previous state
-    Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
+    Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName -Timeout $RestartTimeout
 
     # Verify always on was set
     if ( -not ( Test-TargetResource @PSBoundParameters ) )
@@ -150,10 +150,10 @@ function Set-TargetResource
     availability and disaster recovery (HADR) property enabled ('Present') or
     disabled ('Absent').
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The hostname of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER RestartTimeout
@@ -174,11 +174,11 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [System.Uint32]
@@ -187,9 +187,9 @@ function Test-TargetResource
 
     # Determine the current state of Always On
     $getTargetResourceParameters = @{
-        Ensure          = $Ensure
-        SQLServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
+        Ensure       = $Ensure
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
     }
 
     $state = Get-TargetResource @getTargetResourceParameters
@@ -200,7 +200,7 @@ function Test-TargetResource
     # Determine whether the value matches the desired state
     $desiredStateMet = $state.IsHadrEnabled -eq $hadrDesiredState
 
-    New-VerboseMessage -Message ( 'SQL Always On is in the desired state for "{0}\{1}": {2}.' -f $SQLServer, $SQLInstanceName, $desiredStateMet )
+    New-VerboseMessage -Message ( 'SQL Always On is in the desired state for "{0}\{1}": {2}.' -f $ServerName, $InstanceName, $desiredStateMet )
 
     return $desiredStateMet
 }

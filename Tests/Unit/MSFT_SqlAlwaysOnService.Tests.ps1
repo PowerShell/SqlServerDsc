@@ -1,12 +1,12 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlAlwaysOnService'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlAlwaysOnService'
 
 # Unit Test Template Version: 1.1.0
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -16,27 +16,27 @@ $TestEnvironment = Initialize-TestEnvironment `
     -TestType Unit
 
 $disableHadr = @{
-    Ensure = 'Absent'
-    SQLServer = 'Server01'
-    SQLInstanceName = 'MSSQLSERVER'
+    Ensure       = 'Absent'
+    ServerName   = 'Server01'
+    InstanceName = 'MSSQLSERVER'
 }
 
 $enableHadr = @{
-    Ensure = 'Present'
-    SQLServer = 'Server01'
-    SQLInstanceName = 'MSSQLSERVER'
+    Ensure       = 'Present'
+    ServerName   = 'Server01'
+    InstanceName = 'MSSQLSERVER'
 }
 
 $disableHadrNamedInstance = @{
-    Ensure = 'Absent'
-    SQLServer = 'Server01'
-    SQLInstanceName = 'NamedInstance'
+    Ensure       = 'Absent'
+    ServerName   = 'Server01'
+    InstanceName = 'NamedInstance'
 }
 
 $enableHadrNamedInstance = @{
-    Ensure = 'Present'
-    SQLServer = 'Server01'
-    SQLInstanceName = 'NamedInstance'
+    Ensure       = 'Present'
+    ServerName   = 'Server01'
+    InstanceName = 'NamedInstance'
 }
 
 # Begin Testing
@@ -139,7 +139,7 @@ try
 
             It 'Should disable SQL Always On when Ensure is set to Absent' {
                 Mock -CommandName Connect-SQL -MockWith {
-                return New-Object PSObject -Property @{
+                    return New-Object PSObject -Property @{
                         IsHadrEnabled = $false
                     }
                 } -ModuleName $script:DSCResourceName -Verifiable

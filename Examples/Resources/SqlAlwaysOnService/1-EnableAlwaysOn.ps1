@@ -20,8 +20,8 @@ Configuration Example
         SqlAlwaysOnService 'EnableAlwaysOn'
         {
             Ensure               = 'Present'
-            SQLServer            = 'SP23-VM-SQL1'
-            SQLInstanceName      = 'MSSQLSERVER'
+            ServerName           = 'SP23-VM-SQL1'
+            InstanceName         = 'MSSQLSERVER'
             RestartTimeout       = 120
 
             PsDscRunAsCredential = $SysAdminAccount
