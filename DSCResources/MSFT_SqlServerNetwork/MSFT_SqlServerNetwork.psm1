@@ -67,7 +67,7 @@ function Get-TargetResource
     .SYNOPSIS
     Sets the SQL Server network properties.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
@@ -105,7 +105,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -223,7 +223,7 @@ function Set-TargetResource
 
         if ($RestartService -and $isRestartNeeded)
         {
-            Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $InstanceName -Timeout $RestartTimeout
+            Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName -Timeout $RestartTimeout
         }
     }
     finally
@@ -236,7 +236,7 @@ function Set-TargetResource
     .SYNOPSIS
     Sets the SQL Server network properties.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     Not used in Test-TargetResource.
@@ -280,7 +280,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
