@@ -14,11 +14,11 @@ Configuration Example
         SqlServerConfiguration 'SQLConfigPriorityBoost'
         {
 
-            SQLServer       = 'localhost'
-            SQLInstanceName = 'MSSQLSERVER'
-            OptionName      = 'priority boost'
-            OptionValue     = 1
-            RestartService  = $false
+            ServerName     = 'localhost'
+            InstanceName   = 'MSSQLSERVER'
+            OptionName     = 'priority boost'
+            OptionValue    = 1
+            RestartService = $false
         }
     }
 }

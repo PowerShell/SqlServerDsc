@@ -6,10 +6,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .SYNOPSIS
     Gets the current value of a SQL configuration option
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server to be configured
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
@@ -33,11 +33,11 @@ function Get-TargetResource
     param(
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [String]
@@ -56,7 +56,7 @@ function Get-TargetResource
         $RestartTimeout = 120
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sql = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
@@ -67,12 +67,12 @@ function Get-TargetResource
     }
 
     return @{
-        SqlServer       = $SQLServer
-        SQLInstanceName = $SQLInstanceName
-        OptionName      = $option.DisplayName
-        OptionValue     = $option.ConfigValue
-        RestartService  = $RestartService
-        RestartTimeout  = $RestartTimeout
+        ServerName     = $ServerName
+        InstanceName   = $InstanceName
+        OptionName     = $option.DisplayName
+        OptionValue    = $option.ConfigValue
+        RestartService = $RestartService
+        RestartTimeout = $RestartTimeout
     }
 }
 
@@ -80,10 +80,10 @@ function Get-TargetResource
     .SYNOPSIS
     Sets the value of a SQL configuration option
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server to be configured
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
@@ -104,11 +104,11 @@ function Set-TargetResource
     param(
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [String]
@@ -127,7 +127,7 @@ function Set-TargetResource
         $RestartTimeout = 120
     )
 
-    $sql = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sql = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
@@ -147,7 +147,7 @@ function Set-TargetResource
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
         New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
-        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -Timeout $RestartTimeout
+        Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName -Timeout $RestartTimeout
     }
     else
     {
@@ -159,10 +159,10 @@ function Set-TargetResource
     .SYNOPSIS
     Determines whether a SQL configuration option value is properly set
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     Hostname of the SQL Server to be configured
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     Name of the SQL instance to be configued. Default is 'MSSQLSERVER'
 
     .PARAMETER OptionName
@@ -186,11 +186,11 @@ function Test-TargetResource
     param(
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [String]

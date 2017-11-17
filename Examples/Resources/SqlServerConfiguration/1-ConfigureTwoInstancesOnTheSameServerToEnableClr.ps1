@@ -25,10 +25,10 @@ Configuration Example
         {
             SqlServerConfiguration ('SQLConfigCLR_{0}' -f $SQLInstance)
             {
-                SQLServer       = $node.NodeName
-                SQLInstanceName = $SQLInstance
-                OptionName      = $node.OptionName
-                OptionValue     = 1
+                Servername   = $node.NodeName
+                InstanceName = $SQLInstance
+                OptionName   = $node.OptionName
+                OptionValue  = 1
             }
         }
     }

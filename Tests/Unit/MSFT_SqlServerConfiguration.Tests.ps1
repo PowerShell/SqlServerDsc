@@ -1,12 +1,12 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerConfiguration'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerConfiguration'
 
 # Unit Test Template Version: 1.1.0
 [String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -16,46 +16,46 @@ $TestEnvironment = Initialize-TestEnvironment `
     -TestType Unit
 
 $defaultState = @{
-    SQLServer = 'CLU01'
-    SQLInstanceName = 'ClusteredInstance'
-    OptionName = 'user connections'
-    OptionValue = 0
+    ServerName     = 'CLU01'
+    InstanceName   = 'ClusteredInstance'
+    OptionName     = 'user connections'
+    OptionValue    = 0
     RestartService = $false
     RestartTimeout = 120
 }
 
 $desiredState = @{
-    SQLServer = 'CLU01'
-    SQLInstanceName = 'ClusteredInstance'
-    OptionName = 'user connections'
-    OptionValue = 500
+    ServerName     = 'CLU01'
+    InstanceName   = 'ClusteredInstance'
+    OptionName     = 'user connections'
+    OptionValue    = 500
     RestartService = $false
     RestartTimeout = 120
 }
 
 $desiredStateRestart = @{
-    SQLServer = 'CLU01'
-    SQLInstanceName = 'ClusteredInstance'
-    OptionName = 'user connections'
-    OptionValue = 5000
+    ServerName     = 'CLU01'
+    InstanceName   = 'ClusteredInstance'
+    OptionName     = 'user connections'
+    OptionValue    = 5000
     RestartService = $true
     RestartTimeout = 120
 }
 
 $dynamicOption = @{
-    SQLServer = 'CLU02'
-    SQLInstanceName = 'ClusteredInstance'
-    OptionName = 'show advanced options'
-    OptionValue = 0
+    ServerName     = 'CLU02'
+    InstanceName   = 'ClusteredInstance'
+    OptionName     = 'show advanced options'
+    OptionValue    = 0
     RestartService = $false
     RestartTimeout = 120
 }
 
 $invalidOption = @{
-    SQLServer = 'CLU01'
-    SQLInstanceName = 'MSSQLSERVER'
-    OptionName = 'Does Not Exist'
-    OptionValue = 1
+    ServerName     = 'CLU01'
+    InstanceName   = 'MSSQLSERVER'
+    OptionName     = 'Does Not Exist'
+    OptionValue    = 1
     RestartService = $false
     RestartTimeout = 120
 }
@@ -95,8 +95,8 @@ try
             $result = Get-TargetResource @desiredState
 
             It 'Should return the same values as passed' {
-                $result.SQLServer | Should -Be $desiredState.SQLServer
-                $result.SQLInstanceName | Should -Be $desiredState.SQLInstanceName
+                $result.ServerName | Should -Be $desiredState.ServerName
+                $result.InstanceName | Should -Be $desiredState.InstanceName
                 $result.OptionName | Should -Be $desiredState.OptionName
                 $result.OptionValue | Should -Not -Be $desiredState.OptionValue
                 $result.RestartService | Should -Be $desiredState.RestartService
@@ -132,8 +132,8 @@ try
             $result = Get-TargetResource @desiredState
 
             It 'Should return the same values as passed' {
-                $result.SQLServer | Should -Be $desiredState.SQLServer
-                $result.SQLInstanceName | Should -Be $desiredState.SQLInstanceName
+                $result.ServerName | Should -Be $desiredState.ServerName
+                $result.InstanceName | Should -Be $desiredState.InstanceName
                 $result.OptionName | Should -Be $desiredState.OptionName
                 $result.OptionValue | Should -Be $desiredState.OptionValue
                 $result.RestartService | Should -Be $desiredState.RestartService
@@ -216,7 +216,7 @@ try
                         @{
                             DisplayName = 'user connections'
                             ConfigValue = 0
-                            IsDynamic = $false
+                            IsDynamic   = $false
                         }
                     )
                 }
@@ -235,7 +235,7 @@ try
                         @{
                             DisplayName = 'show advanced options'
                             ConfigValue = 1
-                            IsDynamic = $true
+                            IsDynamic   = $true
                         }
                     )
                 }
