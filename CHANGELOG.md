@@ -6,6 +6,48 @@
   - See [issue #851](https://github.com/PowerShell/xSQLServer/issues/851) for a
   complete table mapping rename changes.
   - Impact to all resources
+- Changes to SqlAG
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlAGDatabases
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlAGListener
+  - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
+    ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlAGReplica
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlAlwaysOnService
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlDatabase
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes SqlDatabaseDefaultLocation
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlDatabasePermission
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlDatabaseRecoveryModel
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlDatabaseRole
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlServerEndpoint
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlServerLogin
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlServerOwner
+  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
+    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
+- Changes to SqlServerPermission
+  - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
+    ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
 
 ## 9.0.0.0
 
@@ -13,15 +55,11 @@
   - Updated Pester syntax to v4
   - Fixes broken links to issues in the CHANGELOG.md.
 - Changes to xSQLServerDatabase
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Added parameter to specify collation for a database to be different from server
     collation ([issue #767](https://github.com/PowerShell/xSQLServer/issues/767)).
   - Fixed unit tests for Get-TargetResource to ensure correctly testing return
     values ([issue #849](https://github.com/PowerShell/xSQLServer/issues/849))
 - Changes to xSQLServerAlwaysOnAvailabilityGroup
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Refactored the unit tests to allow them to be more user friendly and to test
     additional SQLServer variations.
     - Each test will utilize the Import-SQLModuleStub to ensure the correct
@@ -35,14 +73,10 @@
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #868](https://github.com/PowerShell/xSQLServer/issues/868)).
 - Changes to xSQLServerAlwaysOnAvailabilityGroupDatabaseMembership
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #869](https://github.com/PowerShell/xSQLServer/issues/869)).
 - Changes to xSQLServerAlwaysOnAvailabilityGroupReplica
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node is
     the active host of the SQL Server instance ([issue #870](https://github.com/PowerShell/xSQLServer/issues/870)).
@@ -70,38 +104,12 @@
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 - Changes to xSQLServerAvailabilityGroupListener
-  - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
-    ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
   - Fixed a problem when running the tests locally in a PowerShell console it
     would ask for parameters ([issue #897](https://github.com/PowerShell/xSQLServer/issues/897)).
 - Changes to xSQLServerMaxDop
   - Made the resource cluster aware. When ProcessOnlyOnActiveNode is specified,
     the resource will only determine if a change is needed if the target node
     is the active host of the SQL Server instance ([issue #882](https://github.com/PowerShell/xSQLServer/issues/882)).
-- Changes to SqlServerLogin
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlServerPermission
-  - BREAKING CHANGE: Parameter NodeName has been renamed to ServerName
-    ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlServerEndpoint
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlServerOwner
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlAlwaysOnService
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlDatabasePermission
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlDatabaseRecoveryModel
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlDatabaseRole
-  - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
-    to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
 
 ## 8.2.0.0
 
