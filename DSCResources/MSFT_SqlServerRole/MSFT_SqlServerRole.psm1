@@ -17,10 +17,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Get-TargetResource
@@ -49,15 +49,15 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
     $ensure = 'Present'
 
     if ($sqlServerObject)
@@ -72,7 +72,7 @@ function Get-TargetResource
             catch
             {
                 throw New-TerminatingError -ErrorType EnumMemberNamesServerRoleGetError `
-                    -FormatArgs @($SQLServer, $SQLInstanceName, $ServerRoleName) `
+                    -FormatArgs @($ServerName, $InstanceName, $ServerRoleName) `
                     -ErrorCategory InvalidOperation `
                     -InnerException $_.Exception
             }
@@ -82,7 +82,7 @@ function Get-TargetResource
                 if ($MembersToInclude -or $MembersToExclude)
                 {
                     throw New-TerminatingError -ErrorType MembersToIncludeAndExcludeParamMustBeNull `
-                        -FormatArgs @($SQLServer, $SQLInstanceName) `
+                        -FormatArgs @($ServerName, $InstanceName) `
                         -ErrorCategory InvalidArgument
                 }
 
@@ -131,8 +131,8 @@ function Get-TargetResource
         MembersToInclude = $MembersToInclude
         MembersToExclude = $MembersToExclude
         ServerRoleName   = $ServerRoleName
-        SQLServer        = $SQLServer
-        SQLInstanceName  = $SQLInstanceName
+        ServerName       = $ServerName
+        InstanceName     = $InstanceName
     }
     $returnValue
 }
@@ -157,10 +157,10 @@ function Get-TargetResource
     .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Set-TargetResource
@@ -193,15 +193,15 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -224,7 +224,7 @@ function Set-TargetResource
                 catch
                 {
                     throw New-TerminatingError -ErrorType DropServerRoleSetError `
-                        -FormatArgs @($SQLServer, $SQLInstanceName, $ServerRoleName) `
+                        -FormatArgs @($ServerName, $InstanceName, $ServerRoleName) `
                         -ErrorCategory InvalidOperation `
                         -InnerException $_.Exception
                 }
@@ -248,7 +248,7 @@ function Set-TargetResource
                     catch
                     {
                         throw New-TerminatingError -ErrorType CreateServerRoleSetError `
-                            -FormatArgs @($SQLServer, $SQLInstanceName, $ServerRoleName) `
+                            -FormatArgs @($ServerName, $InstanceName, $ServerRoleName) `
                             -ErrorCategory InvalidOperation `
                             -InnerException $_.Exception
                     }
@@ -259,7 +259,7 @@ function Set-TargetResource
                     if ($MembersToInclude -or $MembersToExclude)
                     {
                         throw New-TerminatingError -ErrorType MembersToIncludeAndExcludeParamMustBeNull `
-                            -FormatArgs @($SQLServer, $SQLInstanceName) `
+                            -FormatArgs @($ServerName, $InstanceName) `
                             -ErrorCategory InvalidArgument
                     }
 
@@ -342,10 +342,10 @@ function Set-TargetResource
     .PARAMETER ServerRoleName
     The name of server role to be created or dropped.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Test-TargetResource
@@ -379,19 +379,19 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName
+        $InstanceName
     )
 
     Write-Verbose -Message "Testing SQL Server role $ServerRoleName properties."
 
     $getTargetResourceParameters = @{
-        SQLInstanceName  = $PSBoundParameters.SQLInstanceName
-        SQLServer        = $PSBoundParameters.SQLServer
+        InstanceName     = $PSBoundParameters.InstanceName
+        ServerName       = $PSBoundParameters.ServerName
         ServerRoleName   = $PSBoundParameters.ServerRoleName
         Members          = $PSBoundParameters.Members
         MembersToInclude = $PSBoundParameters.MembersToInclude
@@ -463,7 +463,7 @@ function Add-SqlDscServerRoleMember
     if ( -not ($SqlServerObject.Logins[$LoginName]) )
     {
         throw New-TerminatingError -ErrorType LoginNotFound `
-            -FormatArgs @($LoginName, $SQLServer, $SQLInstanceName) `
+            -FormatArgs @($LoginName, $ServerName, $InstanceName) `
             -ErrorCategory ObjectNotFound
     }
 
@@ -476,7 +476,7 @@ function Add-SqlDscServerRoleMember
     catch
     {
         throw New-TerminatingError -ErrorType AddMemberServerRoleSetError `
-            -FormatArgs @($SQLServer, $SQLInstanceName, $ServerRoleName, $LoginName) `
+            -FormatArgs @($ServerName, $InstanceName, $ServerRoleName, $LoginName) `
             -ErrorCategory InvalidOperation `
             -InnerException $_.Exception
     }
@@ -519,7 +519,7 @@ function Remove-SqlDscServerRoleMember
     if ( -not ($SqlServerObject.Logins[$LoginName]) )
     {
         throw New-TerminatingError -ErrorType LoginNotFound `
-            -FormatArgs @($LoginName, $SQLServer, $SQLInstanceName) `
+            -FormatArgs @($LoginName, $ServerName, $InstanceName) `
             -ErrorCategory ObjectNotFound
     }
 
@@ -532,7 +532,7 @@ function Remove-SqlDscServerRoleMember
     catch
     {
         throw New-TerminatingError -ErrorType DropMemberServerRoleSetError `
-            -FormatArgs @($SQLServer, $SQLInstanceName, $ServerRoleName, $LoginName) `
+            -FormatArgs @($ServerName, $InstanceName, $ServerRoleName, $LoginName) `
             -ErrorCategory InvalidOperation `
             -InnerException $_.Exception
     }

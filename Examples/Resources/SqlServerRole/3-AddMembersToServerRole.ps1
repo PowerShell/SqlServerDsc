@@ -20,9 +20,9 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerRoleName       = 'AdminSqlforBI'
-            Members              = "CONTOSO\SQLAdmin", "CONTOSO\SQLAdminBI"
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            Members              = 'CONTOSO\SQLAdmin', 'CONTOSO\SQLAdminBI'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

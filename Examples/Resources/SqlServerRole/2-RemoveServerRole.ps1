@@ -18,9 +18,9 @@ Configuration Example
         SqlServerRole Remove_ServerRole
         {
             Ensure               = 'Absent'
-            ServerRoleName       = "serverRoleToDelete"
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerRoleName       = 'serverRoleToDelete'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

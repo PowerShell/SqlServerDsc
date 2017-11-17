@@ -20,9 +20,9 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerRoleName       = 'AdminSqlforBI'
-            MembersToExclude     = "CONTOSO\Mark", "CONTOSO\Lucy"
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            MembersToExclude     = 'CONTOSO\Mark', 'CONTOSO\Lucy'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

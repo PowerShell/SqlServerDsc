@@ -18,9 +18,9 @@ Configuration Example
         SqlServerRole Add_ServerRole_AdminSqlforBI
         {
             Ensure               = 'Present'
-            ServerRoleName       = "AdminSqlforBI"
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerRoleName       = 'AdminSqlforBI'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
