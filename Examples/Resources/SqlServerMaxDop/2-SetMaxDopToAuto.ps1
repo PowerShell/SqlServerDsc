@@ -26,8 +26,8 @@ Configuration Example
         {
             Ensure                  = 'Present'
             DynamicAlloc            = $true
-            SQLServer               = 'SQLServer'
-            SQLInstanceName         = 'DSC'
+            ServerName              = 'SQLServer'
+            InstanceName            = 'DSC'
             PsDscRunAsCredential    = $SysAdminAccount
             ProcessOnlyOnActiveNode = $true
         }

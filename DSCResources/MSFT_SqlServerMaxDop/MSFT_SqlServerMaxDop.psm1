@@ -5,10 +5,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .SYNOPSIS
     This function gets the max degree of parallelism server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 #>
 function Get-TargetResource
@@ -20,15 +20,15 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME
+        $ServerName = $env:COMPUTERNAME
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     # Is this node actively hosting the SQL instance?
     $isActiveNode = Test-ActiveNode -ServerObject $sqlServerObject
@@ -40,10 +40,10 @@ function Get-TargetResource
     }
 
     $returnValue = @{
-        SQLInstanceName = $SQLInstanceName
-        SQLServer       = $SQLServer
-        MaxDop          = $currentMaxDop
-        IsActiveNode    = $isActiveNode
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
+        MaxDop       = $currentMaxDop
+        IsActiveNode = $isActiveNode
     }
 
     $returnValue
@@ -53,10 +53,10 @@ function Get-TargetResource
     .SYNOPSIS
     This function sets the max degree of parallelism server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
@@ -82,12 +82,12 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -108,7 +108,7 @@ function Set-TargetResource
         $ProcessOnlyOnActiveNode
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -122,7 +122,7 @@ function Set-TargetResource
                     if ($MaxDop)
                     {
                         throw New-TerminatingError -ErrorType MaxDopParamMustBeNull `
-                            -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                            -FormatArgs @( $ServerName, $InstanceName ) `
                             -ErrorCategory InvalidArgument
                     }
 
@@ -151,7 +151,7 @@ function Set-TargetResource
         catch
         {
             throw New-TerminatingError -ErrorType MaxDopSetError `
-                -FormatArgs @($SQLServer, $SQLInstanceName, $targetMaxDop) `
+                -FormatArgs @($ServerName, $InstanceName, $targetMaxDop) `
                 -ErrorCategory InvalidOperation `
                 -InnerException $_.Exception
         }
@@ -162,10 +162,10 @@ function Set-TargetResource
     .SYNOPSIS
     This function tests the max degree of parallelism server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
@@ -191,12 +191,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -220,8 +220,8 @@ function Test-TargetResource
     Write-Verbose -Message 'Testing the max degree of parallelism server configuration option'
 
     $parameters = @{
-        SQLInstanceName = $SQLInstanceName
-        SQLServer       = $SQLServer
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
     }
 
     $currentValues = Get-TargetResource @parameters
@@ -235,7 +235,7 @@ function Test-TargetResource
     #>
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME,$SQLInstanceName )
+        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
         return $isMaxDopInDesiredState
     }
 
@@ -256,7 +256,7 @@ function Test-TargetResource
                 if ($MaxDop)
                 {
                     throw New-TerminatingError -ErrorType MaxDopParamMustBeNull `
-                        -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                        -FormatArgs @( $ServerName, $InstanceName ) `
                         -ErrorCategory InvalidArgument
                 }
 

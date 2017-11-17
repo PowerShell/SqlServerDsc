@@ -20,8 +20,8 @@ Configuration Example
         SqlServerMaxDop Set_SQLServerMaxDop_ToDefault
         {
             Ensure               = 'Absent'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

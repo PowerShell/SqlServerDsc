@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerMaxDop'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerMaxDop'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -23,10 +23,12 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -36,19 +38,19 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockSQLServerName                  = 'localhost'
-        $mockSQLServerInstanceName          = 'MSSQLSERVER'
-        $mockMaxDegreeOfParallelism         = 4
-        $mockExpectedMaxDopForAlterMethod   = 1
+        $mockServerName = 'localhost'
+        $mockInstanceName = 'MSSQLSERVER'
+        $mockMaxDegreeOfParallelism = 4
+        $mockExpectedMaxDopForAlterMethod = 1
         $mockInvalidOperationForAlterMethod = $false
-        $mockNumberOfLogicalProcessors      = 4
-        $mockNumberOfCores                  = 4
-        $mockProcessOnlyOnActiveNode        = $true
+        $mockNumberOfLogicalProcessors = 4
+        $mockNumberOfCores = 4
+        $mockProcessOnlyOnActiveNode = $true
 
         # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
-            SQLInstanceName = $mockSQLServerInstanceName
-            SQLServer       = $mockSQLServerName
+            InstanceName = $mockInstanceName
+            ServerName   = $mockServerName
         }
 
         #region Function mocks
@@ -57,31 +59,31 @@ try
             return @(
                 (
                     New-Object Object -TypeName Microsoft.SqlServer.Management.Smo.Server |
-                        Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockSQLServerInstanceName -PassThru -Force |
-                        Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockSQLServerName -PassThru -Force |
+                        Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockInstanceName -PassThru -Force |
+                        Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru -Force |
                         Add-Member -MemberType ScriptProperty -Name Configuration -Value {
-                            return @( ( New-Object Object |
-                                Add-Member -MemberType ScriptProperty -Name MaxDegreeOfParallelism -Value {
+                        return @( ( New-Object Object |
+                                    Add-Member -MemberType ScriptProperty -Name MaxDegreeOfParallelism -Value {
                                     return @( ( New-Object Object |
-                                        Add-Member -MemberType NoteProperty -Name DisplayName -Value 'max degree of parallelism' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name Description -Value 'maximum degree of parallelism' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMaxDegreeOfParallelism -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMaxDegreeOfParallelism -PassThru -Force
-                                    ) )
+                                                Add-Member -MemberType NoteProperty -Name DisplayName -Value 'max degree of parallelism' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name Description -Value 'maximum degree of parallelism' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMaxDegreeOfParallelism -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMaxDegreeOfParallelism -PassThru -Force
+                                        ) )
                                 } -PassThru -Force
                             ) )
-                        } -PassThru |
+                    } -PassThru |
                         Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                            if ( $this.Configuration.MaxDegreeOfParallelism.ConfigValue -ne $mockExpectedMaxDopForAlterMethod )
-                            {
-                                throw "Called mocked Alter() method without setting the right MaxDegreeOfParallelism. Expected '{0}'. But was '{1}'." `
-                                      -f $mockExpectedMaxDopForAlterMethod, $this.Configuration.MaxDegreeOfParallelism.ConfigValue
-                            }
-                            if ($mockInvalidOperationForAlterMethod)
-                            {
-                                throw 'Mock Alter Method was called with invalid operation.'
-                            }
-                        } -PassThru -Force
+                        if ( $this.Configuration.MaxDegreeOfParallelism.ConfigValue -ne $mockExpectedMaxDopForAlterMethod )
+                        {
+                            throw "Called mocked Alter() method without setting the right MaxDegreeOfParallelism. Expected '{0}'. But was '{1}'." `
+                                -f $mockExpectedMaxDopForAlterMethod, $this.Configuration.MaxDegreeOfParallelism.ConfigValue
+                        }
+                        if ($mockInvalidOperationForAlterMethod)
+                        {
+                            throw 'Mock Alter Method was called with invalid operation.'
+                        }
+                    } -PassThru -Force
                 )
             )
         }
@@ -98,7 +100,7 @@ try
 
         #endregion
 
-        Describe "MSFT_SqlServerMaxDop\Get-TargetResource" -Tag 'Get'{
+        Describe "MSFT_SqlServerMaxDop\Get-TargetResource" -Tag 'Get' {
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             Mock -CommandName Test-ActiveNode -MockWith { return $mockProcessOnlyOnActiveNode } -Verifiable
 
@@ -112,8 +114,8 @@ try
                 }
 
                 It 'Should return the same values as passed as parameters' {
-                    $result.SQLServer | Should -Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should -Be $testParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $testParameters.ServerName
+                    $result.InstanceName | Should -Be $testParameters.InstanceName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -128,7 +130,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerMaxDop\Test-TargetResource" -Tag 'Test'{
+        Describe "MSFT_SqlServerMaxDop\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
@@ -148,9 +150,9 @@ try
             Context 'When the system is not in the desired state and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 1
-                    DynamicAlloc    = $false
-                    Ensure = 'Present'
+                    MaxDop       = 1
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should return the state as false when desired MaxDop is the wrong value' {
@@ -172,8 +174,8 @@ try
             Context 'When the system is in the desired state and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 6
-                    DynamicAlloc    = $false
+                    MaxDop       = 6
+                    DynamicAlloc = $false
                 }
 
                 It 'Should return the state as true when desired MaxDop is the correct value' {
@@ -311,7 +313,7 @@ try
                 BeforeAll {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Ensure = 'Absent'
+                        Ensure                  = 'Absent'
                         ProcessOnlyOnActiveNode = $true
                     }
 
@@ -349,8 +351,8 @@ try
             Context 'When the MaxDop parameter is not null and DynamicAlloc set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 4
-                    DynamicAlloc    = $true
+                    MaxDop       = 4
+                    DynamicAlloc = $true
                 }
 
                 It 'Should throw the correct error' {
@@ -363,9 +365,9 @@ try
             }
 
             # This is regression test for issue #576
-            Context 'When the system is in the desired state and SQLServer is not set' {
+            Context 'When the system is in the desired state and ServerName is not set' {
                 $testParameters = $mockDefaultParameters
-                $testParameters.Remove('SQLServer')
+                $testParameters.Remove('ServerName')
                 $testParameters += @{
                     Ensure = 'Absent'
                 }
@@ -378,7 +380,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerMaxDop\Set-TargetResource" -Tag 'Set'{
+        Describe "MSFT_SqlServerMaxDop\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
@@ -394,9 +396,9 @@ try
             Context 'When the MaxDop parameter is not null and DynamicAlloc set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 4
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    MaxDop       = 4
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
@@ -432,9 +434,9 @@ try
             Context 'When the desired MaxDop parameter is not set' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 1
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    MaxDop       = 1
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should Not Throw when MaxDop parameter is not null and DynamicAlloc set to false' {
@@ -454,8 +456,8 @@ try
             Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should Not Throw when MaxDop parameter is not null and DynamicAlloc set to false' {
@@ -478,15 +480,15 @@ try
             Context 'When the desired MaxDop parameter is not set' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxDop          = 1
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    MaxDop       = 1
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Shoud throw the correct error when Alter() method was called with invalid operation' {
                     $throwInvalidOperation = ('Unexpected result when trying to configure the max degree of parallelism ' + `
-                                              'server configuration option. InnerException: Exception calling "Alter" ' + `
-                                              'with "0" argument(s): "Mock Alter Method was called with invalid operation."')
+                            'server configuration option. InnerException: Exception calling "Alter" ' + `
+                            'with "0" argument(s): "Mock Alter Method was called with invalid operation."')
 
                     { Set-TargetResource @testParameters } | Should -Throw $throwInvalidOperation
                 }

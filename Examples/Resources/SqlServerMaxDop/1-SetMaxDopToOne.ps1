@@ -22,8 +22,8 @@ Configuration Example
             Ensure               = 'Present'
             DynamicAlloc         = $false
             MaxDop               = 1
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }
