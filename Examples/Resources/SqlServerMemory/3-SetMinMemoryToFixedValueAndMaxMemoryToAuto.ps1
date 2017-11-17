@@ -21,8 +21,8 @@ Configuration Example
         {
             Ensure               = 'Present'
             DynamicAlloc         = $true
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             MinMemory            = 2048
             PsDscRunAsCredential = $SysAdminAccount
         }

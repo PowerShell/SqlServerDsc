@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerMemory'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerMemory'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -23,10 +23,12 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -36,8 +38,8 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockSQLServerName = 'localhost'
-        $mockSQLServerInstanceName = 'MSSQLSERVER'
+        $mockServerName = 'localhost'
+        $mockInstanceName = 'MSSQLSERVER'
         $mockMinServerMemory = 2048
         $mockMaxServerMemory = 10300
         $mockPhysicalMemoryCapacity = 8589934592
@@ -47,8 +49,8 @@ try
 
         # Default parameters that are used for the It-blocks
         $mockDefaultParameters = @{
-            SQLInstanceName = $mockSQLServerInstanceName
-            SQLServer       = $mockSQLServerName
+            InstanceName = $mockInstanceName
+            ServerName   = $mockServerName
         }
 
         #region Function mocks
@@ -58,45 +60,45 @@ try
                 (
                     # New-Object Object |
                     New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server |
-                        Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockSQLServerInstanceName -PassThru -Force |
-                        Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockSQLServerName -PassThru -Force |
+                        Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockInstanceName -PassThru -Force |
+                        Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru -Force |
                         Add-Member -MemberType ScriptProperty -Name Configuration -Value {
-                            return @( ( New-Object Object |
-                                Add-Member -MemberType ScriptProperty -Name MinServerMemory -Value {
+                        return @( ( New-Object Object |
+                                    Add-Member -MemberType ScriptProperty -Name MinServerMemory -Value {
                                     return @( ( New-Object Object |
-                                        Add-Member -MemberType NoteProperty -Name DisplayName -Value 'min server memory (MB)' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name Description -Value 'Minimum size of server memory (MB)' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMinServerMemory -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMinServerMemory -PassThru -Force
-                                    ) )
+                                                Add-Member -MemberType NoteProperty -Name DisplayName -Value 'min server memory (MB)' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name Description -Value 'Minimum size of server memory (MB)' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMinServerMemory -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMinServerMemory -PassThru -Force
+                                        ) )
                                 } -PassThru |
-                                Add-Member -MemberType ScriptProperty -Name MaxServerMemory -Value {
+                                    Add-Member -MemberType ScriptProperty -Name MaxServerMemory -Value {
                                     return @( ( New-Object Object |
-                                        Add-Member -MemberType NoteProperty -Name DisplayName -Value 'max server memory (MB)' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name Description -Value 'Maximum size of server memory (MB)' -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMaxServerMemory -PassThru |
-                                        Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMaxServerMemory -PassThru -Force
-                                    ) )
+                                                Add-Member -MemberType NoteProperty -Name DisplayName -Value 'max server memory (MB)' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name Description -Value 'Maximum size of server memory (MB)' -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name RunValue -Value $mockMaxServerMemory -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name ConfigValue -Value $mockMaxServerMemory -PassThru -Force
+                                        ) )
                                 } -PassThru -Force
                             ) )
-                        } -PassThru -Force |
+                    } -PassThru -Force |
                         Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                            if ( $this.Configuration.MinServerMemory.ConfigValue -ne $mockExpectedMinMemoryForAlterMethod )
-                            {
-                                throw "Called mocked Alter() method without setting the right minimum server memory. Expected '{0}'. But was '{1}'." -f $mockExpectedMinMemoryForAlterMethod, $this.Configuration.MinServerMemory.ConfigValue
-                            }
-                            if ( $this.Configuration.MaxServerMemory.ConfigValue -ne $mockExpectedMaxMemoryForAlterMethod )
-                            {
-                                throw "Called mocked Alter() method without setting the right maximum server memory. Expected '{0}'. But was '{1}'." -f $mockExpectedMaxMemoryForAlterMethod, $this.Configuration.MaxServerMemory.ConfigValue
-                            }
-                        } -PassThru -Force
+                        if ( $this.Configuration.MinServerMemory.ConfigValue -ne $mockExpectedMinMemoryForAlterMethod )
+                        {
+                            throw "Called mocked Alter() method without setting the right minimum server memory. Expected '{0}'. But was '{1}'." -f $mockExpectedMinMemoryForAlterMethod, $this.Configuration.MinServerMemory.ConfigValue
+                        }
+                        if ( $this.Configuration.MaxServerMemory.ConfigValue -ne $mockExpectedMaxMemoryForAlterMethod )
+                        {
+                            throw "Called mocked Alter() method without setting the right maximum server memory. Expected '{0}'. But was '{1}'." -f $mockExpectedMaxMemoryForAlterMethod, $this.Configuration.MaxServerMemory.ConfigValue
+                        }
+                    } -PassThru -Force
                 )
             )
         }
 
         #endregion
 
-        Describe "MSFT_SqlServerMemory\Get-TargetResource" -Tag 'Get'{
+        Describe "MSFT_SqlServerMemory\Get-TargetResource" -Tag 'Get' {
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             Mock -CommandName Test-ActiveNode -MockWith { return $mockTestActiveNode } -Verifiable
 
@@ -114,8 +116,8 @@ try
                 }
 
                 It 'Should return the same values as passed as parameters' {
-                    $result.SQLServer | Should -Be $testParameters.SQLServer
-                    $result.SQLInstanceName | Should -Be $testParameters.SQLInstanceName
+                    $result.ServerName | Should -Be $testParameters.ServerName
+                    $result.InstanceName | Should -Be $testParameters.InstanceName
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -130,7 +132,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerMemory\Test-TargetResource" -Tag 'Test'{
+        Describe "MSFT_SqlServerMemory\Test-TargetResource" -Tag 'Test' {
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
             Mock -CommandName Get-CimInstance -MockWith {
@@ -141,14 +143,14 @@ try
                 $mockGetCimInstanceMem = @()
 
                 $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
-                    Name = 'Physical Memory'
-                    Tag = 'Physical Memory 0'
+                    Name     = 'Physical Memory'
+                    Tag      = 'Physical Memory 0'
                     Capacity = 8589934592
                 }
 
                 $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
-                    Name = 'Physical Memory'
-                    Tag = 'Physical Memory 1'
+                    Name     = 'Physical Memory'
+                    Tag      = 'Physical Memory 1'
                     Capacity = 8589934592
                 }
 
@@ -176,10 +178,10 @@ try
             Context 'When the system is not in the desired state and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Present'
-                    MinMemory       = 1024
-                    MaxMemory       = 8192
-                    DynamicAlloc    = $false
+                    Ensure       = 'Present'
+                    MinMemory    = 1024
+                    MaxMemory    = 8192
+                    DynamicAlloc = $false
                 }
 
                 It 'Should return the state as false when desired MinMemory and MaxMemory are not present' {
@@ -199,9 +201,9 @@ try
             Context 'When the system is not in the desired state and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Present'
-                    MaxMemory       = 8192
-                    DynamicAlloc    = $false
+                    Ensure       = 'Present'
+                    MaxMemory    = 8192
+                    DynamicAlloc = $false
                 }
 
                 It 'Should return the state as false when desired MaxMemory is not present' {
@@ -221,10 +223,10 @@ try
             Context 'When the system is in the desired state and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Present'
-                    MinMemory       = 0
-                    MaxMemory       = 10300
-                    DynamicAlloc    = $false
+                    Ensure       = 'Present'
+                    MinMemory    = 0
+                    MaxMemory    = 10300
+                    DynamicAlloc = $false
                 }
 
                 It 'Should return the state as true when desired MinMemory and MaxMemory are present' {
@@ -244,9 +246,9 @@ try
             Context 'When the MaxMemory parameter is not null and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxMemory       = 8192
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    MaxMemory    = 8192
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
@@ -265,8 +267,8 @@ try
             Context 'When the MaxMemory parameter is null and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
@@ -285,8 +287,8 @@ try
             Context 'When the system is not in the desired state and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Present'
-                    DynamicAlloc    = $true
+                    Ensure       = 'Present'
+                    DynamicAlloc = $true
                 }
 
                 It 'Should return the state as false when desired MinMemory and MaxMemory are not present' {
@@ -369,8 +371,8 @@ try
             Context 'When the system is in the desired state and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Present'
-                    DynamicAlloc    = $true
+                    Ensure       = 'Present'
+                    DynamicAlloc = $true
                 }
 
                 It 'Should return the state as true when desired MinMemory and MaxMemory are present' {
@@ -409,7 +411,7 @@ try
             Context 'When the system is not in the desired state and Ensure is set to Absent' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Absent'
+                    Ensure = 'Absent'
                 }
 
                 It 'Should return the state as false when desired MinMemory and MaxMemory are not set to the default values' {
@@ -434,7 +436,7 @@ try
             Context 'When the system is in the desired state and Ensure is set to Absent' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Ensure          = 'Absent'
+                    Ensure = 'Absent'
                 }
 
                 It 'Should return the state as true when desired MinMemory and MaxMemory are present' {
@@ -452,9 +454,9 @@ try
             }
 
             # This is regression test for issue #576
-            Context 'When the system is in the desired state and SQLServer is not set' {
+            Context 'When the system is in the desired state and ServerName is not set' {
                 $testParameters = $mockDefaultParameters
-                $testParameters.Remove('SQLServer')
+                $testParameters.Remove('ServerName')
                 $testParameters += @{
                     Ensure = 'Absent'
                 }
@@ -481,14 +483,14 @@ try
                 $mockGetCimInstanceMem = @()
 
                 $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
-                    Name = 'Physical Memory'
-                    Tag = 'Physical Memory 0'
+                    Name     = 'Physical Memory'
+                    Tag      = 'Physical Memory 0'
                     Capacity = 17179869184
                 }
 
                 $mockGetCimInstanceMem += New-Object -TypeName psobject -Property @{
-                    Name = 'Physical Memory'
-                    Tag = 'Physical Memory 1'
+                    Name     = 'Physical Memory'
+                    Tag      = 'Physical Memory 1'
                     Capacity = 17179869184
                 }
 
@@ -514,9 +516,9 @@ try
             Context 'When the MaxMemory parameter is not null and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxMemory       = 8192
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    MaxMemory    = 8192
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
@@ -535,8 +537,8 @@ try
             Context 'When the MaxMemory parameter is null and DynamicAlloc is set to false' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
@@ -582,10 +584,10 @@ try
                 $mockExpectedMaxMemoryForAlterMethod = 8192
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxMemory       = 8192
-                    MinMemory       = 1024
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    MaxMemory    = 8192
+                    MinMemory    = 1024
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should set the MinMemory and MaxMemory to the correct values when Ensure parameter is set to Present and DynamicAlloc is set to false' {
@@ -604,9 +606,9 @@ try
             Context 'When the system (OS IA64-bit) is not in the desired state and Ensure is set to Present, and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
-                    MinMemory       = 2048
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
+                    MinMemory    = 2048
                 }
 
                 It 'Should set the MaxMemory to the correct values when Ensure parameter is set to Present and DynamicAlloc is set to true' {
@@ -647,8 +649,8 @@ try
             Context 'When the system (OS 32-bit) is not in the desired state and Ensure is set to Present, and DynamicAlloc is set to true' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should set the MaxMemory to the correct values when Ensure parameter is set to Present and DynamicAlloc is set to true' {
@@ -680,9 +682,9 @@ try
 
             Mock -CommandName Connect-SQL -MockWith {
                 $mockSqlServerObject = [PSCustomObject]@{
-                    InstanceName                = $mockSQLServerInstanceName
-                    ComputerNamePhysicalNetBIOS = $mockSQLServerName
-                    Configuration = @{
+                    InstanceName                = $mockInstanceName
+                    ComputerNamePhysicalNetBIOS = $mockServerName
+                    Configuration               = @{
                         MinServerMemory = @{
                             DisplayName = 'min server memory (MB)'
                             Description = 'Minimum size of server memory (MB)'
@@ -709,16 +711,16 @@ try
             Context 'When the desired MinMemory and MaxMemory fails to be set' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    MaxMemory       = 8192
-                    MinMemory       = 1024
-                    DynamicAlloc    = $false
-                    Ensure          = 'Present'
+                    MaxMemory    = 8192
+                    MinMemory    = 1024
+                    DynamicAlloc = $false
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {
-                    { Set-TargetResource @testParameters } | Should -Throw ("Failed to alter the server configuration memory for $($env:COMPUTERNAME)" + "\" +`
-                                                                        "$mockSQLServerInstanceName. InnerException: Exception calling ""Alter"" with ""0"" argument(s): " + `
-                                                                        """Mock Alter Method was called with invalid operation.""")
+                    { Set-TargetResource @testParameters } | Should -Throw ("Failed to alter the server configuration memory for $($env:COMPUTERNAME)" + "\" + `
+                            "$mockInstanceName. InnerException: Exception calling ""Alter"" with ""0"" argument(s): " + `
+                            """Mock Alter Method was called with invalid operation.""")
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -737,8 +739,8 @@ try
             Context 'When the Get-SqlDscDynamicMaxMemory fails to calculate the MaxMemory' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    DynamicAlloc    = $true
-                    Ensure          = 'Present'
+                    DynamicAlloc = $true
+                    Ensure       = 'Present'
                 }
 
                 It 'Should throw the correct error' {

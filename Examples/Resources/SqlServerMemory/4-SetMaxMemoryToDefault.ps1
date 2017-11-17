@@ -20,8 +20,8 @@ Configuration Example
         SqlServerMemory Set_SQLServerMaxMemory_ToDefault
         {
             Ensure               = 'Absent'
-            SQLServer            = 'SQLServer'
-            SQLInstanceName      = 'DSC'
+            ServerName           = 'SQLServer'
+            InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
     }

@@ -4,10 +4,10 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .SYNOPSIS
         This function gets the value of the min and max memory server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 #>
 
@@ -20,15 +20,15 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME
+        $ServerName = $env:COMPUTERNAME
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -41,11 +41,11 @@ function Get-TargetResource
     }
 
     $returnValue = @{
-        SQLInstanceName = $SQLInstanceName
-        SQLServer       = $SQLServer
-        MinMemory       = $minMemory
-        MaxMemory       = $maxMemory
-        IsActiveNode    = $isActiveNode
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
+        MinMemory    = $minMemory
+        MaxMemory    = $maxMemory
+        IsActiveNode = $isActiveNode
     }
 
     $returnValue
@@ -55,10 +55,10 @@ function Get-TargetResource
     .SYNOPSIS
         This function sets the value for the min and max memory server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
@@ -87,12 +87,12 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -116,7 +116,7 @@ function Set-TargetResource
         $ProcessOnlyOnActiveNode
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -130,7 +130,7 @@ function Set-TargetResource
                     if ($MaxMemory)
                     {
                         throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
-                            -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                            -FormatArgs @( $ServerName, $InstanceName ) `
                             -ErrorCategory InvalidArgument
                     }
 
@@ -142,7 +142,7 @@ function Set-TargetResource
                     if (-not $MaxMemory)
                     {
                         throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
-                            -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                            -FormatArgs @( $ServerName, $InstanceName ) `
                             -ErrorCategory InvalidArgument
                     }
                 }
@@ -173,7 +173,7 @@ function Set-TargetResource
         catch
         {
             throw New-TerminatingError -ErrorType AlterServerMemoryFailed `
-                -FormatArgs @($SQLServer, $SQLInstanceName) `
+                -FormatArgs @($ServerName, $InstanceName) `
                 -ErrorCategory InvalidOperation `
                 -InnerException $_.Exception
         }
@@ -184,10 +184,10 @@ function Set-TargetResource
     .SYNOPSIS
         This function tests the value of the min and max memory server configuration option.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
     .PARAMETER Ensure
@@ -216,12 +216,12 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet("Present", "Absent")]
@@ -248,8 +248,8 @@ function Test-TargetResource
     Write-Verbose -Message 'Testing the values of the minimum and maximum memory server configuration option set to be used by the instance.'
 
     $getTargetResourceParameters = @{
-        SQLInstanceName = $SQLInstanceName
-        SQLServer       = $SQLServer
+        InstanceName = $InstanceName
+        ServerName   = $ServerName
     }
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
@@ -265,7 +265,7 @@ function Test-TargetResource
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
         # Use localization if the resource has been converted
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME,$SQLInstanceName )
+        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
         return $isServerMemoryInDesiredState
     }
 
@@ -293,7 +293,7 @@ function Test-TargetResource
                 if ($MaxMemory)
                 {
                     throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
-                        -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                        -FormatArgs @( $ServerName, $InstanceName ) `
                         -ErrorCategory InvalidArgument
                 }
 
@@ -305,7 +305,7 @@ function Test-TargetResource
                 if (-not $MaxMemory)
                 {
                     throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
-                        -FormatArgs @( $SQLServer, $SQLInstanceName ) `
+                        -FormatArgs @( $ServerName, $InstanceName ) `
                         -ErrorCategory InvalidArgument
                 }
             }
