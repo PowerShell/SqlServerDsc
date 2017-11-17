@@ -50,7 +50,7 @@ Configuration Example
         SqlServerEndpointPermission SQLConfigureEndpointPermissionPrimary
         {
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode1Credential.UserName
@@ -62,7 +62,7 @@ Configuration Example
         SqlServerEndpointPermission SQLConfigureEndpointPermissionSecondary
         {
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode2Credential.UserName
@@ -77,7 +77,7 @@ Configuration Example
         SqlServerEndpointPermission SQLConfigureEndpointPermissionPrimary
         {
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode1Credential.UserName
@@ -89,7 +89,7 @@ Configuration Example
         SqlServerEndpointPermission SQLConfigureEndpointPermissionSecondary
         {
             Ensure               = 'Present'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode2Credential.UserName

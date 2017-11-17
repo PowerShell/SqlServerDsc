@@ -50,7 +50,7 @@ Configuration Example
         SqlServerEndpointPermission RemoveSQLConfigureEndpointPermissionPrimary
         {
             Ensure               = 'Absent'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceCredentialNode2.UserName
@@ -64,7 +64,7 @@ Configuration Example
         SqlServerEndpointPermission RemoveSQLConfigureEndpointPermissionSecondary
         {
             Ensure               = 'Absent'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceCredentialNode2.UserName
@@ -81,7 +81,7 @@ Configuration Example
         SqlServerEndpointPermission RemoveSQLConfigureEndpointPermissionPrimary
         {
             Ensure               = 'Absent'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceCredentialNode2.UserName
@@ -95,7 +95,7 @@ Configuration Example
         SqlServerEndpointPermission RemoveSQLConfigureEndpointPermissionSecondary
         {
             Ensure               = 'Absent'
-            NodeName             = $Node.NodeName
+            ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceCredentialNode2.UserName

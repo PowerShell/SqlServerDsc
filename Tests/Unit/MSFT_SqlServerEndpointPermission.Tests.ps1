@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerEndpointPermission'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerEndpointPermission'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -20,12 +20,14 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
     # Loading mocked classes
     Add-Type -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests\Unit\Stubs\SMO.cs')
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -49,46 +51,46 @@ try
         $mockConnectSql = {
             return New-Object Object |
                 Add-Member -MemberType ScriptProperty -Name 'Endpoints' {
-                    return @(
-                        @{
-                            # TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
-                            $mockDynamicEndpointName = New-Object Object |
-                                                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockEndpointName -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name 'EnumObjectPermissions' {
-                                                            param($permissionSet)
-                                                            return @(
-                                                                (New-Object Object |
-                                                                    Add-Member -MemberType NoteProperty Grantee $mockDynamicPrincipal -PassThru |
-                                                                    Add-Member -MemberType NoteProperty PermissionState 'Grant' -PassThru
-                                                                )
-                                                            )
-                                                        } -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name 'Grant' {
-                                                            param(
-                                                                $permissionSet,
-                                                                $mockPrincipal
-                                                            )
+                return @(
+                    @{
+                        # TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
+                        $mockDynamicEndpointName = New-Object Object |
+                            Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockEndpointName -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name 'EnumObjectPermissions' {
+                            param($permissionSet)
+                            return @(
+                                (New-Object Object |
+                                        Add-Member -MemberType NoteProperty Grantee $mockDynamicPrincipal -PassThru |
+                                        Add-Member -MemberType NoteProperty PermissionState 'Grant' -PassThru
+                                )
+                            )
+                        } -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name 'Grant' {
+                            param(
+                                $permissionSet,
+                                $mockPrincipal
+                            )
 
-                                                            $script:mockMethodGrantRan = $true
-                                                        } -PassThru |
-                                                        Add-Member -MemberType ScriptMethod -Name 'Revoke' {
-                                                            param(
-                                                                $permissionSet,
-                                                                $mockPrincipal
-                                                            )
+                            $script:mockMethodGrantRan = $true
+                        } -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name 'Revoke' {
+                            param(
+                                $permissionSet,
+                                $mockPrincipal
+                            )
 
-                                                            $script:mockMethodRevokeRan = $true
-                                                        } -PassThru -Force
-                        }
-                    )
-                } -PassThru -Force
+                            $script:mockMethodRevokeRan = $true
+                        } -PassThru -Force
+                    }
+                )
+            } -PassThru -Force
         }
 
         $defaultParameters = @{
             InstanceName = $mockInstanceName
-            NodeName = $mockNodeName
-            Name = $mockEndpointName
-            Principal = $mockPrincipal
+            ServerName   = $mockNodeName
+            Name         = $mockEndpointName
+            Principal    = $mockPrincipal
         }
 
         Describe 'MSFT_SqlServerEndpointPermission\Get-TargetResource' -Tag 'Get' {
@@ -108,7 +110,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $testParameters.NodeName
+                    $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.Name | Should -Be $testParameters.Name
                     $result.Principal | Should -Be $testParameters.Principal
@@ -147,7 +149,7 @@ try
 
                 It 'Should return the same values as passed as parameters' {
                     $result = Get-TargetResource @testParameters
-                    $result.NodeName | Should -Be $testParameters.NodeName
+                    $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
                     $result.Name | Should -Be $testParameters.Name
                     $result.Principal | Should -Be $testParameters.Principal
