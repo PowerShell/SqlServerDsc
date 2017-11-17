@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Name
@@ -26,7 +26,7 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -37,7 +37,7 @@ function Get-TargetResource
 
     try
     {
-        $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
         $endpointObject = $sqlServerObject.Endpoints[$Name]
         if ($null -ne $endpointObject)
@@ -56,7 +56,7 @@ function Get-TargetResource
 
     return @{
         InstanceName = [System.String] $InstanceName
-        NodeName     = [System.String] $NodeName
+        ServerName   = [System.String] $ServerName
         Name         = [System.String] $Name
         State        = [System.String] $currentState
     }
@@ -69,7 +69,7 @@ function Get-TargetResource
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Name
@@ -89,7 +89,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -103,7 +103,7 @@ function Set-TargetResource
 
     $parameters = @{
         InstanceName = [System.String] $InstanceName
-        NodeName     = [System.String] $NodeName
+        ServerName   = [System.String] $ServerName
         Name         = [System.String] $Name
     }
 
@@ -114,7 +114,7 @@ function Set-TargetResource
         {
             New-VerboseMessage -Message ('Changing state of endpoint ''{0}''' -f $Name)
 
-            $sqlServerObject = Connect-SQL -SQLServer $NodeName -SQLInstanceName $InstanceName
+            $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
             $endpointObject = $sqlServerObject.Endpoints[$Name]
 
@@ -143,7 +143,7 @@ function Set-TargetResource
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
 
-    .PARAMETER NodeName
+    .PARAMETER ServerName
         The host name of the SQL Server to be configured.
 
     .PARAMETER Name
@@ -164,7 +164,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $NodeName = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -178,7 +178,7 @@ function Test-TargetResource
 
     $parameters = @{
         InstanceName = $InstanceName
-        NodeName     = $NodeName
+        ServerName   = $ServerName
         Name         = $Name
     }
 

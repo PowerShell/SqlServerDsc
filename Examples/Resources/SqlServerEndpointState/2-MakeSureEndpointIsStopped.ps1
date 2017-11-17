@@ -18,7 +18,7 @@ Configuration Example
     {
         SqlServerEndpointState StopEndpoint
         {
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Name                 = 'DefaultMirrorEndpoint'
             State                = 'Stopped'

@@ -28,7 +28,7 @@ Configuration Example
         # Start the DefaultMirrorEndpoint in the default instance
         SqlServerEndpointState StartEndpoint1
         {
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Name                 = 'DefaultMirrorEndpoint'
             State                = 'Started'
@@ -39,7 +39,7 @@ Configuration Example
         # Start the HADR in the default instance
         SqlServerEndpointState StartEndpoint2
         {
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'MSSQLSERVER'
             Name                 = 'HADR'
             State                = 'Started'
@@ -50,7 +50,7 @@ Configuration Example
         # Start the DefaultMirrorEndpoint in the named instance INSTANCE1
         SqlServerEndpointState StartEndpoint3
         {
-            NodeName             = 'SQLNODE01.company.local'
+            ServerName           = 'SQLNODE01.company.local'
             InstanceName         = 'INSTANCE1'
             Name                 = 'DefaultMirrorEndpoint'
             State                = 'Started'

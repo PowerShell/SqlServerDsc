@@ -1,14 +1,14 @@
-$script:DSCModuleName      = 'SqlServerDsc'
-$script:DSCResourceName    = 'MSFT_SqlServerEndpointState'
+$script:DSCModuleName = 'SqlServerDsc'
+$script:DSCResourceName = 'MSFT_SqlServerEndpointState'
 
 #region HEADER
 
 # Unit Test Template Version: 1.2.0
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -20,12 +20,14 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
     # Loading stub cmdlets
     Import-Module -Name ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath Stubs ) -ChildPath SQLPSStub.psm1 ) -Force -Global
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -49,21 +51,21 @@ try
         $mockConnectSql = {
             return New-Object Object |
                 Add-Member -MemberType ScriptProperty -Name 'Endpoints' {
-                    return @(
-                        @{
-                            # TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
-                            $mockDynamicEndpointName = New-Object Object |
-                                                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDynamicEndpointName -PassThru |
-                                                        Add-Member -MemberType NoteProperty -Name 'EndpointState' -Value $mockDynamicEndpointState -PassThru -Force
-                        }
-                    )
-                } -PassThru -Force
+                return @(
+                    @{
+                        # TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
+                        $mockDynamicEndpointName = New-Object Object |
+                            Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDynamicEndpointName -PassThru |
+                            Add-Member -MemberType NoteProperty -Name 'EndpointState' -Value $mockDynamicEndpointState -PassThru -Force
+                    }
+                )
+            } -PassThru -Force
         }
 
         $defaultParameters = @{
             InstanceName = $mockInstanceName
-            NodeName = $mockNodeName
-            Name = $mockEndpointName
+            ServerName   = $mockNodeName
+            Name         = $mockEndpointName
         }
 
         #endregion Pester Test Initialization
@@ -88,7 +90,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $testParameters.NodeName
+                        $result.ServerName | Should -Be $testParameters.ServerName
                         $result.InstanceName | Should -Be $testParameters.InstanceName
                         $result.Name | Should -Be $testParameters.Name
                     }
@@ -109,7 +111,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $testParameters.NodeName
+                        $result.ServerName | Should -Be $testParameters.ServerName
                         $result.InstanceName | Should -Be $testParameters.InstanceName
                         $result.Name | Should -Be $testParameters.Name
                     }
@@ -144,7 +146,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $testParameters.NodeName
+                        $result.ServerName | Should -Be $testParameters.ServerName
                         $result.InstanceName | Should -Be $testParameters.InstanceName
                         $result.Name | Should -Be $testParameters.Name
                     }
@@ -165,7 +167,7 @@ try
 
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @testParameters
-                        $result.NodeName | Should -Be $testParameters.NodeName
+                        $result.ServerName | Should -Be $testParameters.ServerName
                         $result.InstanceName | Should -Be $testParameters.InstanceName
                         $result.Name | Should -Be $testParameters.Name
                     }
