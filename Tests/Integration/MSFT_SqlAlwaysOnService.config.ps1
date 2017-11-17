@@ -126,8 +126,8 @@ Configuration MSFT_SqlAlwaysOnService_EnableAlwaysOn_Config
         SqlAlwaysOnService 'Integration_Test'
         {
             Ensure               = 'Present'
-            SQLServer            = $Node.ComputerName
-            SQLInstanceName      = $Node.InstanceName
+            ServerName           = $Node.ComputerName
+            InstanceName         = $Node.InstanceName
             RestartTimeout       = $Node.RestartTimeout
 
             PsDscRunAsCredential = $SqlInstallCredential
@@ -157,8 +157,8 @@ Configuration MSFT_SqlAlwaysOnService_DisableAlwaysOn_Config
         SqlAlwaysOnService 'Integration_Test'
         {
             Ensure               = 'Absent'
-            SQLServer            = $Node.ComputerName
-            SQLInstanceName      = $Node.InstanceName
+            ServerName           = $Node.ComputerName
+            InstanceName         = $Node.InstanceName
             RestartTimeout       = $Node.RestartTimeout
 
             PsDscRunAsCredential = $SqlInstallCredential

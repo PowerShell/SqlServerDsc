@@ -44,15 +44,15 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Data_Config
 
         SqlDatabaseDefaultLocation 'Integration_Test'
         {
-            Type  = 'Data'
-            Path  = $Node.DataFilePath
+            Type                 = 'Data'
+            Path                 = $Node.DataFilePath
             RestartService       = $true
-            SQLServer            = $Node.ComputerName
-            SQLInstanceName      = $Node.InstanceName
+            ServerName           = $Node.ComputerName
+            InstanceName         = $Node.InstanceName
 
             PsDscRunAsCredential = $SqlInstallCredential
 
-            DependsOn = '[File]SQLDataPath'
+            DependsOn            = '[File]SQLDataPath'
         }
     }
 }
@@ -82,15 +82,15 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Log_Config
 
         SqlDatabaseDefaultLocation 'Integration_Test'
         {
-            Type  = 'Log'
-            Path  = $Node.LogFilePath
+            Type                 = 'Log'
+            Path                 = $Node.LogFilePath
             RestartService       = $true
-            SQLServer            = $Node.ComputerName
-            SQLInstanceName      = $Node.InstanceName
+            ServerName           = $Node.ComputerName
+            InstanceName         = $Node.InstanceName
 
             PsDscRunAsCredential = $SqlInstallCredential
 
-            DependsOn = '[File]SQLLogPath'
+            DependsOn            = '[File]SQLLogPath'
         }
     }
 }
@@ -120,15 +120,15 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Backup_Config
 
         SqlDatabaseDefaultLocation 'Integration_Test'
         {
-            Type  = 'Backup'
-            Path  = $Node.BackupFilePath
+            Type                 = 'Backup'
+            Path                 = $Node.BackupFilePath
             RestartService       = $false
-            SQLServer            = $Node.ComputerName
-            SQLInstanceName      = $Node.InstanceName
+            ServerName           = $Node.ComputerName
+            InstanceName         = $Node.InstanceName
 
             PsDscRunAsCredential = $SqlInstallCredential
 
-            DependsOn = '[File]SQLBackupPath'
+            DependsOn            = '[File]SQLBackupPath'
         }
     }
 }
