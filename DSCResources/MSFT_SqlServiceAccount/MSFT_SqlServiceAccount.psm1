@@ -10,10 +10,10 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServiceAccount'
     .SYNOPSIS
         Gets the service account for the specified instance.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Host name of the SQL Server to manage.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance.
 
     .PARAMETER ServiceType
@@ -25,7 +25,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServiceAccount'
          Credential of the service account that should be used.
 
     .EXAMPLE
-        Get-TargetResource -SQLServer $env:COMPUTERNAME -SQLInstanceName MSSQLSERVER -ServiceType SqlServer -ServiceAccount $account
+        Get-TargetResource -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
 #>
 function Get-TargetResource
 {
@@ -35,11 +35,11 @@ function Get-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
@@ -52,24 +52,24 @@ function Get-TargetResource
     )
 
     # Get the SMO Service object instance
-    $serviceObject = Get-ServiceObject -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
+    $serviceObject = Get-ServiceObject -ServerName $ServerName -InstanceName $InstanceName -ServiceType $ServiceType
 
     # If no service was found, throw an exception
     if (-not $serviceObject)
     {
-        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $SQLServer, $SQLInstanceName
+        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $ServerName, $InstanceName
         New-ObjectNotFoundException -Message $errorMessage
     }
 
     # Local accounts will start with a '.'
-    # Replace a domain of '.' with the value for $SQLServer
-    $serviceAccountName = $serviceObject.ServiceAccount -ireplace '^([\.])\\(.*)$', "$SQLServer\`$2"
+    # Replace a domain of '.' with the value for $ServerName
+    $serviceAccountName = $serviceObject.ServiceAccount -ireplace '^([\.])\\(.*)$', "$ServerName\`$2"
 
     # Return a hashtable with the service information
     return @{
-        SQLServer = $SQLServer
-        SQLInstanceName = $SQLInstanceName
-        ServiceType = $serviceObject.Type
+        ServerName     = $ServerName
+        InstanceName   = $InstanceName
+        ServiceType    = $serviceObject.Type
         ServiceAccount = $serviceAccountName
     }
 }
@@ -78,10 +78,10 @@ function Get-TargetResource
     .SYNOPSIS
         Tests whether the specified instance's service account is correctly configured.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Host name of the SQL Server to manage.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance.
 
     .PARAMETER ServiceType
@@ -98,7 +98,7 @@ function Get-TargetResource
         Forces the service account to be updated.
 
     .EXAMPLE
-        Test-TargetResource -SQLServer $env:COMPUTERNAME -SQLInstaneName MSSQLSERVER -ServiceType SqlServer -ServiceAccount $account
+        Test-TargetResource -ServerName $env:COMPUTERNAME -SQLInstaneName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
 
 #>
 function Test-TargetResource
@@ -109,11 +109,11 @@ function Test-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
@@ -140,8 +140,8 @@ function Test-TargetResource
     }
 
     # Get the current state
-    $currentState = Get-TargetResource -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType -ServiceAccount $ServiceAccount
-    New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount, $SQLServer, $SQLInstanceName)
+    $currentState = Get-TargetResource -ServerName $ServerName -InstanceName $InstanceName -ServiceType $ServiceType -ServiceAccount $ServiceAccount
+    New-VerboseMessage -Message ($script:localizedData.CurrentServiceAccount -f $currentState.ServiceAccount, $ServerName, $InstanceName)
 
     return ($currentState.ServiceAccount -ieq $ServiceAccount.UserName)
 }
@@ -150,10 +150,10 @@ function Test-TargetResource
     .SYNOPSIS
         Sets the SQL Server service account to the desired state.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Host name of the SQL Server to manage.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance.
 
     .PARAMETER ServiceType
@@ -170,7 +170,7 @@ function Test-TargetResource
         Forces the service account to be updated.
 
     .EXAMPLE
-        Set-TargetResource -SQLServer $env:COMPUTERNAME -SQLInstaneName MSSQLSERVER -ServiceType SqlServer -ServiceAccount $account
+        Set-TargetResource -ServerName $env:COMPUTERNAME -SQLInstaneName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
 #>
 function Set-TargetResource
 {
@@ -179,11 +179,11 @@ function Set-TargetResource
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
@@ -204,12 +204,12 @@ function Set-TargetResource
     )
 
     # Get the Service object
-    $serviceObject = Get-ServiceObject -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ServiceType $ServiceType
+    $serviceObject = Get-ServiceObject -ServerName $ServerName -InstanceName $InstanceName -ServiceType $ServiceType
 
     # If no service was found, throw an exception
     if (-not $serviceObject)
     {
-        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $SQLServer, $SQLInstanceName
+        $errorMessage = $script:localizedData.ServiceNotFound -f $ServiceType, $ServerName, $InstanceName
         New-ObjectNotFoundException -Message $errorMessage
     }
 
@@ -220,14 +220,14 @@ function Set-TargetResource
     }
     catch
     {
-        $errorMessage = $script:localizedData.SetServiceAccountFailed -f $SQLServer, $SQLInstanceName, $_.Message
+        $errorMessage = $script:localizedData.SetServiceAccountFailed -f $ServerName, $InstanceName, $_.Message
         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
 
     if ($RestartService)
     {
-        New-VerboseMessage -Message ($script:localizedData.RestartingService -f $SQLInstanceName)
-        Restart-SqlService -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+        New-VerboseMessage -Message ($script:localizedData.RestartingService -f $InstanceName)
+        Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName
     }
 }
 
@@ -235,10 +235,10 @@ function Set-TargetResource
     .SYNOPSIS
         Gets an SMO Service object instance for the requested service and type.
 
-    .PARAMETER SQLServer
+    .PARAMETER ServerName
         Host name of the SQL Server to manage.
 
-    .PARAMETER SQLInstanceName
+    .PARAMETER InstanceName
         Name of the SQL instance.
 
     .PARAMETER ServiceType
@@ -246,7 +246,7 @@ function Set-TargetResource
         DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
 
     .EXAMPLE
-        Get-ServiceObject -SQLServer $env:COMPUTERNAME -SQLInstanceName MSSQLSERVER -ServiceType SqlServer
+        Get-ServiceObject -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType DatabaseEngine
 #>
 function Get-ServiceObject
 {
@@ -255,11 +255,11 @@ function Get-ServiceObject
     (
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
@@ -270,20 +270,20 @@ function Get-ServiceObject
     # Load the SMO libraries
     Import-SQLPSModule
 
-    $verboseMessage = $script:localizedData.ConnectingToWmi -f $SQLServer
+    $verboseMessage = $script:localizedData.ConnectingToWmi -f $ServerName
     New-VerboseMessage -Message $verboseMessage
 
     # Connect to SQL WMI
-    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $SQLServer
+    $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $ServerName
 
     # Change the regex pattern for a default instance
-    if ($SQLInstanceName -ieq 'MSSQLServer')
+    if ($InstanceName -ieq 'MSSQLServer')
     {
         $serviceNamePattern = '^MSSQLServer$'
     }
     else
     {
-        $serviceNamePattern = ('\${0}$' -f $SQLInstanceName)
+        $serviceNamePattern = ('\${0}$' -f $InstanceName)
     }
 
     # Get the proper enum value

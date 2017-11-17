@@ -20,12 +20,12 @@ Configuration Example
     Node localhost {
         SqlServiceAccount SetServiceAcccount_User
         {
-            SQLServer = 'TestServer'
-            SQLInstanceName = 'DSC'
-            ServiceType = 'DatabaseEngine'
+            ServerName     = 'TestServer'
+            InstanceName   = 'DSC'
+            ServiceType    = 'DatabaseEngine'
             ServiceAccount = $ServiceAcccountCredential
             RestartService = $true
-            Force = $true
+            Force          = $true
         }
     }
 }
