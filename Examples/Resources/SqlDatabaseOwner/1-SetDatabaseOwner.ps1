@@ -22,7 +22,7 @@ Configuration Example
             Ensure               = 'Present'
             Name                 = 'CONTOSO\SQLAdmin'
             LoginType            = 'WindowsUser'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
@@ -31,7 +31,7 @@ Configuration Example
         {
             Name                 = 'CONTOSO\SQLAdmin'
             Database             = 'AdventureWorks'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }

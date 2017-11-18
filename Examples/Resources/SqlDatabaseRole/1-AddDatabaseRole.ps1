@@ -20,7 +20,7 @@ Configuration Example
         SqlDatabaseRole Add_Database_Role
         {
             Ensure               = 'Present'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             Name                 = 'CONTOSO\SQLAdmin'
             Role                 = 'MyRole', 'MySecondRole'

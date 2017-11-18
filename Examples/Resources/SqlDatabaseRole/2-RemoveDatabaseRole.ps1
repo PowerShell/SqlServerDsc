@@ -20,7 +20,7 @@ Configuration Example
         SqlDatabaseRole Remove_Database_Role
         {
             Ensure               = 'Absent'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             Name                 = 'CONTOSO\SQLAdmin'
             Role                 = 'DeleteRole'

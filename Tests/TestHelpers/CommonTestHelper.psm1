@@ -6,7 +6,7 @@
         The major version of the SQL instance.
 
     .PARAMETER ModuleName
-        The name of the module to load the stubs for. Default is 'SQLServer'.
+        The name of the module to load the stubs for. Default is 'SqlServer'.
 #>
 function Import-SQLModuleStub
 {
@@ -18,15 +18,15 @@ function Import-SQLModuleStub
         $SQLVersion,
 
         [Parameter(ParameterSetName = 'Module')]
-        [ValidateSet('SQLPS','SQLServer')]
+        [ValidateSet('SQLPS','SqlServer')]
         [System.String]
-        $ModuleName = 'SQLServer'
+        $ModuleName = 'SqlServer'
     )
 
     # Translate the module names to their appropriate stub name
     $modulesAndStubs = @{
         SQLPS = 'SQLPSStub'
-        SQLServer = 'SQLServerStub'
+        SqlServer = 'SqlServerStub'
     }
 
     # Determine which module to ensure is loaded based on the parameters passed
@@ -38,7 +38,7 @@ function Import-SQLModuleStub
         }
         elseif ( $SQLVersion -ge 13 )
         {
-            $ModuleName = 'SQLServer'
+            $ModuleName = 'SqlServer'
         }
     }
 
@@ -46,7 +46,9 @@ function Import-SQLModuleStub
     $stubModuleName = $modulesAndStubs.$ModuleName
 
     # Ensure none of the other stub modules are loaded
-    [System.Array] $otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript { $_ -ne $stubModuleName }
+    [System.Array] $otherStubModules = $modulesAndStubs.Values | Where-Object -FilterScript {
+        $_ -ne $stubModuleName
+    }
 
     if ( Get-Module -Name $otherStubModules )
     {

@@ -19,7 +19,7 @@ Configuration Example
         {
             Ensure               = 'Absent'
             Name                 = 'SQLDSC-TCP'
-            ServerName           = "SQLServer\DSC"
+            ServerName           = 'sqltest.company.local\DSC'
             Protocol             = 'TCP'
             TcpPort              = 1777
             PsDscRunAsCredential = $SysAdminAccount
@@ -29,7 +29,7 @@ Configuration Example
         {
             Ensure               = 'Absent'
             Name                 = 'SQLDSC-NP'
-            ServerName           = "\\sqlnode\PIPE\sql\query"
+            ServerName           = '\\sqlnode\PIPE\sql\query'
             Protocol             = 'NP'
             PsDscRunAsCredential = $SysAdminAccount
         }

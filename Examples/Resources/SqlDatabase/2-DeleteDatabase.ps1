@@ -20,7 +20,7 @@ Configuration Example
         SqlDatabase Delete_Database
         {
             Ensure       = 'Absent'
-            ServerName   = 'SQLServer'
+            ServerName   = 'sqltest.company.local'
             InstanceName = 'DSC'
             Name         = 'AdventureWorks'
         }

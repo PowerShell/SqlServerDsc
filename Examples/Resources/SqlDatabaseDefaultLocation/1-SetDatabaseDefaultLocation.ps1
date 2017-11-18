@@ -22,7 +22,7 @@ Configuration Example
     {
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Data
         {
-            ServerName              = 'SQLServer'
+            ServerName              = 'sqltest.company.local'
             InstanceName            = 'DSC'
             ProcessOnlyOnActiveNode = $true
             Type                    = 'Data'
@@ -32,7 +32,7 @@ Configuration Example
 
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Log
         {
-            ServerName              = 'SQLServer'
+            ServerName              = 'sqltest.company.local'
             InstanceName            = 'DSC'
             ProcessOnlyOnActiveNode = $true
             Type                    = 'Log'
@@ -42,7 +42,7 @@ Configuration Example
 
         SqlDatabaseDefaultLocation Set_SqlDatabaseDefaultDirectory_Backup
         {
-            ServerName              = 'SQLServer'
+            ServerName              = 'sqltest.company.local'
             InstanceName            = 'DSC'
             ProcessOnlyOnActiveNode = $true
             Type                    = 'Backup'

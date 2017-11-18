@@ -4,12 +4,12 @@ SYNOPSIS
 PARAMETER DatabaseName
     The name of the database(s) to add to the availability group. This accepts wildcards.
 
-PARAMETER SQLServer
+PARAMETER ServerName
     Hostname of the SQL Server where the primary replica of the availability group lives. If the
     availability group is not currently on this server, the resource will attempt to connect to the
     server where the primary replica lives.
 
-PARAMETER SQLInstanceName
+PARAMETER InstanceName
     Name of the SQL instance where the primary replica of the availability group lives. If the
     availability group is not currently on this instance, the resource will attempt to connect to
     the instance where the primary replica lives.

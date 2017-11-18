@@ -22,7 +22,7 @@ Configuration Example
             Database             = 'AdventureWorks'
             PermissionState      = 'Grant'
             Permissions          = 'Connect', 'Update'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
@@ -34,7 +34,7 @@ Configuration Example
             Database             = 'AdventureWorks'
             PermissionState      = 'Deny'
             Permissions          = 'Select', 'Create Table'
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }

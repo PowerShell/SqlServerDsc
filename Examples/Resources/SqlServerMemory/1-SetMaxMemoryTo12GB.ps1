@@ -23,7 +23,7 @@ Configuration Example
             DynamicAlloc         = $false
             MinMemory            = 1024
             MaxMemory            = 12288
-            ServerName           = 'SQLServer'
+            ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             PsDscRunAsCredential = $SysAdminAccount
         }
