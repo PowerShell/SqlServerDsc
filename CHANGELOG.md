@@ -2,14 +2,14 @@
 
 ## Unreleased
 
-- BREAKING CHANGE: Significant rename to reduce length of Resource names
+- BREAKING CHANGE: Significant rename to reduce length of resource names
   - See [issue #851](https://github.com/PowerShell/xSQLServer/issues/851) for a
-  complete table mapping rename changes.
-  - Impact to all resources
+    complete table mapping rename changes.
+  - Impact to all resources.
 - Changes to SqlAG
   - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
     to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
-- Changes to SqlAGDatabases
+- Changes to SqlAGDatabase
   - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
     to ServerName and InstanceName respectivly ([issue #308](https://github.com/PowerShell/xSQLServer/issues/)).
 - Changes to SqlAGListener
