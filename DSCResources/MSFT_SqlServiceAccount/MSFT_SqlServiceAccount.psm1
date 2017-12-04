@@ -276,22 +276,12 @@ function Get-ServiceObject
     # Connect to SQL WMI
     $managedComputer = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer $ServerName
 
-    # Change the regex pattern for a default instance
-    if ($InstanceName -ieq 'MSSQLServer')
-    {
-        $serviceNamePattern = '^MSSQLServer$'
-    }
-    else
-    {
-        $serviceNamePattern = ('\${0}$' -f $InstanceName)
-    }
-
-    # Get the proper enum value
-    $serviceTypeFilter = ConvertTo-ManagedServiceType -ServiceType $ServiceType
+    # Get the service name for the specified instance and type
+    $serviceNameFilter = Get-SqlServiceName -InstanceName $InstanceName -ServiceType $ServiceType
 
     # Get the Service object for the specified instance/type
     $serviceObject = $managedComputer.Services | Where-Object -FilterScript {
-        ($_.Type -eq $serviceTypeFilter) -and ($_.Name -imatch $serviceNamePattern)
+        $_.Name -eq $serviceNameFilter
     }
 
     return $serviceObject
@@ -364,4 +354,69 @@ function ConvertTo-ManagedServiceType
     }
 
     return $serviceTypeValue -as [Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType]
+}
+
+<#
+    .SYNOPSIS
+        Gets the name of a service based on the instance name and type.
+
+    .PARAMETER InstanceName
+        Name of the SQL instance.
+
+    .PARAMETER ServiceType
+        Type of service to be named. Must be one of the following:
+        DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
+
+    .EXAMPLE
+        Get-SqlServiceName -InstanceName 'MSSQLSERVER' -ServiceType ReportingServices
+#>
+function Get-SqlServiceName
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.String]
+        $InstanceName = 'MSSQLSERVER',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('DatabaseEngine', 'SQLServerAgent', 'Search', 'IntegrationServices', 'AnalysisServices', 'ReportingServices', 'SQLServerBrowser', 'NotificationServices')]
+        [System.String]
+        $ServiceType
+    )
+
+    # Base path in the registry for service name definitions
+    $serviceRegistryKey = 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services'
+
+    # The value grabbed varies for a named vs default instance
+    if ($InstanceName -eq 'MSSQLSERVER')
+    {
+        $propertyName = 'Name'
+        $returnValue = '{0}'
+    }
+    else
+    {
+        $propertyName = 'LName'
+        $returnValue = '{0}{1}'
+    }
+
+    # Map the specified type to a ManagedServiceType
+    $managedServiceType = ConvertTo-ManagedServiceType -ServiceType $ServiceType
+
+    $itemPropertyParameters = @{
+        Path = (Join-Path -Path $serviceRegistryKey -ChildPath $managedServiceType)
+        Name = $propertyName
+    }
+
+    try
+    {
+        $serviceNamingScheme = Get-ItemPropertyValue @itemPropertyParameters
+    }
+    catch
+    {
+        throw 'Invalid service information.'
+    }
+
+    # Build the name of the service and return it
+    return ($returnValue -f $serviceNamingScheme, $InstanceName)
 }
