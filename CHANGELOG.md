@@ -9,12 +9,12 @@
     that no longer exist was removed. Accurate examples can be found in each
     specific resource example folder. Examples for installing Failover Cluster
     can be found in the resource examples folders in the xFailOverCluster
-    resource module (issue #462).
+    resource module ([issue #462](https://github.com/PowerShell/SqlServerDsc/issues/462)).
   - A README.md was created under the examples folder to be used as reference ho
-    to installed certain scenarios (issue #462).
+    to installed certain scenarios ([issue #462](https://github.com/PowerShell/SqlServerDsc/issues/462)).
   - Removed the local specific common test for compiling examples in this repository
     and instead opt-in for the common test in the DscResource.Tests repository
-    (issue #669).
+    ([issue #669](https://github.com/PowerShell/SqlServerDsc/issues/669)).
 - Changes to SqlAlias
   - Fixed issue where exception was thrown if reg keys did not exist
     ([issue #949](https://github.com/PowerShell/SqlServerDsc/issues/949)).
