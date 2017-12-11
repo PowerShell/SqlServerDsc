@@ -8,4 +8,6 @@ ConvertFrom-StringData @'
     RestartingService = Restarting '{0}' and any dependent services.
     ServiceNotFound = The {0} service on {1}\\{2} could not be found.
     SetServiceAccountFailed = Unable to set the service account for {0} on {1}. Message {2}
+    UnknownServiceType = Unknown or unsupported service type '{0}' specified!
+    NotInstanceAware = Service type '{0}' is not instance aware.
 '@
