@@ -403,18 +403,36 @@ function Get-SqlServiceName
     # Map the specified type to a ManagedServiceType
     $managedServiceType = ConvertTo-ManagedServiceType -ServiceType $ServiceType
 
-    $itemPropertyParameters = @{
-        Path = (Join-Path -Path $serviceRegistryKey -ChildPath $managedServiceType)
-        Name = $propertyName
+    # Get the required naming property
+    $serviceTypeDefinition = Get-ChildItem -Path $serviceRegistryKey | Where-Object -FilterScript {
+        $_.GetValue('Type') -eq ($managedServiceType -as [int])
     }
 
-    try
+    # Ensure we got a service definition
+    if ($serviceTypeDefinition)
     {
-        $serviceNamingScheme = Get-ItemPropertyValue @itemPropertyParameters
+        # Multiple definitions found (thank you SSRS!)
+        if ($serviceTypeDefinition.Count -gt 0)
+        {
+            $serviceNamingScheme = $serviceTypeDefinition | ForEach-Object -Process {
+                $_.GetValue($propertyName)
+            } | Select-Object -Unique
+        }
+        else
+        {
+            $serviceNamingScheme = $serviceTypeDefinition.GetValue($propertyName)
+        }
     }
-    catch
+    else
     {
-        throw 'Invalid service information.'
+        $errorMessage = $script:localizedData.UnknownServiceType -f $ServiceType
+        New-InvalidArgumentException -Message $errorMessage -ArgumentName 'ServiceType'
+    }
+
+    if ([String]::IsNullOrEmpty($serviceNamingScheme))
+    {
+        $errorMessage = $script:localizedData.NotInstanceAware -f $ServiceType
+        New-InvalidResultException -Message $errorMessage
     }
 
     # Build the name of the service and return it
