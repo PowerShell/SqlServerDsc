@@ -224,6 +224,128 @@ try
             Verifiable      = $true
         }
 
+        # Registry key used to index service type mappings
+        $testServicesRegistryKey = 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Services'
+
+        # Hashtable mirroring HKLM:\Software\Microsoft\Microsoft SQL Server\Services
+        $testServicesRegistryTable = @{
+            'Analysis Server' = @{
+                LName = 'MSOLAP$'
+                Name = 'MSSQLServerOLAPService'
+                Type = 5
+            }
+
+            'Full Text' = @{
+                LName = 'msftesql$'
+                Name = 'msftesql'
+                Type = 3
+            }
+
+            'Full-text Filter Daemon Launcher' = @{
+                LName = 'MSSQLFDLauncher$'
+                Name = 'MSSQLFDLauncher'
+                Type = 9
+            }
+
+            'Launchpad Service' = @{
+                LName = 'MSSQLLaunchpad$'
+                Name = 'MSSQLLaunchpad'
+                Type = 12
+            }
+
+            'Notification Services' = @{
+                LName = 'NS$'
+                Name = 'NsService'
+                Type = 8
+            }
+
+            'Report Server' = @{
+                LName = 'ReportServer$'
+                Name = 'ReportServer'
+                Type = 6
+            }
+
+            'ReportServer' = @{
+                LName = 'ReportServer$'
+                Name = 'ReportServer'
+                Type = 6
+            }
+
+            'SQL Agent' = @{
+                LName = 'SQLAGENT$'
+                Name = 'SQLSERVERAGENT'
+                Type = 2
+            }
+
+            'SQL Browser' = @{
+                LName = ''
+                Name = 'SQLBrowser'
+                Type = 7
+            }
+
+            'SQL Server' = @{
+                LName = 'MSSQL$'
+                Name = 'MSSQLSERVER'
+                Type = 1
+            }
+
+            'SQL Server Polybase Data Movement Service' = @{
+                LName = 'SQLPBDMS$'
+                Name = 'SQLPBDMS'
+                Type = 11
+            }
+
+            'SQL Server Polybase Engine' = @{
+                LName = 'SQLPBENGINE$'
+                Name = 'SQLPBENGINE'
+                Type = 10
+            }
+
+            'SSIS Server' = @{
+                LName = ''
+                Name = 'MsDtsServer'
+                Type = 4
+            }
+        }
+
+        # Used by Get-SqlServiceName for service name resolution
+        $mockGetChildItem = {
+            return @(
+                foreach($serviceType in $testServicesRegistryTable.Keys)
+                {
+                    New-Object -TypeName PSObject -Property @{
+                        MockKeyName = $serviceType
+                        MockName = $testServicesRegistryTable.$serviceType.Name
+                        MockLName = $testServicesRegistryTable.$serviceType.LName
+                        MockType = $testServicesRegistryTable.$serviceType.Type
+                    } | Add-Member -MemberType ScriptMethod -Name 'GetValue' -Value {
+                        param
+                        (
+                            [Parameter()]
+                            [System.String]
+                            $Property
+                        )
+
+                        $propertyToReturn = "Mock$($Property)"
+                        return $this.$propertyToReturn
+                    } -PassThru
+                }
+            )
+        }
+
+        # Parameter filter for Get-ChildItem mock
+        $mockGetChildItem_ParameterFilter = {
+            $Path -eq $testServicesRegistryKey
+        }
+
+        # Splat to simplify creation of Mock for Get-ChildItem
+        $mockGetChildItemParameters = @{
+            CommandName = 'Get-ChildItem'
+            MockWith = $mockGetChildItem
+            ParameterFilter = $mockGetChildItem_ParameterFilter
+            Verifiable = $true
+        }
+
         Describe 'MSFT_SqlServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
             Context 'Translating service types' {
                 $testCases = @(
@@ -283,6 +405,163 @@ try
 
                     $managedServiceType | Should -BeOfType Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
                     $managedServiceType | Should -Be $ExpectedType
+                }
+            }
+        }
+
+        Describe 'MSFT_SqlServerServiceAccount\Get-SqlServiceName' -Tag 'Helper' {
+            Mock @mockGetChildItemParameters
+
+            Context 'When getting the service name for a default instance' {
+                # Define cases for the various parameters to test
+                $testCases = @(
+                    @{
+                        ServiceType = 'DatabaseEngine'
+                        ExpectedServiceName = 'MSSQLSERVER'
+                    },
+                    @{
+                        ServiceType = 'SQLServerAgent'
+                        ExpectedServiceName = 'SQLSERVERAGENT'
+                    },
+                    @{
+                        ServiceType = 'Search'
+                        ExpectedServiceName = 'msftesql'
+                    },
+                    @{
+                        ServiceType = 'IntegrationServices'
+                        ExpectedServiceName = 'MsDtsServer'
+                    },
+                    @{
+                        ServiceType = 'AnalysisServices'
+                        ExpectedServiceName = 'MSSQLServerOLAPService'
+                    },
+                    @{
+                        ServiceType = 'ReportingServices'
+                        ExpectedServiceName = 'ReportServer'
+                    },
+                    @{
+                        ServiceType = 'SQLServerBrowser'
+                        ExpectedServiceName = 'SQLBrowser'
+                    },
+                    @{
+                        ServiceType = 'NotificationServices'
+                        ExpectedServiceName = 'NsService'
+                    }
+                )
+
+                It 'Should return the correct service name for <ServiceType>' -TestCases $testCases {
+                    param
+                    (
+                        [Parameter()]
+                        [System.String]
+                        $ServiceType,
+
+                        [Parameter()]
+                        [System.String]
+                        $ExpectedServiceName
+                    )
+
+                    # Get the service name
+                    Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType | Should Be $ExpectedServiceName
+
+                    # Ensure the mock is utilized
+                    Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter $mockGetChildItem_ParameterFilter -Scope It -Exactly -Times 1
+                }
+            }
+
+            Context 'When getting the service name for a named instance' {
+                BeforeAll {
+                    # Define cases for the various parameters to test
+                    $instanceAwareTestCases = @(
+                        @{
+                            ServiceType = 'DatabaseEngine'
+                            ExpectedServiceName = ('MSSQL${0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'SQLServerAgent'
+                            ExpectedServiceName = ('SQLAGENT${0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'Search'
+                            ExpectedServiceName = ('MSFTESQL${0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'AnalysisServices'
+                            ExpectedServiceName = ('MSOLAP${0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'ReportingServices'
+                            ExpectedServiceName = ('ReportServer${0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'NotificationServices'
+                            ExpectedServiceName = ('NS${0}' -f $mockNamedInstance)
+                        }
+                    )
+
+                    $notInstanceAwareTestCases = @(
+                        @{
+                            ServiceType = 'IntegrationServices'
+                            # ExpectedServiceName = ('{0}' -f $mockNamedInstance)
+                        },
+                        @{
+                            ServiceType = 'SQLServerBrowser'
+                            # ExpectedServiceName = ('{0}' -f $mockNamedInstance)
+                        }
+                    )
+                }
+
+                It 'Should return the correct service name for <ServiceType>' -TestCases $instanceAwareTestCases {
+                    param
+                    (
+                        [Parameter()]
+                        [System.String]
+                        $ServiceType,
+
+                        [Parameter()]
+                        [System.String]
+                        $ExpectedServiceName
+                    )
+
+                    # Get the service name
+                    Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType | Should Be $ExpectedServiceName
+
+                    # Ensure the mock is utilized
+                    Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter $mockGetChildItem_ParameterFilter -Scope It -Exactly -Times 1
+                }
+
+                It 'Should thow an error for <ServiceType> which is not instance-aware' -TestCases $notInstanceAwareTestCases {
+                    param
+                    (
+                        [Parameter()]
+                        [System.String]
+                        $ServiceType
+                    )
+
+                    # Get the localized error message
+                    $testErrorMessage = $script:localizedData.NotInstanceAware -f $ServiceType
+
+                    # An exception should be raised
+                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType } | Should Throw $testErrorMessage
+                }
+            }
+
+            Context 'When getting the service name for a type that is not defined' {
+                BeforeAll {
+                    $mockGetChildItemParameters_NoServices = $mockGetChildItemParameters.Clone()
+                    $mockGetChildItemParameters_NoServices.MockWith = { return @() }
+
+                    # Mock the Get-ChildItem command
+                    Mock @mockGetChildItemParameters_NoServices
+                }
+
+                It 'Should throw an exception if the service name cannot be derived' {
+                    $testErrorMessage = $script:localizedData.UnknownServiceType -f 'DatabaseEngine'
+
+                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType DatabaseEngine } | Should Throw $testErrorMessage
+
+                    # Ensure the mock was called
+                    Assert-MockCalled -CommandName Get-ChildItem -Times 1 -Exactly -Scope It
                 }
             }
         }
