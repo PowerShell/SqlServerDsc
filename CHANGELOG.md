@@ -122,6 +122,7 @@
   - BREAKING CHANGE: Parameters SQLServer and SQLInstanceName has been renamed
     to ServerName and InstanceName respectively
     ([issue #308](https://github.com/PowerShell/SqlServerDsc/issues/308)).
+  - Default services are now properly detected. ([issue #930](https://github.com/PowerShell/SqlServerDsc/issues/930))
 
 ## 9.0.0.0
 
