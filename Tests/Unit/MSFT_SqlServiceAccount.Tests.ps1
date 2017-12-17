@@ -141,7 +141,7 @@ try
         }
 
         <#
-            Creates a new ManagedComputer object for a default instance that thows an exception
+            Creates a new ManagedComputer object for a default instance that throws an exception
             when attempting to set the service account
         #>
         $mockNewObject_ManagedComputer_DefaultInstance_SetServiceAccountException = {
@@ -410,7 +410,9 @@ try
         }
 
         Describe 'MSFT_SqlServerServiceAccount\Get-SqlServiceName' -Tag 'Helper' {
-            Mock @mockGetChildItemParameters
+            BeforeAll {
+                Mock @mockGetChildItemParameters
+            }
 
             Context 'When getting the service name for a default instance' {
                 # Define cases for the various parameters to test
@@ -462,7 +464,7 @@ try
                     )
 
                     # Get the service name
-                    Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType | Should Be $ExpectedServiceName
+                    Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType | Should -Be $ExpectedServiceName
 
                     # Ensure the mock is utilized
                     Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter $mockGetChildItem_ParameterFilter -Scope It -Exactly -Times 1
@@ -502,11 +504,9 @@ try
                     $notInstanceAwareTestCases = @(
                         @{
                             ServiceType = 'IntegrationServices'
-                            # ExpectedServiceName = ('{0}' -f $mockNamedInstance)
                         },
                         @{
                             ServiceType = 'SQLServerBrowser'
-                            # ExpectedServiceName = ('{0}' -f $mockNamedInstance)
                         }
                     )
                 }
@@ -524,13 +524,13 @@ try
                     )
 
                     # Get the service name
-                    Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType | Should Be $ExpectedServiceName
+                    Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType | Should -Be $ExpectedServiceName
 
                     # Ensure the mock is utilized
                     Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter $mockGetChildItem_ParameterFilter -Scope It -Exactly -Times 1
                 }
 
-                It 'Should thow an error for <ServiceType> which is not instance-aware' -TestCases $notInstanceAwareTestCases {
+                It 'Should throw an error for <ServiceType> which is not instance-aware' -TestCases $notInstanceAwareTestCases {
                     param
                     (
                         [Parameter()]
@@ -542,7 +542,7 @@ try
                     $testErrorMessage = $script:localizedData.NotInstanceAware -f $ServiceType
 
                     # An exception should be raised
-                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType } | Should Throw $testErrorMessage
+                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType $ServiceType } | Should -Throw $testErrorMessage
                 }
             }
 
@@ -558,7 +558,7 @@ try
                 It 'Should throw an exception if the service name cannot be derived' {
                     $testErrorMessage = $script:localizedData.UnknownServiceType -f 'DatabaseEngine'
 
-                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType DatabaseEngine } | Should Throw $testErrorMessage
+                    { Get-SqlServiceName -InstanceName $mockNamedInstance -ServiceType DatabaseEngine } | Should -Throw $testErrorMessage
 
                     # Ensure the mock was called
                     Assert-MockCalled -CommandName Get-ChildItem -Times 1 -Exactly -Scope It
