@@ -7,6 +7,8 @@
     done to follow the style guideline.
   - Updated manifest and license to reflect the new year
     ([issue #965](https://github.com/PowerShell/SqlServerDsc/issues/965)).
+  - Added new resource SqlServerDatabaseMail for configuring SQL Server
+    database mail.
 - Changes to SqlAlias
   - Fixed issue where exception was thrown if reg keys did not exist
     ([issue #949](https://github.com/PowerShell/SqlServerDsc/issues/949)).
