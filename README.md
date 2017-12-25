@@ -140,6 +140,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   functionality to T-SQL.
 * [**SqlServerConfiguration**](#sqlserverconfiguration) resource to manage
   [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
+* [**SqlServerDatabaseMail**](#sqlserverdatabasemail) resource
+  to manage SQL Server database mail.
 * [**SqlServerEndpoint**](#sqlserverendpoint) resource to ensure database endpoint
   is present or absent.
 * [**SqlServerEndpointPermission**](#sqlserverendpointpermission) Grant or revoke
@@ -838,6 +840,43 @@ No description.
 
 * [Configure two instances on the same server to have CLR enabled](/Examples/Resources/SqlServerConfiguration/1-ConfigureTwoInstancesOnTheSameServerToEnableClr.ps1)
 * [Configure a instance to have 'Priority Boost' enabled](/Examples/Resources/SqlServerConfiguration/2-ConfigureInstanceToEnablePriorityBoost.ps1)
+
+### SqlServerDatabaseMail
+
+Resource to manage SQL Server database mail.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running SQL Server Database Engine 2008 or later.
+
+#### Parameters
+
+* **`[String]` AccountName** _(Key)_: The name of the database mail account.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` EmailAddress** _(Required)_: The e-mail address from which mail
+  will originate.
+* **`[String]` MailServerName** _(Required)_: The fully qualified domain name of
+  the mail server name to which e-mail are sent.
+* **`[String]` ProfileName** _(Required)_: The profile name of the database mail.
+* **`[String]` Ensure** _(Key)_: Specifies the desired state of the database mail.
+  When set to 'Present', the database mail will be created. When set to 'Absent',
+  the database mail will be removed. Default value is 'Present'.
+* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
+* **`[String]` DisplayName** _(Key)_: The display name of the database mail.
+  Default value is the same value assigned to parameter ServerName.
+* **`[String]` ReplyToAddress** _(Key)_: The e-mail address to which the receiver
+  of e-mails will reply to. Default value is the same e-mail address assigned to
+  parameter EmailAddress.
+* **`[String]` Description** _(Key)_: The description of the database mail.
+* **`[String]` MailServerType** _(Key)_: The server type which the database mail
+  will use. Currently the only option is 'SMTP'. Defaults to SMTP. { SMTP }.
+* **`[UInt16]` TcpPort** _(Key)_: The TCP port used for communication. Default
+  value is port 25.
+
+#### Examples
+
+None.
 
 ### SqlServerEndpoint
 
