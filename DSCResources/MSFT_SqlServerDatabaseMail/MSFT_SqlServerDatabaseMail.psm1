@@ -7,7 +7,7 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -15,7 +15,7 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -32,11 +32,11 @@ function Get-TargetResource
 
     Get-SQLPSModule
 
-    if($sqlServer)
+    if($ServerName)
     {
-        Write-Verbose "Load the SMO assembly and create the server object, connecting to server '$($sqlServer)'"
+        Write-Verbose "Load the SMO assembly and create the server object, connecting to server '$($ServerName)'"
         $null   = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
-        $server = New-Object Microsoft.SqlServer.Management.SMO.Server ($sqlServer)
+        $server = New-Object Microsoft.SqlServer.Management.SMO.Server ($ServerName)
     }
 
     if($server.Configuration.DatabaseMailEnabled.ConfigValue -eq 1)
@@ -44,7 +44,7 @@ function Get-TargetResource
         $dBmail  = $server.Mail
         $account = $dBmail.Accounts|Where-Object {$_.Name -eq $account_name}
         $returnValue        = @{
-            sqlServer       = $env:COMPUTERNAME
+            ServerName       = $env:COMPUTERNAME
             account_name    = $account.Name
             email_address   = $account.EmailAddress
             mailserver_name = $account.MailServers.Name
@@ -72,7 +72,7 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -80,7 +80,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -95,7 +95,7 @@ function Set-TargetResource
         $ProfileName,
 
         [System.String]
-        $DisplayName = $SQLServer,
+        $DisplayName = $ServerName,
 
         [System.String]
         $ReplyToAddress = $EmailAddress,
@@ -114,11 +114,11 @@ function Set-TargetResource
 
     Get-SQLPSModule
 
-    if($sqlServer)
+    if($ServerName)
     {
-        Write-Verbose "Load the SMO assembly and create the server object, connecting to server '$($sqlServer)'"
+        Write-Verbose "Load the SMO assembly and create the server object, connecting to server '$($ServerName)'"
         $null   = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
-        $server = New-Object Microsoft.SqlServer.Management.SMO.Server ($sqlServer)
+        $server = New-Object Microsoft.SqlServer.Management.SMO.Server ($ServerName)
     }
 
     if($server)
@@ -150,12 +150,12 @@ function Set-TargetResource
             {
                 $account = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailAccount($dBmail,$account_name) -ErrorAction SilentlyContinue
                 $account.Description    = $description
-                $account.DisplayName    = $sqlServer
+                $account.DisplayName    = $ServerName
                 $account.EmailAddress   = $email_address
                 $account.ReplyToAddress = $replyto_address
                 $account.Create()
 
-                $account.MailServers.Item($sqlServer).Rename($mailserver_name)
+                $account.MailServers.Item($ServerName).Rename($mailserver_name)
                 $account.Alter()
             }
             else {Write-Verbose "DB mail account '$($account_name)' already esists"}
@@ -199,7 +199,7 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $SQLInstanceName,
+        $InstanceName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -207,7 +207,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $SQLServer,
+        $ServerName,
 
         [parameter(Mandatory = $true)]
         [System.String]
@@ -222,7 +222,7 @@ function Test-TargetResource
         $ProfileName,
 
         [System.String]
-        $DisplayName = $SQLServer,
+        $DisplayName = $ServerName,
 
         [System.String]
         $ReplyToAddress = $EmailAddress,
@@ -241,12 +241,12 @@ function Test-TargetResource
 
     Get-SQLPSModule
 
-    $state = Get-TargetResource -account_name $account_name -sqlServer $sqlServer `
+    $state = Get-TargetResource -account_name $account_name -ServerName $ServerName `
         -email_address $email_address -mailserver_name $mailserver_name `
         -profile_name $profile_name -ErrorAction SilentlyContinue
 
     return ($state.account_name       -eq $account_name) -and
-     ($state.sqlServer          -eq $sqlServer) -and
+     ($state.ServerName         -eq $ServerName) -and
      ($state.email_address      -eq $email_address) -and
      ($state.mailserver_name    -eq $mailserver_name) -and
      ($state.profile_name       -eq $profile_name) -and
