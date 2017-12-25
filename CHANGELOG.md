@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Changes to SqlServerDsc
+  - Added new resource SqlServerDatabaseMail for configuring SQL Server
+    database mail.
 - Changes to SqlAlias
   - Fixed issue where exception was thrown if reg keys did not exist
     ([issue #949](https://github.com/PowerShell/SqlServerDsc/issues/949)).
