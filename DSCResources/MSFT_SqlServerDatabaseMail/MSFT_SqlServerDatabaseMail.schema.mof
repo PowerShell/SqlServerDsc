@@ -1,16 +1,16 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerDatabaseMail")]
 class MSFT_SqlServerDatabaseMail : OMI_BaseResource
 {
-    [Key, Description("None yet.")] String AccountName;
+    [Key, Description("The name of the database mail account.")] String AccountName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
-    [Required, Description("None yet.")] String EmailAddress;
-    [Required, Description("None yet.")] String MailServerName;
-    [Required, Description("None yet.")] String ProfileName;
-    [Write, Description("An enumerated value that describes if the database mail configuration should be added ('Present') or removed ('Absent'). Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Write, Description("The host name of the SQL Server to be configured.")] String ServerName;
-    [Write, Description("None yet. Default value is the same value assigned to parameter ServerName.")] String DisplayName;
-    [Write, Description("None yet. Default value is the same e-mail address assigned to parameter EmailAddress.")] String ReplyToAddress;
-    [Write, Description("None yet. Default value is 'Mail account to send alerts for the DBAs'.")] String Description;
-    [Write, Description("Type of mail server. Currently the only option is 'SMTP'. Default value is 'SMTP'."), ValueMap{"SMTP"}, Values{"SMTP"}] String MailServerType;
-    [Write, Description("The TCP port used for communication. Default value is 25 (TCP port 25).")] UInt16 Port;
+    [Required, Description("The e-mail address from which mail will originate.")] String EmailAddress;
+    [Required, Description("The fully qualified domain name of the mail server name to which e-mail are sent.")] String MailServerName;
+    [Required, Description("The profile name of the database mail.")] String ProfileName;
+    [Write, Description("Specifies the desired state of the database mail. When set to 'Present', the database mail will be created. When set to 'Absent', the database mail will be removed. Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Write, Description("The hostname of the SQL Server to be configured.")] String ServerName;
+    [Write, Description("The display name of the database mail. Default value is the same value assigned to parameter ServerName.")] String DisplayName;
+    [Write, Description("The e-mail address to which the receiver of e-mails will reply to. Default value is the same e-mail address assigned to parameter EmailAddress.")] String ReplyToAddress;
+    [Write, Description("The description of the database mail.")] String Description;
+    [Write, Description("The server type which the database mail will use. Currently the only option is 'SMTP'. Defaults to SMTP."), ValueMap{"SMTP"}, Values{"SMTP"}] String MailServerType;
+    [Write, Description("The TCP port used for communication. Default value is port 25.")] UInt16 TcpPort;
 };
