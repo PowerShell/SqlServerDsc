@@ -141,7 +141,7 @@ function Get-TargetResource
 
     .PARAMETER DisplayName
         The display name of the database mail. Default value is the same value
-        assigned to parameter ServerName.
+        assigned to parameter AccountName.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
@@ -149,10 +149,6 @@ function Get-TargetResource
 
     .PARAMETER Description
         The description of the database mail.
-
-    .PARAMETER MailServerType
-        The server type which the database mail will use. Currently the only option
-        is 'SMTP'. Defaults to SMTP. { SMTP }.
 
     .PARAMETER LoggingLevel
         The logging level that the database mail will use. If not specified the
@@ -198,7 +194,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $ServerName,
+        $DisplayName = $AccountName,
 
         [Parameter()]
         [System.String]
@@ -285,8 +281,6 @@ function Set-TargetResource
             {
                 Write-Verbose -Message "Create the mail account '$($AccountName)'"
 
-                # TODO: MailServerType is not used
-
                 $databaseMailAccount = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailAccount($databaseMail, $AccountName)
                 $databaseMailAccount.Description = $Description
                 $databaseMailAccount.DisplayName = $ServerName
@@ -294,8 +288,19 @@ function Set-TargetResource
                 $databaseMailAccount.ReplyToAddress = $ReplyToAddress
                 $databaseMailAccount.Create()
 
-                $databaseMailAccount.MailServers.Item($ServerName).Rename($MailServerName)
-                $databaseMailAccount.Alter()
+                $mailServer = $databaseMailAccount.MailServers[0]
+
+                if ($mailServer)
+                {
+                    $mailServer.Rename($MailServerName)
+
+                    if ($PSBoundParameters.ContainsKey('TcpPort'))
+                    {
+                        $mailServer.Port = $TcpPort
+                    }
+
+                    $mailServer.Alter()
+                }
             }
             else
             {
@@ -365,7 +370,7 @@ function Set-TargetResource
 
     .PARAMETER DisplayName
         The display name of the database mail. Default value is the same value
-        assigned to parameter ServerName.
+        assigned to parameter AccountName.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
@@ -373,10 +378,6 @@ function Set-TargetResource
 
     .PARAMETER Description
         The description of the database mail.
-
-    .PARAMETER MailServerType
-        The server type which the database mail will use. Currently the only option
-        is 'SMTP'. Defaults to SMTP. { SMTP }.
 
     .PARAMETER LoggingLevel
         The logging level that the database mail will use. If not specified the
@@ -423,7 +424,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $ServerName,
+        $DisplayName = $AccountName,
 
         [Parameter()]
         [System.String]

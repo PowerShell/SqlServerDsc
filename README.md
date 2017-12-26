@@ -842,22 +842,20 @@ Resource to manage SQL Server database mail.
 * **`[String]` MailServerName** _(Required)_: The fully qualified domain name of
   the mail server name to which e-mail are sent.
 * **`[String]` ProfileName** _(Required)_: The profile name of the database mail.
-* **`[String]` Ensure** _(Key)_: Specifies the desired state of the database mail.
+* **`[String]` Ensure** _(Write)_: Specifies the desired state of the database mail.
   When set to 'Present', the database mail will be created. When set to 'Absent',
   the database mail will be removed. Default value is 'Present'.
-* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
-* **`[String]` DisplayName** _(Key)_: The display name of the database mail.
-  Default value is the same value assigned to parameter ServerName.
-* **`[String]` ReplyToAddress** _(Key)_: The e-mail address to which the receiver
+* **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
+* **`[String]` DisplayName** _(Write)_: The display name of the database mail.
+  Default value is the same value assigned to parameter AccountName.
+* **`[String]` ReplyToAddress** _(Write)_: The e-mail address to which the receiver
   of e-mails will reply to. Default value is the same e-mail address assigned to
   parameter EmailAddress.
-* **`[String]` Description** _(Key)_: The description of the database mail.
-* **`[String]` MailServerType** _(Key)_: The server type which the database mail
-  will use. Currently the only option is 'SMTP'. Defaults to SMTP. { SMTP }.
-* **`[String]` LoggingLevel** _(Key)_: The logging level that the database mail
+* **`[String]` Description** _(Write)_: The description of the database mail.
+* **`[String]` LoggingLevel** _(Write)_: The logging level that the database mail
   will use. If not specified the default logging level is 'Extended'.
   { Normal | *Extended* | Verbose }.
-* **`[UInt16]` TcpPort** _(Key)_: The TCP port used for communication. Default
+* **`[UInt16]` TcpPort** _(Write)_: The TCP port used for communication. Default
   value is port 25.
 
 #### Examples
