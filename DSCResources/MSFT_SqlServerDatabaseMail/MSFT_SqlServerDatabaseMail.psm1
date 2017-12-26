@@ -76,7 +76,7 @@ function Get-TargetResource
 
     if ($sqlServerObject)
     {
-        if ($sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue -eq 1)
+        if ($sqlServerObject.Configuration.DatabaseMailEnabled.RunValue -eq 1)
         {
             $databaseMail = $sqlServerObject.Mail
 
@@ -151,6 +151,10 @@ function Get-TargetResource
         The server type which the database mail will use. Currently the only option
         is 'SMTP'. Defaults to SMTP. { SMTP }.
 
+    .PARAMETER LoggingLevel
+        The logging level that the database mail will use. If not specified the
+        default logging level is 'Extended'. { Normal | *Extended* | Verbose }.
+
     .PARAMETER TcpPort
         The TCP port used for communication. Default value is port 25.
 #>
@@ -207,6 +211,11 @@ function Set-TargetResource
         $MailServerType = 'SMTP',
 
         [Parameter()]
+        [System.String]
+        [ValidateSet('Normal','Extended','Verbose')]
+        $LoggingLevel,
+
+        [Parameter()]
         [System.UInt16]
         $TcpPort = 25
     )
@@ -215,35 +224,57 @@ function Set-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose "Configure the SQL Server to enable Database Mail."
+        Write-Verbose -Message "Configure the SQL Server to enable Database Mail."
 
         ##Named Pipes had to be enabled, Why??
 
-        $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue
+        $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
         if ($databaseMailEnabled -ne 1)
         {
-            Write-Verbose "Database Mail XPs are set to '$($databaseMailEnabled)'. Will try to enabled Database Mail XPs."
+            Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'. Will try to enabled Database Mail XPs."
             $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 1
             $sqlServerObject.Configuration.Alter()
 
             # Set $databaseMailEnabled to the new value.
-            $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue
-            Write-Verbose "Database Mail XPs are set to '$($databaseMailEnabled)'"
+            $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+            Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'"
         }
 
         if ($databaseMailEnabled -eq 1)
         {
-            Write-Verbose "Alter mail system parameters if desired, this is an optional step."
             $databaseMail = $sqlServerObject.Mail
 
-            # TODO: This should not be hard coded but a parameter.
-            $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = 1
-            $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
-            #Test
-            $LoggingLevel = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
-            Write-Verbose "Database Mail Logging Level is '$($LoggingLevel)'"
+            if ($PSBoundParameters.ContainsKey('LoggingLevel'))
+            {
+                $loggingLevelValue = switch ($LoggingLevel)
+                {
+                    'Normal'
+                    {
+                        1
+                    }
 
-            Write-Verbose "Create the mail account '$($AccountName)'"
+                    'Extended'
+                    {
+                        2
+                    }
+
+                    'Verbose'
+                    {
+                        3
+                    }
+                }
+
+                Write-Verbose -Message ('Changing Database Mail logging level to {0}' -f $loggingLevelValue)
+
+                $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = $loggingLevelValue
+                $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
+            }
+
+            #Test
+            $loggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
+            Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
+
+            Write-Verbose -Message "Create the mail account '$($AccountName)'"
             if ( -not ($databaseMail.Accounts|Where-Object {$_.Name -eq $AccountName}))
             {
                 # TODO: MailServerType is not used
@@ -260,10 +291,10 @@ function Set-TargetResource
             }
             else
             {
-                Write-Verbose "DB mail account '$($AccountName)' already exist."
+                Write-Verbose -Message "DB mail account '$($AccountName)' already exist."
             }
 
-            Write-Verbose "Create a public default profile '$($ProfileName)'"
+            Write-Verbose -Message "Create a public default profile '$($ProfileName)'"
             if ( -not ($databaseMail.Profiles|Where-Object {$_.Name -eq $ProfileName}))
             {
                 $profile = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailProfile($databaseMail, $ProfileName)
@@ -276,10 +307,10 @@ function Set-TargetResource
             }
             else
             {
-                Write-Verbose "DB mail profile '$($ProfileName)' already exist."
+                Write-Verbose -Message "DB mail profile '$($ProfileName)' already exist."
             }
 
-            Write-Verbose "Configure the SQL Agent to use database mail."
+            Write-Verbose -Message "Configure the SQL Agent to use database mail."
             if ($sqlServerObject.JobServer.AgentMailType -ne 'DatabaseMail' -or $sqlServerObject.JobServer.DatabaseMailProfile -ne $profile_name)
             {
                 $sqlServerObject.JobServer.AgentMailType = 'DatabaseMail'
@@ -339,6 +370,10 @@ function Set-TargetResource
         The server type which the database mail will use. Currently the only option
         is 'SMTP'. Defaults to SMTP. { SMTP }.
 
+    .PARAMETER LoggingLevel
+        The logging level that the database mail will use. If not specified the
+        default logging level is 'Extended'. { Normal | *Extended* | Verbose }.
+
     .PARAMETER TcpPort
         The TCP port used for communication. Default value is port 25.
 #>
@@ -394,6 +429,11 @@ function Test-TargetResource
         [System.String]
         [ValidateSet('SMTP')]
         $MailServerType = 'SMTP',
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Normal','Extended','Verbose')]
+        $LoggingLevel,
 
         [Parameter()]
         [System.UInt16]
