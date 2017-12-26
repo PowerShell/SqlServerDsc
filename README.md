@@ -832,6 +832,7 @@ Resource to manage SQL Server database mail.
 
 * Target machine must be running Windows Server 2008 R2 or later.
 * Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running SQL Server Agent.
 
 #### Parameters
 
@@ -846,8 +847,9 @@ Resource to manage SQL Server database mail.
   When set to 'Present', the database mail will be created. When set to 'Absent',
   the database mail will be removed. Default value is 'Present'.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-* **`[String]` DisplayName** _(Write)_: The display name of the database mail.
-  Default value is the same value assigned to parameter AccountName.
+  Defaults to $env:COMPUTERNAME.
+* **`[String]` DisplayName** _(Write)_: The display name of the outgoing mail server.
+  Default value is the same value assigned to parameter MailServerName.
 * **`[String]` ReplyToAddress** _(Write)_: The e-mail address to which the receiver
   of e-mails will reply to. Default value is the same e-mail address assigned to
   parameter EmailAddress.
