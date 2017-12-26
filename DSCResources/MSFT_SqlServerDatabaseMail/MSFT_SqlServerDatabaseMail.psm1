@@ -111,6 +111,9 @@ function Get-TargetResource
     .SYNOPSIS
         Creates or removes the database mail configuration.
 
+        Information about the different properties can be found here
+        https://docs.microsoft.com/en-us/sql/relational-databases/database-mail/configure-database-mail.
+
     .PARAMETER Ensure
         Specifies the desired state of the database mail.
         When set to 'Present', the database mail will be created.
@@ -274,20 +277,25 @@ function Set-TargetResource
             $loggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
             Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
 
-            Write-Verbose -Message "Create the mail account '$($AccountName)'"
-            if ( -not ($databaseMail.Accounts|Where-Object {$_.Name -eq $AccountName}))
+            $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
+                $_.Name -eq $AccountName
+            }
+
+            if (-not $databaseMailAccount)
             {
+                Write-Verbose -Message "Create the mail account '$($AccountName)'"
+
                 # TODO: MailServerType is not used
 
-                $account = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailAccount($databaseMail, $AccountName)
-                $account.Description = $Description
-                $account.DisplayName = $ServerName
-                $account.EmailAddress = $EmailAddress
-                $account.ReplyToAddress = $ReplyToAddress
-                $account.Create()
+                $databaseMailAccount = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailAccount($databaseMail, $AccountName)
+                $databaseMailAccount.Description = $Description
+                $databaseMailAccount.DisplayName = $ServerName
+                $databaseMailAccount.EmailAddress = $EmailAddress
+                $databaseMailAccount.ReplyToAddress = $ReplyToAddress
+                $databaseMailAccount.Create()
 
-                $account.MailServers.Item($ServerName).Rename($MailServerName)
-                $account.Alter()
+                $databaseMailAccount.MailServers.Item($ServerName).Rename($MailServerName)
+                $databaseMailAccount.Alter()
             }
             else
             {
