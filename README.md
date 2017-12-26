@@ -871,6 +871,9 @@ Resource to manage SQL Server database mail.
 * **`[String]` Description** _(Key)_: The description of the database mail.
 * **`[String]` MailServerType** _(Key)_: The server type which the database mail
   will use. Currently the only option is 'SMTP'. Defaults to SMTP. { SMTP }.
+* **`[String]` LoggingLevel** _(Key)_: The logging level that the database mail
+  will use. If not specified the default logging level is 'Extended'.
+  { Normal | *Extended* | Verbose }.
 * **`[UInt16]` TcpPort** _(Key)_: The TCP port used for communication. Default
   value is port 25.
 
