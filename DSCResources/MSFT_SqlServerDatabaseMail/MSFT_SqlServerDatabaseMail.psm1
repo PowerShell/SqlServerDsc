@@ -8,6 +8,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -33,7 +34,7 @@ function Get-TargetResource
     (
         [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -64,11 +65,11 @@ function Get-TargetResource
         AccountName    = $null
         EmailAddress   = $null
         MailServerName = $null
+        LoggingLevel   = $null
         ProfileName    = $null
         DisplayName    = $null
         ReplyToAddress = $null
         Description    = $null
-        MailServerType = $null
         TcpPort        = $null
     }
 
@@ -80,22 +81,48 @@ function Get-TargetResource
         {
             $databaseMail = $sqlServerObject.Mail
 
-            $account = $databaseMail.Accounts | Where-Object -FilterScript {
+            $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
                 $_.Name -eq $AccountName
             }
 
-            if ($account)
+            if ($databaseMailAccount)
             {
+                $loggingLevelText = switch ($databaseMail.ConfigurationValues.Item('LoggingLevel').Value)
+                {
+                    1
+                    {
+                        'Normal'
+                    }
+
+                    2
+                    {
+                        'Extended'
+                    }
+
+                    3
+                    {
+                        'Verbose'
+                    }
+                }
+
                 $returnValue['Ensure'] = 'Present'
-                $returnValue['AccountName'] = $account.Name
-                $returnValue['EmailAddress'] = $account.EmailAddress
-                $returnValue['MailServerName'] = $account.MailServers.Name
-                $returnValue['ProfileName'] = $account.GetAccountProfileNames()[0]
-                $returnValue['DisplayName'] = $account.DisplayName
-                $returnValue['ReplyToAddress'] = $account.ReplyToAddress
-                $returnValue['Description'] = $account.Description
-                $returnValue['MailServerType'] = $account.MailServers.ServerType
-                $returnValue['TcpPort'] = $account.MailServers.Port
+                $returnValue['LoggingLevel'] = $loggingLevelText
+                $returnValue['AccountName'] = $databaseMailAccount.Name
+                $returnValue['EmailAddress'] = $databaseMailAccount.EmailAddress
+                $returnValue['MailServerName'] = $databaseMailAccount.MailServers.Name
+                $returnValue['ProfileName'] = $databaseMailAccount.GetAccountProfileNames()[0]
+                $returnValue['DisplayName'] = $databaseMailAccount.DisplayName
+                $returnValue['ReplyToAddress'] = $databaseMailAccount.ReplyToAddress
+                # SQL Server returns '' for Description property when value is not set.
+                if ($databaseMailAccount.Description -eq '')
+                {
+                    $returnValue['Description'] = $null
+                }
+                else
+                {
+                    $returnValue['Description'] = $databaseMailAccount.Description
+                }
+                $returnValue['TcpPort'] = $databaseMailAccount.MailServers.Port
             }
         }
         else
@@ -122,6 +149,7 @@ function Get-TargetResource
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -140,8 +168,8 @@ function Get-TargetResource
         The profile name of the database mail.
 
     .PARAMETER DisplayName
-        The display name of the database mail. Default value is the same value
-        assigned to parameter AccountName.
+        The display name of the outgoing mail server. Default value is the same
+        value assigned to parameter MailServerName.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
@@ -169,7 +197,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -194,7 +222,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $AccountName,
+        $DisplayName = $MailServerName,
 
         [Parameter()]
         [System.String]
@@ -206,12 +234,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        [ValidateSet('SMTP')]
-        $MailServerType = 'SMTP',
-
-        [Parameter()]
-        [System.String]
-        [ValidateSet('Normal','Extended','Verbose')]
+        [ValidateSet('Normal', 'Extended', 'Verbose')]
         $LoggingLevel,
 
         [Parameter()]
@@ -223,118 +246,189 @@ function Set-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message "Configure the SQL Server to enable Database Mail."
-
-        ##Named Pipes had to be enabled, Why??
-
-        $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
-        if ($databaseMailEnabled -ne 1)
+        if ($Ensure -eq 'Present')
         {
-            Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'. Will try to enabled Database Mail XPs."
-            $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 1
-            $sqlServerObject.Configuration.Alter()
+            Write-Verbose -Message "Configure the SQL Server to enable Database Mail."
 
-            # Set $databaseMailEnabled to the new value.
             $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
-            Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'"
-        }
-
-        if ($databaseMailEnabled -eq 1)
-        {
-            $databaseMail = $sqlServerObject.Mail
-
-            if ($PSBoundParameters.ContainsKey('LoggingLevel'))
+            if ($databaseMailEnabled -ne 1)
             {
-                $loggingLevelValue = switch ($LoggingLevel)
+                Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'. Will try to enabled Database Mail XPs."
+                $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 1
+                $sqlServerObject.Configuration.Alter()
+
+                # Set $databaseMailEnabled to the new value.
+                $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+                Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'"
+            }
+
+            if ($databaseMailEnabled -eq 1)
+            {
+                $databaseMail = $sqlServerObject.Mail
+
+                if ($PSBoundParameters.ContainsKey('LoggingLevel'))
                 {
-                    'Normal'
+                    $loggingLevelValue = switch ($LoggingLevel)
                     {
-                        1
+                        'Normal'
+                        {
+                            1
+                        }
+
+                        'Extended'
+                        {
+                            2
+                        }
+
+                        'Verbose'
+                        {
+                            3
+                        }
                     }
 
-                    'Extended'
+                    $currentLoggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
+                    if ($loggingLevelValue -ne $currentLoggingLevelValue)
                     {
-                        2
-                    }
+                        Write-Verbose -Message ('Changing Database Mail logging level to {0}' -f $loggingLevelValue)
 
-                    'Verbose'
+                        $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = $loggingLevelValue
+                        $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
+                    }
+                    else
                     {
-                        3
+                        $loggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
+                        Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
                     }
                 }
 
-                Write-Verbose -Message ('Changing Database Mail logging level to {0}' -f $loggingLevelValue)
+                $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
+                    $_.Name -eq $AccountName
+                }
 
-                $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = $loggingLevelValue
-                $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
-            }
-
-            #Test
-            $loggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
-            Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
-
-            $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
-                $_.Name -eq $AccountName
-            }
-
-            if (-not $databaseMailAccount)
-            {
-                Write-Verbose -Message "Create the mail account '$($AccountName)'"
-
-                $databaseMailAccount = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailAccount($databaseMail, $AccountName)
-                $databaseMailAccount.Description = $Description
-                $databaseMailAccount.DisplayName = $ServerName
-                $databaseMailAccount.EmailAddress = $EmailAddress
-                $databaseMailAccount.ReplyToAddress = $ReplyToAddress
-                $databaseMailAccount.Create()
-
-                $mailServer = $databaseMailAccount.MailServers[0]
-
-                if ($mailServer)
+                if (-not $databaseMailAccount)
                 {
-                    $mailServer.Rename($MailServerName)
+                    Write-Verbose -Message "Create the mail account '$($AccountName)'"
 
-                    if ($PSBoundParameters.ContainsKey('TcpPort'))
+                    $databaseMailAccount = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailAccount -ArgumentList @($databaseMail, $AccountName)
+                    $databaseMailAccount.Description = $Description
+                    $databaseMailAccount.DisplayName = $DisplayName
+                    $databaseMailAccount.EmailAddress = $EmailAddress
+                    $databaseMailAccount.ReplyToAddress = $ReplyToAddress
+                    $databaseMailAccount.Create()
+
+                    # The previous Create() method will always create a first mail server.
+                    $mailServer = $databaseMailAccount.MailServers[0]
+
+                    if ($mailServer)
                     {
+                        $mailServer.Rename($MailServerName)
+
+                        if ($PSBoundParameters.ContainsKey('TcpPort'))
+                        {
+                            $mailServer.Port = $TcpPort
+                        }
+
+                        $mailServer.Alter()
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message "Database Mail mail account '$($AccountName)' already exist."
+
+                    $currentDisplayName = $databaseMailAccount.DisplayName
+                    if ($currentDisplayName -ne $DisplayName)
+                    {
+                        Write-Verbose -Message ('Updating display name of outgoing mail server. Current value is {0}, expected {1}.' -f $currentDisplayName, $DisplayName)
+                        $databaseMailAccount.DisplayName = $DisplayName
+                        $databaseMailAccount.Alter()
+                    }
+
+                    $currentDescription = $databaseMailAccount.Description
+                    if ($currentDescription -ne $Description)
+                    {
+                        Write-Verbose -Message ('Updating description of outgoing mail server. Current value is {0}, expected {1}.' -f $currentDescription, $Description)
+                        $databaseMailAccount.Description = $Description
+                        $databaseMailAccount.Alter()
+                    }
+
+                    $currentEmailAddress = $databaseMailAccount.EmailAddress
+                    if ($currentEmailAddress -ne $EmailAddress)
+                    {
+                        Write-Verbose -Message ('Updating e-mail address of outgoing mail server. Current value is {0}, expected {1}.' -f $currentEmailAddress, $EmailAddress)
+                        $databaseMailAccount.EmailAddress = $EmailAddress
+                        $databaseMailAccount.Alter()
+                    }
+
+                    $currentReplyToAddress = $databaseMailAccount.ReplyToAddress
+                    if ($currentReplyToAddress -ne $ReplyToAddress)
+                    {
+                        Write-Verbose -Message ('Updating reply to e-mail address of outgoing mail server. Current value is {0}, expected {1}.' -f $currentReplyToAddress, $ReplyToAddress)
+                        $databaseMailAccount.ReplyToAddress = $ReplyToAddress
+                        $databaseMailAccount.Alter()
+                    }
+
+                    $mailServer = $databaseMailAccount.MailServers[0]
+
+                    $currentMailServerName = $mailServer.Name
+                    if ($currentMailServerName -ne $MailServerName)
+                    {
+                        Write-Verbose -Message ('Updating server name of outgoing mail server. Current value is {0}, expected {1}.' -f $currentMailServerName, $MailServerName)
+                        $mailServer.Rename($MailServerName)
+                        $mailServer.Alter()
+                    }
+
+                    $currentTcpPort = $mailServer.Port
+                    if ($currentTcpPort -ne $TcpPort)
+                    {
+                        Write-Verbose -Message ('Updating reply to tcp port of outgoing mail server. Current value is {0}, expected {1}.' -f $currentTcpPort, $TcpPort)
                         $mailServer.Port = $TcpPort
+                        $mailServer.Alter()
                     }
+                }
 
-                    $mailServer.Alter()
+                $databaseMailProfile = $databaseMail.Profiles | Where-Object -FilterScript {
+                    $_.Name -eq $ProfileName
+                }
+
+                if (-not $databaseMailProfile)
+                {
+                    Write-Verbose -Message "Create a public default profile '$($ProfileName)'"
+
+                    $databaseMailProfile = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailProfile -ArgumentList @($databaseMail, $ProfileName)
+                    $databaseMailProfile.Description = $Description
+                    $databaseMailProfile.Create()
+
+                    <#
+                        A principal refers to a database user, a database role or
+                        server role, an application role, or a SQL Server login.
+                        You can add these types of users to the mail profile.
+                        https://msdn.microsoft.com/en-us/library/ms208094.aspx
+                    #>
+                    $databaseMailProfile.AddPrincipal('public', $true) # Add
+                    $databaseMailProfile.AddAccount($AccountName, 0) # Sequence number zero (0).
+                    $databaseMailProfile.Alter()
+                }
+                else
+                {
+                    Write-Verbose -Message "DB mail profile '$($ProfileName)' already exist."
+                }
+
+                Write-Verbose -Message 'Configure the SQL Agent to use database mail.'
+                if ($sqlServerObject.JobServer.AgentMailType -ne 'DatabaseMail' -or $sqlServerObject.JobServer.DatabaseMailProfile -ne $ProfileName)
+                {
+                    $sqlServerObject.JobServer.AgentMailType = 'DatabaseMail'
+                    $sqlServerObject.JobServer.DatabaseMailProfile = $ProfileName
+                    $sqlServerObject.JobServer.Alter()
                 }
             }
             else
             {
-                Write-Verbose -Message "DB mail account '$($AccountName)' already exist."
+                throw 'Database Mail XPs are not enabled.'
             }
-
-            Write-Verbose -Message "Create a public default profile '$($ProfileName)'"
-            if ( -not ($databaseMail.Profiles|Where-Object {$_.Name -eq $ProfileName}))
-            {
-                $profile = New-Object Microsoft.SqlServer.Management.SMO.Mail.MailProfile($databaseMail, $ProfileName)
-                $profile.Description = $Description
-                $profile.Create()
-
-                $profile.AddAccount($AccountName, 0)
-                $profile.AddPrincipal('public', 1)
-                $profile.Alter()
-            }
-            else
-            {
-                Write-Verbose -Message "DB mail profile '$($ProfileName)' already exist."
-            }
-
-            Write-Verbose -Message "Configure the SQL Agent to use database mail."
-            if ($sqlServerObject.JobServer.AgentMailType -ne 'DatabaseMail' -or $sqlServerObject.JobServer.DatabaseMailProfile -ne $profile_name)
-            {
-                $sqlServerObject.JobServer.AgentMailType = 'DatabaseMail'
-                $sqlServerObject.JobServer.DatabaseMailProfile = $ProfileName
-                $sqlServerObject.JobServer.Alter()
-            }
-
         }
         else
         {
-            throw 'Database Mail XPs are not enabled.'
+            # Absent
         }
     }
 }
@@ -351,6 +445,7 @@ function Set-TargetResource
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -369,8 +464,8 @@ function Set-TargetResource
         The profile name of the database mail.
 
     .PARAMETER DisplayName
-        The display name of the database mail. Default value is the same value
-        assigned to parameter AccountName.
+        The display name of the outgoing mail server. Default value is the same
+        value assigned to parameter MailServerName.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
@@ -408,7 +503,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -424,7 +519,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $AccountName,
+        $DisplayName = $MailServerName,
 
         [Parameter()]
         [System.String]
@@ -436,12 +531,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        [ValidateSet('SMTP')]
-        $MailServerType = 'SMTP',
-
-        [Parameter()]
-        [System.String]
-        [ValidateSet('Normal','Extended','Verbose')]
+        [ValidateSet('Normal', 'Extended', 'Verbose')]
         $LoggingLevel,
 
         [Parameter()]
@@ -450,24 +540,31 @@ function Test-TargetResource
     )
 
     $getTargetResourceParameters = @{
-        AccountName = $AccountName
-        ServerName = $ServerName
-        EmailAddress = $EmailAddress
+        ServerName     = $ServerName
+        InstanceName   = $InstanceName
+        AccountName    = $AccountName
+        EmailAddress   = $EmailAddress
         MailServerName = $MailServerName
-        ProfileName = $ProfileName
+        ProfileName    = $ProfileName
     }
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
-    return ($getTargetResourceResult.AccountName -eq $AccountName) -and
-    ($getTargetResourceResult.ServerName -eq $ServerName) -and
-    ($getTargetResourceResult.EmailAddress -eq $email_address) -and
-    ($getTargetResourceResult.MailServerName -eq $MailServerName) -and
-    ($getTargetResourceResult.ProfileName -eq $ProfileName) -and
-    ($getTargetResourceResult.ReplyToAddress -eq $ReplyToAddress) -and
-    ($getTargetResourceResult.MailServerType -eq $MailServerType) -and
-    ($getTargetResourceResult.TcpPort -eq $TcpPort)
-
+    return Test-SQLDscParameterState `
+        -CurrentValues $getTargetResourceResult `
+        -DesiredValues $PSBoundParameters `
+        -ValuesToCheck @(
+            'AccountName'
+            'EmailAddress'
+            'MailServerName'
+            'ProfileName'
+            'Ensure'
+            'ReplyToAddress' #
+            'TcpPort'
+            'DisplayName' #
+            'Description' #
+            'LoggingLevel' #
+        )
 }
 
 Export-ModuleMember -Function *-TargetResource
