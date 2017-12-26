@@ -125,10 +125,6 @@ function Get-TargetResource
                 $returnValue['TcpPort'] = $databaseMailAccount.MailServers.Port
             }
         }
-        else
-        {
-            throw 'Database mail is not enabled.'
-        }
     }
 
     return $returnValue
@@ -289,7 +285,7 @@ function Set-TargetResource
                     $currentLoggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
                     if ($loggingLevelValue -ne $currentLoggingLevelValue)
                     {
-                        Write-Verbose -Message ('Changing Database Mail logging level to {0}' -f $loggingLevelValue)
+                        Write-Verbose -Message ('Changing Database Mail logging level to ''{0}''' -f $LoggingLevel)
 
                         $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = $loggingLevelValue
                         $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
@@ -305,7 +301,7 @@ function Set-TargetResource
                     $_.Name -eq $AccountName
                 }
 
-                if (-not $databaseMailAccount)
+                if (-not $databaseMailAccount)
                 {
                     Write-Verbose -Message "Create the mail account '$($AccountName)'"
 
@@ -314,7 +310,7 @@ function Set-TargetResource
                     $databaseMailAccount.DisplayName = $DisplayName
                     $databaseMailAccount.EmailAddress = $EmailAddress
                     $databaseMailAccount.ReplyToAddress = $ReplyToAddress
-                    $databaseMailAccount.Create()
+                    $databaseMailAccount.Create()
 
                     # The previous Create() method will always create a first mail server.
                     $mailServer = $databaseMailAccount.MailServers[0]
@@ -404,7 +400,7 @@ function Set-TargetResource
                         You can add these types of users to the mail profile.
                         https://msdn.microsoft.com/en-us/library/ms208094.aspx
                     #>
-                    $databaseMailProfile.AddPrincipal('public', $true) # Add
+                    $databaseMailProfile.AddPrincipal('public', $true)
                     $databaseMailProfile.AddAccount($AccountName, 0) # Sequence number zero (0).
                     $databaseMailProfile.Alter()
                 }
@@ -559,11 +555,11 @@ function Test-TargetResource
             'MailServerName'
             'ProfileName'
             'Ensure'
-            'ReplyToAddress' #
+            'ReplyToAddress'
             'TcpPort'
-            'DisplayName' #
-            'Description' #
-            'LoggingLevel' #
+            'DisplayName'
+            'Description'
+            'LoggingLevel'
         )
 }
 
