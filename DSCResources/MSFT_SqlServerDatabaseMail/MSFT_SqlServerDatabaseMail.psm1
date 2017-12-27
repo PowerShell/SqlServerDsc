@@ -87,7 +87,7 @@ function Get-TargetResource
 
             if ($databaseMailAccount)
             {
-                $loggingLevelText = switch ($databaseMail.ConfigurationValues.Item('LoggingLevel').Value)
+                $loggingLevelText = switch ($databaseMail.ConfigurationValues['LoggingLevel'].Value)
                 {
                     1
                     {
@@ -282,17 +282,17 @@ function Set-TargetResource
                         }
                     }
 
-                    $currentLoggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
+                    $currentLoggingLevelValue = $databaseMail.ConfigurationValues['LoggingLevel'].Value
                     if ($loggingLevelValue -ne $currentLoggingLevelValue)
                     {
                         Write-Verbose -Message ('Changing Database Mail logging level to ''{0}''' -f $LoggingLevel)
 
-                        $databaseMail.ConfigurationValues.Item('LoggingLevel').Value = $loggingLevelValue
-                        $databaseMail.ConfigurationValues.Item('LoggingLevel').Alter()
+                        $databaseMail.ConfigurationValues['LoggingLevel'].Value = $loggingLevelValue
+                        $databaseMail.ConfigurationValues['LoggingLevel'].Alter()
                     }
                     else
                     {
-                        $loggingLevelValue = $databaseMail.ConfigurationValues.Item('LoggingLevel').Value
+                        $loggingLevelValue = $databaseMail.ConfigurationValues['LoggingLevel'].Value
                         Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
                     }
                 }
@@ -550,15 +550,15 @@ function Test-TargetResource
         -CurrentValues $getTargetResourceResult `
         -DesiredValues $PSBoundParameters `
         -ValuesToCheck @(
-            'AccountName'
-            'EmailAddress'
-            'MailServerName'
-            'ProfileName'
-            'Ensure'
-            'ReplyToAddress'
-            'TcpPort'
-            'DisplayName'
-            'Description'
-            'LoggingLevel'
-        )
+        'AccountName'
+        'EmailAddress'
+        'MailServerName'
+        'ProfileName'
+        'Ensure'
+        'ReplyToAddress'
+        'TcpPort'
+        'DisplayName'
+        'Description'
+        'LoggingLevel'
+    )
 }
