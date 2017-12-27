@@ -105,24 +105,37 @@ function Get-TargetResource
                     }
                 }
 
+                <#
+                    AccountName exist so we set this as 'Present' regardless if
+                    other properties are in desired state, the Test-TargetResource
+                    function must handle that.
+                #>
                 $returnValue['Ensure'] = 'Present'
                 $returnValue['LoggingLevel'] = $loggingLevelText
                 $returnValue['AccountName'] = $databaseMailAccount.Name
                 $returnValue['EmailAddress'] = $databaseMailAccount.EmailAddress
-                $returnValue['MailServerName'] = $databaseMailAccount.MailServers.Name
-                $returnValue['ProfileName'] = $databaseMailAccount.GetAccountProfileNames()[0]
                 $returnValue['DisplayName'] = $databaseMailAccount.DisplayName
                 $returnValue['ReplyToAddress'] = $databaseMailAccount.ReplyToAddress
+
+                # Currently only the first mail server is handled.
+                $mailServer = $databaseMailAccount.MailServers | Select-Object -First 1
+
+                $returnValue['MailServerName'] = $mailServer.Name
+                $returnValue['TcpPort'] = $mailServer.Port
+
+                # Currently only one profile is handled, so this make sure only the first string (profile name) is returned.
+                $returnValue['ProfileName'] = $databaseMail.Profiles | Select -First 1 -ExpandProperty Name
+
                 # SQL Server returns '' for Description property when value is not set.
                 if ($databaseMailAccount.Description -eq '')
                 {
+                    # Convert empty value to $null
                     $returnValue['Description'] = $null
                 }
                 else
                 {
                     $returnValue['Description'] = $databaseMailAccount.Description
                 }
-                $returnValue['TcpPort'] = $databaseMailAccount.MailServers.Port
             }
         }
     }
@@ -313,7 +326,7 @@ function Set-TargetResource
                     $databaseMailAccount.Create()
 
                     # The previous Create() method will always create a first mail server.
-                    $mailServer = $databaseMailAccount.MailServers[0]
+                    $mailServer = $databaseMailAccount.MailServers | Select-Object -First 1
 
                     if ($mailServer)
                     {
@@ -363,7 +376,7 @@ function Set-TargetResource
                         $databaseMailAccount.Alter()
                     }
 
-                    $mailServer = $databaseMailAccount.MailServers[0]
+                    $mailServer = $databaseMailAccount.MailServers | Select-Object -First 1
 
                     $currentMailServerName = $mailServer.Name
                     if ($currentMailServerName -ne $MailServerName)
@@ -544,21 +557,34 @@ function Test-TargetResource
         ProfileName    = $ProfileName
     }
 
-    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+    $returnValue = $false
 
-    return Test-SQLDscParameterState `
-        -CurrentValues $getTargetResourceResult `
-        -DesiredValues $PSBoundParameters `
-        -ValuesToCheck @(
-        'AccountName'
-        'EmailAddress'
-        'MailServerName'
-        'ProfileName'
-        'Ensure'
-        'ReplyToAddress'
-        'TcpPort'
-        'DisplayName'
-        'Description'
-        'LoggingLevel'
-    )
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+    if ($Ensure -eq 'Present')
+    {
+        $returnValue = Test-SQLDscParameterState `
+            -CurrentValues $getTargetResourceResult `
+            -DesiredValues $PSBoundParameters `
+            -ValuesToCheck @(
+            'AccountName'
+            'EmailAddress'
+            'MailServerName'
+            'ProfileName'
+            'Ensure'
+            'ReplyToAddress'
+            'TcpPort'
+            'DisplayName'
+            'Description'
+            'LoggingLevel'
+        )
+    }
+    else
+    {
+        if ($Ensure -eq $getTargetResourceResult.Ensure)
+        {
+            $returnValue = $true
+        }
+    }
+
+    return $returnValue
 }
