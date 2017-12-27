@@ -124,7 +124,7 @@ function Get-TargetResource
                 $returnValue['TcpPort'] = $mailServer.Port
 
                 # Currently only one profile is handled, so this make sure only the first string (profile name) is returned.
-                $returnValue['ProfileName'] = $databaseMail.Profiles | Select -First 1 -ExpandProperty Name
+                $returnValue['ProfileName'] = $databaseMail.Profiles | Select-Object -First 1 -ExpandProperty Name
 
                 # SQL Server returns '' for Description property when value is not set.
                 if ($databaseMailAccount.Description -eq '')
