@@ -1228,6 +1228,18 @@ InModuleScope $script:moduleName {
                 Test-SQLDscParameterState @testParameters | Should -Be $false
             }
 
+            It 'Should return false when a value is different for [UInt16]' {
+                $mockCurrentValues = @{ Example = [System.UInt16]1 }
+                $mockDesiredValues = @{ Example = [System.UInt16]2 }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-SQLDscParameterState @testParameters | Should -Be $false
+            }
+
             It 'Should return false when a value is missing' {
                 $mockCurrentValues = @{ }
                 $mockDesiredValues = @{ Example = 'test' }

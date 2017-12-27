@@ -632,7 +632,8 @@ function Test-SQLDscParameterState
                     {
                         switch ($desiredType.Name)
                         {
-                            'String' {
+                            'String'
+                            {
                                 if (-not [System.String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
                                     -not [System.String]::IsNullOrEmpty($DesiredValues.$fieldName))
                                 {
@@ -643,7 +644,8 @@ function Test-SQLDscParameterState
                                 }
                             }
 
-                            'Int32' {
+                            'Int32'
+                            {
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 {
@@ -654,7 +656,8 @@ function Test-SQLDscParameterState
                                 }
                             }
 
-                            'Int16' {
+                            { $_ -eq 'Int16' -or $_ -eq 'UInt16'}
+                            {
                                 if (-not ($DesiredValues.$fieldName -eq 0) -or `
                                     -not ($null -eq $CurrentValues.$fieldName))
                                 {
@@ -665,7 +668,8 @@ function Test-SQLDscParameterState
                                 }
                             }
 
-                            default {
+                            default
+                            {
                                 Write-Warning -Message ($script:localizedData.UnableToCompareProperty `
                                     -f $fieldName, $desiredType.Name)
 
