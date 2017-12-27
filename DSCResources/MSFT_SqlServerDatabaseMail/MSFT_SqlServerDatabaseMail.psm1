@@ -562,5 +562,3 @@ function Test-TargetResource
             'LoggingLevel'
         )
 }
-
-Export-ModuleMember -Function *-TargetResource
