@@ -72,9 +72,9 @@ Describe 'SqlServerDsc module common tests' {
             Import-Module -Name "$script:moduleRoot\SqlServerDsc.psd1" -Global -Force
         }
     }
-    
+
     Context -Name 'When the resource should be used to compile a configuration in Azure Automation' {
-        $fullPathHardLimit = 129 # 129 characters is the current maxmium for a relative path to be able to compile configurations in Azure Automation.
+        $fullPathHardLimit = 129 # 129 characters is the current maximum for a relative path to be able to compile configurations in Azure Automation.
         $allModuleFiles = Get-ChildItem -Path $script:moduleRoot -Recurse
 
         $testCaseModuleFile = @()
