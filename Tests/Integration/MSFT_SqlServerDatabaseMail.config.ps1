@@ -22,7 +22,7 @@ $ConfigurationData = @{
     )
 }
 
-Configuration MSFT_SqlServerDatabaseMail_Config
+Configuration MSFT_SqlServerDatabaseMail_Add_Config
 {
     param
     (
@@ -54,4 +54,33 @@ Configuration MSFT_SqlServerDatabaseMail_Config
         }
     }
 }
+
+Configuration MSFT_SqlServerDatabaseMail_Remove_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SqlInstallCredential
+    )
+
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node localhost {
+        SqlServerDatabaseMail 'Integration_Test'
+        {
+            Ensure               = 'Absent'
+            ServerName           = $Node.ServerName
+            InstanceName         = $Node.InstanceName
+            AccountName          = $Node.AccountName
+            ProfileName          = $Node.ProfileName
+            EmailAddress         = $Node.EmailAddress
+            MailServerName       = $Node.MailServerName
+
+            PsDscRunAsCredential = $SqlInstallCredential
+        }
+    }
+}
+
 
