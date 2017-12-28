@@ -79,24 +79,24 @@ try
                 Add-Member -MemberType NoteProperty -Name 'ReplyToAddress' -Value $mockReplyToAddress -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'Description' -Value $mockDynamicDescription -PassThru |
                 Add-Member -MemberType ScriptProperty -Name 'MailServers' -Value {
-                    return @(
-                        New-Object -TypeName Object |
-                            Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockMailServerName -PassThru |
-                            Add-Member -MemberType NoteProperty -Name 'Port' -Value $mockTcpPort -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name 'Rename' -Value {
-                                $script:MailServerRenameMethodCallCount += 1
-                            } -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                                $script:MailServerAlterMethodCallCount += 1
-                            } -PassThru -Force
-                    )
-                } -PassThru |
+                return @(
+                    New-Object -TypeName Object |
+                        Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockMailServerName -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'Port' -Value $mockTcpPort -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name 'Rename' -Value {
+                        $script:MailServerRenameMethodCallCount += 1
+                    } -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
+                        $script:MailServerAlterMethodCallCount += 1
+                    } -PassThru -Force
+                )
+            } -PassThru |
                 Add-Member -MemberType ScriptMethod -Name 'Create' -Value {
-                    $script:MailAccountCreateMethodCallCount += 1
-                } -PassThru |
+                $script:MailAccountCreateMethodCallCount += 1
+            } -PassThru |
                 Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                    $script:MailAccountAlterMethodCallCount += 1
-                } -PassThru -Force
+                $script:MailAccountAlterMethodCallCount += 1
+            } -PassThru -Force
         }
 
         $mockNewObject_MailAccount = {
@@ -110,18 +110,18 @@ try
                     Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockProfileName -PassThru |
                     Add-Member -MemberType NoteProperty -Name 'Description' -Value $mockProfileName -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'Create' -Value {
-                        $script:MailProfileCreateMethodCallCount += 1
-                    } -PassThru |
+                    $script:MailProfileCreateMethodCallCount += 1
+                } -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                        $script:MailProfileAlterMethodCallCount += 1
-                    } -PassThru |
+                    $script:MailProfileAlterMethodCallCount += 1
+                } -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'AddPrincipal' -Value {
-                        $script:MailProfileAddPrincipalMethodCallCount += 1
-                    } -PassThru |
+                    $script:MailProfileAddPrincipalMethodCallCount += 1
+                } -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'AddAccount' -Value {
-                        $script:MailProfileAddAccountMethodCallCount += 1
-                    } -PassThru -Force
-                )
+                    $script:MailProfileAddAccountMethodCallCount += 1
+                } -PassThru -Force
+            )
         }
 
         $mockNewObject_MailProfile = {
@@ -132,44 +132,44 @@ try
         $mockConnectSQL = {
             return New-Object -TypeName Object |
                 Add-Member -MemberType ScriptProperty -Name 'Configuration' -Value {
+                return New-Object -TypeName Object |
+                    Add-Member -MemberType ScriptProperty -Name 'DatabaseMailEnabled' -Value {
                     return New-Object -TypeName Object |
-                        Add-Member -MemberType ScriptProperty -Name 'DatabaseMailEnabled' -Value {
-                            return New-Object -TypeName Object |
-                                Add-Member -MemberType NoteProperty -Name 'RunValue' -Value $mockDynamicDatabaseMailEnabledRunValue -PassThru |
-                                Add-Member -MemberType NoteProperty -Name 'ConfigValue' -Value $mockDatabaseMailDisabledConfigValue -PassThru -Force
-                        } -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                            $script:ConfigurationAlterMethodCallCount += 1
-                        } -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'RunValue' -Value $mockDynamicDatabaseMailEnabledRunValue -PassThru |
+                        Add-Member -MemberType NoteProperty -Name 'ConfigValue' -Value $mockDatabaseMailDisabledConfigValue -PassThru -Force
                 } -PassThru |
-                Add-Member -MemberType ScriptProperty -Name 'Mail' -Value {
-                    return New-Object -TypeName Object |
-                        Add-Member -MemberType ScriptProperty -Name 'Accounts' -Value {
-                            # This executes the variable that contains the mock
-                            return @( & $mailAccountObject )
-                        } -PassThru |
-                        Add-Member -MemberType ScriptProperty -Name 'ConfigurationValues' -Value {
-                            return @{
-                                'LoggingLevel' = New-Object -TypeName Object |
-                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value $mockDynamicLoggingLevelValue -PassThru |
-                                                Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                                                    $script:LoggingLevelAlterMethodCallCount += 1
-                                                } -PassThru -Force
-                            }
-                        } -PassThru |
-                        Add-Member -MemberType ScriptProperty -Name 'Profiles' -Value {
-                            # This executes the variable that contains the mock
-                            return @( & $mailProfileObject )
-                        } -PassThru -Force
-                } -PassThru |
-                Add-Member -MemberType ScriptProperty -Name 'JobServer' -Value {
-                    return New-Object -TypeName Object |
-                            Add-Member -MemberType NoteProperty -Name 'AgentMailType' -Value $mockAgentMailType -PassThru |
-                            Add-Member -MemberType NoteProperty -Name 'DatabaseMailProfile' -Value $mockProfileName -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
-                                $script:JobServerAlterMethodCallCount += 1
-                            } -PassThru -Force
+                    Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
+                    $script:ConfigurationAlterMethodCallCount += 1
                 } -PassThru -Force
+            } -PassThru |
+                Add-Member -MemberType ScriptProperty -Name 'Mail' -Value {
+                return New-Object -TypeName Object |
+                    Add-Member -MemberType ScriptProperty -Name 'Accounts' -Value {
+                    # This executes the variable that contains the mock
+                    return @( & $mailAccountObject )
+                } -PassThru |
+                    Add-Member -MemberType ScriptProperty -Name 'ConfigurationValues' -Value {
+                    return @{
+                        'LoggingLevel' = New-Object -TypeName Object |
+                            Add-Member -MemberType NoteProperty -Name 'Value' -Value $mockDynamicLoggingLevelValue -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
+                            $script:LoggingLevelAlterMethodCallCount += 1
+                        } -PassThru -Force
+                    }
+                } -PassThru |
+                    Add-Member -MemberType ScriptProperty -Name 'Profiles' -Value {
+                    # This executes the variable that contains the mock
+                    return @( & $mailProfileObject )
+                } -PassThru -Force
+            } -PassThru |
+                Add-Member -MemberType ScriptProperty -Name 'JobServer' -Value {
+                return New-Object -TypeName Object |
+                    Add-Member -MemberType NoteProperty -Name 'AgentMailType' -Value $mockAgentMailType -PassThru |
+                    Add-Member -MemberType NoteProperty -Name 'DatabaseMailProfile' -Value $mockProfileName -PassThru |
+                    Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
+                    $script:JobServerAlterMethodCallCount += 1
+                } -PassThru -Force
+            } -PassThru -Force
         }
 
         Describe "MSFT_SqlServerDatabaseMail\Get-TargetResource" -Tag 'Get' {
@@ -478,7 +478,7 @@ try
                 $setTargetResourceParameters = $mockDefaultParameters.Clone()
 
                 $script:ConfigurationAlterMethodCallCount = 0
-                $script:MailAccountCreateMethodCallCount  = 0
+                $script:MailAccountCreateMethodCallCount = 0
                 $script:MailServerRenameMethodCallCount = 0
                 $script:MailServerAlterMethodCallCount = 0
                 $script:MailAccountAlterMethodCallCount = 0
@@ -526,16 +526,16 @@ try
             }
 
             Context 'When the system is not in the desired state' {
-                # Context 'When the configuration should be absent' {
-                #     BeforeEach {
-                #         $setTargetResourceParameters['Ensure'] = 'Absent'
-                #     }
+                Context 'When the configuration should be absent' {
+                    BeforeEach {
+                        $setTargetResourceParameters['Ensure'] = 'Absent'
+                    }
 
-                #     It 'Should return the state as $false' {
-                #         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
-                #         $script:ConfigurationAlterMethodCallCount | Should -Be 1
-                #     }
-                # }
+                    It 'Should return the state as $false' {
+                        { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+                        $script:ConfigurationAlterMethodCallCount | Should -Be 1
+                    }
+                }
 
                 Context 'When the configuration should be present' {
                     Context 'When database mail XPs is enabled but fails evaluation' {
@@ -685,7 +685,8 @@ try
                                 $script:JobServerAlterMethodCallCount | Should -Be 0
                                 $script:LoggingLevelAlterMethodCallCount | Should -Be 0
                             }
-                            elseif ($TestName -like '*TcpPort*') {
+                            elseif ($TestName -like '*TcpPort*')
+                            {
                                 $script:MailServerRenameMethodCallCount | Should -Be 0
                                 $script:MailServerAlterMethodCallCount | Should -Be 1
                                 $script:MailAccountAlterMethodCallCount | Should -Be 0
@@ -696,7 +697,8 @@ try
                                 $script:JobServerAlterMethodCallCount | Should -Be 0
                                 $script:LoggingLevelAlterMethodCallCount | Should -Be 0
                             }
-                            elseif ($TestName -like '*ProfileName*') {
+                            elseif ($TestName -like '*ProfileName*')
+                            {
                                 $script:MailServerRenameMethodCallCount | Should -Be 0
                                 $script:MailServerAlterMethodCallCount | Should -Be 0
                                 $script:MailAccountAlterMethodCallCount | Should -Be 0
@@ -707,7 +709,8 @@ try
                                 $script:JobServerAlterMethodCallCount | Should -Be 1
                                 $script:LoggingLevelAlterMethodCallCount | Should -Be 0
                             }
-                            elseif ($TestName -like '*LoggingLevel*') {
+                            elseif ($TestName -like '*LoggingLevel*')
+                            {
                                 $script:MailServerRenameMethodCallCount | Should -Be 0
                                 $script:MailServerAlterMethodCallCount | Should -Be 0
                                 $script:MailAccountAlterMethodCallCount | Should -Be 0
