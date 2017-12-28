@@ -47,7 +47,7 @@ try
             $resourceId = "[$($script:DSCResourceFriendlyName)]Integration_Test"
         }
 
-        $configurationName = "$($script:DSCResourceName)_Config"
+        $configurationName = "$($script:DSCResourceName)_Add_Config"
 
         Context ('When using configuration {0}' -f $configurationName) {
             It 'Should compile and apply the MOF without throwing' {
@@ -97,6 +97,59 @@ try
                 $resourceCurrentState.Description | Should -Be $mockDescription
                 $resourceCurrentState.LoggingLevel | Should -Be $mockLoggingLevel
                 $resourceCurrentState.TcpPort | Should -Be $mockTcpPort
+            }
+        }
+
+        $configurationName = "$($script:DSCResourceName)_Remove_Config"
+
+        Context ('When using configuration {0}' -f $configurationName) {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    $configurationParameters = @{
+                        SqlInstallCredential = $mockSqlInstallCredential
+                        OutputPath           = $TestDrive
+                        # The variable $ConfigurationData was dot-sourced above.
+                        ConfigurationData    = $ConfigurationData
+                    }
+
+                    & $configurationName @configurationParameters
+
+                    $startDscConfigurationParameters = @{
+                        Path         = $TestDrive
+                        ComputerName = 'localhost'
+                        Wait         = $true
+                        Verbose      = $true
+                        Force        = $true
+                        ErrorAction  = 'Stop'
+                    }
+
+                    Start-DscConfiguration @startDscConfigurationParameters
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                $currentConfiguration = Get-DscConfiguration
+
+                $resourceCurrentState = $currentConfiguration | Where-Object -FilterScript {
+                    $_.ConfigurationName -eq $configurationName
+                } | Where-Object -FilterScript {
+                    $_.ResourceId -eq $resourceId
+                }
+
+                $resourceCurrentState.Ensure | Should -Be 'Absent'
+                $resourceCurrentState.AccountName | Should -BeNullOrEmpty
+                $resourceCurrentState.ProfileName | Should -BeNullOrEmpty
+                $resourceCurrentState.EmailAddress | Should -BeNullOrEmpty
+                $resourceCurrentState.ReplyToAddress | Should -BeNullOrEmpty
+                $resourceCurrentState.DisplayName | Should -BeNullOrEmpty
+                $resourceCurrentState.MailServerName | Should -BeNullOrEmpty
+                $resourceCurrentState.Description | Should -BeNullOrEmpty
+                $resourceCurrentState.LoggingLevel | Should -BeNullOrEmpty
+                $resourceCurrentState.TcpPort | Should -BeNullOrEmpty
             }
         }
     }
