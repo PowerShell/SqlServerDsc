@@ -141,7 +141,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * [**SqlServerConfiguration**](#sqlserverconfiguration) resource to manage
   [SQL Server Configuration Options](https://msdn.microsoft.com/en-us/library/ms189631.aspx).
 * [**SqlServerDatabaseMail**](#sqlserverdatabasemail) resource
-  to manage SQL Server database mail.
+  to manage SQL Server Database Mail.
 * [**SqlServerEndpoint**](#sqlserverendpoint) resource to ensure database endpoint
   is present or absent.
 * [**SqlServerEndpointPermission**](#sqlserverendpointpermission) Grant or revoke
@@ -844,7 +844,7 @@ No description.
 
 ### SqlServerDatabaseMail
 
-Resource to manage SQL Server database mail.
+Resource to manage SQL Server Database Mail.
 
 #### Requirements
 
@@ -853,16 +853,16 @@ Resource to manage SQL Server database mail.
 
 #### Parameters
 
-* **`[String]` AccountName** _(Key)_: The name of the database mail account.
+* **`[String]` AccountName** _(Key)_: The name of the Database Mail account.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` EmailAddress** _(Required)_: The e-mail address from which mail
   will originate.
 * **`[String]` MailServerName** _(Required)_: The fully qualified domain name of
   the mail server name to which e-mail are sent.
-* **`[String]` ProfileName** _(Required)_: The profile name of the database mail.
-* **`[String]` Ensure** _(Write)_: Specifies the desired state of the database mail.
-  When set to 'Present', the database mail will be created. When set to 'Absent',
-  the database mail will be removed. Default value is 'Present'.
+* **`[String]` ProfileName** _(Required)_: The profile name of the Database Mail.
+* **`[String]` Ensure** _(Write)_: Specifies the desired state of the Database Mail.
+  When set to 'Present', the Database Mail will be created. When set to 'Absent',
+  the Database Mail will be removed. Default value is 'Present'.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
   Defaults to $env:COMPUTERNAME.
 * **`[String]` DisplayName** _(Write)_: The display name of the outgoing mail server.
@@ -870,8 +870,8 @@ Resource to manage SQL Server database mail.
 * **`[String]` ReplyToAddress** _(Write)_: The e-mail address to which the receiver
   of e-mails will reply to. Default value is the same e-mail address assigned to
   parameter EmailAddress.
-* **`[String]` Description** _(Write)_: The description of the database mail.
-* **`[String]` LoggingLevel** _(Write)_: The logging level that the database mail
+* **`[String]` Description** _(Write)_: The description of the Database Mail.
+* **`[String]` LoggingLevel** _(Write)_: The logging level that the Database Mail
   will use. If not specified the default logging level is 'Extended'.
   { Normal | *Extended* | Verbose }.
 * **`[UInt16]` TcpPort** _(Write)_: The TCP port used for communication. Default
