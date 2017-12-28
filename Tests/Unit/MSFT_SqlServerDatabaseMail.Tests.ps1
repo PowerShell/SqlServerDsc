@@ -49,7 +49,8 @@ try
         $mockDatabaseMailDisabledConfigValue = 0
         $mockDatabaseMailEnabledConfigValue = 1
 
-        $mockAgentMailType = 'DatabaseMail'
+        $mockAgentMailTypeDatabaseMail = 'DatabaseMail'
+        $mockAgentMailTypeSqlAgentMail = 'SQLAgentMail'
 
         $mockLoggingLevelNormal = 'Normal'
         $mockLoggingLevelNormalValue = '1'
@@ -94,9 +95,12 @@ try
                 Add-Member -MemberType ScriptMethod -Name 'Create' -Value {
                 $script:MailAccountCreateMethodCallCount += 1
             } -PassThru |
+                Add-Member -MemberType ScriptMethod -Name 'Drop' -Value {
+                $script:MailAccountDropMethodCallCount += 1
+            } -PassThru |
                 Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                 $script:MailAccountAlterMethodCallCount += 1
-            } -PassThru -Force
+        } -PassThru -Force
         }
 
         $mockNewObject_MailAccount = {
@@ -115,6 +119,9 @@ try
                     Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                     $script:MailProfileAlterMethodCallCount += 1
                 } -PassThru |
+                    Add-Member -MemberType ScriptMethod -Name 'Drop' -Value {
+                    $script:MailProfileDropMethodCallCount += 1
+                    } -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'AddPrincipal' -Value {
                     $script:MailProfileAddPrincipalMethodCallCount += 1
                 } -PassThru |
@@ -164,8 +171,8 @@ try
             } -PassThru |
                 Add-Member -MemberType ScriptProperty -Name 'JobServer' -Value {
                 return New-Object -TypeName Object |
-                    Add-Member -MemberType NoteProperty -Name 'AgentMailType' -Value $mockAgentMailType -PassThru |
-                    Add-Member -MemberType NoteProperty -Name 'DatabaseMailProfile' -Value $mockProfileName -PassThru |
+                    Add-Member -MemberType NoteProperty -Name 'AgentMailType' -Value $mockDynamicAgentMailType -PassThru |
+                    Add-Member -MemberType NoteProperty -Name 'DatabaseMailProfile' -Value $mockDynamicDatabaseMailProfile -PassThru |
                     Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                     $script:JobServerAlterMethodCallCount += 1
                 } -PassThru -Force
@@ -177,6 +184,8 @@ try
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue
                 $mockDynamicDescription = $mockDescription
+                $mockDynamicAgentMailType = $mockAgentMailTypeDatabaseMail
+                $mockDynamicDatabaseMailProfile = $mockProfileName
             }
 
             BeforeEach {
@@ -297,6 +306,18 @@ try
                         $getTargetResourceResult.Description | Should -BeNullOrEmpty
                     }
                 }
+
+                Context 'When the Database Mail feature is disabled' {
+                    BeforeAll {
+                        $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailDisabledConfigValue
+                    }
+
+                    It 'Should return the correct values' {
+                        $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+                        $getTargetResourceResult.Ensure | Should -Be 'Absent'
+                        $getTargetResourceResult.AccountName | Should -BeNullOrEmpty
+                    }
+                }
             }
 
             Assert-VerifiableMock
@@ -307,6 +328,8 @@ try
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue
                 $mockDynamicDescription = $mockDescription
+                $mockDynamicAgentMailType = $mockAgentMailTypeDatabaseMail
+                $mockDynamicDatabaseMailProfile = $mockProfileName
             }
 
             BeforeEach {
@@ -463,6 +486,8 @@ try
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue
                 $mockDynamicDescription = $mockDescription
+                $mockDynamicAgentMailType = $mockAgentMailTypeDatabaseMail
+                $mockDynamicDatabaseMailProfile = $mockProfileName
             }
 
             BeforeEach {
@@ -488,6 +513,8 @@ try
                 $script:MailProfileAddAccountMethodCallCount = 0
                 $script:JobServerAlterMethodCallCount = 0
                 $script:LoggingLevelAlterMethodCallCount = 0
+                $script:MailProfileDropMethodCallCount = 0
+                $script:MailAccountDropMethodCallCount = 0
 
                 $mockDynamicExpectedAccountName = $mockMissingAccountName
             }
@@ -497,6 +524,11 @@ try
                     BeforeEach {
                         $setTargetResourceParameters['Ensure'] = 'Absent'
                         $setTargetResourceParameters['AccountName'] = $mockMissingAccountName
+                        $setTargetResourceParameters['ProfileName'] = 'MissingProfile'
+
+                        $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailDisabledConfigValue
+                        $mockDynamicAgentMailType = $mockAgentMailTypeSqlAgentMail
+                        $mockDynamicDatabaseMailProfile = $null
                     }
 
                     It 'Should call the correct methods without throwing' {
@@ -533,6 +565,9 @@ try
 
                     It 'Should return the state as $false' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+                        $script:JobServerAlterMethodCallCount | Should -Be 1
+                        $script:MailProfileDropMethodCallCount | Should -Be 1
+                        $script:MailAccountDropMethodCallCount | Should -Be 1
                         $script:ConfigurationAlterMethodCallCount | Should -Be 1
                     }
                 }
@@ -552,7 +587,9 @@ try
                             mock to 1 during testing to pass evaluation)
                         #>
                         It 'Should throw the correct error message' {
-                            { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'Database Mail XPs are not enabled.'
+                            {
+                                Set-TargetResource @setTargetResourceParameters
+                            } | Should -Throw $script:localizedData.DatabaseMailDisabled
 
                             $script:ConfigurationAlterMethodCallCount | Should -Be 1
 

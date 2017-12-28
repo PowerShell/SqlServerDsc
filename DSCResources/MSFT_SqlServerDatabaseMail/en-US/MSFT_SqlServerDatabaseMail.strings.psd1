@@ -28,4 +28,7 @@ ConvertFrom-StringData @'
     ConfigureSqlAgent = Configure the SQL Agent to use Database Mail.
     SqlAgentAlreadyConfigured = The SQL Agent is already configured to use Database Mail.
     TestingConfiguration = Determines if the Database Mail is in the desired state.
+    RemovingSqlAgentConfiguration = Configure the SQL Agent to not use Database Mail (changing it back to SQL Agent Mail).
+    RemovingMailProfile = Removing the public default profile '{0}'.
+    RemovingMailAccount = Removing the mail account '{0}'.
 '@

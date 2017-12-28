@@ -552,7 +552,60 @@ function Set-TargetResource
         }
         else
         {
-            # Absent
+            if ($sqlServerObject.JobServer.AgentMailType -eq 'DatabaseMail' -or $sqlServerObject.JobServer.DatabaseMailProfile -eq $ProfileName)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.RemovingSqlAgentConfiguration
+                )
+
+                $sqlServerObject.JobServer.AgentMailType = 'SqlAgentMail'
+                $sqlServerObject.JobServer.DatabaseMailProfile = $null
+                $sqlServerObject.JobServer.Alter()
+            }
+
+            $databaseMail = $sqlServerObject.Mail
+
+            $databaseMailProfile = $databaseMail.Profiles | Where-Object -FilterScript {
+                $_.Name -eq $ProfileName
+            }
+
+            if ($databaseMailProfile)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.RemovingMailProfile `
+                        -f $ProfileName
+                )
+
+                $databaseMailProfile.Drop()
+            }
+
+            $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
+                $_.Name -eq $AccountName
+            }
+
+            if ($databaseMailAccount)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.RemovingMailAccount `
+                        -f $AccountName
+                )
+
+                $databaseMailAccount.Drop()
+            }
+
+            $databaseMailEnabledRunValue = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+            if ($databaseMailEnabledRunValue -eq 1)
+            {
+                $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 0
+                $sqlServerObject.Configuration.Alter()
+
+                # Set $databaseMailEnabledRunValue to the updated value.
+                $databaseMailEnabledRunValue = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+
+                Write-Verbose -Message (
+                    $script:localizedData.DatabaseMailDisabled
+                )
+            }
         }
     }
 }
