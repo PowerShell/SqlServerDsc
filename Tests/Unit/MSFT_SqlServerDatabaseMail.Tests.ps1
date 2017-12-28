@@ -573,7 +573,7 @@ try
                 }
 
                 Context 'When the configuration should be present' {
-                    Context 'When database mail XPs is enabled but fails evaluation' {
+                    Context 'When Database Mail XPs is enabled but fails evaluation' {
                         $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailDisabledConfigValue
 
                         <#

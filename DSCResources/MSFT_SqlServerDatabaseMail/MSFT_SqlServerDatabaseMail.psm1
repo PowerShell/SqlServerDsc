@@ -19,7 +19,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerDatabaseM
         The name of the SQL instance to be configured.
 
     .PARAMETER AccountName
-        The name of the database mail account.
+        The name of the Database Mail account.
 
     .PARAMETER EmailAddress
         The e-mail address from which mail will originate.
@@ -29,7 +29,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerDatabaseM
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the database mail.
+        The profile name of the Database Mail.
 #>
 function Get-TargetResource
 {
@@ -185,9 +185,9 @@ function Get-TargetResource
         https://docs.microsoft.com/en-us/sql/relational-databases/database-mail/configure-database-mail.
 
     .PARAMETER Ensure
-        Specifies the desired state of the database mail.
-        When set to 'Present', the database mail will be created.
-        When set to 'Absent', the database mail will be removed.
+        Specifies the desired state of the Database Mail.
+        When set to 'Present', the Database Mail will be created.
+        When set to 'Absent', the Database Mail will be removed.
         Default value is 'Present'.
 
     .PARAMETER ServerName
@@ -198,7 +198,7 @@ function Get-TargetResource
         The name of the SQL instance to be configured.
 
     .PARAMETER AccountName
-        The name of the database mail account.
+        The name of the Database Mail account.
 
     .PARAMETER EmailAddress
         The e-mail address from which mail will originate.
@@ -208,7 +208,7 @@ function Get-TargetResource
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the database mail.
+        The profile name of the Database Mail.
 
     .PARAMETER DisplayName
         The display name of the outgoing mail server. Default value is the same
@@ -219,10 +219,10 @@ function Get-TargetResource
         Default value is the same e-mail address assigned to parameter EmailAddress.
 
     .PARAMETER Description
-        The description of the database mail.
+        The description of the Database Mail.
 
     .PARAMETER LoggingLevel
-        The logging level that the database mail will use. If not specified the
+        The logging level that the Database Mail will use. If not specified the
         default logging level is 'Extended'. { Normal | *Extended* | Verbose }.
 
     .PARAMETER TcpPort
@@ -615,9 +615,9 @@ function Set-TargetResource
         Determines if the Database Mail is in the desired state.
 
     .PARAMETER Ensure
-        Specifies the desired state of the database mail.
-        When set to 'Present', the database mail will be created.
-        When set to 'Absent', the database mail will be removed.
+        Specifies the desired state of the Database Mail.
+        When set to 'Present', the Database Mail will be created.
+        When set to 'Absent', the Database Mail will be removed.
         Default value is 'Present'.
 
     .PARAMETER ServerName
@@ -628,7 +628,7 @@ function Set-TargetResource
         The name of the SQL instance to be configured.
 
     .PARAMETER AccountName
-        The name of the database mail account.
+        The name of the Database Mail account.
 
     .PARAMETER EmailAddress
         The e-mail address from which mail will originate.
@@ -638,7 +638,7 @@ function Set-TargetResource
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the database mail.
+        The profile name of the Database Mail.
 
     .PARAMETER DisplayName
         The display name of the outgoing mail server. Default value is the same
@@ -649,10 +649,10 @@ function Set-TargetResource
         Default value is the same e-mail address assigned to parameter EmailAddress.
 
     .PARAMETER Description
-        The description of the database mail.
+        The description of the Database Mail.
 
     .PARAMETER LoggingLevel
-        The logging level that the database mail will use. If not specified the
+        The logging level that the Database Mail will use. If not specified the
         default logging level is 'Extended'. { Normal | *Extended* | Verbose }.
 
     .PARAMETER TcpPort

@@ -4,7 +4,7 @@
 
 - Changes to SqlServerDsc
   - Added new resource SqlServerDatabaseMail for configuring SQL Server
-    database mail.
+    Database Mail.
   - Updated Test-SQLDscParameterState to handle the type data type UInt16.
   - Fixed typo in SqlServerDscCommon.Tests.
 - Changes to SqlAlias
