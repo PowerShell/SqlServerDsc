@@ -2,9 +2,14 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
         -ChildPath 'SqlServerDscHelper.psm1') `
     -Force
 
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+        -ChildPath 'CommonResourceHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerDatabaseMail'
+
 <#
     .SYNOPSIS
-        Returns the current state of the database mail configuration.
+        Returns the current state of the Database Mail configuration.
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
@@ -73,12 +78,23 @@ function Get-TargetResource
         TcpPort        = $null
     }
 
+    Write-Verbose -Message (
+        $script:localizedData.ConnectToSqlInstance `
+            -f $ServerName, $InstanceName
+    )
+
     $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
-        if ($sqlServerObject.Configuration.DatabaseMailEnabled.RunValue -eq 1)
+        $databaseMailEnabledRunValue = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+        if ($databaseMailEnabledRunValue -eq 1)
         {
+            Write-Verbose -Message (
+                $script:localizedData.DatabaseMailEnabled `
+                    -f $databaseMailEnabledRunValue
+            )
+
             $databaseMail = $sqlServerObject.Mail
 
             $databaseMailAccount = $databaseMail.Accounts | Where-Object -FilterScript {
@@ -87,6 +103,11 @@ function Get-TargetResource
 
             if ($databaseMailAccount)
             {
+                Write-Verbose -Message (
+                    $script:localizedData.GetConfiguration `
+                        -f $AccountName
+                )
+
                 $loggingLevelText = switch ($databaseMail.ConfigurationValues['LoggingLevel'].Value)
                 {
                     1
@@ -137,6 +158,19 @@ function Get-TargetResource
                     $returnValue['Description'] = $databaseMailAccount.Description
                 }
             }
+            else
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.AccountIsMissing `
+                        -f $AccountName
+                )
+            }
+        }
+        else
+        {
+            Write-Verbose -Message (
+                $script:localizedData.DatabaseMailDisabled
+            )
         }
     }
 
@@ -145,7 +179,7 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-        Creates or removes the database mail configuration.
+        Creates or removes the Database Mail configuration.
 
         Information about the different properties can be found here
         https://docs.microsoft.com/en-us/sql/relational-databases/database-mail/configure-database-mail.
@@ -251,27 +285,39 @@ function Set-TargetResource
         $TcpPort = 25
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.ConnectToSqlInstance `
+            -f $ServerName, $InstanceName
+    )
+
     $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
 
     if ($sqlServerObject)
     {
         if ($Ensure -eq 'Present')
         {
-            Write-Verbose -Message "Configure the SQL Server to enable Database Mail."
 
-            $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
-            if ($databaseMailEnabled -ne 1)
+            $databaseMailEnabledRunValue = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+            if ($databaseMailEnabledRunValue -ne 1)
             {
-                Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'. Will try to enabled Database Mail XPs."
+                Write-Verbose -Message (
+                    $script:localizedData.EnablingDatabaseMail `
+                        -f $databaseMailEnabledRunValue, $ServerName, $InstanceName
+                )
+
                 $sqlServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 1
                 $sqlServerObject.Configuration.Alter()
 
-                # Set $databaseMailEnabled to the new value.
-                $databaseMailEnabled = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
-                Write-Verbose -Message "Database Mail XPs are set to '$($databaseMailEnabled)'"
+                # Set $databaseMailEnabledRunValue to the updated value.
+                $databaseMailEnabledRunValue = $sqlServerObject.Configuration.DatabaseMailEnabled.RunValue
+
+                Write-Verbose -Message (
+                    $script:localizedData.DatabaseMailEnabled `
+                        -f $databaseMailEnabledRunValue
+                )
             }
 
-            if ($databaseMailEnabled -eq 1)
+            if ($databaseMailEnabledRunValue -eq 1)
             {
                 $databaseMail = $sqlServerObject.Mail
 
@@ -298,15 +344,20 @@ function Set-TargetResource
                     $currentLoggingLevelValue = $databaseMail.ConfigurationValues['LoggingLevel'].Value
                     if ($loggingLevelValue -ne $currentLoggingLevelValue)
                     {
-                        Write-Verbose -Message ('Changing Database Mail logging level to ''{0}''' -f $LoggingLevel)
+                        Write-Verbose -Message (
+                            $script:localizedData.ChangingLoggingLevel `
+                                -f $LoggingLevel, $loggingLevelValue
+                        )
 
                         $databaseMail.ConfigurationValues['LoggingLevel'].Value = $loggingLevelValue
                         $databaseMail.ConfigurationValues['LoggingLevel'].Alter()
                     }
                     else
                     {
-                        $loggingLevelValue = $databaseMail.ConfigurationValues['LoggingLevel'].Value
-                        Write-Verbose -Message "Database Mail logging level is '$($loggingLevelValue)'"
+                        Write-Verbose -Message (
+                            $script:localizedData.CurrentLoggingLevel `
+                                -f $LoggingLevel, $loggingLevelValue
+                        )
                     }
                 }
 
@@ -316,7 +367,10 @@ function Set-TargetResource
 
                 if (-not $databaseMailAccount)
                 {
-                    Write-Verbose -Message "Create the mail account '$($AccountName)'"
+                    Write-Verbose -Message (
+                        $script:localizedData.CreatingMailAccount `
+                            -f $AccountName
+                    )
 
                     $databaseMailAccount = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailAccount -ArgumentList @($databaseMail, $AccountName)
                     $databaseMailAccount.Description = $Description
@@ -342,12 +396,22 @@ function Set-TargetResource
                 }
                 else
                 {
-                    Write-Verbose -Message "Database Mail mail account '$($AccountName)' already exist."
+                    Write-Verbose -Message (
+                        $script:localizedData.MailAccountExist `
+                            -f $AccountName
+                    )
 
                     $currentDisplayName = $databaseMailAccount.DisplayName
                     if ($currentDisplayName -ne $DisplayName)
                     {
-                        Write-Verbose -Message ('Updating display name of outgoing mail server. Current value is {0}, expected {1}.' -f $currentDisplayName, $DisplayName)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentDisplayName
+                                $DisplayName
+                                $script:localizedData.MailServerPropertyDisplayName
+                            )
+                        )
+
                         $databaseMailAccount.DisplayName = $DisplayName
                         $databaseMailAccount.Alter()
                     }
@@ -355,7 +419,14 @@ function Set-TargetResource
                     $currentDescription = $databaseMailAccount.Description
                     if ($currentDescription -ne $Description)
                     {
-                        Write-Verbose -Message ('Updating description of outgoing mail server. Current value is {0}, expected {1}.' -f $currentDescription, $Description)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentDescription
+                                $Description
+                                $script:localizedData.MailServerPropertyDescription
+                            )
+                        )
+
                         $databaseMailAccount.Description = $Description
                         $databaseMailAccount.Alter()
                     }
@@ -363,7 +434,14 @@ function Set-TargetResource
                     $currentEmailAddress = $databaseMailAccount.EmailAddress
                     if ($currentEmailAddress -ne $EmailAddress)
                     {
-                        Write-Verbose -Message ('Updating e-mail address of outgoing mail server. Current value is {0}, expected {1}.' -f $currentEmailAddress, $EmailAddress)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentEmailAddress
+                                $EmailAddress
+                                $script:localizedData.MailServerPropertyEmailAddress
+                            )
+                        )
+
                         $databaseMailAccount.EmailAddress = $EmailAddress
                         $databaseMailAccount.Alter()
                     }
@@ -371,7 +449,14 @@ function Set-TargetResource
                     $currentReplyToAddress = $databaseMailAccount.ReplyToAddress
                     if ($currentReplyToAddress -ne $ReplyToAddress)
                     {
-                        Write-Verbose -Message ('Updating reply to e-mail address of outgoing mail server. Current value is {0}, expected {1}.' -f $currentReplyToAddress, $ReplyToAddress)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentReplyToAddress
+                                $ReplyToAddress
+                                $script:localizedData.MailServerPropertyReplyToEmailAddress
+                            )
+                        )
+
                         $databaseMailAccount.ReplyToAddress = $ReplyToAddress
                         $databaseMailAccount.Alter()
                     }
@@ -381,7 +466,14 @@ function Set-TargetResource
                     $currentMailServerName = $mailServer.Name
                     if ($currentMailServerName -ne $MailServerName)
                     {
-                        Write-Verbose -Message ('Updating server name of outgoing mail server. Current value is {0}, expected {1}.' -f $currentMailServerName, $MailServerName)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentMailServerName
+                                $MailServerName
+                                $script:localizedData.MailServerPropertyServerName
+                            )
+                        )
+
                         $mailServer.Rename($MailServerName)
                         $mailServer.Alter()
                     }
@@ -389,7 +481,14 @@ function Set-TargetResource
                     $currentTcpPort = $mailServer.Port
                     if ($currentTcpPort -ne $TcpPort)
                     {
-                        Write-Verbose -Message ('Updating reply to tcp port of outgoing mail server. Current value is {0}, expected {1}.' -f $currentTcpPort, $TcpPort)
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingPropertyOfMailServer -f @(
+                                $currentTcpPort
+                                $TcpPort
+                                $script:localizedData.MailServerPropertyTcpPort
+                            )
+                        )
+
                         $mailServer.Port = $TcpPort
                         $mailServer.Alter()
                     }
@@ -401,7 +500,10 @@ function Set-TargetResource
 
                 if (-not $databaseMailProfile)
                 {
-                    Write-Verbose -Message "Create a public default profile '$($ProfileName)'"
+                    Write-Verbose -Message (
+                        $script:localizedData.CreatingMailProfile `
+                            -f $ProfileName
+                    )
 
                     $databaseMailProfile = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailProfile -ArgumentList @($databaseMail, $ProfileName)
                     $databaseMailProfile.Description = $Description
@@ -413,26 +515,39 @@ function Set-TargetResource
                         You can add these types of users to the mail profile.
                         https://msdn.microsoft.com/en-us/library/ms208094.aspx
                     #>
-                    $databaseMailProfile.AddPrincipal('public', $true)
+                    $databaseMailProfile.AddPrincipal('public', $true) # $true means the default profile.
                     $databaseMailProfile.AddAccount($AccountName, 0) # Sequence number zero (0).
                     $databaseMailProfile.Alter()
                 }
                 else
                 {
-                    Write-Verbose -Message "DB mail profile '$($ProfileName)' already exist."
+                    Write-Verbose -Message (
+                        $script:localizedData.MailProfileExist `
+                            -f $ProfileName
+                    )
                 }
 
-                Write-Verbose -Message 'Configure the SQL Agent to use database mail.'
                 if ($sqlServerObject.JobServer.AgentMailType -ne 'DatabaseMail' -or $sqlServerObject.JobServer.DatabaseMailProfile -ne $ProfileName)
                 {
+                    Write-Verbose -Message (
+                        $script:localizedData.ConfigureSqlAgent
+                    )
+
                     $sqlServerObject.JobServer.AgentMailType = 'DatabaseMail'
                     $sqlServerObject.JobServer.DatabaseMailProfile = $ProfileName
                     $sqlServerObject.JobServer.Alter()
                 }
+                else
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.SqlAgentAlreadyConfigured
+                    )
+                }
             }
             else
             {
-                throw 'Database Mail XPs are not enabled.'
+                $errorMessage = $script:localizedData.DatabaseMailDisabled
+                New-InvalidOperationException -Message $errorMessage
             }
         }
         else
@@ -444,7 +559,7 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-        Determines if the database mail is in the desired state.
+        Determines if the Database Mail is in the desired state.
 
     .PARAMETER Ensure
         Specifies the desired state of the database mail.
@@ -560,6 +675,11 @@ function Test-TargetResource
     $returnValue = $false
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration
+    )
+
     if ($Ensure -eq 'Present')
     {
         $returnValue = Test-SQLDscParameterState `
