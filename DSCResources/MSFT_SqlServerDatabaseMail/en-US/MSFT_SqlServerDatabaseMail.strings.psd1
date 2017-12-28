@@ -6,17 +6,17 @@
 #>
 
 ConvertFrom-StringData @'
-    ConnectToSqlInstance = Connecting to SQL Server instance '{0}\{1}'.
+    ConnectToSqlInstance = Connecting to SQL Server instance '{0}\\{1}'.
     DatabaseMailEnabled = SQL Server Database Mail is enabled. Database Mail XPs are set to {0}.
-    GetConfiguration = Account name '{0}' was found, returning current state of the Database Mail configuration.
+    GetConfiguration = Account name '{0}' was found, returning the current state of the Database Mail configuration.
     DatabaseMailDisabled = SQL Server Database Mail is disabled. Database Mail XPs are disabled.
     AccountIsMissing = Account name '{0}' was not found.
-    EnablingDatabaseMail = Database Mail XPs are set to {0}. Configure the SQL Server instance '{1}\{2}' to enable Database Mail.
-    ChangingLoggingLevel = Changing SQL Server Database Mail logging level to '{0}' (value '{1}').
+    EnablingDatabaseMail = Database Mail XPs are set to {0}. Configure the SQL Server instance '{1}\\{2}' to enable Database Mail.
+    ChangingLoggingLevel = Changing the SQL Server Database Mail logging level to '{0}' (value '{1}').
     CurrentLoggingLevel = SQL Server Database Mail logging level is '{0}' (value '{1}').
     CreatingMailAccount = Creating the mail account '{0}'.
     MailAccountExist = Mail account '{0}' already exist.
-    UpdatingPropertyOfMailServer = Updating {2} of outgoing mail server. Current value is {0}, expected {1}.
+    UpdatingPropertyOfMailServer = Updating {2} of outgoing mail server. Current value is '{0}', expected '{1}'.
     MailServerPropertyDisplayName = display name
     MailServerPropertyDescription = description
     MailServerPropertyEmailAddress = e-mail address

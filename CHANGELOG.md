@@ -21,7 +21,7 @@
     and instead opted-in for the common test in the 'DscResource.Tests' repository
     ([issue #669](https://github.com/PowerShell/SqlServerDsc/issues/669)).
   - Added new resource SqlServerDatabaseMail for configuring SQL Server
-    database mail.
+    Database Mail.
   - Updated Test-SQLDscParameterState to handle the type data type UInt16.
   - Fixed typo in SqlServerDscCommon.Tests.
 - Changes to SqlAlias
