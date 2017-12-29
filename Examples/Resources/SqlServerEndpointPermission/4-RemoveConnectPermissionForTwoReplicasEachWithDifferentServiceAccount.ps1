@@ -53,7 +53,7 @@ Configuration Example
             ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
-            Principal            = $SqlServiceCredentialNode2.UserName
+            Principal            = $SqlServiceNode1Credential.UserName
             Permission           = 'CONNECT'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -67,7 +67,7 @@ Configuration Example
             ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
-            Principal            = $SqlServiceCredentialNode2.UserName
+            Principal            = $SqlServiceNode2Credential.UserName
             Permission           = 'CONNECT'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -84,7 +84,7 @@ Configuration Example
             ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
-            Principal            = $SqlServiceCredentialNode2.UserName
+            Principal            = $SqlServiceNode1Credential.UserName
             Permission           = 'CONNECT'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -98,7 +98,7 @@ Configuration Example
             ServerName           = $Node.NodeName
             InstanceName         = $Node.SqlInstanceName
             Name                 = 'DefaultMirrorEndpoint'
-            Principal            = $SqlServiceCredentialNode2.UserName
+            Principal            = $SqlServiceNode2Credential.UserName
             Permission           = 'CONNECT'
 
             PsDscRunAsCredential = $SqlAdministratorCredential

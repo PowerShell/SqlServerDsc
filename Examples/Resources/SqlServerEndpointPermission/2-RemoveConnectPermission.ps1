@@ -25,8 +25,8 @@ Configuration Example
         SqlServerEndpointPermission SQLConfigureEndpointPermission
         {
             Ensure               = 'Absent'
-            ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            ServerName           = 'SQLTEST'
+            InstanceName         = 'DSCINSTANCE'
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceCredential.UserName
             Permission           = 'CONNECT'
