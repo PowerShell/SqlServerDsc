@@ -821,7 +821,6 @@ No description.
 
 * Target machine must be running Windows Server 2008 R2 or later.
 * Target machine must be running SQL Server Database Engine 2008 or later.
-* Target machine must be running SQL Server Agent.
 
 #### Parameters
 
@@ -850,6 +849,7 @@ Resource to manage SQL Server Database Mail.
 
 * Target machine must be running Windows Server 2008 R2 or later.
 * Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running SQL Server Agent.
 
 #### Parameters
 
@@ -879,7 +879,8 @@ Resource to manage SQL Server Database Mail.
 
 #### Examples
 
-None.
+* [Enable Database Mail](/Examples/Resources/SqlServerDatabaseMail/1-EnableDatabaseMail.ps1)
+* [Disable Database Mail](/Examples/Resources/SqlServerDatabaseMail/2-DisableDatabaseMail.ps1)
 
 ### SqlServerEndpoint
 
