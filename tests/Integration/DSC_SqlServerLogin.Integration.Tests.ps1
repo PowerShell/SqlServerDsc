@@ -9,6 +9,8 @@ $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlServerLogin'
 $script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
+$timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -404,5 +406,11 @@ try
 }
 finally
 {
+    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    $timer.Stop()
+
+    #endregion
 }
