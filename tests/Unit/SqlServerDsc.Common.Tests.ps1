@@ -32,6 +32,8 @@ $script:subModuleFile = Join-Path -Path $script:subModulesFolder -ChildPath "$($
 Import-Module $script:subModuleFile -Force -ErrorAction Stop
 #endregion HEADER
 
+$timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 # Loading mocked classes
 Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SMO.cs')
 Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SqlPowerShellSqlExecutionException.cs')
@@ -3726,3 +3728,6 @@ InModuleScope $script:subModuleName {
         }
     }
 }
+
+Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+$timer.Stop()

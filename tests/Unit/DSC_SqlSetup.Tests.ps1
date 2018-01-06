@@ -24,6 +24,8 @@ $script:dscResourceName    = 'DSC_SqlSetup'
 
 function Invoke-TestSetup
 {
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
     try
     {
         Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -43,6 +45,8 @@ function Invoke-TestSetup
 function Invoke-TestCleanup
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    $timer.Stop()
 }
 
 Invoke-TestSetup

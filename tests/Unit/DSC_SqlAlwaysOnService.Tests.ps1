@@ -33,6 +33,8 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -ResourceType 'Mof' `
     -TestType 'Unit'
 
+$timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 $disableHadr = @{
     Ensure       = 'Absent'
     ServerName   = 'Server01'
@@ -253,4 +255,7 @@ try
 finally
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    $timer.Stop()
 }

@@ -20,6 +20,8 @@ $script:dscResourceName = 'DSC_SqlServerDatabaseMail'
 
 function Invoke-TestSetup
 {
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
     try
     {
         Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -39,6 +41,9 @@ function Invoke-TestSetup
 function Invoke-TestCleanup
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    $timer.Stop()
 }
 
 Invoke-TestSetup

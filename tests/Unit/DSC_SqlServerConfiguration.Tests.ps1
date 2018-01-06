@@ -18,6 +18,8 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceName = 'DSC_SqlServerConfiguration'
 
+$timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -301,4 +303,7 @@ try
 finally
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    $timer.Stop()
 }
