@@ -33,7 +33,7 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -ResourceType 'Mof' `
     -TestType 'Unit'
 
-$timer = [System.Diagnostics.Stopwatch]::StartNew()
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 $disableHadr = @{
     Ensure       = 'Absent'

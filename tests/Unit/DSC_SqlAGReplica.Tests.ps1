@@ -20,7 +20,7 @@ $script:dscResourceName = 'DSC_SqlAGReplica'
 
 function Invoke-TestSetup
 {
-    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
     try
     {

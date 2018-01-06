@@ -24,7 +24,7 @@ $script:dscResourceName = 'DSC_SqlScript'
 
 function Invoke-TestSetup
 {
-    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
     try
     {

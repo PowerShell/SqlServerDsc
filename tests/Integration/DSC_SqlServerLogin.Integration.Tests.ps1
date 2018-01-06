@@ -409,7 +409,7 @@ finally
     #region FOOTER
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
-    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
     $timer.Stop()
 
     #endregion

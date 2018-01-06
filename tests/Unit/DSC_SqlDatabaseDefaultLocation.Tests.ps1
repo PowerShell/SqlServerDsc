@@ -19,7 +19,7 @@ $script:dscResourceName = 'DSC_SqlDatabaseDefaultLocation'
 
 function Invoke-TestSetup
 {
-    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
     try
     {

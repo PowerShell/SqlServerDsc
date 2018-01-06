@@ -59,7 +59,7 @@ function Show-SqlBootstrapLog
     Write-Verbose -Message $('-' * 80) -Verbose
 }
 
-$timer = [System.Diagnostics.Stopwatch]::StartNew()
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 <#
     This is used in both the configuration file and in this script file
@@ -599,7 +599,7 @@ finally
     #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 
-    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
     $timer.Stop()
 
     #endregion

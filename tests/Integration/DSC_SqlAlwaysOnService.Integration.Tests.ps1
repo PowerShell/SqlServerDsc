@@ -24,7 +24,7 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -ResourceType 'Mof' `
     -TestType 'Integration'
 
-$timer = [System.Diagnostics.Stopwatch]::StartNew()
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 try
 {
@@ -199,6 +199,6 @@ finally
 {
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 
-    Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
     $timer.Stop()
 }

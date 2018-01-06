@@ -1,6 +1,6 @@
 $script:moduleRoot = Split-Path $PSScriptRoot -Parent
 
-$timer = [System.Diagnostics.Stopwatch]::StartNew()
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 Describe 'SqlServerDsc module common tests' {
     Context -Name 'When the resource should be used to compile a configuration in Azure Automation' {
