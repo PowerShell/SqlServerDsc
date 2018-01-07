@@ -9,6 +9,8 @@ $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlServerRole'
 $script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -24,6 +26,7 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -ResourceType 'Mof' `
     -TestType 'Integration'
 
+# Using try/finally to always cleanup.
 try
 {
     $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:dscResourceName).config.ps1"
@@ -519,5 +522,11 @@ try
 }
 finally
 {
+    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
+    $timer.Stop()
+
+    #endregion
 }
