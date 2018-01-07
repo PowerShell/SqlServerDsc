@@ -60,6 +60,7 @@
 - Changes to SqlServerRole
   - Added localization ([issue #621](https://github.com/PowerShell/SqlServerDsc/issues/621)).
   - Added integration tests ([issue #756](https://github.com/PowerShell/SqlServerDsc/issues/756)).
+  - Updated example to add two server roles in the same configuration.
 - Changes to SqlServiceAccount
   - Default services are now properly detected
     ([issue #930](https://github.com/PowerShell/SqlServerDsc/issues/930)).
