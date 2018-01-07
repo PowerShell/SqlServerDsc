@@ -25,7 +25,7 @@ Configuration Example
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
-        SqlServerRole Add_ServerRole_MyServerRole1
+        SqlServerRole Add_ServerRole_MyServerRole2
         {
             Ensure               = 'Present'
             ServerRoleName       = 'MyServerRole2'
