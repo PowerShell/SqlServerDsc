@@ -66,13 +66,9 @@ $invalidOption = @{
 try
 {
     Describe "$($script:DSCResourceName)\Get-TargetResource" {
-
         Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
 
-        Mock -CommandName New-TerminatingError -MockWith { $ErrorType } -ModuleName $script:DSCResourceName
-
         Context 'The system is not in the desired state' {
-
             Mock -CommandName Connect-SQL -MockWith {
                 $mock = New-Object -TypeName PSObject -Property @{
                     Configuration = @{
@@ -109,7 +105,6 @@ try
         }
 
         Context 'The system is in the desired state' {
-
             Mock -CommandName Connect-SQL -MockWith {
                 $mock = New-Object -TypeName PSObject -Property @{
                     Configuration = @{
@@ -145,8 +140,7 @@ try
             }
         }
 
-        Context 'Invalid data is supplied' {
-
+        Context 'Invalid option name is supplied' {
             Mock -CommandName Connect-SQL -MockWith {
                 $mock = New-Object -TypeName PSObject -Property @{
                     Configuration = @{
@@ -165,18 +159,15 @@ try
                 return $mock
             } -ModuleName $script:DSCResourceName -Verifiable
 
-            It 'Should call New-TerminatingError mock when a bad option name is specified' {
-                { Get-TargetResource @invalidOption } | Should -Throw 'ConfigurationOptionNotFound'
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-TerminatingError -Scope It -Times 1
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope Context -Times 1
+            It 'Should throw the correct error message' {
+                $errorMessage = ($script:localizedData.ConfigurationOptionNotFound -f $invalidOption.OptionName)
+                { Get-TargetResource @invalidOption } | Should -Throw $errorMessage
             }
         }
     }
 
     Describe "$($script:DSCResourceName)\Test-TargetResource" {
-
         Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
-
         Mock -CommandName Connect-SQL -MockWith {
             $mock = New-Object -TypeName PSObject -Property @{
                 Configuration = @{
@@ -206,9 +197,7 @@ try
 
     Describe "$($script:DSCResourceName)\Set-TargetResource" {
         Mock -CommandName New-VerboseMessage -MockWith {} -ModuleName $script:DSCResourceName
-
         Mock -CommandName New-TerminatingError -MockWith {} -ModuleName $script:DSCResourceName
-
         Mock -CommandName Connect-SQL -MockWith {
             $mock = New-Object -TypeName PSObject -Property @{
                 Configuration = @{
@@ -247,9 +236,8 @@ try
             return $mock
         } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $SQLServer -eq 'CLU02' }
 
-        Mock -CommandName Restart-SqlService -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
-
-        Mock -CommandName New-WarningMessage -MockWith {} -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Restart-SqlService -ModuleName $script:DSCResourceName -Verifiable
+        Mock -CommandName Write-Warning -ModuleName $script:DSCResourceName -Verifiable
 
         Context 'Change the system to the desired state' {
             It 'Should not restart SQL for a dynamic option' {
@@ -265,12 +253,37 @@ try
             It 'Should warn about restart when required, but not requested' {
                 Set-TargetResource @desiredState
 
-                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName New-WarningMessage -Scope It -Times 1 -Exactly
+                Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Write-Warning -Scope It -Times 1 -Exactly
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Restart-SqlService -Scope It -Times 0 -Exactly
             }
 
             It 'Should call Connect-SQL to get option values' {
                 Assert-MockCalled -ModuleName $script:DSCResourceName -CommandName Connect-SQL -Scope Context -Times 3
+            }
+        }
+
+        Context 'Invalid option name is supplied' {
+            Mock -CommandName Connect-SQL -MockWith {
+                $mock = New-Object -TypeName PSObject -Property @{
+                    Configuration = @{
+                        Properties = @(
+                            @{
+                                DisplayName = 'user connections'
+                                ConfigValue = 0
+                            }
+                        )
+                    }
+                }
+
+                ## add the Alter method
+                $mock.Configuration | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
+
+                return $mock
+            } -ModuleName $script:DSCResourceName -Verifiable
+
+            It 'Should throw the correct error message' {
+                $errorMessage = ($script:localizedData.ConfigurationOptionNotFound -f $invalidOption.OptionName)
+                { Set-TargetResource @invalidOption } | Should -Throw $errorMessage
             }
         }
     }
