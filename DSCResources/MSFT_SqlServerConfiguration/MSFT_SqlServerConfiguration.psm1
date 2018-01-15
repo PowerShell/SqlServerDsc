@@ -1,7 +1,12 @@
-# Load Common Code
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
         -ChildPath 'SqlServerDscHelper.psm1') `
     -Force
+
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+    -ChildPath 'CommonResourceHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerConfiguration'
+
 <#
     .SYNOPSIS
     Gets the current value of a SQL configuration option
@@ -20,11 +25,13 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
 
     .PARAMETER RestartService
     *** Not used in this function ***
-    Determines whether the instance should be restarted after updating the configuration option.
+    Determines whether the instance should be restarted after updating the
+    configuration option.
 
     .PARAMETER RestartTimeout
     *** Not used in this function ***
-    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+    The length of time, in seconds, to wait for the service to restart. Default
+    is 120 seconds.
 #>
 function Get-TargetResource
 {
@@ -32,27 +39,27 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param(
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $InstanceName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $OptionName,
 
         [Parameter(Mandatory = $true)]
-        [Int32]
+        [System.Int32]
         $OptionValue,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $RestartService = $false,
 
         [Parameter()]
-        [Int32]
+        [System.UInt32]
         $RestartTimeout = 120
     )
 
@@ -61,10 +68,16 @@ function Get-TargetResource
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
 
-    if (!$option)
+    if (-not $option)
     {
-        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
+        $errorMessage = $script:localizedData.ConfigurationOptionNotFound -f $OptionName
+        New-InvalidArgumentException -ArgumentName 'OptionName' -Message $errorMessage
     }
+
+    Write-Verbose -Message (
+        $script:localizedData.CurrentOptionValue `
+            -f $OptionName, $option.ConfigValue
+    )
 
     return @{
         ServerName     = $ServerName
@@ -93,37 +106,39 @@ function Get-TargetResource
     The desired value of the SQL configuration option
 
     .PARAMETER RestartService
-    Determines whether the instance should be restarted after updating the configuration option
+    Determines whether the instance should be restarted after updating the
+    configuration option
 
     .PARAMETER RestartTimeout
-    The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.
+    The length of time, in seconds, to wait for the service to restart. Default
+    is 120 seconds.
 #>
 function Set-TargetResource
 {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $InstanceName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $OptionName,
 
         [Parameter(Mandatory = $true)]
-        [Int32]
+        [System.Int32]
         $OptionValue,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $RestartService = $false,
 
         [Parameter()]
-        [Int32]
+        [System.UInt32]
         $RestartTimeout = 120
     )
 
@@ -132,9 +147,10 @@ function Set-TargetResource
     ## get the configuration option
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
 
-    if (!$option)
+    if (-not $option)
     {
-        throw New-TerminatingError -ErrorType "ConfigurationOptionNotFound" -FormatArgs $OptionName -ErrorCategory InvalidArgument
+        $errorMessage = $script:localizedData.ConfigurationOptionNotFound -f $OptionName
+        New-InvalidArgumentException -ArgumentName 'OptionName' -Message $errorMessage
     }
 
     $option.ConfigValue = $OptionValue
@@ -142,16 +158,26 @@ function Set-TargetResource
 
     if ($option.IsDynamic -eq $true)
     {
-        New-VerboseMessage -Message 'Configuration option has been updated.'
+        Write-Verbose -Message (
+            $script:localizedData.ConfigurationValueUpdated `
+                -f $OptionName, $OptionValue
+        )
     }
     elseif (($option.IsDynamic -eq $false) -and ($RestartService -eq $true))
     {
-        New-VerboseMessage -Message 'Configuration option has been updated, restarting instance...'
+        Write-Verbose -Message (
+            $script:localizedData.AutomaticRestart `
+                -f $ServerName, $InstanceName
+        )
+
         Restart-SqlService -SQLServer $ServerName -SQLInstanceName $InstanceName -Timeout $RestartTimeout
     }
     else
     {
-        New-WarningMessage -WarningType 'ConfigurationRestartRequired' -FormatArgs $OptionName
+        Write-Warning -Message (
+            $script:localizedData.ConfigurationRestartRequired `
+                -f $OptionName, $OptionValue, $ServerName, $InstanceName
+        )
     }
 }
 
@@ -173,11 +199,13 @@ function Set-TargetResource
 
     .PARAMETER RestartService
     *** Not used in this function ***
-    Determines whether the instance should be restarted after updating the configuration option
+    Determines whether the instance should be restarted after updating the
+    configuration option
 
     .PARAMETER RestartTimeout
     *** Not used in this function ***
-    The length of time, in seconds, to wait for the service to restart.
+    The length of time, in seconds, to wait for the service to restart. Default
+    is 120 seconds.
 #>
 function Test-TargetResource
 {
@@ -185,35 +213,54 @@ function Test-TargetResource
     [OutputType([Boolean])]
     param(
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ServerName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $InstanceName,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $OptionName,
 
         [Parameter(Mandatory = $true)]
-        [Int32]
+        [System.Int32]
         $OptionValue,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $RestartService = $false,
 
         [Parameter()]
-        [Int32]
+        [System.UInt32]
         $RestartTimeout = 120
     )
 
     ## Get the current state of the configuration item
-    $state = Get-TargetResource @PSBoundParameters
+    $getTargetResourceResult = Get-TargetResource @PSBoundParameters
+
+    if ($getTargetResourceResult.OptionValue -eq $OptionValue)
+    {
+        Write-Verbose -Message (
+            $script:localizedData.InDesiredState `
+                -f $OptionName
+        )
+
+        $result = $true
+    }
+    else
+    {
+        Write-Verbose -Message (
+            $script:localizedData.NotInDesiredState `
+                -f $OptionName, $OptionValue, $getTargetResourceResult.OptionValue
+        )
+
+        $result = $false
+    }
 
     ## return whether the value matches the desired state
-    return ($state.OptionValue -eq $OptionValue)
+    return $result
 }
 
 Export-ModuleMember -Function *-TargetResource
