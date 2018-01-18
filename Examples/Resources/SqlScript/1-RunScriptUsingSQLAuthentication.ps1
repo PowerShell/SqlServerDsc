@@ -15,7 +15,7 @@ Configuration Example
 
     Node localhost
     {
-        SqlScript 'RunSQLScript'
+        SqlScript 'RunAsSqlCredential'
         {
             ServerInstance = 'localhost\SQL2016'
             Credential     = $SqlCredential

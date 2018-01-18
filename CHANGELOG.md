@@ -88,6 +88,8 @@
     ([issue #1001](https://github.com/PowerShell/SqlServerDsc/issues/1001)).
 - Changes to SqlScript
   - Style cleanup in tests.
+  - Updated examples.
+  - Added integration tests.
 - Changes to SqlServerConfiguration
   - Fixed minor typos in comment-based help.
   - Style cleanup in tests.

@@ -16,7 +16,7 @@ Configuration Example
 
     Node localhost
     {
-        SqlScript 'RunSQLScript-AsSYSTEM'
+        SqlScript 'RunAsSYSTEM'
         {
             ServerInstance = 'localhost\SQL2016'
 
@@ -26,7 +26,7 @@ Configuration Example
             Variable       = @("FilePath=C:\temp\log\AuditFiles")
         }
 
-        SqlScript 'RunSQLScript-AsUSER'
+        SqlScript 'RunAsUser'
         {
             ServerInstance       = 'localhost\SQL2016'
 
@@ -38,7 +38,7 @@ Configuration Example
             PsDscRunAsCredential = $WindowsCredential
         }
 
-        SqlScript 'RunSQLScript-With30SecondTimeout'
+        SqlScript 'RunAsUser-With30SecondTimeout'
         {
             ServerInstance       = 'localhost\SQL2016'
 
