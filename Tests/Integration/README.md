@@ -28,6 +28,8 @@ MSSQLSERVER | SQLENGINE,CONN,BC,SDK | -
 
 All instances have a SQL Server Agent that is started.
 
+The instance DSCSQL2016 support mixed authentication mode.
+
 ### Properties for all instances
 
 - **Collation:** Finnish\_Swedish\_CI\_AS
@@ -43,12 +45,13 @@ be used by other integration tests.
 
 User | Password | Permission | Description
 --- | --- | --- | ---
-.\SqlInstall | P@ssw0rd1 | Local administrator. Administrator of Database Engine instance DSCSQL2016\*. | Runs Setup for the default instance.
+.\SqlInstall | P@ssw0rd1 | Local Windows administrator. Administrator of Database Engine instance DSCSQL2016\*. | Runs Setup for the default instance.
 .\SqlAdmin | P@ssw0rd1 | Administrator of all SQL Server instances. |
 .\svc-SqlPrimary | yig-C^Equ3 | Local user. | Runs the SQL Server Agent service.
 .\svc-SqlAgentPri | yig-C^Equ3 | Local user. | Runs the SQL Server Agent service.
 .\svc-SqlSecondary | yig-C^Equ3 | Local user. | Used by other tests, but created here.
 .\svc-SqlAgentSec | yig-C^Equ3 | Local user. | Used by other tests.
+sa | P@ssw0rd1 | Administrator of the Database Engine instances DSCSQL2016. |
 
 *\* This is due to that the integration tests runs the resource SqlAlwaysOnService
 with this user and that means that this user must have permission to access the
@@ -112,7 +115,7 @@ DscSqlUsers1 | DscUser1, DscUser2 | *None* | *None*
 The integration tests will leave the following logins on the SQL Server instance
 **DSCSQL2016**.
 
-Login | Type | Password | Role
+Login | Type | Password | Role | Remark
 --- | --- | --- | ---
 DscUser1 | Windows | P@ssw0rd1 | *None*
 DscUser2 | Windows | P@ssw0rd1 | *None*
