@@ -116,7 +116,7 @@ DscSqlUsers1 | DscUser1, DscUser2 | *None* | *None*
 The integration tests will leave the following logins on the SQL Server instance
 **DSCSQL2016**.
 
-Login | Type | Password | Role | Remark
+Login | Type | Password | Permission
 --- | --- | --- | ---
 DscUser1 | Windows | P@ssw0rd1 | *None*
 DscUser2 | Windows | P@ssw0rd1 | *None*
@@ -148,7 +148,7 @@ DscServerRole2 | DscUser4
 The integration tests will leave the following logins on the SQL Server instance
 **DSCSQL2016**.
 
-Login | Type | Password | Role
+Login | Type | Password | Permission
 --- | --- | --- | ---
 DscAdmin1 | SQL | P@ssw0rd1 | dbcreator
 
