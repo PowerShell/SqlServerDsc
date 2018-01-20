@@ -311,12 +311,12 @@ function Invoke-SqlScript
 
     if ($null -ne $Credential)
     {
-        $null = $PSBoundParameters.Add("Username", $Credential.UserName)
-        $null = $PSBoundParameters.Add("Password", $Credential.GetNetworkCredential().password)
+        $null = $PSBoundParameters.Add('Username', $Credential.UserName)
+        $null = $PSBoundParameters.Add('Password', $Credential.GetNetworkCredential().Password)
     }
 
-    $null = $PSBoundParameters.Remove("Credential")
-    $null = $PSBoundParameters.Remove("SqlScriptPath")
+    $null = $PSBoundParameters.Remove('Credential')
+    $null = $PSBoundParameters.Remove('SqlScriptPath')
 
     Invoke-Sqlcmd -InputFile $SqlScriptPath @PSBoundParameters
 }
