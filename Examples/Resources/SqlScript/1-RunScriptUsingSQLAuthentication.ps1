@@ -23,7 +23,7 @@ Configuration Example
             SetFilePath    = 'C:\DSCTemp\SQLScripts\Set-RunSQLScript.sql'
             TestFilePath   = 'C:\DSCTemp\SQLScripts\Test-RunSQLScript.sql'
             GetFilePath    = 'C:\DSCTemp\SQLScripts\Get-RunSQLScript.sql'
-            Variable       = @("FilePath=C:\temp\log\AuditFiles")
+            Variable       = @('FilePath=C:\temp\log\AuditFiles')
         }
     }
 }

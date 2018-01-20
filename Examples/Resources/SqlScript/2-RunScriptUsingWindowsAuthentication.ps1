@@ -23,7 +23,7 @@ Configuration Example
             SetFilePath    = 'C:\DSCTemp\SQLScripts\Set-RunSQLScript-AsSYSTEM.sql'
             TestFilePath   = 'C:\DSCTemp\SQLScripts\Test-RunSQLScript-AsSYSTEM.sql'
             GetFilePath    = 'C:\DSCTemp\SQLScripts\Get-RunSQLScript-AsSYSTEM.sql'
-            Variable       = @("FilePath=C:\temp\log\AuditFiles")
+            Variable       = @('FilePath=C:\temp\log\AuditFiles')
         }
 
         SqlScript 'RunAsUser'
@@ -33,7 +33,7 @@ Configuration Example
             SetFilePath          = 'C:\DSCTemp\SQLScripts\Set-RunSQLScript-AsUSER.sql'
             TestFilePath         = 'C:\DSCTemp\SQLScripts\Test-RunSQLScript-AsUSER.sql'
             GetFilePath          = 'C:\DSCTemp\SQLScripts\Get-RunSQLScript-AsUSER.sql'
-            Variable             = @("FilePath=C:\temp\log\AuditFiles")
+            Variable             = @('FilePath=C:\temp\log\AuditFiles')
 
             PsDscRunAsCredential = $WindowsCredential
         }
@@ -46,7 +46,7 @@ Configuration Example
             TestFilePath         = 'C:\DSCTemp\SQLScripts\Test-RunSQLScript-WithQueryTimeout.sql'
             GetFilePath          = 'C:\DSCTemp\SQLScripts\Get-RunSQLScript-WithQueryTimeout.sql'
             QueryTimeout         = 30
-            Variable             = @("FilePath=C:\temp\log\AuditFiles")
+            Variable             = @('FilePath=C:\temp\log\AuditFiles')
 
             PsDscRunAsCredential = $WindowsCredential
         }

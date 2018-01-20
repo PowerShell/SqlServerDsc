@@ -15,6 +15,8 @@ tests.
 
 **Run order:** 1
 
+**Depends on:** None
+
 The integration tests will install the following instances and leave them on the
 AppVeyor build worker for other integration tests to use.
 
@@ -55,6 +57,7 @@ properties `IsClustered` and `IsHadrEnable`.*
 ## SqlRS
 
 **Run order:** 2
+
 **Depends on:** SqlSetup
 
 The integration tests will install the following instances and leave it on the
@@ -75,6 +78,7 @@ DSCRS2016 | RS | The Reporting Services is left initialized, and in a working st
 ## SqlDatabaseDefaultLocation
 
 **Run order:** 2
+
 **Depends on:** SqlSetup
 
 The integration test will change the data, log and backup path of instance
@@ -108,7 +112,7 @@ DscSqlUsers1 | DscUser1, DscUser2 | *None* | *None*
 The integration tests will leave the following logins on the SQL Server instance
 **DSCSQL2016**.
 
-Login | Type | Password | Permission
+Login | Type | Password | Role
 --- | --- | --- | ---
 DscUser1 | Windows | P@ssw0rd1 | *None*
 DscUser2 | Windows | P@ssw0rd1 | *None*
@@ -120,6 +124,7 @@ DscUser4 | SQL | P@ssw0rd1 | *None*
 ## SqlServerRole
 
 **Run order:** 3
+
 **Depends on:** SqlSetup, SqlServerLogin
 
 The integration test will keep the following server roles on the SQL Server instance
@@ -129,3 +134,31 @@ Server Role | Members
 --- | ---
 DscServerRole1 | DscUser1, DscUser2
 DscServerRole2 | DscUser4
+
+## SqlScript
+
+**Run order:** 4
+
+**Depends on:** SqlSetup
+
+The integration tests will leave the following logins on the SQL Server instance
+**DSCSQL2016**.
+
+Login | Type | Password | Role
+--- | --- | --- | ---
+DscAdmin1 | SQL | P@ssw0rd1 | dbcreator
+
+The integration test will change the following server roles on the SQL Server instance
+**DSCSQL2016**.
+
+Server Role | Members
+--- | ---
+dbcreator | DscAdmin1
+
+The integration test will leave the following databases on the SQL Server instance
+**DSCSQL2016**.
+
+Database name | Owner
+--- | ---
+ScriptDatabase1 | $env:COMPUTERNAME\SqlAdmin
+ScriptDatabase2 | DscAdmin1

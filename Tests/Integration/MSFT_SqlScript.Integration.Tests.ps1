@@ -29,6 +29,9 @@ $mockSqlAdminAccountPassword = ConvertTo-SecureString -String 'P@ssw0rd1' -AsPla
 $mockSqlAdminAccountUserName = "$env:COMPUTERNAME\SqlAdmin"
 $mockSqlAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $mockSqlAdminAccountUserName, $mockSqlAdminAccountPassword
 
+$mockUserAccountPassword = ConvertTo-SecureString -String 'P@ssw0rd1' -AsPlainText -Force
+$mockUserCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList 'DscAdmin1', $mockUserAccountPassword
+
 try
 {
     $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
@@ -37,6 +40,8 @@ try
     $mockGetSqlScriptPath = $ConfigurationData.AllNodes.GetSqlScriptPath
     $mockTestSqlScriptPath = $ConfigurationData.AllNodes.TestSqlScriptPath
     $mockSetSqlScriptPath = $ConfigurationData.AllNodes.SetSqlScriptPath
+    $mockDatabase1Name = $ConfigurationData.AllNodes.Database1Name
+    $mockDatabase2Name = $ConfigurationData.AllNodes.Database2Name
 
     Describe "$($script:DSCResourceName)_Integration" {
         BeforeAll {
@@ -49,9 +54,11 @@ try
             It 'Should compile and apply the MOF without throwing' {
                 {
                     $configurationParameters = @{
-                        OutputPath                         = $TestDrive
+                        SqlAdministratorCredential = $mockSqlAdminCredential
+                        UserCredential             = $mockUserCredential
+                        OutputPath                 = $TestDrive
                         # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData                  = $ConfigurationData
+                        ConfigurationData          = $ConfigurationData
                     }
 
                     & $configurationName @configurationParameters
@@ -75,16 +82,16 @@ try
             }
         }
 
-        $configurationName = "$($script:DSCResourceName)_RunSqlScriptAsUser_Config"
+        $configurationName = "$($script:DSCResourceName)_RunSqlScriptAsWindowsUser_Config"
 
         Context ('When using configuration {0}' -f $configurationName) {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     $configurationParameters = @{
-                        SqlAdministratorCredential         = $mockSqlAdminCredential
-                        OutputPath                         = $TestDrive
+                        SqlAdministratorCredential = $mockSqlAdminCredential
+                        OutputPath                 = $TestDrive
                         # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData                  = $ConfigurationData
+                        ConfigurationData          = $ConfigurationData
                     }
 
                     & $configurationName @configurationParameters
@@ -122,11 +129,11 @@ try
                     ```
                     JSON_F52E2B61-18A1-11d1-B105-00805F49916B
                     -----------------------------------------
-                    [{"Name":"MyScriptDatabase1"}]
+                    [{"Name":"ScriptDatabase1"}]
                     ```
 
                     This could have been easier by just having this test
-                    $resourceCurrentState.GetResult | Should -Match 'MyScriptDatabase1'
+                    $resourceCurrentState.GetResult | Should -Match 'ScriptDatabase1'
                     but for making sure the returned data is actually usable, this
                     parses the returned data to an object.
                 #>
@@ -153,7 +160,55 @@ try
                     throw $_
                 }
 
-                $resultObject.Name | Should -Be 'MyScriptDatabase1'
+                $resultObject.Name | Should -Be $mockDatabase1Name
+                $resourceCurrentState.GetFilePath | Should -Be $mockGetSqlScriptPath
+                $resourceCurrentState.TestFilePath | Should -Be $mockTestSqlScriptPath
+                $resourceCurrentState.SetFilePath | Should -Be $mockSetSqlScriptPath
+            }
+        }
+
+        $configurationName = "$($script:DSCResourceName)_RunSqlScriptAsSqlUser_Config"
+
+        Context ('When using configuration {0}' -f $configurationName) {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    $configurationParameters = @{
+                        UserCredential    = $mockUserCredential
+                        OutputPath        = $TestDrive
+                        # The variable $ConfigurationData was dot-sourced above.
+                        ConfigurationData = $ConfigurationData
+                    }
+
+                    & $configurationName @configurationParameters
+
+                    $startDscConfigurationParameters = @{
+                        Path         = $TestDrive
+                        ComputerName = 'localhost'
+                        Wait         = $true
+                        Verbose      = $true
+                        Force        = $true
+                        ErrorAction  = 'Stop'
+                    }
+
+                    Start-DscConfiguration @startDscConfigurationParameters
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                {
+                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
+                    $_.ConfigurationName -eq $configurationName
+                } | Where-Object -FilterScript {
+                    $_.ResourceId -eq $resourceId
+                }
+
+
+                $resourceCurrentState.GetResult | Should -Match $mockDatabase2Name
                 $resourceCurrentState.GetFilePath | Should -Be $mockGetSqlScriptPath
                 $resourceCurrentState.TestFilePath | Should -Be $mockTestSqlScriptPath
                 $resourceCurrentState.SetFilePath | Should -Be $mockSetSqlScriptPath

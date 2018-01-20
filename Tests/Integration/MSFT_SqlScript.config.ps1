@@ -1,5 +1,10 @@
-# This is used to make sure the integration test run in the correct order.
-[Microsoft.DscResourceKit.IntegrationTest(OrderNumber = 2)]
+<#
+    This is used to make sure the integration test run in the correct order.
+    The integration test should run after the integration tests SqlServerLogin
+    and SqlServerRole, so any problems in those will be caught first, since
+    these integration tests are using those resources.
+#>
+[Microsoft.DscResourceKit.IntegrationTest(OrderNumber = 4)]
 param()
 
 $ConfigurationData = @{
@@ -10,27 +15,30 @@ $ConfigurationData = @{
             ServerName                  = $env:COMPUTERNAME
             InstanceName                = 'DSCSQL2016'
 
+            Database1Name               = 'ScriptDatabase1'
+            Database2Name               = 'ScriptDatabase2'
+
             GetSqlScriptPath            = Join-Path -Path $env:SystemDrive -ChildPath ([System.IO.Path]::GetRandomFileName())
             SetSqlScriptPath            = Join-Path -Path $env:SystemDrive -ChildPath ([System.IO.Path]::GetRandomFileName())
             TestSqlScriptPath           = Join-Path -Path $env:SystemDrive -ChildPath ([System.IO.Path]::GetRandomFileName())
 
             GetSqlScript                = @'
-SELECT Name FROM sys.databases WHERE Name = 'MyScriptDatabase1' FOR JSON AUTO
+SELECT Name FROM sys.databases WHERE Name = '$(DatabaseName)' FOR JSON AUTO
 '@
 
             TestSqlScript               = @'
-if (select count(name) from sys.databases where name = 'MyScriptDatabase1') = 0
+if (select count(name) from sys.databases where name = '$(DatabaseName)') = 0
 BEGIN
-    RAISERROR ('Did not find database [MyScriptDatabase1]', 16, 1)
+    RAISERROR ('Did not find database [$(DatabaseName)]', 16, 1)
 END
 ELSE
 BEGIN
-    PRINT 'Found database [MyScriptDatabase1]'
+    PRINT 'Found database [$(DatabaseName)]'
 END
 '@
 
             SetSqlScript                = @'
-CREATE DATABASE [MyScriptDatabase1]
+CREATE DATABASE [$(DatabaseName)]
 '@
 
             PSDscAllowPlainTextPassword = $true
@@ -40,13 +48,26 @@ CREATE DATABASE [MyScriptDatabase1]
 
 Configuration MSFT_SqlScript_CreateDependencies_Config
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SqlAdministratorCredential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $UserCredential
+    )
+
     Import-DscResource -ModuleName 'PSDscResources'
     Import-DscResource -ModuleName 'SqlServerDsc'
 
     node localhost {
-        Script CreateFile_GetSqlScript
+        Script 'CreateFile_GetSqlScript'
         {
-            SetScript = {
+            SetScript  = {
                 $Using:Node.GetSqlScript | Out-File -FilePath $Using:Node.GetSqlScriptPath -Encoding ascii -NoClobber -Force
             }
 
@@ -62,7 +83,7 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
                 }
             }
 
-            GetScript = {
+            GetScript  = {
                 $fileContent = $null
 
                 if (Test-Path -Path $Using:Node.GetSqlScriptPath)
@@ -76,9 +97,9 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
             }
         }
 
-        Script CreateFile_TestSqlScript
+        Script 'CreateFile_TestSqlScript'
         {
-            SetScript = {
+            SetScript  = {
                 $Using:Node.TestSqlScript | Out-File -FilePath $Using:Node.TestSqlScriptPath -Encoding ascii -NoClobber -Force
             }
 
@@ -94,7 +115,7 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
                 }
             }
 
-            GetScript = {
+            GetScript  = {
                 $fileContent = $null
 
                 if (Test-Path -Path $Using:Node.TestSqlScriptPath)
@@ -108,9 +129,9 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
             }
         }
 
-        Script CreateFile_SetSqlScript
+        Script 'CreateFile_SetSqlScript'
         {
-            SetScript = {
+            SetScript  = {
                 $Using:Node.SetSqlScript | Out-File -FilePath $Using:Node.SetSqlScriptPath -Encoding ascii -NoClobber -Force
             }
 
@@ -126,7 +147,7 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
                 }
             }
 
-            GetScript = {
+            GetScript  = {
                 $fileContent = $null
 
                 if (Test-Path -Path $Using:Node.SetSqlScriptPath)
@@ -139,10 +160,43 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
                 }
             }
         }
+
+        SqlServerLogin ('Create{0}' -f $UserCredential.UserName)
+        {
+            Ensure                         = 'Present'
+            Name                           = $UserCredential.UserName
+            LoginType                      = 'SqlLogin'
+            LoginCredential                = $UserCredential
+            LoginMustChangePassword        = $false
+            LoginPasswordExpirationEnabled = $true
+            LoginPasswordPolicyEnforced    = $true
+
+            ServerName                     = $Node.ServerName
+            InstanceName                   = $Node.InstanceName
+
+            PsDscRunAsCredential           = $SqlAdministratorCredential
+        }
+
+        SqlServerRole ('Add{0}ToDbCreator' -f $UserCredential.UserName)
+        {
+            Ensure               = 'Present'
+            ServerRoleName       = 'dbcreator'
+            ServerName           = $Node.ServerName
+            InstanceName         = $Node.InstanceName
+            Members              = @(
+                $UserCredential.UserName
+            )
+
+            PsDscRunAsCredential = $SqlAdministratorCredential
+
+            DependsOn            = @(
+                ('[SqlServerLogin]Create{0}' -f $UserCredential.UserName)
+            )
+        }
     }
 }
 
-Configuration MSFT_SqlScript_RunSqlScriptAsUser_Config
+Configuration MSFT_SqlScript_RunSqlScriptAsWindowsUser_Config
 {
     param
     (
@@ -162,8 +216,41 @@ Configuration MSFT_SqlScript_RunSqlScriptAsUser_Config
             GetFilePath          = $Node.GetSqlScriptPath
             TestFilePath         = $Node.TestSqlScriptPath
             SetFilePath          = $Node.SetSqlScriptPath
+            Variable             = @(
+                ('DatabaseName={0}' -f $Node.Database1Name)
+            )
+            QueryTimeout         = 30
 
             PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+    }
+}
+
+Configuration MSFT_SqlScript_RunSqlScriptAsSqlUser_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $UserCredential
+    )
+
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node localhost {
+        SqlScript 'Integration_Test'
+        {
+            ServerInstance = "$($Node.ServerName)\$($Node.InstanceName)"
+
+            GetFilePath    = $Node.GetSqlScriptPath
+            TestFilePath   = $Node.TestSqlScriptPath
+            SetFilePath    = $Node.SetSqlScriptPath
+            Variable       = @(
+                ('DatabaseName={0}' -f $Node.Database2Name)
+            )
+            QueryTimeout   = 30
+            Credential     = $UserCredential
         }
     }
 }
