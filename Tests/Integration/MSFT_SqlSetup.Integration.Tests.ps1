@@ -272,7 +272,7 @@ try
                 $resourceCurrentState.RSSvcAccount               | Should -BeNullOrEmpty
                 $resourceCurrentState.RSSvcAccountUsername       | Should -BeNullOrEmpty
                 $resourceCurrentState.SAPwd                      | Should -BeNullOrEmpty
-                $resourceCurrentState.SecurityMode               | Should -Be 'Windows'
+                $resourceCurrentState.SecurityMode               | Should -Be 'SQL'
                 $resourceCurrentState.SetupProcessTimeout        | Should -BeNullOrEmpty
                 $resourceCurrentState.SourceCredential           | Should -BeNullOrEmpty
                 $resourceCurrentState.SourcePath                 | Should -Be "$($mockIsoMediaDriveLetter):\"
