@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Changes to SqlServerDsc
+  - Updated the ISSUE_TEMPLATE to hopefully be more intuitive and easier to use.
+  - Added information to ISSUE_TEMPLATE that issues must be reproducible in
+    SqlServerDsc resource module (if running the older xSQLServer resource module)
+    ([issue #1036](https://github.com/PowerShell/SqlServerDsc/issues/1036)).
 - Changes to SqlServerLogin
   - Fix password test fails for nativ sql users
     ([issue #1048](https://github.com/PowerShell/SqlServerDsc/issues/1048)).
