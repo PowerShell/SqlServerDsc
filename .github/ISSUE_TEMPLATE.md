@@ -34,11 +34,10 @@
 <!--
     To help with this information, please run the below commands:
     $registryPath = 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server'
-    $sqlInstance = (Get-ItemProperty -Path $registryPath).InstalledInstances
+    $sqlInstance = (Get-ItemProperty -Path $registryPath -ErrorAction 'SilentlyContinue').InstalledInstances
     $sqlInstance | ForEach-Object -Process {
-
-        $instanceId = (Get-ItemProperty "$registryPath\Instance Names\SQL").$_
-        (Get-ItemProperty "$registryPath\$instanceId\Setup") | fl Edition,Version, Language
+        $instanceId = (Get-ItemProperty "$registryPath\Instance Names\SQL" -ErrorAction 'SilentlyContinue').$_
+        (Get-ItemProperty "$registryPath\$instanceId\Setup" -ErrorAction 'SilentlyContinue') | fl Edition,Version, Language
     }
 -->
 
@@ -48,7 +47,7 @@
     Get-Module -Name '*sql*' -ListAvailable | ? Name -ne 'SqlServerDsc' | ft Name,Version,Path
 -->
 
-#### Version of the DSC module you're using, or 'dev' if you're using current dev branch
+#### Version of the DSC module you're using, or write 'dev' if you're using current dev branch
 <!--
     To help with this information, please run this command:
     Get-Module -Name 'SqlServerDsc' -ListAvailable | ft Name,Version,Path
