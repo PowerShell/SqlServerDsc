@@ -21,6 +21,18 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
 
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
+        Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
+
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
+        Any script that does not throw an error or returns null is evaluated to true.
+        The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
+
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
         to the built-in parameter `PsDscRunAsCredential`. If both parameters `Credential` and `PsDscRunAsCredential` are not assigned,
@@ -48,17 +60,29 @@ function Get-TargetResource
         [System.String]
         $ServerInstance,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $SetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $GetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $TestFilePath,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $GetQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $TestQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -74,16 +98,45 @@ function Get-TargetResource
         $Variable
     )
 
-    $result = Invoke-SqlScript -ServerInstance $ServerInstance -SqlScriptPath $GetFilePath `
-        -Credential $Credential -Variable $Variable -QueryTimeout $QueryTimeout -ErrorAction Stop
+    if ($PsCmdlet.ParameterSetName -eq 'File')
+    {
+        $invokeParameters = @{
+            ServerInstance = $ServerInstance
+            InputFile  = $GetFilePath
+            Credential     = $Credential
+            Variable       = $Variable
+            QueryTimeout   = $QueryTimeout
+            ErrorAction    = "Stop"
+        }
 
-    $getResult = Out-String -InputObject $result
+        $result = Invoke-SqlScript @invokeParameters
+
+        $getResult = Out-String -InputObject $result
+    }
+    else
+    {
+        $invokeParameters = @{
+            ServerInstance = $ServerInstance
+            Query          = $GetQuery
+            Credential     = $Credential
+            Variable       = $Variable
+            QueryTimeout   = $QueryTimeout
+            ErrorAction    = "Stop"
+        }
+
+        $result = Invoke-SqlScript @invokeParameters
+
+        $getResult = Out-String -InputObject $result
+    }
 
     $returnValue = @{
         ServerInstance = [System.String] $ServerInstance
         SetFilePath    = [System.String] $SetFilePath
         GetFilePath    = [System.String] $GetFilePath
         TestFilePath   = [System.String] $TestFilePath
+        GetQuery       = [System.String] $GetQuery
+        TestQuery      = [System.String] $TestQuery
+        SetQuery       = [System.String] $SetQuery
         Credential     = [System.Object] $Credential
         QueryTimeout   = [System.UInt32] $QueryTimeout
         Variable       = [System.String[]] $Variable
@@ -113,6 +166,18 @@ function Get-TargetResource
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
 
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
+        Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
+
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
+        Any script that does not throw an error or returns null is evaluated to true.
+        The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
+
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
         to the built-in parameter `PsDscRunAsCredential`. If both parameters `Credential` and `PsDscRunAsCredential` are not assigned,
@@ -136,17 +201,29 @@ function Set-TargetResource
         [System.String]
         $ServerInstance,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $SetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $GetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $TestFilePath,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $GetQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $TestQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -162,8 +239,32 @@ function Set-TargetResource
         $Variable
     )
 
-    Invoke-SqlScript -ServerInstance $ServerInstance -SqlScriptPath $SetFilePath `
-        -Credential $Credential -Variable $Variable -QueryTimeout $QueryTimeout -ErrorAction Stop
+    if ($PsCmdlet.ParameterSetName -eq 'File')
+    {
+        $invokeParameters = @{
+            ServerInstance = $ServerInstance
+            InputFile  = $SetFilePath
+            Credential     = $Credential
+            Variable       = $Variable
+            QueryTimeout   = $QueryTimeout
+            ErrorAction    = "Stop"
+        }
+
+        Invoke-SqlScript @invokeParameters
+    }
+    else
+    {
+        $invokeParameters = @{
+            ServerInstance = $ServerInstance
+            Query          = $SetQuery
+            Credential     = $Credential
+            Variable       = $Variable
+            QueryTimeout   = $QueryTimeout
+            ErrorAction    = "Stop"
+        }
+
+        Invoke-SqlScript @invokeParameters
+    }
 }
 
 <#
@@ -185,6 +286,18 @@ function Set-TargetResource
         Path to the T-SQL file that will perform Test action.
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
+        Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
+
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
+        Any script that does not throw an error or returns null is evaluated to true.
+        The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
 
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
@@ -211,17 +324,29 @@ function Test-TargetResource
         [System.String]
         $ServerInstance,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $SetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $GetFilePath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'File')]
         [System.String]
         $TestFilePath,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $GetQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $TestQuery,
+
+        [Parameter(ParameterSetName = 'Query')]
+        [System.String]
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -239,8 +364,32 @@ function Test-TargetResource
 
     try
     {
-        $result = Invoke-SqlScript -ServerInstance $ServerInstance -SqlScriptPath $TestFilePath `
-            -Credential $Credential -Variable $Variable -QueryTimeout $QueryTimeout -ErrorAction Stop
+        if ($PsCmdlet.ParameterSetName -eq 'File')
+        {
+            $invokeParameters = @{
+                ServerInstance = $ServerInstance
+                InputFile  = $TestFilePath
+                Credential     = $Credential
+                Variable       = $Variable
+                QueryTimeout   = $QueryTimeout
+                ErrorAction    = "Stop"
+            }
+
+            $result = Invoke-SqlScript @invokeParameters
+        }
+        else
+        {
+            $invokeParameters = @{
+                ServerInstance = $ServerInstance
+                Query          = $TestQuery
+                Credential     = $Credential
+                Variable       = $Variable
+                QueryTimeout   = $QueryTimeout
+                ErrorAction    = "Stop"
+            }
+
+            $result = Invoke-SqlScript @invokeParameters
+        }
 
         if ($null -eq $result)
         {
@@ -266,6 +415,9 @@ function Test-TargetResource
         The name of an instance of the Database Engine.
         For default instances, only specify the computer name. For named instances, use the format ComputerName\InstanceName.
 
+    .PARAMETER Query
+        The full query that will be executed.
+
     .PARAMETER SqlScriptPath
         Path to SQL script file that will be executed.
 
@@ -289,9 +441,13 @@ function Invoke-SqlScript
         [System.String]
         $ServerInstance,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Query')]
         [System.String]
-        $SqlScriptPath,
+        $Query,
+
+        [Parameter(ParameterSetName = 'File')]
+        [System.String]
+        $InputFile,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -312,13 +468,22 @@ function Invoke-SqlScript
     if ($null -ne $Credential)
     {
         $null = $PSBoundParameters.Add('Username', $Credential.UserName)
+
         $null = $PSBoundParameters.Add('Password', $Credential.GetNetworkCredential().Password)
     }
 
-    $null = $PSBoundParameters.Remove('Credential')
-    $null = $PSBoundParameters.Remove('SqlScriptPath')
+    if ($null -eq $Query)
+    {
+        $null = $PSBoundParameters.Remove('Query')
+    }
+    else
+    {
+        $null = $PSBoundParameters.Remove('InputFile')
+    }
 
-    Invoke-Sqlcmd -InputFile $SqlScriptPath @PSBoundParameters
+    $null = $PSBoundParameters.Remove('Credential')
+
+    Invoke-SqlCmd @PSBoundParameters
 }
 
 Export-ModuleMember -Function *-TargetResource
