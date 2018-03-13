@@ -22,6 +22,10 @@ $ConfigurationData = @{
             SetSqlScriptPath            = Join-Path -Path $env:SystemDrive -ChildPath ([System.IO.Path]::GetRandomFileName())
             TestSqlScriptPath           = Join-Path -Path $env:SystemDrive -ChildPath ([System.IO.Path]::GetRandomFileName())
 
+            GetQuery                    = 'GetQuery;'
+            TestQuery                   = 'TestQuery;'
+            SetQuery                    = 'SetQuery;'
+
             GetSqlScript                = @'
 SELECT Name FROM sys.databases WHERE Name = '$(DatabaseName)' FOR JSON AUTO
 '@
@@ -238,6 +242,75 @@ Configuration MSFT_SqlScript_RunSqlScriptAsSqlUser_Config
             )
             QueryTimeout   = 30
             Credential     = $UserCredential
+        }
+    }
+}
+
+Configuration MSFT_SqlScript_RunSqlScriptAsSystem_WithQuery_Config
+{
+
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node localhost {
+        SqlScript 'Integration_Test'
+        {
+            ServerInstance       = Join-Path -Path $Node.ServerName -ChildPath $Node.InstanceName
+
+            GetQuery          = $Node.GetSqlScriptPath
+            TestQuery         = $Node.TestSqlScriptPath
+            SetQuery          = $Node.SetSqlScriptPath
+        }
+    }
+}
+
+Configuration MSFT_SqlScript_RunSqlScriptAsWindowsUser_WithQuery_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SqlAdministratorCredential
+    )
+
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node localhost {
+        SqlScript 'Integration_Test'
+        {
+            ServerInstance       = Join-Path -Path $Node.ServerName -ChildPath $Node.InstanceName
+
+            GetQuery          = $Node.GetSqlScriptPath
+            TestQuery         = $Node.TestSqlScriptPath
+            SetQuery          = $Node.SetSqlScriptPath
+
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+    }
+}
+
+Configuration MSFT_SqlScript_RunSqlScriptAsSqlUser_WithQuery_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $UserCredential
+    )
+
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node localhost {
+        SqlScript 'Integration_Test'
+        {
+            ServerInstance       = Join-Path -Path $Node.ServerName -ChildPath $Node.InstanceName
+
+            GetQuery          = $Node.GetSqlScriptPath
+            TestQuery         = $Node.TestSqlScriptPath
+            SetQuery          = $Node.SetSqlScriptPath
+
+            PsDscRunAsCredential = $UserCredential
         }
     }
 }
