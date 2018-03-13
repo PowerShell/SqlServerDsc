@@ -60,6 +60,13 @@ try
             QueryTimeout   = 30
         }
 
+        $QueryTestParameters = @{
+            ServerInstance = $env:COMPUTERNAME
+            GetQuery       = "GetQuery;"
+            TestQuery      = "TestQuery;"
+            SetQuery       = "SetQuery;"
+        }
+
         Describe "$resourceName\Get-TargetResource" {
 
             Context 'Get-TargetResource fails to import SQLPS module' {
@@ -118,6 +125,34 @@ try
                     { Get-TargetResource @testParameters } | Should -Throw $errorMessage
                 }
             }
+            Context 'Get-TargetResource returns script results successfully with query' {
+                Mock -CommandName Import-SQLPSModule
+                Mock -CommandName Invoke-Sqlcmd -MockWith {
+                    return ''
+                }
+
+                It 'Should return the expected results' {
+                    $result = Get-TargetResource @QueryTestParameters
+                    $result.ServerInstance | Should -Be $QueryTestParameters.ServerInstance
+                    $result.SetQuery | Should -Be $QueryTestParameters.SetQuery
+                    $result.GetQuery | Should -Be $QueryTestParameters.GetQuery
+                    $result.TestQuery | Should -Be $QueryTestParameters.TestQuery
+                    $result | Should -BeOfType Hashtable
+                }
+            }
+
+            Context 'Get-TargetResource throws an error when running the script in the GetQuery parameter' {
+                $errorMessage = "Failed to run SQL Script"
+
+                Mock -CommandName Import-SQLPSModule
+                Mock -CommandName Invoke-Sqlcmd -MockWith {
+                    throw $errorMessage
+                }
+
+                It 'Should throw the correct error from Invoke-Sqlcmd' {
+                    { Get-TargetResource @QueryTestParameters } | Should -Throw $errorMessage
+                }
+            }
         }
 
         Describe "$resourceName\Set-TargetResource" {
@@ -140,6 +175,18 @@ try
 
                 It 'Should return the expected results' {
                     $result = Set-TargetResource @testParameters
+                    $result | Should -Be ''
+                }
+            }
+
+            Context 'Set-TargetResource runs script without issue when using a query' {
+                Mock -CommandName Import-SQLPSModule -MockWith {}
+                Mock -CommandName Invoke-Sqlcmd -MockWith {
+                    return ''
+                }
+
+                It 'Should return the expected results' {
+                    $result = Set-TargetResource @queryTestParameters
                     $result | Should -Be ''
                 }
             }
@@ -193,6 +240,16 @@ try
                 }
             }
 
+            Context 'Test-TargetResource runs script without issue when using the TestQuery Parameter' {
+                Mock -CommandName Import-SQLPSModule -MockWith {}
+                Mock -CommandName Invoke-Sqlcmd -MockWith {}
+
+                It 'Should return true' {
+                    $result = Test-TargetResource @queryTestParameters
+                    $result | Should -Be $true
+                }
+            }
+
             Context 'Test-TargetResource runs script without issue with timeout' {
                 Mock -CommandName Import-SQLPSModule -MockWith {}
                 Mock -CommandName Invoke-Sqlcmd -MockWith {}
@@ -232,7 +289,7 @@ try
         Describe "$resourceName\Invoke-SqlScript" {
             $invokeScriptParameters = @{
                 ServerInstance = $env:COMPUTERNAME
-                SqlScriptPath = "set.sql"
+                InputFile = "set.sql"
             }
 
             Context 'Invoke-SqlScript fails to import SQLPS module' {
