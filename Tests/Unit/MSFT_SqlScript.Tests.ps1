@@ -42,14 +42,14 @@ try
     Invoke-TestSetup
 
     InModuleScope 'MSFT_SqlScript' {
-        $script:DSCModuleName       = 'SqlServerDsc'
-        $resourceName     = 'MSFT_SqlScript'
+        $script:DSCModuleName = 'SqlServerDsc'
+        $resourceName         = 'MSFT_SqlScript'
 
         $testParameters = @{
             ServerInstance = $env:COMPUTERNAME
-            SetFilePath = "set.sql"
-            GetFilePath = "get.sql"
-            TestFilePath = "test.sql"
+            SetFilePath    = "set.sql"
+            GetFilePath    = "get.sql"
+            TestFilePath   = "test.sql"
         }
 
         $testParametersTimeout = @{
@@ -67,6 +67,16 @@ try
             SetQuery       = "SetQuery;"
         }
 
+        $failTestParameters = @{
+            ServerInstance = $env:COMPUTERNAME
+            GetFilePath    = "get.sql"
+            GetScript      = "GetQuery"
+            TestFilePath   = "test.sql"
+            TestQuery      = "TestQuery;"
+            SetFilePath    = "set.sql"
+            SetQuery       = "SetQuery;"
+        }
+
         Describe "$resourceName\Get-TargetResource" {
 
             Context 'Get-TargetResource fails to import SQLPS module' {
@@ -78,6 +88,18 @@ try
 
                 It 'Should throw the correct error from Import-Module' {
                     { Get-TargetResource @testParameters } | Should -Throw $throwMessage
+                }
+            }
+
+            Context 'Get-TargetResource should throw when the incorrect parameters are provided.' {
+                Mock -CommandName Import-SQLPSModule
+
+                It 'Should throw when GetFilePath and GetScript are both defined.' {
+                    {Get-TargetResource @failTestParameters} | Should throw
+                }
+
+                It 'Should throw when neither GetFilePath or GetScript are defined.' {
+                    {Get-TargetResource -ServerInstance $env:COMPUTERNAME} | Should throw
                 }
             }
 
@@ -167,6 +189,18 @@ try
                 }
             }
 
+            Context 'Set-TargetResource should throw when the incorrect parameters are provided.' {
+                Mock -CommandName Import-SQLPSModule
+
+                It 'Should throw when SetFilePath and SetQuery are both defined' {
+                    {Set-TargetResource @failTestParameters} | Should throw
+                }
+
+                It 'Should throw when neither SetFilePath and SetQuery are defined.'{
+                    {Set-TargetResource -ServerInstance $env:COMPUTERNAME} | Should throw
+                }
+            }
+
             Context 'Set-TargetResource runs script without issue' {
                 Mock -CommandName Import-SQLPSModule -MockWith {}
                 Mock -CommandName Invoke-Sqlcmd -MockWith {
@@ -227,6 +261,18 @@ try
 
                 It 'Should throw the correct error from Import-Module' {
                     { Set-TargetResource @testParameters } | Should -Throw $throwMessage
+                }
+            }
+
+            Context 'Test-TargetResource should throw when the incorrect parameters are defined.' {
+                Mock -CommandName Import-SQLPSModule
+
+                It 'Should throw when TestFilePath and TestScript are both defined.' {
+                    {Test-TargetResource @failTestParameters} | Should throw
+                }
+
+                It 'Should throw when neither TestFilePath or TestScript are defined.'{
+                    {Test-TargetResource -ServerInstance $env:COMPUTERNAME} | Should throw
                 }
             }
 

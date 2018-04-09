@@ -60,27 +60,27 @@ function Get-TargetResource
         [System.String]
         $ServerInstance,
 
-        [Parameter(ParameterSetName = 'File')]
+        [Parameter()]
         [System.String]
         $SetFilePath,
 
-        [Parameter(ParameterSetName = 'File')]
+        [Parameter()]
         [System.String]
         $GetFilePath,
 
-        [Parameter(ParameterSetName = 'File')]
+        [Parameter()]
         [System.String]
         $TestFilePath,
 
-        [Parameter(ParameterSetName = 'Query')]
+        [Parameter()]
         [System.String]
         $GetQuery,
 
-        [Parameter(ParameterSetName = 'Query')]
+        [Parameter()]
         [System.String]
         $TestQuery,
 
-        [Parameter(ParameterSetName = 'Query')]
+        [Parameter()]
         [System.String]
         $SetQuery,
 
@@ -98,11 +98,17 @@ function Get-TargetResource
         $Variable
     )
 
-    if ($PsCmdlet.ParameterSetName -eq 'File')
+    if ($PSBoundParameters.GetFilePath -and $PSBoundParameters.GetScript)
+    {
+        throw "Cannot complete query using GetFilePath and GetScript. Please use either a file path containing a GetQuery
+        or a GetQuery as a string."
+    }
+
+    if ($PSBoundParameters.GetFilePath)
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
-            InputFile  = $GetFilePath
+            InputFile      = $GetFilePath
             Credential     = $Credential
             Variable       = $Variable
             QueryTimeout   = $QueryTimeout
@@ -113,7 +119,7 @@ function Get-TargetResource
 
         $getResult = Out-String -InputObject $result
     }
-    else
+    elseif ($PSBoundParameters.GetQuery)
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
@@ -127,6 +133,9 @@ function Get-TargetResource
         $result = Invoke-SqlScript @invokeParameters
 
         $getResult = Out-String -InputObject $result
+    }
+    else {
+        throw "You must have a query input. Please provide a GetFilePath or GetQuery"
     }
 
     $returnValue = @{
@@ -239,11 +248,17 @@ function Set-TargetResource
         $Variable
     )
 
-    if ($PsCmdlet.ParameterSetName -eq 'File')
+    if ($PSBoundParameters.SetFilePath -and $PSBoundParameters.SetScript)
+    {
+        throw "Cannot complete query using SetFilePath and SetScript. Please use either a file path containing a SetQuery
+        or a SetQuery as a string."
+    }
+
+    if ($PSBoundParameters.SetFilePath)
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
-            InputFile  = $SetFilePath
+            InputFile      = $SetFilePath
             Credential     = $Credential
             Variable       = $Variable
             QueryTimeout   = $QueryTimeout
@@ -252,7 +267,7 @@ function Set-TargetResource
 
         Invoke-SqlScript @invokeParameters
     }
-    else
+    elseif ($PSBoundParameters.SetQuery)
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
@@ -264,6 +279,9 @@ function Set-TargetResource
         }
 
         Invoke-SqlScript @invokeParameters
+    }
+    else {
+        throw "You must have a query input. Please provide a SetFilePath or SetQuery"
     }
 }
 
@@ -362,13 +380,19 @@ function Test-TargetResource
         $Variable
     )
 
+    if ($PSBoundParameters.TestFilePath -and $PSBoundParameters.TestsScript)
+    {
+        throw "Cannot complete query using TestFilePath and TestScript. Please use either a file path containing a TestQuery
+        or a TestQuery as a string."
+    }
+
     try
     {
-        if ($PsCmdlet.ParameterSetName -eq 'File')
+        if ($PSBoundParameters.TestFilePath)
         {
             $invokeParameters = @{
                 ServerInstance = $ServerInstance
-                InputFile  = $TestFilePath
+                InputFile      = $TestFilePath
                 Credential     = $Credential
                 Variable       = $Variable
                 QueryTimeout   = $QueryTimeout
@@ -377,7 +401,7 @@ function Test-TargetResource
 
             $result = Invoke-SqlScript @invokeParameters
         }
-        else
+        elseif ($PSBoundParameters.TestQuery)
         {
             $invokeParameters = @{
                 ServerInstance = $ServerInstance
@@ -389,6 +413,9 @@ function Test-TargetResource
             }
 
             $result = Invoke-SqlScript @invokeParameters
+        }
+        else {
+            throw "You must have a query input. Please provide a TestFilePath or TestQuery"
         }
 
         if ($null -eq $result)
