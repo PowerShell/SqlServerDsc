@@ -1,40 +1,48 @@
 # Change log for SqlServerDsc
 
 ## Unreleased
+- Changes to SqlScript
+  -[Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
+    - Adds string queries in addition with updated error handling.
+      ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+- Changes to Integration Tests
+  - [Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
+    -SqlScript ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+- Changes to Unit Tests
+  - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Updated
+    the following resources unit test template to version 1.2.1
+    - SqlWaitForAG ([issue #1088](https://github.com/PowerShell/SqlServerDsc/issues/1088)).
+  - [Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
+    -SqlScript ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+
+## 11.1.0.0
 
 - Changes to SqlServerDsc
   - Updated the PULL\_REQUEST\_TEMPLATE with an improved task list and modified
-    some text to be clearer
-    ([issue #973](https://github.com/PowerShell/SqlServerDsc/issues/973)).
+    some text to be clearer ([issue #973](https://github.com/PowerShell/SqlServerDsc/issues/973)).
   - Updated the ISSUE_TEMPLATE to hopefully be more intuitive and easier to use.
   - Added information to ISSUE_TEMPLATE that issues must be reproducible in
     SqlServerDsc resource module (if running the older xSQLServer resource module)
     ([issue #1036](https://github.com/PowerShell/SqlServerDsc/issues/1036)).
+  - Updated ISSUE_TEMPLATE.md with a note about sensitive information ([issue #1092](https://github.com/PowerShell/SqlServerDsc/issues/1092)).
 - Changes to SqlServerLogin
-  - Fix password test fails for nativ sql users
-    ([issue #1048](https://github.com/PowerShell/SqlServerDsc/issues/1048)).
+  - [Claudio Spizzi (@claudiospizzi)](https://github.com/claudiospizzi): Fix password
+    test fails for nativ sql users ([issue #1048](https://github.com/PowerShell/SqlServerDsc/issues/1048)).
 - Changes to SqlSetup
-  - Clarify usage of 'SecurityMode' along with adding parameter
-    validations for the only 2 supported values
-    ([issue #1010](https://github.com/PowerShell/SqlServerDsc/issues/1010)).
+  - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Clarify usage
+    of 'SecurityMode' along with adding parameter validations for the only 2
+    supported values ([issue #1010](https://github.com/PowerShell/SqlServerDsc/issues/1010)).
   - Now accounts containing '$' will be able to be used for installing
     SQL Server. Although, if the account ends with '$' it is considered a
-    ([issue #1055](https://github.com/PowerShell/SqlServerDsc/issues/1055)).
-        Managed Service Account\
-- Changes to SqlScript
-  - Adds string queries in addition with updated error handling.
-    ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+    Managed Service Account ([issue #1055](https://github.com/PowerShell/SqlServerDsc/issues/1055)).
 - Changes to Integration Tests
-  - Replace xStorage dsc resource module with StorageDsc
-    ([issue #1038](https://github.com/PowerShell/SqlServerDsc/issues/1038)).
-  - Update SqlScript
-    ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+  - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Replace xStorage
+    dsc resource module with StorageDsc ([issue #1038](https://github.com/PowerShell/SqlServerDsc/issues/1038)).
 - Changes to Unit Tests
-  - Updated the following resources unit test template to version 1.2.1
-    ([issue #999](https://github.com/PowerShell/SqlServerDsc/issues/999)).
-    - SqlAlias
-    ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
-    -SqlScript
+  - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Updated
+    the following resources unit test template to version 1.2.1
+    - SqlAlias ([issue #999](https://github.com/PowerShell/SqlServerDsc/issues/999)).
+    - SqlWindowsFirewall ([issue #1089](https://github.com/PowerShell/SqlServerDsc/issues/1089)).
 
 ## 11.0.0.0
 
