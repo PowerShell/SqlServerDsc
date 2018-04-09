@@ -1,5 +1,10 @@
 $script:currentPath = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+
 Import-Module -Name (Join-Path -Path (Split-Path -Path (Split-Path -Path $script:currentPath -Parent) -Parent) -ChildPath 'SqlServerDscHelper.psm1')
+
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'CommonResourceHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlScript'
 
 <#
     .SYNOPSIS
@@ -100,8 +105,9 @@ function Get-TargetResource
 
     if ($PSBoundParameters.GetFilePath -and $PSBoundParameters.GetScript)
     {
-        throw "Cannot complete query using GetFilePath and GetScript. Please use either a file path containing a GetQuery
-        or a GetQuery as a string."
+        $errorMessage = $script:localizedData.GetQueryandFileDefined
+
+        New-InvalidArgumentException -Message $errorMessage
     }
 
     if ($PSBoundParameters.GetFilePath)
@@ -135,7 +141,9 @@ function Get-TargetResource
         $getResult = Out-String -InputObject $result
     }
     else {
-        throw "You must have a query input. Please provide a GetFilePath or GetQuery"
+        $errorMessage = $script:localizedData.NoQueryInput
+
+        New-InvalidArgumentException -Message $errorMessage
     }
 
     $returnValue = @{
@@ -250,8 +258,9 @@ function Set-TargetResource
 
     if ($PSBoundParameters.SetFilePath -and $PSBoundParameters.SetScript)
     {
-        throw "Cannot complete query using SetFilePath and SetScript. Please use either a file path containing a SetQuery
-        or a SetQuery as a string."
+        $errorMessage = $script:localizedData.SetQueryandFileDefined
+
+        New-InvalidArgumentException -Message $errorMessage
     }
 
     if ($PSBoundParameters.SetFilePath)
@@ -281,7 +290,9 @@ function Set-TargetResource
         Invoke-SqlScript @invokeParameters
     }
     else {
-        throw "You must have a query input. Please provide a SetFilePath or SetQuery"
+        $errorMessage = $script:localizedData.NoSetQueryInput
+
+        New-InvalidArgumentException -Message $errorMessage
     }
 }
 
@@ -382,8 +393,9 @@ function Test-TargetResource
 
     if ($PSBoundParameters.TestFilePath -and $PSBoundParameters.TestsScript)
     {
-        throw "Cannot complete query using TestFilePath and TestScript. Please use either a file path containing a TestQuery
-        or a TestQuery as a string."
+        $errorMessage = $script:localizedData.TestQueryandFileDefined
+
+        New-InvalidArgumentException -Message $errorMessage
     }
 
     try
@@ -415,7 +427,9 @@ function Test-TargetResource
             $result = Invoke-SqlScript @invokeParameters
         }
         else {
-            throw "You must have a query input. Please provide a TestFilePath or TestQuery"
+            $errorMessage = $script:localizedData.NoTestQueryInput
+
+            New-InvalidArgumentException -Message $errorMessage
         }
 
         if ($null -eq $result)

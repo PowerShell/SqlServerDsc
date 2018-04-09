@@ -95,11 +95,11 @@ try
                 Mock -CommandName Import-SQLPSModule
 
                 It 'Should throw when GetFilePath and GetScript are both defined.' {
-                    {Get-TargetResource @failTestParameters} | Should throw
+                    { Get-TargetResource @failTestParameters } | Should throw
                 }
 
                 It 'Should throw when neither GetFilePath or GetScript are defined.' {
-                    {Get-TargetResource -ServerInstance $env:COMPUTERNAME} | Should throw
+                    { Get-TargetResource -ServerInstance $env:COMPUTERNAME } | Should throw
                 }
             }
 
@@ -268,11 +268,11 @@ try
                 Mock -CommandName Import-SQLPSModule
 
                 It 'Should throw when TestFilePath and TestScript are both defined.' {
-                    {Test-TargetResource @failTestParameters} | Should throw
+                    { Test-TargetResource @failTestParameters } | Should throw
                 }
 
                 It 'Should throw when neither TestFilePath or TestScript are defined.'{
-                    {Test-TargetResource -ServerInstance $env:COMPUTERNAME} | Should throw
+                    { Test-TargetResource -ServerInstance $env:COMPUTERNAME } | Should throw
                 }
             }
 
