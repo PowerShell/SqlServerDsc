@@ -12,17 +12,17 @@ Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -C
         The name of an instance of the Database Engine. For a default instance, only specify the computer name. For a named instances,
         use the format ComputerName\InstanceName.
 
-    .PARAMETER SetFilePath
-        Path to the T-SQL file that will perform Set action.
-
-    .PARAMETER GetFilePath
-        Path to the T-SQL file that will perform Get action.
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
         Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
 
-    .PARAMETER TestFilePath
-        Path to the T-SQL file that will perform Test action.
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
 
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
@@ -53,15 +53,15 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SetFilePath,
+        $GetQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $GetFilePath,
+        $TestQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $TestFilePath,
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -79,22 +79,22 @@ function Get-TargetResource
 
     $invokeParameters = @{
         ServerInstance = $ServerInstance
-        InputFile      = $GetFilePath
+        Query          = $GetQuery
         Credential     = $Credential
         Variable       = $Variable
         QueryTimeout   = $QueryTimeout
         ErrorAction    = "Stop"
     }
 
-    $result = Invoke-SqlScript @invokeParameters
+    $result = Invoke-SqlQuery @invokeParameters
 
     $getResult = Out-String -InputObject $result
 
     $returnValue = @{
         ServerInstance = [System.String] $ServerInstance
-        SetFilePath    = [System.String] $SetFilePath
-        GetFilePath    = [System.String] $GetFilePath
-        TestFilePath   = [System.String] $TestFilePath
+        GetQuery       = [System.String] $GetQuery
+        TestQuery      = [System.String] $TestQuery
+        SetQuery       = [System.String] $SetQuery
         Credential     = [System.Object] $Credential
         QueryTimeout   = [System.UInt32] $QueryTimeout
         Variable       = [System.String[]] $Variable
@@ -112,17 +112,17 @@ function Get-TargetResource
         The name of an instance of the Database Engine. For a default instance, only specify the computer name. For a named instances,
         use the format ComputerName\InstanceName.
 
-    .PARAMETER SetFilePath
-        Path to the T-SQL file that will perform Set action.
-
-    .PARAMETER GetFilePath
-        Path to the T-SQL file that will perform Get action.
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
         Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
 
-    .PARAMETER TestFilePath
-        Path to the T-SQL file that will perform Test action.
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
 
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
@@ -149,15 +149,15 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SetFilePath,
+        $GetQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $GetFilePath,
+        $TestQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $TestFilePath,
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -177,14 +177,14 @@ function Set-TargetResource
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
-            InputFile      = $SetFilePath
+            Query          = $SetQuery
             Credential     = $Credential
             Variable       = $Variable
             QueryTimeout   = $QueryTimeout
             ErrorAction    = "Stop"
         }
 
-        Invoke-SqlScript @invokeParameters
+        Invoke-SqlQuery @invokeParameters
     }
     catch [Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException]
     {
@@ -200,17 +200,17 @@ function Set-TargetResource
         The name of an instance of the Database Engine. For a default instance, only specify the computer name. For a named instances,
         use the format ComputerName\InstanceName.
 
-    .PARAMETER SetFilePath
-        Path to the T-SQL file that will perform Set action.
-
-    .PARAMETER GetFilePath
-        Path to the T-SQL file that will perform Get action.
+    .PARAMETER GetQuery
+        The full query that will perform the Get Action
         Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the `GetResult` property.
 
-    .PARAMETER TestFilePath
-        Path to the T-SQL file that will perform Test action.
+    .PARAMETER TestQuery
+        The full query that will perform the Test Action
         Any script that does not throw an error or returns null is evaluated to true.
         The cmdlet Invoke-Sqlcmd treats T-SQL Print statements as verbose text, and will not cause the test to return false.
+
+    .PARAMETER SetQuery
+        The full query that will perform the Set Action
 
     .PARAMETER Credential
         The credentials to authenticate with, using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
@@ -239,15 +239,15 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $SetFilePath,
+        $GetQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $GetFilePath,
+        $TestQuery,
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $TestFilePath,
+        $SetQuery,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -267,14 +267,14 @@ function Test-TargetResource
     {
         $invokeParameters = @{
             ServerInstance = $ServerInstance
-            InputFile      = $TestFilePath
+            Query          = $TestQuery
             Credential     = $Credential
             Variable       = $Variable
             QueryTimeout   = $QueryTimeout
             ErrorAction    = "Stop"
         }
 
-        $result = Invoke-SqlScript @invokeParameters
+        $result = Invoke-SqlQuery @invokeParameters
 
         if ($null -eq $result)
         {
@@ -300,8 +300,8 @@ function Test-TargetResource
         The name of an instance of the Database Engine.
         For default instances, only specify the computer name. For named instances, use the format ComputerName\InstanceName.
 
-    .PARAMETER SqlScriptPath
-        Path to SQL script file that will be executed.
+    .PARAMETER Query
+        The full query that will be executed.
 
     .PARAMETER Credential
         The credentials to use to authenticate using SQL Authentication. To authenticate using Windows Authentication, assign the credentials
@@ -315,7 +315,7 @@ function Test-TargetResource
     .PARAMETER Variable
         Creates a Invoke-Sqlcmd scripting variable for use in the Invoke-Sqlcmd script, and sets a value for the variable.
 #>
-function Invoke-SqlScript
+function Invoke-SqlQuery
 {
     param
     (
@@ -323,9 +323,9 @@ function Invoke-SqlScript
         [System.String]
         $ServerInstance,
 
-        [Parameter(ParameterSetName = 'File')]
+        [Parameter(Mandatory = $true)]
         [System.String]
-        $InputFile,
+        $Query,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -350,10 +350,9 @@ function Invoke-SqlScript
         $null = $PSBoundParameters.Add('Password', $Credential.GetNetworkCredential().Password)
     }
 
-    $null = $PSBoundParameters.Remove('InputFile')
     $null = $PSBoundParameters.Remove('Credential')
 
-    Invoke-SqlCmd -InputFile $InputFile @PSBoundParameters
+    Invoke-SqlCmd @PSBoundParameters
 }
 
 Export-ModuleMember -Function *-TargetResource

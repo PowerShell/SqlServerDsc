@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlScript DSC Resource
+        Automated unit test for MSFT_SqlScriptQuery DSC Resource
 #>
 
 # Suppression of this PSSA rule allowed in tests.
@@ -21,7 +21,7 @@ Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.
 
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName 'SqlServerDsc' `
-    -DSCResourceName 'MSFT_SqlScript'  `
+    -DSCResourceName 'MSFT_SqlScriptQuery'  `
     -TestType Unit
 
 #endregion HEADER
@@ -41,22 +41,22 @@ try
 {
     Invoke-TestSetup
 
-    InModuleScope 'MSFT_SqlScript' {
+    InModuleScope 'MSFT_SqlScriptQuery' {
         $script:DSCModuleName = 'SqlServerDsc'
-        $resourceName         = 'MSFT_SqlScript'
+        $resourceName         = 'MSFT_SqlScriptQuery'
 
         $testParameters = @{
             ServerInstance = $env:COMPUTERNAME
-            SetFilePath    = "set.sql"
-            GetFilePath    = "get.sql"
-            TestFilePath   = "test.sql"
+            GetQuery       = "GetQuery;"
+            TestQuery      = "TestQuery;"
+            SetQuery       = "SetQuery;"
         }
 
         $testParametersTimeout = @{
             ServerInstance = $env:COMPUTERNAME
-            SetFilePath    = "set-timeout.sql"
-            GetFilePath    = "get-timeout.sql"
-            TestFilePath   = "test-timeout.sql"
+            GetQuery       = "GetQuery;"
+            TestQuery      = "TestQuery;"
+            SetQuery       = "SetQuery;"
             QueryTimeout   = 30
         }
 
@@ -70,7 +70,7 @@ try
                 }
 
                 It 'Should throw the correct error from Import-Module' {
-                    { Get-TargetResource @testParameters } | Should throw $throwMessage
+                    { Get-TargetResource @testParameters } | Should Throw $throwMessage
                 }
             }
 
@@ -82,10 +82,11 @@ try
 
                 It 'Should return the expected results' {
                     $result = Get-TargetResource @testParameters
+
                     $result.ServerInstance | Should Be $testParameters.ServerInstance
-                    $result.SetFilePath | Should Be $testParameters.SetFilePath
-                    $result.GetFilePath | Should Be $testParameters.GetFilePath
-                    $result.TestFilePath | Should Be $testParameters.TestFilePath
+                    $result.GetQuery | Should Be $testParameters.GetQuery
+                    $result.SetQuery | Should Be $testParameters.SetQuery
+                    $result.TestQuery | Should Be $testParameters.TestQuery
                     $result | Should BeOfType Hashtable
                 }
             }
@@ -99,14 +100,14 @@ try
                 It 'Should return the expected results' {
                     $result = Get-TargetResource @testParametersTimeout
                     $result.ServerInstance | Should Be $testParametersTimeout.ServerInstance
-                    $result.SetFilePath | Should Be $testParametersTimeout.SetFilePath
-                    $result.GetFilePath | Should Be $testParametersTimeout.GetFilePath
-                    $result.TestFilePath | Should Be $testParametersTimeout.TestFilePath
+                    $result.GetQuery | Should Be $testParameters.GetQuery
+                    $result.SetQuery | Should Be $testParameters.SetQuery
+                    $result.TestQuery | Should Be $testParameters.TestQuery
                     $result | Should BeOfType Hashtable
                 }
             }
 
-            Context 'Get-TargetResource throws an error when running the script in the GetFilePath parameter' {
+            Context 'Get-TargetResource throws an error when running the script in the GetQuery parameter' {
                 $errorMessage = "Failed to run SQL Script"
 
                 Mock -CommandName Import-SQLPSModule
@@ -224,18 +225,18 @@ try
                 }
 
                 It 'Should throw the correct error from Invoke-Sqlcmd' {
-                    { Test-TargetResource @testParameters } | Should throw $errorMessage
+                    { Test-TargetResource @testParameters } | Should Throw $errorMessage
                 }
             }
         }
 
-        Describe "$resourceName\Invoke-SqlScript" {
+        Describe "$resourceName\Invoke-SqlQuery" {
             $invokeScriptParameters = @{
                 ServerInstance = $env:COMPUTERNAME
-                InputFile = "set.sql"
+                Query = "Test Query"
             }
 
-            Context 'Invoke-SqlScript fails to import SQLPS module' {
+            Context 'Invoke-SqlQuery fails to import SQLPS module' {
                 $throwMessage = "Failed to import SQLPS module."
 
                 Mock -CommandName Import-SQLPSModule -MockWith {
@@ -243,11 +244,11 @@ try
                 }
 
                 It 'Should throw the correct error from Import-Module' {
-                    { Invoke-SqlScript @invokeScriptParameters } | Should throw $throwMessage
+                    { Invoke-SqlQuery @invokeScriptParameters } | Should Throw $throwMessage
                 }
             }
 
-            Context 'Invoke-SQlScript is called with credentials' {
+            Context 'Invoke-SqlQuery is called with credentials' {
                 $passwordPlain = "password"
                 $user = "User"
 
@@ -261,7 +262,7 @@ try
 
                 It 'Should call Invoke-Sqlcmd with correct parameters' {
                     $invokeScriptParameters.Add("Credential", $cred)
-                    $null = Invoke-SqlScript @invokeScriptParameters
+                    $null = Invoke-SqlQuery @invokeScriptParameters
 
                     Assert-MockCalled -CommandName Invoke-Sqlcmd -ParameterFilter {
                         ($Username -eq $user) -and ($Password -eq $passwordPlain)
@@ -269,7 +270,7 @@ try
                 }
             }
 
-            Context 'Invoke-SqlScript fails to execute the SQL scripts' {
+            Context 'Invoke-SqlQuery fails to execute the SQL scripts' {
                 $errorMessage = "Failed to run SQL Script"
 
                 Mock -CommandName Import-SQLPSModule -MockWith {}
@@ -278,7 +279,7 @@ try
                 }
 
                 It 'Should throw the correct error from Invoke-Sqlcmd' {
-                    { Invoke-SqlScript @invokeScriptParameters } | Should Throw $errorMessage
+                    { Invoke-SqlQuery @invokeScriptParameters } | Should Throw $errorMessage
                 }
             }
         }

@@ -1,19 +1,20 @@
 # Change log for SqlServerDsc
 
 ## Unreleased
-- Changes to SqlScript
-  -[Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
-    - Adds string queries in addition with updated error handling.
+- Changes to SqlScriptQuery
+  - Adds SqlScript Query to enable the use of strings as queries. Similar to SqlScript resource
       ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
 - Changes to Integration Tests
   - [Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
-    -SqlScript ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+    - SqlScriptQuery ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+      - Added Integration tests for SqlScriptQuery
 - Changes to Unit Tests
   - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Updated
     the following resources unit test template to version 1.2.1
     - SqlWaitForAG ([issue #1088](https://github.com/PowerShell/SqlServerDsc/issues/1088)).
   - [Chase Wilson (@chasewilson)](https://github.com/chasewilson): Updated
-    -SqlScript ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+    - SqlScriptQuery ([issue #719](https://github.com/PowerShell/SqlServerDsc/issues/719))
+      - Added Unit Tests for SqlScriptQuery
 
 ## 11.1.0.0
 
