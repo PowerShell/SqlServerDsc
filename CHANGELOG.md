@@ -12,6 +12,8 @@
     - **Get-NetIPAddressNetwork:** Returns the IP network address from an IPv4 address
       and prefix length.
   - Enabled PSSA rule violations to fail build in the CI environment.
+  - [Glenn Sarti (@glennsarti)](https://github.com/glennsarti): Renamed SqlServerDsc.psd1 to be
+    consistent ([issue #1116](https://github.com/PowerShell/SqlServerDsc/issues/1116)).
 - Changes to Unit Tests
   - [Michael Fyffe (@TraGicCode)](https://github.com/TraGicCode): Updated
     the following resources unit test template to version 1.2.1
