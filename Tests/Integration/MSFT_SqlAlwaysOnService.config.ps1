@@ -44,7 +44,7 @@ $ConfigurationData = @{
 Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources'
-    Import-DscResource -ModuleName 'xNetworking'
+    Import-DscResource -ModuleName 'NetworkingDsc'
 
     node localhost
     {
@@ -60,7 +60,7 @@ Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
             Name   = 'RSAT-Clustering-PowerShell'
         }
 
-        xIPAddress LoopbackAdapterIPv4Address
+        IPAddress LoopbackAdapterIPv4Address
         {
             IPAddress      = $Node.LoopbackAdapterIpAddress
             InterfaceAlias = $Node.LoopbackAdapterName
@@ -72,7 +72,7 @@ Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
             loopback adapter as clustered network.
             This will be removed directly after the cluster has been created.
         #>
-        xDefaultGatewayAddress LoopbackAdapterIPv4DefaultGateway
+        DefaultGatewayAddress LoopbackAdapterIPv4DefaultGateway
         {
             Address        = $Node.LoopbackAdapterGateway
             InterfaceAlias = $Node.LoopbackAdapterName
@@ -166,14 +166,14 @@ Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
 
 Configuration MSFT_SqlAlwaysOnService_CleanupDependencies_Config
 {
-    Import-DscResource -ModuleName 'xNetworking'
+    Import-DscResource -ModuleName 'Networking'
 
     node localhost
     {
         <#
             Removing the default gateway from the loopback adapter.
         #>
-        xDefaultGatewayAddress LoopbackAdapterIPv4DefaultGateway
+        DefaultGatewayAddress LoopbackAdapterIPv4DefaultGateway
         {
             InterfaceAlias = $Node.LoopbackAdapterName
             AddressFamily  = 'IPv4'

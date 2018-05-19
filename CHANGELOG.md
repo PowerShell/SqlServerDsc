@@ -20,6 +20,9 @@
     [Dan Reist (@randomnote1)](https://github.com/randomnote1)
   - Use a string builder to build the function stubs.
   - Fixed formatting issues for the function to work with modules other than SqlServer.
+- Changes to SqlAlwaysOnService
+  - Updated integration tests to use NetworkingDsc
+    ([issue #1129](https://github.com/PowerShell/SqlServerDsc/issues/1129)).
 
 ## 12.0.0.0
 
