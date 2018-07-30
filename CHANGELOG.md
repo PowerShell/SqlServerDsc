@@ -17,6 +17,8 @@
   - Updated all the examples and integration tests to not use
     `PSDscAllowPlainTextPassword`, so examples using credentials or
     passwords by default are secure.
+  - Add support for validating the code with the DSC ResourceKit Script Analyzer
+    rules, both in Visual Studio Code and directly using `Invoke-ScriptAnalyzer`.
 - Changes to SqlAlwaysOnService
   - Integration tests was updated to handle new IPv6 addresses on the AppVeyor
     build worker ([issue #1155](https://github.com/PowerShell/SqlServerDsc/issues/1155)).
