@@ -976,28 +976,29 @@ Resource to manage SQL Server Database Mail.
 #### Parameters
 
 * **`[String]` AccountName** _(Key)_: The name of the Database Mail account.
+* **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
-* **`[String]` EmailAddress** _(Required)_: The e-mail address from which mail
-  will originate.
-* **`[String]` MailServerName** _(Required)_: The fully qualified domain name of
-  the mail server name to which e-mail are sent.
-* **`[String]` ProfileName** _(Required)_: The profile name of the Database Mail.
 * **`[String]` Ensure** _(Write)_: Specifies the desired state of the Database Mail.
   When set to 'Present', the Database Mail will be created. When set to 'Absent',
   the Database Mail will be removed. Default value is 'Present'.
-* **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
-* **`[String]` DisplayName** _(Write)_: The display name of the outgoing mail server.
-  Default value is the same value assigned to parameter MailServerName.
+* **`[String]` ProfileName** _(Required)_: The name of the Database Mail profile.
+* **`[String]` Description** _(Write)_: The description for the Database Mail
+  profile and account.
+* **`[String]` EmailAddress** _(Required)_: The e-mail address from which mail
+  will originate.
+* **`[String]` DisplayName** _(Write)_: The display name of the originating e-mail
+  address.
 * **`[String]` ReplyToAddress** _(Write)_: The e-mail address to which the receiver
   of e-mails will reply to. Default value is the same e-mail address assigned to
   parameter EmailAddress.
-* **`[String]` Description** _(Write)_: The description of the Database Mail.
+* **`[String]` MailServerName** _(Required)_: The fully qualified domain name of
+  the mail server name to which e-mail are sent.
+* **`[UInt16]` TcpPort** _(Write)_: The TCP port used for communication. Default
+  value is port 25.
 * **`[String]` LoggingLevel** _(Write)_: The logging level that the Database Mail
   will use. If not specified the default logging level is 'Extended'.
   { Normal | *Extended* | Verbose }.
-* **`[UInt16]` TcpPort** _(Write)_: The TCP port used for communication. Default
-  value is port 25.
 
 #### Examples
 

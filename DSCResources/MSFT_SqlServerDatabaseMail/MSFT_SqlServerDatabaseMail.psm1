@@ -29,7 +29,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerDatabaseM
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the Database Mail.
+        The name of the Database Mail profile.
 #>
 function Get-TargetResource
 {
@@ -205,18 +205,17 @@ function Get-TargetResource
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the Database Mail.
+        The name of the Database Mail profile.
 
     .PARAMETER DisplayName
-        The display name of the outgoing mail server. Default value is the same
-        value assigned to parameter MailServerName.
+        The display name of the originating e-mail address.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
         Default value is the same e-mail address assigned to parameter EmailAddress.
 
     .PARAMETER Description
-        The description of the Database Mail.
+        The description for the Database Mail profile and account.
 
     .PARAMETER LoggingLevel
         The logging level that the Database Mail will use. If not specified the
@@ -606,18 +605,17 @@ function Set-TargetResource
         sent.
 
     .PARAMETER ProfileName
-        The profile name of the Database Mail.
+        The name of the Database Mail profile.
 
     .PARAMETER DisplayName
-        The display name of the outgoing mail server. Default value is the same
-        value assigned to parameter MailServerName.
+        The display name of the originating e-mail address.
 
     .PARAMETER ReplyToAddress
         The e-mail address to which the receiver of e-mails will reply to.
         Default value is the same e-mail address assigned to parameter EmailAddress.
 
     .PARAMETER Description
-        The description of the Database Mail.
+        The description for the Database Mail profile and account.
 
     .PARAMETER LoggingLevel
         The logging level that the Database Mail will use. If not specified the
