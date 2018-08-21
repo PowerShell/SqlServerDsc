@@ -266,7 +266,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $MailServerName,
+        $DisplayName = $EmailAddress,
 
         [Parameter()]
         [System.String]
@@ -662,7 +662,7 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $DisplayName = $MailServerName,
+        $DisplayName = $EmailAddress,
 
         [Parameter()]
         [System.String]
