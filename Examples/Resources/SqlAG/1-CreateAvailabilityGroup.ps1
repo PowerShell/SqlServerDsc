@@ -64,10 +64,11 @@ Configuration Example
         }
 
         # Ensure the HADR option is enabled for the instance
-        SqlAlwaysOnService EnableHADR {
-            Ensure       = 'Present'
-            InstanceName = $Node.InstanceName
-            ServerName   = $Node.NodeName
+        SqlAlwaysOnService EnableHADR
+        {
+            Ensure               = 'Present'
+            InstanceName         = $Node.InstanceName
+            ServerName           = $Node.NodeName
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
