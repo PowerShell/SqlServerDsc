@@ -27,7 +27,8 @@ Configuration Example
 
     Import-DscResource -ModuleName SqlServerDsc
 
-    Node $AllNodes.NodeName {
+    Node $AllNodes.NodeName
+    {
         # Adding the required service account to allow the cluster to log into SQL
         SqlServerLogin AddNTServiceClusSvc
         {

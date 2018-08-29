@@ -45,7 +45,8 @@ Configuration Example
 
     Import-DscResource -ModuleName SqlServerDsc
 
-    Node $AllNodes.NodeName {
+    Node $AllNodes.NodeName
+    {
         # Adding the required service account to allow the cluster to log into SQL
         SqlServerLogin AddNTServiceClusSvc
         {
@@ -80,10 +81,11 @@ Configuration Example
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
-        SqlAlwaysOnService EnableHADR {
-            Ensure       = 'Present'
-            InstanceName = $Node.InstanceName
-            ServerName   = $Node.NodeName
+        SqlAlwaysOnService EnableHADR
+        {
+            Ensure               = 'Present'
+            InstanceName         = $Node.InstanceName
+            ServerName           = $Node.NodeName
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
