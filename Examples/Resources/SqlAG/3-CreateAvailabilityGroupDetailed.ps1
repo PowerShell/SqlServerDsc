@@ -80,6 +80,13 @@ Configuration Example
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
+        SqlAlwaysOnService EnableHADR {
+            Ensure       = 'Present'
+            InstanceName = $Node.InstanceName
+            ServerName   = $Node.NodeName
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+
         if ( $Node.Role -eq 'PrimaryReplica' )
         {
             # Create the availability group on the instance tagged as the primary replica
@@ -104,7 +111,7 @@ Configuration Example
                 DatabaseHealthTrigger         = $Node.DatabaseHealthTrigger
                 DtcSupportEnabled             = $Node.DtcSupportEnabled
 
-                DependsOn                     = '[SqlServerEndpoint]HADREndpoint', '[SqlServerPermission]AddNTServiceClusSvcPermissions'
+                DependsOn                     = '[SqlAlwaysOnService]EnableHADR', '[SqlServerEndpoint]HADREndpoint', '[SqlServerPermission]AddNTServiceClusSvcPermissions'
                 PsDscRunAsCredential          = $SqlAdministratorCredential
             }
         }
