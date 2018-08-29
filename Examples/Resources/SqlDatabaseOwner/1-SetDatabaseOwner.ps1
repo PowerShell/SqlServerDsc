@@ -16,7 +16,7 @@ Configuration Example
 
     node localhost
     {
-        SqlServerLogin Add_SqlServerLogin_SQLAdmin
+        SqlServerLogin Add_SqlServerLogin_SQLAdmin_DSC
         {
             Ensure               = 'Present'
             Name                 = 'CONTOSO\SQLAdmin'
@@ -26,12 +26,31 @@ Configuration Example
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
-        SqlDatabaseOwner Set_SqlDatabaseOwner_SQLAdmin
+        SqlServerLogin Add_SqlServerLogin_SQLAdmin_DSC2
+        {
+            Ensure               = 'Present'
+            Name                 = 'CONTOSO\SQLAdmin'
+            LoginType            = 'WindowsUser'
+            ServerName           = 'sqltest.company.local'
+            InstanceName         = 'DSC2'
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+
+        SqlDatabaseOwner Set_SqlDatabaseOwner_SQLAdmin_DSC
         {
             Name                 = 'CONTOSO\SQLAdmin'
             Database             = 'AdventureWorks'
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+
+        SqlDatabaseOwner Set_SqlDatabaseOwner_SQLAdmin_DSC2
+        {
+            Name                 = 'CONTOSO\SQLAdmin'
+            Database             = 'AdventureWorks'
+            ServerName           = 'sqltest.company.local'
+            InstanceName         = 'DSC2'
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
     }

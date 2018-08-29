@@ -117,7 +117,7 @@ try
 
             Context 'When the system is either in the desired state or not in the desired state' {
                 It 'Should not throw' {
-                    $testParameters = $defaultParameters
+                    $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Database = $mockSqlDatabaseName
                         Name     = $mockSqlServerLogin
@@ -151,7 +151,7 @@ try
 
             Context 'When the system is not in the desired state' {
                 It 'Should return the state as false when desired login is not the database owner' {
-                    $testParameters = $defaultParameters
+                    $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Database = $mockSqlDatabaseName
                         Name     = $mockSqlServerLogin
@@ -170,7 +170,7 @@ try
                 It 'Should return the state as true when desired login is the database owner' {
                     $mockDatabaseOwner = 'Zebes\SamusAran'
                     $mockSqlServerLogin = 'Zebes\SamusAran'
-                    $testParameters = $defaultParameters
+                    $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Database = $mockSqlDatabaseName
                         Name     = $mockSqlServerLogin

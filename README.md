@@ -286,8 +286,8 @@ group.
 * **`[Boolean]` MatchDatabaseOwner** _(Write)_: If set to $true, this ensures the
   database owner of the database on the primary replica is the owner of the database
   on all secondary replicas. This requires the database owner is available as a
-  login on all replicas and that the PSDscRunAsAccount has impersonate permissions.
-  If set to $false, the owner of the database will be the PSDscRunAsAccount.
+  login on all replicas and that the PsDscRunAsCredential has impersonate permissions.
+  If set to $false, the owner of the database will be the PsDscRunAsCredential.
   The default is '$true'.
 * **`[Boolean]` ProcessOnlyOnActiveNode** _(Write)_: Specifies that the resource
   will only determine if a change is needed if the target node is the active
@@ -587,7 +587,7 @@ For more information about database owner, please read the article
 * **`[String]` Name** _(Required)_: The name of the login that will become a owner
   of the desired sql database.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-* **`[String]` InstanceName** _(Write)_: The name of the SQL instance to be configured.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 
 #### Examples
 
