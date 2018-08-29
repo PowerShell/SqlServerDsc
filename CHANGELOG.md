@@ -11,7 +11,8 @@
     The parameter InstanceName is now Key and cannot be omitted.
     ([issue #1197](https://github.com/PowerShell/SqlServerDsc/issues/1197)).
 - Changes to SqlAg, SqlAGDatabase, and SqlAGReplica examples
-  - Included configuration for SqlAlwaysOnService to enable HADR on each node to avoid confusion.
+  - Included configuration for SqlAlwaysOnService to enable
+    HADR on each node to avoid confusion.
   ([issue #1182](https://github.com/PowerShell/SqlServerDsc/issues/1182)).
 
 ## 11.4.0.0
