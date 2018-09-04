@@ -716,13 +716,19 @@ Configures SQL connections to be encrypted
   specified in `DatabaseServerName` and `DatabaseInstanceName`, and have permission
   to create the Reporting Services databases.
 
-  #### Parameters
+#### Parameters
 
-* **`[String]` InstanceName** _(Key)_: Name of the SQL Serverinstance to be configured.
-* **`[String]` Thumbprint** _(Required)_: Thumbprint of the certificate being used for encryption. If Ensure is abset Certificate can be an empty string.
-* **`[String]` ServiceAccount** _(Required)_: Name of the account running the SQLSevice
-* **`[String]` Ensure** _(Write)_: If Encryption should be configured for the instance.
-* **`[Boolean]` ForceEncryption** _(Write)_: If all coonnections to the SQL instance should be encrypted. If this parameter is not assigned a value, the default is that all connections must be encrypted.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL Serverinstance to be
+   configured.
+* **`[String]` Thumbprint** _(Required)_: Thumbprint of the certificate being
+   used for encryption. If Ensure is abset Certificate can be an empty string.
+* **`[String]` ServiceAccount** _(Required)_: Name of the account running the
+   SQLSevice
+* **`[String]` Ensure** _(Write)_: If Encryption should be configured for the
+   instance.
+* **`[Boolean]` ForceEncryption** _(Write)_: If all coonnections to the SQL
+  instance should be encrypted. If this parameter is not assigned a value,
+  the default is that all connections must be encrypted.
 
 #### Examples
 
