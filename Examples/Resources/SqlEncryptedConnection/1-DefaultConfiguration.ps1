@@ -10,7 +10,7 @@ Configuration Example
         SqlEncryptedConnection DefaultConfiguration
         {
             InstanceName    = 'MSSQLSERVER'
-            Thumbprint      = $CertificateThumbprint
+            Thumbprint      = 'fb0b82c94b80da26cf0b86f10ec0c50ae7864a2c'
             ForceEncryption = $true
             Ensure          = 'Present'
             ServiceAccount  = 'SqlSvc'

@@ -23,7 +23,8 @@
     AsSvcStartupType, IsSvcStartupType and RsSvcStartupType ([issue #1165](https://github.com/PowerShell/SqlServerDsc/issues/1165).
     [Maxime Daniou (@mdaniou)](https://github.com/mdaniou)
 - New DSC resource SQLEncryptedConnection
-  - Adds a new resource to setup an encrypted connection to the sql instance. No issue.
+  - Adds a new resource to setup an encrypted connection to the sql instance.
+    No issue.
 
 ## 11.4.0.0
 
