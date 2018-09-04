@@ -129,7 +129,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   to manage database recovery model.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
   database roles.
-* [**SqlRS**](#sqlrs) configures SQL Server Reporting
+* [**SQLEncryptedConnection**](#sqlencryptedconnection) resoucre to encrypt SQL connections.
+* [**SqlRS**](#sqlrs) configures SQL Server Reportin
   Services to use a database engine in another instance.
 * [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
   functionality to T-SQL.
@@ -701,6 +702,31 @@ Read more about database role in this article [CREATE ROLE (Transact-SQL)](https
 #### Known issues
 
 All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseRole).
+
+### SqlEncryptedConnection
+
+Configures SQL connections to be encrypted
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running SQL Server Reporting Services 2008 or later.
+* If `PsDscRunAsCredential` common parameter is used to run the resource, the
+  specified credential must have permissions to connect to the SQL Server instance
+  specified in `DatabaseServerName` and `DatabaseInstanceName`, and have permission
+  to create the Reporting Services databases.
+
+  #### Parameters
+
+* **`[String]` InstanceName** _(Key)_: Name of the SQL Serverinstance to be configured.
+* **`[String]` Thumbprint** _(Required)_: Thumbprint of the certificate being used for encryption. If Ensure is abset Certificate can be an empty string.
+* **`[String]` ServiceAccount** _(Required)_: Name of the account running the SQLSevice
+* **`[String]` Ensure** _(Write)_: If Encryption should be configured for the instance.
+* **`[Boolean]` ForceEncryption** _(Write)_: If all coonnections to the SQL instance should be encrypted. If this parameter is not assigned a value, the default is that all connections must be encrypted.
+
+#### Examples
+
+* [Default configuration](Examples/Resources/SqlEncryptedConnection/1-DefaultConfiguration.ps1)
 
 ### SqlRS
 
