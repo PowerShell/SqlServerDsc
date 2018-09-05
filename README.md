@@ -129,8 +129,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   to manage database recovery model.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
   database roles.
-* [**SQLEncryptedConnection**](#sqlencryptedconnection) resoucre to encrypt SQL connections.
-* [**SqlRS**](#sqlrs) configures SQL Server Reportin
+* [**SQLEncryptedConnection**](#sqlencryptedconnection) resource to enable encrypted SQL connections.
+* [**SqlRS**](#sqlrs) configures SQL Server Reporting.
   Services to use a database engine in another instance.
 * [**SqlScript**](#sqlscript) resource to extend DSC Get/Set/Test
   functionality to T-SQL.
@@ -705,34 +705,43 @@ All issues are not listed here, see [here for all open issues](https://github.co
 
 ### SqlEncryptedConnection
 
-Configures SQL connections to be encrypted
+Configures SQL connections to be encrypted.
+Read more about encrypted connections in this article [Enable Encrypted Connections](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-encrypted-connections-to-the-database-engine).
 
 #### Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Reporting Services 2008 or later.
+* You must have a Certificate that is trusted and issued for
+   `ServerAuthentication`.
+* The name of the Certificate must be the fully qualified domain name (FQDN)
+   of the computer.
+* The Certificate must be installed in the LocalMachine Personal store.
 * If `PsDscRunAsCredential` common parameter is used to run the resource, the
   specified credential must have permissions to connect to the SQL Server instance
-  specified in `DatabaseServerName` and `DatabaseInstanceName`, and have permission
-  to create the Reporting Services databases.
+  specified in `InstanceName`.
 
 #### Parameters
 
-* **`[String]` InstanceName** _(Key)_: Name of the SQL Serverinstance to be
+* **`[String]` InstanceName** _(Key)_: Name of the SQL Server Instance to be
    configured.
 * **`[String]` Thumbprint** _(Required)_: Thumbprint of the certificate being
-   used for encryption. If Ensure is abset Certificate can be an empty string.
+   used for encryption. If parameter Ensure is set to 'Absent', then the
+   parameter Certificate can be set to an empty string.
 * **`[String]` ServiceAccount** _(Required)_: Name of the account running the
-   SQLSevice
-* **`[String]` Ensure** _(Write)_: If Encryption should be configured for the
-   instance.
-* **`[Boolean]` ForceEncryption** _(Write)_: If all coonnections to the SQL
+   SQL Server Service.
+* **`[String]` Ensure** _(Write)_: If Encryption should be Enabled (Present)
+  or Disabled (Absent). { Present | Absent }.
+* **`[Boolean]` ForceEncryption** _(Write)_: If all connections to the SQL
   instance should be encrypted. If this parameter is not assigned a value,
   the default is that all connections must be encrypted.
 
 #### Examples
 
-* [Default configuration](Examples/Resources/SqlEncryptedConnection/1-DefaultConfiguration.ps1)
+* [Default configuration](Examples/Resources/SqlEncryptedConnection/1-DefaultConfiguration.ps1).
+
+#### Known issues
+
+All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlEncryptedConnection).
 
 ### SqlRS
 

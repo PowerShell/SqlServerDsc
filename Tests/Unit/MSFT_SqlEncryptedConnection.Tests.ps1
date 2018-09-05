@@ -122,7 +122,7 @@ try
                             Ensure = 'Present'
                         }
                     }
-                    Mock -CommandName Get-CertificatePermission -MockWith { return $true}
+                    Mock -CommandName Test-CertificatePermission -MockWith { return $true}
 
                     It 'Should configure only ForceEncryption and Certificate values' {
                         { Set-TargetResource @defaultParameters } | Should -Not -Throw
@@ -145,7 +145,7 @@ try
                             Ensure = 'Present'
                         }
                     }
-                    Mock -CommandName Get-CertificatePermission -MockWith { return $false}
+                    Mock -CommandName Test-CertificatePermission -MockWith { return $false}
                     It 'Should configure only certificate permissions' {
                         { Set-TargetResource @defaultParameters } | Should -Not -Throw
 
@@ -167,7 +167,7 @@ try
                             Ensure = 'Present'
                         }
                     }
-                    Mock -CommandName Get-CertificatePermission -MockWith { return $false}
+                    Mock -CommandName Test-CertificatePermission -MockWith { return $false}
 
                     It 'Should configure Encryption settings and certificate permissions' {
                         { Set-TargetResource @defaultParameters } | Should -Not -Throw
@@ -190,7 +190,7 @@ try
                             Ensure = 'Absent'
                         }
                     }
-                    Mock -CommandName Get-CertificatePermission -MockWith { return $false}
+                    Mock -CommandName Test-CertificatePermission -MockWith { return $false}
 
                     It 'Should configure Encryption settings setting certificate to empty string' {
                         { Set-TargetResource @defaultAbsentParameters } | Should -Not -Throw
@@ -219,7 +219,7 @@ try
                             }
                         } -Verifiable
 
-                        Mock -CommandName Get-CertificatePermission -MockWith { return $true }
+                        Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                         $testParameters = @{
                             InstanceName         = $mockNamedInstanceName
@@ -248,7 +248,7 @@ try
                             }
                         } -Verifiable
 
-                        Mock -CommandName Get-CertificatePermission -MockWith { return $true }
+                        Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                         $testParameters = @{
                             InstanceName         = $mockNamedInstanceName
@@ -277,7 +277,7 @@ try
                             }
                         } -Verifiable
 
-                        Mock -CommandName Get-CertificatePermission -MockWith { return $false }
+                        Mock -CommandName Test-CertificatePermission -MockWith { return $false }
 
                         $testParameters = @{
                             InstanceName         = $mockNamedInstanceName
@@ -306,7 +306,7 @@ try
                             }
                         } -Verifiable
 
-                        Mock -CommandName Get-CertificatePermission -MockWith { return $false }
+                        Mock -CommandName Test-CertificatePermission -MockWith { return $false }
 
                         $testParameters = @{
                             InstanceName         = $mockNamedInstanceName
@@ -336,7 +336,7 @@ try
                         }
                     } -Verifiable
 
-                    Mock -CommandName Get-CertificatePermission -MockWith { return $true }
+                    Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                     $testParameters = @{
                         InstanceName         = $mockNamedInstanceName
