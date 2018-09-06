@@ -238,13 +238,21 @@ function Get-EncryptedConnectionSettings
         $InstanceName
     )
 
-    $sqlInstanceId = (Get-Item 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL').GetValue($instanceName)
-    $superSocketNetLib = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstanceId\MSSQLServer\SuperSocketNetLib"
+    $sqlInstance = Get-Item 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+    if($sqlInstance)
+    {
+        $sqlInstanceId = $sqlInstance.GetValue($InstanceName)
+        $superSocketNetLib = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstanceId\MSSQLServer\SuperSocketNetLib"
 
-    return @{
-        ForceEncryption = $superSocketNetLib.GetValue('ForceEncryption')
-        Certificate     = $superSocketNetLib.GetValue('Certificate')
+        if($superSocketNetLib)
+        {
+            return @{
+                ForceEncryption = $superSocketNetLib.GetValue('ForceEncryption')
+                Certificate     = $superSocketNetLib.GetValue('Certificate')
+            }
+        }
     }
+    return $null
 }
 
 <#
@@ -279,11 +287,18 @@ function Set-EncryptedConnectionSettings
         $ForceEncryption
     )
 
-    $sqlInstanceId = (Get-Item 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL').GetValue($InstanceName)
-    $superSocketNetLib = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstanceId\MSSQLServer\SuperSocketNetLib"
+    $sqlInstance = Get-Item 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+    if($sqlInstance)
+    {
+        $sqlInstanceId = $sqlInstance.GetValue($InstanceName)
+        $superSocketNetLib = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstanceId\MSSQLServer\SuperSocketNetLib"
 
-    $superSocketNetLib.SetValue('Certificate', $ThumbPrint)
-    $superSocketNetLib.SetValue('ForceEncryption', [int]$ForceEncryption)
+        if($superSocketNetLib)
+        {
+            $superSocketNetLib.SetValue('Certificate', $ThumbPrint)
+            $superSocketNetLib.SetValue('ForceEncryption', [int]$ForceEncryption)
+        }
+    }
 }
 
 <#
@@ -367,7 +382,8 @@ function Test-CertificatePermission
         $ServiceAccount
     )
 
-    $cert = Get-ChildItem -Path cert:\LocalMachine\My | Where-Object -FilterScript { $PSItem.ThumbPrint -eq $ThumbPrint }
+    $cert = Get-ChildItem -Path cert:\LocalMachine\My
+    $cert = $cert | Where-Object -FilterScript { $PSItem.ThumbPrint -eq $ThumbPrint }
 
     # Specify the user, the permissions and the permission type
     $permission = "$($ServiceAccount)", "Read", "Allow"

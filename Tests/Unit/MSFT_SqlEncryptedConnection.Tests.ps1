@@ -20,6 +20,58 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
+class MockedSubClass
+{
+    [hashtable]$Access = @{
+        IdentityReference = "Everyone"
+        FileSystemRights = @{
+            value__ = '131209'
+        }
+    }    
+
+    [void] AddAccessRule([System.Security.AccessControl.FileSystemAccessRule] $object)
+    {
+
+    }
+}
+
+class MockedItem
+{
+    [string] $ThumbPrint = '12345678'
+    [hashtable]$PrivateKey = @{
+        CspKeyContainerInfo = @{
+            UniqueKeyContainerName = "key"
+        }
+    }
+
+    [MockedSubClass] GetAccessControl()
+    {
+        return [MockedSubClass]::new()
+    }
+
+    [string] GetValue([string] $key)
+    {
+        if($key -eq "ForceEncryption")
+        {
+            return '1'
+        }
+        elseif($key -eq "Certificate")
+        {
+            return '12345678'
+        }
+        elseif($key -eq "NamedInstance")
+        {
+            return 'NamedInstance'
+        }
+        return "-1"
+    }
+
+    [void] SetValue([string] $key, [string] $value)
+    {
+
+    }
+}
+
 function Invoke-TestSetup
 {
     Import-Module -Name (Join-Path -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests') -ChildPath 'Unit') -ChildPath 'Stubs') -ChildPath 'SQLPSStub.psm1') -Global -Force
@@ -350,6 +402,131 @@ try
                 It 'Should return state as in desired state' {
                     $resultTestTargetResource = Test-TargetResource @testParameters
                     $resultTestTargetResource | Should -Be $true
+                }
+            }
+        }
+
+        Describe "SqlRS\Get-EncryptedConnectionSettings" -Tag 'Helper' {
+            Context 'When calling a method that execute successfully' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return [MockedItem]::new()
+                    }
+                }
+
+                It 'Should return hashtable with ForceEncryption and Certificate' {
+                   $result = Get-EncryptedConnectionSettings -InstanceName 'NamedInstance'
+                   $result.Certificate | Should -Be '12345678'
+                   $result.ForceEncryption | Should -Be 1
+                }
+            }
+
+            Context 'When calling a method that executes unsuccesfuly' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return $null
+                    }
+                }
+
+                It 'Should return null' {
+                   $result = Get-EncryptedConnectionSettings -InstanceName 'NamedInstance'
+                   $result | Should -BeNullOrEmpty
+                }
+            }
+        }
+
+        Describe "SqlRS\Set-EncryptedConnectionSettings" -Tag 'Helper' {
+            Context 'When calling a method that execute successfully' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return [MockedItem]::new()
+                    }
+                }
+
+                It 'Should not throw' {
+                   { Set-EncryptedConnectionSettings -InstanceName 'NamedInstance' -Certificate '12345678' -ForceEncryption $true } | Should -Not -Throw
+                }
+            }
+
+            Context 'When calling a method that executes unsuccesfuly' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return $null
+                    }
+                }
+
+                It 'Should not throw' {
+                   { Set-EncryptedConnectionSettings -InstanceName 'NamedInstance' -Certificate '12345678' -ForceEncryption $true } | Should -Not -Throw
+                }
+            }
+        }
+
+        Describe "SqlRS\Test-CertificatePermission" -Tag 'Helper' {
+            Context 'When calling a method that execute successfully' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return [MockedItem]::new()
+                    }
+
+                    Mock -CommandName "Get-ChildItem" -MockWith {
+                        return [MockedItem]::new()
+                    }
+                }
+
+                It 'Should return True' {
+                    $result = Test-CertificatePermission -ThumbPrint '12345678' -ServiceAccount 'Everyone'
+                    $result | Should -be $true
+                }
+            }
+
+            Context 'When calling a method that executes unsuccesfuly' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return $null
+                    }
+                    Mock -CommandName "Get-ChildItem" -MockWith {
+                        return $null
+                    }
+                }
+
+                It 'Should return False' {
+                   $result = Test-CertificatePermission -ThumbPrint '12345678' -ServiceAccount 'Everyone'
+                    $result | Should -be $false
+                }
+            }
+        }
+
+        Describe "SqlRS\Set-CertificatePermission" -Tag 'Helper' {
+            Context 'When calling a method that execute successfully' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return [MockedItem]::new()
+                    }
+
+                    Mock -CommandName "Get-ChildItem" -MockWith {
+                        return [MockedItem]::new()
+                    }
+
+                    Mock -CommandName "Set-Acl" -MockWith {}
+                }
+
+                It 'Should not throw' {
+                    { Set-CertificatePermission -ThumbPrint '12345678' -ServiceAccount 'Everyone' } | Should -Not -Throw
+                }
+            }
+
+            Context 'When calling a method that executes unsuccesfuly' {
+                BeforeAll {
+                    Mock -CommandName "Get-Item" -MockWith {
+                        return $null
+                    }
+                    Mock -CommandName "Get-ChildItem" -MockWith {
+                        return $null
+                    }
+                }
+
+                It 'Should throw' {
+                   { Set-CertificatePermission -ThumbPrint '12345678' -ServiceAccount 'Everyone' } | Should -Throw
                 }
             }
         }
