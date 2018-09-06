@@ -2,10 +2,10 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlEncryptedConnection")]
 class MSFT_SqlEncryptedConnection : OMI_BaseResource
 {
-    [Key, Description("Name of the SQL Server Instance to be configured.")] String InstanceName;
+    [Key, Description("Name of the SQL Server instance to be configured.")] String InstanceName;
     [Required, Description("Thumbprint of the certificate being used for encryption. If parameter Ensure is set to 'Absent', then the parameter Certificate can be set to an empty string.")] String Thumbprint;
     [Write, Description("If all connections to the SQL instance should be encrypted.")] boolean ForceEncryption;
-    [Required, Description("Name of the account running the SQL Server Service.")] String ServiceAccount;
+    [Required, Description("Name of the account running the SQL Server service.")] String ServiceAccount;
     [Write, Description("If Encryption should be Enabled (Present) or Disabled (Absent)."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
 };
 

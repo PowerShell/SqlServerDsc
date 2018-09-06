@@ -36,22 +36,22 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:DSCResourceName {
-        $mockNamedInstanceName = 'INSTANCE'
+        $mockNamedInstanceName   = 'INSTANCE'
         $mockDefaultInstanceName = 'MSSQLSERVER'
-        $mockThumbprint = '123456789'
-        $mockServiceAccount = 'SqlSvc'
+        $mockThumbprint          = '123456789'
+        $mockServiceAccount      = 'SqlSvc'
 
 
         Describe "SqlEncryptedConnection\Get-TargetResource" -Tag 'Get' {
             BeforeAll {
                 $mockDynamic_SqlBuildVersion = '13.0.4001.0'
 
-                $defaultParameters = @{
-                    InstanceName         = $mockNamedInstanceName
-                    Thumbprint   = $mockThumbprint
-                    ServiceAccount = $mockServiceAccount
+                $defaultParameters  = @{
+                    InstanceName    = $mockNamedInstanceName
+                    Thumbprint      = $mockThumbprint
+                    ServiceAccount  = $mockServiceAccount
                     ForceEncryption = $true
-                    Ensure = 'Present'
+                    Ensure          = 'Present'
                 }
             }
 
@@ -90,19 +90,19 @@ try
         Describe "SqlEncryptedConnection\Set-TargetResource" -Tag 'Set' {
             BeforeAll {
                 $defaultParameters = @{
-                    InstanceName         = $mockNamedInstanceName
-                    Thumbprint   = $mockThumbprint
-                    ServiceAccount = $mockServiceAccount
+                    InstanceName    = $mockNamedInstanceName
+                    Thumbprint      = $mockThumbprint
+                    ServiceAccount  = $mockServiceAccount
                     ForceEncryption = $true
-                    Ensure = 'Present'
+                    Ensure          = 'Present'
                 }
 
                 $defaultAbsentParameters = @{
-                    InstanceName         = $mockNamedInstanceName
-                    Thumbprint   = $mockThumbprint
-                    ServiceAccount = $mockServiceAccount
+                    InstanceName    = $mockNamedInstanceName
+                    Thumbprint      = $mockThumbprint
+                    ServiceAccount  = $mockServiceAccount
                     ForceEncryption = $true
-                    Ensure = 'Absent'
+                    Ensure          = 'Absent'
                 }
 
                 Mock -CommandName Set-EncryptedConnectionSettings -Verifiable
@@ -115,11 +115,11 @@ try
                 Context 'When only certificate permissions arent set' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            InstanceName = $mockNamedInstanceName
-                            Thumbprint   = '987654321'
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = '987654321'
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $false
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
                     Mock -CommandName Test-CertificatePermission -MockWith { return $true}
@@ -138,11 +138,11 @@ try
                 Context 'When there is no certificate permissions set' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            InstanceName = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
                     Mock -CommandName Test-CertificatePermission -MockWith { return $false}
@@ -160,11 +160,11 @@ try
                 Context 'When no settings are configured' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            InstanceName = $mockNamedInstanceName
-                            Thumbprint   = '987654321'
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = '987654321'
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $false
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
                     Mock -CommandName Test-CertificatePermission -MockWith { return $false}
@@ -183,11 +183,11 @@ try
                 Context 'When ensure is absent' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            InstanceName = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Absent'
+                            Ensure          = 'Absent'
                         }
                     }
                     Mock -CommandName Test-CertificatePermission -MockWith { return $false}
@@ -211,22 +211,22 @@ try
                     BeforeAll {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
-                                InstanceName         = $mockNamedInstanceName
-                                Thumbprint   = $mockThumbprint
-                                ServiceAccount = $mockServiceAccount
+                                InstanceName    = $mockNamedInstanceName
+                                Thumbprint      = $mockThumbprint
+                                ServiceAccount  = $mockServiceAccount
                                 ForceEncryption = $false
-                                Ensure = 'Present'
+                                Ensure          = 'Present'
                             }
                         } -Verifiable
 
                         Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                         $testParameters = @{
-                            InstanceName         = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
 
@@ -240,22 +240,22 @@ try
                     BeforeAll {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
-                                InstanceName         = $mockNamedInstanceName
-                                Thumbprint   = '987654321'
-                                ServiceAccount = $mockServiceAccount
+                                InstanceName    = $mockNamedInstanceName
+                                Thumbprint      = '987654321'
+                                ServiceAccount  = $mockServiceAccount
                                 ForceEncryption = $true
-                                Ensure = 'Present'
+                                Ensure          = 'Present'
                             }
                         } -Verifiable
 
                         Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                         $testParameters = @{
-                            InstanceName         = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
 
@@ -269,22 +269,22 @@ try
                     BeforeAll {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
-                                InstanceName         = $mockNamedInstanceName
-                                Thumbprint   = $mockThumbprint
-                                ServiceAccount = $mockServiceAccount
+                                InstanceName    = $mockNamedInstanceName
+                                Thumbprint      = $mockThumbprint
+                                ServiceAccount  = $mockServiceAccount
                                 ForceEncryption = $true
-                                Ensure = 'Present'
+                                Ensure          = 'Present'
                             }
                         } -Verifiable
 
                         Mock -CommandName Test-CertificatePermission -MockWith { return $false }
 
                         $testParameters = @{
-                            InstanceName         = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     }
 
@@ -298,22 +298,22 @@ try
                     BeforeAll {
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
-                                InstanceName         = $mockNamedInstanceName
-                                Thumbprint   = $mockThumbprint
-                                ServiceAccount = $mockServiceAccount
+                                InstanceName    = $mockNamedInstanceName
+                                Thumbprint      = $mockThumbprint
+                                ServiceAccount  = $mockServiceAccount
                                 ForceEncryption = $true
-                                Ensure = 'Absent'
+                                Ensure          = 'Absent'
                             }
                         } -Verifiable
 
                         Mock -CommandName Test-CertificatePermission -MockWith { return $false }
 
                         $testParameters = @{
-                            InstanceName         = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Absent'
+                            Ensure          = 'Absent'
                         }
                     }
 
@@ -328,22 +328,22 @@ try
                 BeforeAll {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            InstanceName         = $mockNamedInstanceName
-                            Thumbprint   = $mockThumbprint
-                            ServiceAccount = $mockServiceAccount
+                            InstanceName    = $mockNamedInstanceName
+                            Thumbprint      = $mockThumbprint
+                            ServiceAccount  = $mockServiceAccount
                             ForceEncryption = $true
-                            Ensure = 'Present'
+                            Ensure          = 'Present'
                         }
                     } -Verifiable
 
                     Mock -CommandName Test-CertificatePermission -MockWith { return $true }
 
                     $testParameters = @{
-                        InstanceName         = $mockNamedInstanceName
-                        Thumbprint   = $mockThumbprint
-                        ServiceAccount = $mockServiceAccount
+                        InstanceName    = $mockNamedInstanceName
+                        Thumbprint      = $mockThumbprint
+                        ServiceAccount  = $mockServiceAccount
                         ForceEncryption = $true
-                        Ensure = 'Present'
+                        Ensure          = 'Present'
                     }
                 }
 

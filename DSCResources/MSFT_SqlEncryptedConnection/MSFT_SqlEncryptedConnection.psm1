@@ -6,7 +6,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
         Gets the SQL Server Encryption status.
 
     .PARAMETER InstanceName
-        Name of the SQL Server Instance to be configured.
+        Name of the SQL Server instance to be configured.
 
     .PARAMETER Thumbprint
         Thumbprint of the certificate being used for encryption. If parameter Ensure is set to 'Absent', then the parameter Certificate can be set to an empty string.
@@ -18,7 +18,7 @@ Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Pare
         If Encryption should be Enabled (Present) or Disabled (Absent).
 
     .PARAMETER ServiceAccount
-        Name of the account running the SQL Server Service.
+        Name of the account running the SQL Server service.
 #>
 function Get-TargetResource
 {
@@ -64,7 +64,7 @@ function Get-TargetResource
         Enables SQL Server Encryption Connection.
 
     .PARAMETER InstanceName
-        Name of the SQL Server Instance to be configured.
+        Name of the SQL Server instance to be configured.
 
     .PARAMETER Thumbprint
         Thumbprint of the certificate being used for encryption. If parameter Ensure is set to 'Absent', then the parameter Certificate can be set to an empty string.
@@ -76,7 +76,7 @@ function Get-TargetResource
         If Encryption should be Enabled (Present) or Disabled (Absent).
 
     .PARAMETER ServiceAccount
-        Name of the account running the SQL Server Service.
+        Name of the account running the SQL Server service.
 #>
 function Set-TargetResource
 {
@@ -143,19 +143,19 @@ function Set-TargetResource
         Tests the SQL Server Encryption configuration.
 
     .PARAMETER InstanceName
-        Name of the SQL Server Instance to be configured.
+        Name of the SQL Server instance to be configured.
 
     .PARAMETER Thumbprint
         Thumbprint of the certificate being used for encryption. If parameter Ensure is set to 'Absent', then the parameter Certificate can be set to an empty string.
 
     .PARAMETER ForceEncryption
-        If all connections to the SQL instance should be encrypted. If this parameter is not assigned a value, the default is that all connections must be encrypted.
+        If all connections to the SQL instance should be encrypted. If this parameter is not assigned a value, the default is, set to true, that all connections must be encrypted.
 
     .PARAMETER Ensure
         If Encryption should be Enabled (Present) or Disabled (Absent).
 
     .PARAMETER ServiceAccount
-        Name of the account running the SQL Server Service.
+        Name of the account running the SQL Server service.
 #>
 function Test-TargetResource
 {
@@ -229,6 +229,8 @@ function Test-TargetResource
 #>
 function Get-EncryptedConnectionSettings
 {
+    [CmdletBinding()]
+    [OutputType([Hashtable])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -260,6 +262,7 @@ function Get-EncryptedConnectionSettings
 #>
 function Set-EncryptedConnectionSettings
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -295,6 +298,7 @@ function Set-EncryptedConnectionSettings
 #>
 function Set-CertificatePermission
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -348,6 +352,8 @@ function Set-CertificatePermission
 #>
 function Test-CertificatePermission
 {
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]

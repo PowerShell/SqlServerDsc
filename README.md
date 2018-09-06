@@ -722,18 +722,18 @@ Read more about encrypted connections in this article [Enable Encrypted Connecti
 
 #### Parameters
 
-* **`[String]` InstanceName** _(Key)_: Name of the SQL Server Instance to be
+* **`[String]` InstanceName** _(Key)_: Name of the SQL Server instance to be
    configured.
 * **`[String]` Thumbprint** _(Required)_: Thumbprint of the certificate being
    used for encryption. If parameter Ensure is set to 'Absent', then the
    parameter Certificate can be set to an empty string.
 * **`[String]` ServiceAccount** _(Required)_: Name of the account running the
-   SQL Server Service.
+   SQL Server service.
 * **`[String]` Ensure** _(Write)_: If Encryption should be Enabled (Present)
-  or Disabled (Absent). { Present | Absent }.
+  or Disabled (Absent). { *Present* | Absent }. Defaults to Present.
 * **`[Boolean]` ForceEncryption** _(Write)_: If all connections to the SQL
   instance should be encrypted. If this parameter is not assigned a value,
-  the default is that all connections must be encrypted.
+  the default is, set to *True*, that all connections must be encrypted.
 
 #### Examples
 
