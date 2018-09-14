@@ -29,14 +29,17 @@ function Connect-SQL
     [CmdletBinding()]
     param
     (
+        [Parameter()]
         [ValidateNotNull()]
         [System.String]
         $SQLServer = $env:COMPUTERNAME,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.String]
         $SQLInstanceName = 'MSSQLSERVER',
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         $SetupCredential,
@@ -64,6 +67,11 @@ function Connect-SQL
 
         if ($LoginType -eq 'SqlLogin')
         {
+            Write-Verbose -Message (
+                'Connecting using the credential ''{0}'' and the login type ''{1}''.' `
+                    -f $SetupCredential.Username, $LoginType
+            ) -Verbose
+
             $sql.ConnectionContext.LoginSecure = $false
             $sql.ConnectionContext.Login = $SetupCredential.Username
             $sql.ConnectionContext.SecurePassword = $SetupCredential.Password
@@ -71,6 +79,11 @@ function Connect-SQL
 
         if ($LoginType -eq 'WindowsUser')
         {
+            Write-Verbose -Message (
+                'Connecting using the credential ''{0}'' and the login type ''{1}''.' `
+                    -f $SetupCredential.GetNetworkCredential().UserName, $LoginType
+            ) -Verbose
+
             $sql.ConnectionContext.ConnectAsUser = $true
             $sql.ConnectionContext.ConnectAsUserPassword = $SetupCredential.GetNetworkCredential().Password
             $sql.ConnectionContext.ConnectAsUserName = $SetupCredential.GetNetworkCredential().UserName
@@ -252,19 +265,19 @@ function New-TerminatingError
         [System.String]
         $ErrorType,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.String[]]
         $FormatArgs,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.Management.Automation.ErrorCategory]
         $ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.Object]
         $TargetObject = $null,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.Exception]
         $InnerException = $null
     )
@@ -645,7 +658,7 @@ function Import-SQLPSModule
         if ($availableModule)
         {
             # This sets $availableModuleName to the Path of the module to be loaded.
-            $availableModuleName = $availableModule.Path
+            $availableModuleName = Split-Path -Path $availableModule.Path -Parent
         }
     }
 
@@ -660,9 +673,19 @@ function Import-SQLPSModule
                 SQLPS has unapproved verbs, disable checking to ignore Warnings.
                 Suppressing verbose so all cmdlet is not listed.
             #>
-            Import-Module -Name $availableModuleName -DisableNameChecking -Verbose:$False -Force:$Force -ErrorAction Stop
+            $importedModule = Import-Module -Name $availableModuleName -DisableNameChecking -Verbose:$False -Force:$Force -PassThru -ErrorAction Stop
 
-            Write-Verbose -Message ($script:localizedData.ImportedPowerShellModule -f $availableModule.Name, $availableModule.Version, $availableModule.Path) -Verbose
+            <#
+                SQLPS returns two entries, one with module type 'Script' and another with module type 'Manifest'.
+                Only return the object with module type 'Manifest'.
+                SqlServer only returns one object (of module type 'Script'), so no need to do anything for SqlServer module.
+            #>
+            if ($availableModuleName -ne 'SqlServer')
+            {
+                $importedModule = $importedModule | Where-Object -Property 'ModuleType' -EQ -Value 'Manifest'
+            }
+
+            Write-Verbose -Message ($script:localizedData.ImportedPowerShellModule -f $importedModule.Name, $importedModule.Version, $importedModule.Path) -Verbose
         }
         catch
         {

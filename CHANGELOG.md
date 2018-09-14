@@ -8,6 +8,18 @@
   - Opt-in for common test "Common Tests - Validate Markdown Links".
   - Updated broken links in `\README.md` and in `\Examples\README.md`
   - Opt-in for common test 'Common Tests - Relative Path Length'.
+- Changes to SqlServerDscHelper
+  - Fix style guideline lint errors.
+  - Changes to Connect-SQL
+    - Adding verbose message in Connect-SQL so it
+      now shows the username that is connecting.
+  - Changes to Import-SQLPS
+    - Fixed so that when importing SQLPS it imports
+      using the path (and not the .psd1 file).
+    - Fixed so that the verbose message correctly
+      shows the name, version and path when importing
+      the module SQLPS (it did show correctly for the
+      SqlServer module).
 - Changes to SqlAg, SqlAGDatabase, and SqlAGReplica examples
   - Included configuration for SqlAlwaysOnService to enable
     HADR on each node to avoid confusion
