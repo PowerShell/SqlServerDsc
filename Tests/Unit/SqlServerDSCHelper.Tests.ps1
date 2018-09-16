@@ -748,7 +748,7 @@ InModuleScope $script:moduleName {
                     }
             }
 
-            'C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\SQLPS'
+            $sqlPsExpectedModulePath
             {
                 # Can not use $Name because that contain the path to the module manifest.
                 $importModuleResult = @(
@@ -793,6 +793,7 @@ InModuleScope $script:moduleName {
         return @(
             New-Object -TypeName PSObject -Property @{
                 Name = 'SQLPS'
+                # This is a path to an older version of SQL PS than $sqlPsLatestModulePath.
                 Path = 'C:\Program Files (x86)\Microsoft SQL Server\120\Tools\PowerShell\Modules\SQLPS\Sqlps.ps1'
             }
 
