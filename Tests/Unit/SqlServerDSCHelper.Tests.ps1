@@ -718,11 +718,59 @@ InModuleScope $script:moduleName {
         }
     }
 
+    <#
+        This is the path to the latest version of SQLPS, to test that only the
+        newest SQLPS module is returned.
+    #>
+    $sqlPsLatestModulePath = 'C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\SQLPS\Sqlps.ps1'
+
+    <#
+        For SQLPS module this should be the root of the module.
+        The .psd1 file is parsed from the module full path in the code.
+    #>
+    $sqlPsExpectedModulePath = Split-Path -Path $sqlPsLatestModulePath -Parent
+
+
     $mockImportModule = {
         if ($Name -ne $mockExpectedModuleNameToImport)
         {
             throw ('Wrong module was loaded. Expected {0}, but was {1}.' -f $mockExpectedModuleNameToImport, $Name[0])
         }
+
+        switch ($Name)
+        {
+            'SqlServer'
+            {
+                $importModuleResult = @{
+                        ModuleType = 'Script'
+                        Version = '21.0.17279'
+                        Name = $Name
+                    }
+            }
+
+            'C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\SQLPS'
+            {
+                # Can not use $Name because that contain the path to the module manifest.
+                $importModuleResult = @(
+                    @{
+                        ModuleType = 'Script'
+                        Version = '0.0'
+                        # Intentionally formatted to correctly mimic a real run.
+                        Name = 'Sqlps'
+                        Path = $sqlPsLatestModulePath
+                    }
+                    @{
+                        ModuleType = 'Manifest'
+                        Version = '1.0'
+                        # Intentionally formatted to correctly mimic a real run.
+                        Name = 'sqlps'
+                        Path = $sqlPsLatestModulePath
+                    }
+                )
+            }
+        }
+
+        return $importModuleResult
     }
 
     $mockGetModuleSqlServer = {
@@ -739,8 +787,6 @@ InModuleScope $script:moduleName {
             }
         )
     }
-
-    $sqlPsLatestModulePath = 'C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\SQLPS\Sqlps.ps1'
 
     $mockGetModuleSqlPs = {
         # Return an array to test so that the latest version is only imported.
@@ -833,7 +879,7 @@ InModuleScope $script:moduleName {
                     $PSBoundParameters.ContainsKey('Name') -eq $true
                 }
 
-                $mockExpectedModuleNameToImport = $sqlPsLatestModulePath
+                $mockExpectedModuleNameToImport = $sqlPsExpectedModulePath
             }
 
             It 'Should import the SqlServer module without throwing' {
@@ -854,7 +900,7 @@ InModuleScope $script:moduleName {
         }
 
         Context 'When neither SqlServer or SQLPS exists' {
-            $mockExpectedModuleNameToImport = $sqlPsLatestModulePath
+            $mockExpectedModuleNameToImport = $sqlPsExpectedModulePath
 
             It 'Should throw the correct error message' {
                 Mock -CommandName Get-Module
