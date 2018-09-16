@@ -673,7 +673,7 @@ function Import-SQLPSModule
                 SQLPS has unapproved verbs, disable checking to ignore Warnings.
                 Suppressing verbose so all cmdlet is not listed.
             #>
-            $importedModule = Import-Module -Name $availableModuleName -DisableNameChecking -Verbose:$False -Force:$Force -PassThru -ErrorAction Stop
+            $importedModule = Import-Module -Name $availableModuleName -DisableNameChecking -Verbose:$false -Force:$Force -PassThru -ErrorAction Stop
 
             <#
                 SQLPS returns two entries, one with module type 'Script' and another with module type 'Manifest'.
