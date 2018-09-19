@@ -67,10 +67,7 @@ function Connect-SQL
 
         if ($LoginType -eq 'SqlLogin')
         {
-            Write-Verbose -Message (
-                'Connecting using the credential ''{0}'' and the login type ''{1}''.' `
-                    -f $SetupCredential.Username, $LoginType
-            ) -Verbose
+            $connectUsername = $SetupCredential.Username
 
             $sql.ConnectionContext.LoginSecure = $false
             $sql.ConnectionContext.Login = $SetupCredential.Username
@@ -79,15 +76,17 @@ function Connect-SQL
 
         if ($LoginType -eq 'WindowsUser')
         {
-            Write-Verbose -Message (
-                'Connecting using the credential ''{0}'' and the login type ''{1}''.' `
-                    -f $SetupCredential.GetNetworkCredential().UserName, $LoginType
-            ) -Verbose
+            $connectUsername = $SetupCredential.GetNetworkCredential().UserName
 
             $sql.ConnectionContext.ConnectAsUser = $true
             $sql.ConnectionContext.ConnectAsUserPassword = $SetupCredential.GetNetworkCredential().Password
             $sql.ConnectionContext.ConnectAsUserName = $SetupCredential.GetNetworkCredential().UserName
         }
+
+        Write-Verbose -Message (
+            'Connecting using the credential ''{0}'' and the login type ''{1}''.' `
+                -f $connectUsername, $LoginType
+        ) -Verbose
 
         $sql.ConnectionContext.ServerInstance = $databaseEngineInstance
         $sql.ConnectionContext.Connect()
