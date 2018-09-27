@@ -166,7 +166,7 @@ Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
 
 Configuration MSFT_SqlAlwaysOnService_CleanupDependencies_Config
 {
-    Import-DscResource -ModuleName 'Networking'
+    Import-DscResource -ModuleName 'NetworkingDsc'
 
     node localhost
     {
