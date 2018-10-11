@@ -381,7 +381,7 @@ function Test-TargetResource
         $testPassed = $false
     }
 
-    if ( $Ensure -eq 'Present' -and $($loginInfo.Ensure) -ne 'Absent' )
+    if ( $Ensure -eq 'Present' -and $($loginInfo.Ensure) -eq 'Present' )
     {
         if ( $LoginType -ne $loginInfo.LoginType )
         {
