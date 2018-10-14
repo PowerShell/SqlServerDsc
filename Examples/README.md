@@ -69,15 +69,15 @@ Preferably the CNO should be added to an Active Directory security group and tha
 group has the permission to create computer objects inside the OU. This way, more
 than one CNO computer object can use the same OU.
 
-There are currently no examples in xActiveDirectory to link to, so here are some
-examples how this can be done.
-
 Please note that the prestaged CNO computer object must be disabled before creating
 the failover cluster, and that the security group must be given the permission
 **Create Computer Objects** on the OU where the CNO computer object was created.
 Also the user creating the failover cluster must have the permission **Full Control**
 on the CNO computer object.
-***There are currently no resources to do either of this.***
+
+The [xADObjectPermissionEntry examples](https://github.com/PowerShell/xActiveDirectory/tree/dev/Examples/Resources/xADObjectPermissionEntry)
+at the resource module [xActiveDirectory](https://github.com/PowerShell/xActiveDirectory)
+can be used to set the correct permissions.
 
 ```powershell
 <#
@@ -191,13 +191,13 @@ Availability Group.
 #### Enable AlwaysOn on both primary and secondary replica
 
 AlwaysOn must be enabled on both the primary and secondary replica, and the example
-[Enable AlwaysOn](vhttps://github.com/PowerShell/SqlServerDsc/blob/dev/Examples/Resources/SqlAlwaysOnService/1-EnableAlwaysOn.ps1)
+[Enable AlwaysOn](https://github.com/PowerShell/SqlServerDsc/blob/dev/Examples/Resources/SqlAlwaysOnService/1-EnableAlwaysOn.ps1)
 shows how to enable it (which requires that a working Failover Cluster is
 present on the node).
 
 #### Configure SQL Server AlwaysOn Availability Group
 
-Once AlwaysOn is enabled we can create the Availabilty Group. The example [Create Availability Group](https://github.com/PowerShell/SqlServerDsc/blob/dev/Examples/Resources/SqlAGReplica/1-CreateAvailabilityGroupReplica.ps1)
+Once AlwaysOn is enabled we can create the Availability Group. The example [Create Availability Group](https://github.com/PowerShell/SqlServerDsc/blob/dev/Examples/Resources/SqlAGReplica/1-CreateAvailabilityGroupReplica.ps1)
 shows how to create the Availability Group on the primary replica and join the
 Availability Group on the secondary replica.
 
