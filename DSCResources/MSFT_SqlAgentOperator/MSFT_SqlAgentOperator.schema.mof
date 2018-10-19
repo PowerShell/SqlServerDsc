@@ -1,0 +1,9 @@
+[ClassVersion("1.0.0.0"), FriendlyName("SqlAgentOperator")]
+class MSFT_SqlAgentOperator : OMI_BaseResource
+{
+    [Key, Description("The name of the SQL Agent Operator.")] String Name;
+    [Write, Description("An enumerated value that describes if the SQL Agent Operator is added (Present) or dropped (Absent). Valid values are 'Present' or 'Absent'. Default Value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Key, Description("The host name of the SQL Server to be configured.")] String ServerName;
+    [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
+    [Write, Description("The email address to be used for the SQL Agent Operator.")] String EmailAddress;
+};
