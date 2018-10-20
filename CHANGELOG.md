@@ -54,6 +54,8 @@
   - Fix unit tests that didn't mock some of the calls. It no longer fail
     when a SQL Server installation is not present on the node running the
     unit test ([issue #983](https://github.com/PowerShell/SqlServerDsc/issues/983)).
+- Changes to SqlServiceAccount
+  - Fixed Get-ServiceObject when searching for IntegrationServices service
 
 ## 12.0.0.0
 
