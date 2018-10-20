@@ -283,7 +283,7 @@ function Get-ServiceObject
 
     # Get the Service object for the specified instance/type
     $serviceObject = $managedComputer.Services | Where-Object -FilterScript {
-        $_.Name -eq $serviceNameFilter
+        $_.Name -like "$serviceNameFilter*"
     }
 
     return $serviceObject
