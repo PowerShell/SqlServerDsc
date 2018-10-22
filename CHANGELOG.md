@@ -56,6 +56,8 @@
     unit test ([issue #983](https://github.com/PowerShell/SqlServerDsc/issues/983)).
 - Changes to SqlServiceAccount
   - Fixed Get-ServiceObject when searching for IntegrationServices service
+- Changes to SqlServiceAccount
+  - Added code to allow for using Managed Service Accounts
 
 ## 12.0.0.0
 
