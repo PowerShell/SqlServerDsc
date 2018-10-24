@@ -57,7 +57,7 @@ function Get-TargetResource
     {
         Write-Verbose -Message 'Getting SQL Agent Operators'
         # Check operator exists
-        $sqlOperatorObject = $sqlServerObject.JobServer.Operators[$name]
+        $sqlOperatorObject = $($sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name})
         if ($sqlOperatorObject)
         {
             Write-Verbose -Message "SQL Agent Operator $Name is present"
@@ -68,6 +68,7 @@ function Get-TargetResource
         {
             Write-Verbose -Message "SQL Database name $Name is absent"
             $Ensure = 'Absent'
+            $SqlOperatorEmail = $EmailAddress
         }
     }
 
@@ -143,19 +144,21 @@ function Set-TargetResource
 
                 if ($sqlOperatorObject)
                 {
-                    try
-                    {
-                        Write-Verbose -Message "Updating SQL Agent Operator $Name with specified settings."
-                        $sqlOperatorObject.EmailAddress = $EmailAddress
-                        $sqlOperatorObject.Alter()
-                        New-VerboseMessage -Message "Updated SQL Agent Operator $Name."
-                    }
-                    catch
-                    {
-                        throw New-TerminatingError -ErrorType UpdateOperatorSetError `
-                            -FormatArgs @($ServerName, $InstanceName, $Name, $EmailAddress) `
-                            -ErrorCategory InvalidOperation `
-                            -InnerException $_.Exception
+                    if ($PSBoundParameters.ContainsKey('EmailAddress')) {
+                        try
+                        {
+                            Write-Verbose -Message "Updating SQL Agent Operator $Name with specified settings."
+                            $sqlOperatorObject.EmailAddress = $EmailAddress
+                            $sqlOperatorObject.Alter()
+                            New-VerboseMessage -Message "Updated SQL Agent Operator $Name."
+                        }
+                        catch
+                        {
+                            throw New-TerminatingError -ErrorType UpdateOperatorSetError `
+                                -FormatArgs @($ServerName, $InstanceName, $Name, $EmailAddress) `
+                                -ErrorCategory InvalidOperation `
+                                -InnerException $_.Exception
+                        }
                     }
                 }
                 else
@@ -163,11 +166,17 @@ function Set-TargetResource
                     try
                     {
                         $sqlOperatorObjectToCreate = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Agent.Operator -ArgumentList $sqlServerObject.JobServer, $Name
+
                         if ($sqlOperatorObjectToCreate)
                         {
+                            write-host "trying to create $name"
                             Write-Verbose -Message "Adding SQL Agent Operator $Name."
-                            $sqlOperatorObjectToCreate.Create()
+                            if ($PSBoundParameters.ContainsKey('EmailAddress')) {
+                                Write-Verbose -Message "Setting email address to $EmailAddress"
+                                $sqlOperatorObjectToCreate.EmailAddress = $EmailAddress
+                            }
                             New-VerboseMessage -Message "Created SQL Agent Operator $Name."
+                            $sqlOperatorObjectToCreate.Create()
                         }
                     }
                     catch
@@ -277,7 +286,7 @@ function Test-TargetResource
                 New-VerboseMessage -Message "Ensure is set to Present. The SQL Agent Operator $Name should be created"
                 $isOperatorInDesiredState = $false
             }
-            elseif ($getTargetResourceResult.EmailAddress -ne $EmailAddress)
+            elseif ($getTargetResourceResult.EmailAddress -ne $EmailAddress -and $PSBoundParameters.ContainsKey('EmailAddress'))
             {
                 New-VerboseMessage -Message "SQL Agent Operator $Name exists but has the wrong email address"
                 $isOperatorInDesiredState = $false
