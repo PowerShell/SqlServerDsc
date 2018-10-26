@@ -2250,41 +2250,22 @@ function Get-ServiceAccountParameters
         $ServiceType
     )
 
+    # Get the service account properties
+    $accountParameters = Get-ServiceAccount -ServiceAccount $ServiceAccount
     $parameters = @{}
 
-    switch -Regex ($ServiceAccount.UserName.ToUpper())
-    {
-        '^(?:NT ?AUTHORITY\\)?(SYSTEM|LOCALSERVICE|LOCAL SERVICE|NETWORKSERVICE|NETWORK SERVICE)$'
-        {
-            $parameters = @{
-                "$($ServiceType)SVCACCOUNT" = "NT AUTHORITY\$($Matches[1])"
-            }
-        }
-
-        '^(?:NT SERVICE\\)(.*)$'
-        {
-            $parameters = @{
-                "$($ServiceType)SVCACCOUNT" = "NT SERVICE\$($Matches[1])"
-            }
-        }
-
-        # Testing if account is a Managed Service Account, which ends with '$'.
-        '\$$'
-        {
-            $parameters = @{
-                "$($ServiceType)SVCACCOUNT" = $ServiceAccount.UserName
-            }
-        }
-
-        # Normal local or domain service account.
-        default
-        {
-            $parameters = @{
-                "$($ServiceType)SVCACCOUNT" = $ServiceAccount.UserName
-                "$($ServiceType)SVCPASSWORD" = $ServiceAccount.GetNetworkCredential().Password
-            }
-        }
+    # Assign the service type the account
+    $parameters = @{
+        "$($ServiceType)SVCACCOUNT" = $accountParameters.UserName
     }
+
+    # Check to see if password is null
+    if (![string]::IsNullOrEmpty($accountParameters.Password))
+    {
+        # Add the password to the hashtable
+        $parameters.Add("$($ServiceType)SVCPASSWORD", $accountParameters.Password)
+    }
+
 
     return $parameters
 }
