@@ -2042,7 +2042,6 @@ InModuleScope $script:moduleName {
                 $returnValue = Get-ServiceAccount -ServiceAccount $mockLocalSystemAccountCredential
                 
                 $returnValue.UserName | Should -Be $mockLocalSystemAccountUserName
-                $returnValue.Password | Should -Be ''
             }
 
             It 'Should return Domain Account and Password' {
@@ -2056,7 +2055,6 @@ InModuleScope $script:moduleName {
                 $returnValue = Get-ServiceAccount -ServiceAccount $mockManagedServiceAccountCredential
 
                 $returnValue.UserName | Should -Be $mockManagedServiceAccountUserName
-                $returnValue.Password | Should -Be ''
             }
         }
     }
