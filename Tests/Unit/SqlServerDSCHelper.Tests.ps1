@@ -144,10 +144,10 @@ InModuleScope $script:moduleName {
 
     $mockLocalSystemAccountUserName = 'NT AUTHORITY\LocalSystem'
     $mockLocalSystemAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalSystemAccountUserName, (New-Object System.Security.SecureString)
-    $mockDomainAccountUserName = 'CONTOSO\User1'
-    $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockManagedServiceAccountUserName = 'CONTOSO\msa$'
     $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (New-Object System.Security.SecureString)
+    $mockDomainAccountUserName = 'CONTOSO\User1'
+    $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
 
     Describe 'Testing Restart-SqlService' {
         Context 'Restart-SqlService standalone instance' {
