@@ -1527,7 +1527,8 @@ Manage the service account for SQL Server services.
 * **`[Boolean]` Force** (Write): Forces the service account to be updated.
   Useful for password changes. This will cause `Set-TargetResource` to be run on
   each consecutive run.
-* **`[String]` VersionNumber** (Write): The version number of the Sql Service, used for Integrationservices **ServiceType**.  Eg. 130 for SQL 2016.  
+* **`[String]` VersionNumber** (Write): The version number of the Sql Service, 
+  used for Integrationservices **ServiceType**.  Eg. 130 for SQL 2016.  
 
 #### Read-Only Properties from Get-TargetResource
 
