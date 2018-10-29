@@ -142,6 +142,13 @@ InModuleScope $script:moduleName {
     $mockSetupCredentialSecurePassword = ConvertTo-SecureString -String $mockSetupCredentialPassword -AsPlainText -Force
     $mockSetupCredential = New-Object -TypeName PSCredential -ArgumentList ($mockSetupCredentialUserName, $mockSetupCredentialSecurePassword)
 
+    $mockLocalSystemAccountUserName = 'NT AUTHORITY\LocalSystem'
+    $mockLocalSystemAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalSystemAccountUserName, (New-Object System.Security.SecureString)
+    $mockDomainAccountUserName = 'CONTOSO\User1'
+    $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
+    $mockManagedServiceAccountUserName = 'CONTOSO\msa$'
+    $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (New-Object System.Security.SecureString)
+
     Describe 'Testing Restart-SqlService' {
         Context 'Restart-SqlService standalone instance' {
             BeforeEach {
@@ -2025,6 +2032,31 @@ InModuleScope $script:moduleName {
 
             It 'Should throw the correct error from Query parameterset Invoke-Sqlcmd' {
                 { Invoke-SqlScript @invokeScriptQueryParameters } | Should Throw $errorMessage
+            }
+        }
+    }
+
+    Describe 'Testing Get-ServiceAccount'{
+        Context 'When getting service account' {
+            It 'Should return LocalSystem' {
+                $returnValue = Get-ServiceAccount -ServiceAccount $mockLocalSystemAccountCredential
+                
+                $returnValue.UserName | Should -Be $mockLocalSystemAccountUserName
+                $returnValue.Password | Should -Be $null
+            }
+
+            It 'Should return Domain Account and Password' {
+                $returnValue = Get-ServiceAccount -ServiceAccount $mockDomainAccountCredential
+
+                $returnValue.UserName | Should -Be $mockDomainAccountUserName
+                $returnValue.Password | Should -Be $mockDomainAccountCredential.GetNetworkCredential().Password
+            }
+
+            It 'Should return managed service account' {
+                $returnValue = Get-ServiceAccount -ServiceAccount $mockManagedServiceAccountCredential
+
+                $returnValue.UserName | Should -Be $mockManagedServiceAccountUserName
+                $returnValue.Password | Should -Be $null
             }
         }
     }
