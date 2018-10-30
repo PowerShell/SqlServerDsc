@@ -410,7 +410,7 @@ function Test-TargetResource
             }
 
             # If testPassed is still true and a login credential was specified, test the password
-            if ( $testPassed -and $LoginCredential )
+            if ( $testPassed -and $LoginCredential -and !$Disabled )
             {
                 $userCredential = [System.Management.Automation.PSCredential]::new($Name, $LoginCredential.Password)
 
