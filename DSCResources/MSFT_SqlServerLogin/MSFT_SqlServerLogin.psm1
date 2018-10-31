@@ -410,7 +410,7 @@ function Test-TargetResource
             }
 
             # If testPassed is still true and a login credential was specified, test the password
-            if ( $testPassed -and $LoginCredential -and !$Disabled )
+            if ( $testPassed -and $LoginCredential )
             {
                 $userCredential = [System.Management.Automation.PSCredential]::new($Name, $LoginCredential.Password)
 
@@ -420,8 +420,25 @@ function Test-TargetResource
                 }
                 catch
                 {
-                    New-VerboseMessage -Message "Password validation failed for the login '$Name'."
-                    $testPassed = $false
+                    # Check to see if the parameter of $Disabled is true
+                    if ($Disabled)
+                    {
+                        # The result of a valid password but account is disabled is an error with a specific error message
+                        if (!(Find-ExceptionByMessage -ExceptionToSearch $_.Exception -ErrorMessage "Login failed for user '$Name'. Reason: The account is disabled."))
+                        {
+                            # The password was not correct, password validation failed
+                            $testPassed = $false
+                        }
+                        else 
+                        {
+                            New-VerboseMessage -Message "Password valid, but '$Name' is disabled."
+                        }
+                    }
+                    else 
+                    {
+                        New-VerboseMessage -Message "Password validation failed for the login '$Name'."
+                        $testPassed = $false
+                    }
                 }
             }
         }

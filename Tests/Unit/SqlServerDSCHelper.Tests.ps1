@@ -148,6 +148,9 @@ InModuleScope $script:moduleName {
     $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (New-Object System.Security.SecureString)
     $mockDomainAccountUserName = 'CONTOSO\User1'
     $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
+    $mockInnerException = New-Object System.Excption "This is a mock inner excpetion object"
+    $mockException = New-Object System.Exception "This is a mock exception object", $mockInnerException
+    
 
     Describe 'Testing Restart-SqlService' {
         Context 'Restart-SqlService standalone instance' {
@@ -2055,6 +2058,22 @@ InModuleScope $script:moduleName {
                 $returnValue = Get-ServiceAccount -ServiceAccount $mockManagedServiceAccountCredential
 
                 $returnValue.UserName | Should -Be $mockManagedServiceAccountUserName
+            }
+        }
+    }
+
+    Describe 'Testing Find-ExceptionByMessage'{
+        Context 'When searching Exception objects'{
+            It 'Should return true for main exception' { 
+                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "This is a mock exception object" | Should -Be $true
+            }
+
+            It 'Should return true for inner exception' {
+                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "This is a mock inner excpetion object" | Should -Be $true
+            }
+
+            It 'Should return false when message not found' {
+                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "Will not find me" | Should -Be $false
             }
         }
     }

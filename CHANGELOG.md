@@ -62,8 +62,8 @@
 - Changes to SqlServiceAccount
   - Added code to allow for using Managed Service Accounts.
 - Changes to SqlServerLogin
-  - Fixed issue in Test-TargetResource to skip password
-    validation on disabled accounts.
+  - Fixed issue in Test-TargetResource to valid password
+    on disabled accounts.
 
 ## 12.0.0.0
 

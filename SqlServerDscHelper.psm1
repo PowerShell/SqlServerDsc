@@ -1559,3 +1559,43 @@ function Get-ServiceAccount
     return $accountParameters
 }
 
+<#
+    .SYNOPSIS
+    Recursevly searches Exception stack for specific error message.
+
+    .PARAMETER ExceptionToSearch
+    The Exception object to test
+
+    .PARAMETER ErrorMessage
+    The specific error message to look for
+
+    .NOTES
+    This function allows us to more easily write mocks.
+#>
+function Find-ExceptionByMessage
+{
+    # Define parameters
+    Param ($ExceptionToSearch,
+    $ErrorMessage)
+
+    # Define working variables
+    $messageFound = $false
+
+    # Check to see if the exception has an inner exception
+    if ($ExceptionToSearch.InnerException)
+    {
+        # Assign found to the returned recursive call
+        $messageFound = Find-ExceptionByMessage -ExceptionToSearch $ExceptionToSearch.InnerException -ErrorMessage $ErrorMessage
+    }
+
+    # Check to see if it was found
+    if (!$messageFound)
+    {
+        # Check this exceptions message
+        $messageFound = $ExceptionToSearch.Message -ieq $ErrorMessage
+    }
+
+    # Return
+    return $messageFound
+}
+
