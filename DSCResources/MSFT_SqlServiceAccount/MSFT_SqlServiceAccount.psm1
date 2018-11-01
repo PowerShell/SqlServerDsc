@@ -55,7 +55,7 @@ function Get-TargetResource
         [System.Management.Automation.PSCredential]
         $ServiceAccount,
 
-        [Parameter(Mandatory=$false)]
+        [Parameter()]
         [System.String]
         $VersionNumber
     )
@@ -297,7 +297,7 @@ function Get-ServiceObject
         [System.String]
         $ServiceType,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.String]
         $VersionNumber
     )
