@@ -464,8 +464,7 @@ try
                     },
                     @{
                         ServiceType = 'IntegrationServices'
-                        VersionNumber = '130'
-                        ExpectedServiceName = 'MsDtsServer130'
+                        ExpectedServiceName = 'MsDtsServer'
                     },
                     @{
                         ServiceType = 'AnalysisServices'
@@ -497,17 +496,8 @@ try
                         $ExpectedServiceName
                     )
 
-                    # Check to see if VersionNumber is specified
-                    if ($VersionNumber)
-                    {
-                        # Get the service name
-                        Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType -VersionNumber $VersionNumber | Should -Be $ExpectedServiceName
-                    }
-                    else 
-                    {
-                        # Get the service name
-                        Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType  | Should -Be $ExpectedServiceName                        
-                    }
+                    # Get the service name
+                    Get-SqlServiceName -InstanceName $mockDefaultInstanceName -ServiceType $ServiceType  | Should -Be $ExpectedServiceName                        
 
                     # Ensure the mock is utilized
                     Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter $mockGetChildItem_ParameterFilter -Scope It -Exactly -Times 1
