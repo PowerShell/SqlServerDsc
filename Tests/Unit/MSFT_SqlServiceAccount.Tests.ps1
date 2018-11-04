@@ -667,7 +667,7 @@ try
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
                     $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
-                    $getServiceObjectParameters.VersionNumber - '130'
+                    $getServiceObjectParameters.VersionNumber = '130'
 
                     Get-ServiceObject @getServiceObjectParameters | Should -Be 'MsDtsServer130'
                 }
