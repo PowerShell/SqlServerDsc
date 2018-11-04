@@ -653,6 +653,13 @@ try
                 Mock -CommandName Get-SqlServiceName -MockWith {
                     return 'MsDtsServer'
                 }
+                Mock -CommandName New-Object -MockWith {
+                    return @{
+                        Services = @{
+                            Name = "MsDtsServer130"
+                        }
+                    }
+                }
                 It 'Should throw an exception when VersionNumber is not specified'{
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
