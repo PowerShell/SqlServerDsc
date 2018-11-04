@@ -656,6 +656,7 @@ try
                 It 'Should throw an exception when VersionNumber is not specified'{
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
+                    $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
 
                     $testErrorMessage = $script:localizedData.UnknownServiceType -f 'IntegrationServices'
 
@@ -665,6 +666,7 @@ try
                 It 'Should return service when VersionNumber is specified'{
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
+                    $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
                     $getServiceObjectParameters.VersionNumber - '130'
 
                     Get-ServiceObject @getServiceObjectParameters | Should -Be 'MsDtsServer130'
@@ -808,7 +810,7 @@ try
                     $currentState.ServiceAccountName | Should -Be $mockManagedServiceAccountName
 
                     # Ensure the mocks were properly used
-                    Asser-MockCalled -CommandName Get-ServiceObject -Scope It -Exactly -Times 1
+                    Assert-MockCalled -CommandName Get-ServiceObject -Scope It -Exactly -Times 1
                 }
             }
         }
