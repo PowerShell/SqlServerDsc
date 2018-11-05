@@ -64,6 +64,7 @@ try
         $mockLocalServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockLocalServiceAccountName, (New-Object -TypeName System.Security.SecureString))
         $mockManagedServiceAccountName = 'CONTOSO\sqlservice$'
         $mockManagedServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockManagedServiceAccountName, (New-Object -TypeName System.Security.SecureString))
+        $mockIntegrationServicesObject = @{Name = "MsDtsServer130"}
 
         # Stores the result of SetServiceAccount calls
         $testServiceAccountUpdated = @{
@@ -655,9 +656,7 @@ try
                 }
                 Mock -CommandName New-Object -MockWith {
                     return @{
-                        Services = @{
-                            Name = "MsDtsServer130"
-                        }
+                        Services = $mockIntegrationServicesObject
                     }
                 }
                 It 'Should throw an exception when VersionNumber is not specified'{
@@ -676,7 +675,7 @@ try
                     $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
                     $getServiceObjectParameters.VersionNumber = '130'
 
-                    Get-ServiceObject @getServiceObjectParameters | Should -Be 'MsDtsServer130'
+                    Get-ServiceObject @getServiceObjectParameters | Should -Be $mockIntegrationServicesObject
                 }
             }
         }
