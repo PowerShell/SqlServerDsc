@@ -75,31 +75,31 @@ try
                     Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru |
                     Add-Member -MemberType ScriptProperty -Name JobServer -Value {
                             return $mockSqlAgent = (New-Object -TypeName Object |
-                                Add-Member -MemberType NoteProperty -Name Name -Value $mockServerName -PassThru |
-                                Add-Member -MemberType ScriptProperty -Name Operators -Value {
+                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockServerName -PassThru |
+                                    Add-Member -MemberType ScriptProperty -Name Operators -Value {
                                         return $mockSqlAgentOperator = ( New-Object -TypeName Object |
-                                            Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentOperatorName -PassThru |
-                                            Add-Member -MemberType NoteProperty -Name EmailAddress -Value $mockSqlAgentOperatorEmail -PassThru  |
-                                            Add-Member -MemberType ScriptMethod -Name Drop -Value {
-                                                if ($mockInvalidOperationForDropMethod)
-                                                {
-                                                    throw 'Mock Drop Method was called with invalid operation.'
-                                                }
-                                                if ( $this.Name -ne $mockExpectedSqlAgentOperatorToDrop )
-                                                {
-                                                    throw "Called mocked Drop() method without dropping the right sql agent operator. Expected '{0}'. But was '{1}'." `
-                                                    -f $mockExpectedSqlAgentOperatorToDrop, $this.Name
-                                                }
-                                            } -PassThru |
-                                            Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                                                if ($mockInvalidOperationForAlterMethod)
-                                                {
-                                                    throw 'Mock Alter Method was called with invalid operation.'
-                                                }
-                                            } -PassThru
-                                        )
-                                } -PassThru -Force
-                            )
+                                                Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentOperatorName -PassThru |
+                                                Add-Member -MemberType NoteProperty -Name EmailAddress -Value $mockSqlAgentOperatorEmail -PassThru  |
+                                                Add-Member -MemberType ScriptMethod -Name Drop -Value {
+                                                    if ($mockInvalidOperationForDropMethod)
+                                                    {
+                                                        throw 'Mock Drop Method was called with invalid operation.'
+                                                    }
+                                                    if ( $this.Name -ne $mockExpectedSqlAgentOperatorToDrop )
+                                                    {
+                                                        throw "Called mocked Drop() method without dropping the right sql agent operator. Expected '{0}'. But was '{1}'." `
+                                                        -f $mockExpectedSqlAgentOperatorToDrop, $this.Name
+                                                    }
+                                                } -PassThru |
+                                                Add-Member -MemberType ScriptMethod -Name Alter -Value {
+                                                    if ($mockInvalidOperationForAlterMethod)
+                                                    {
+                                                        throw 'Mock Alter Method was called with invalid operation.'
+                                                    }
+                                                } -PassThru
+                                            )
+                                    } -PassThru -Force
+                                )
                         } -PassThru
                     )
                 )
@@ -287,9 +287,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
             Assert-VerifiableMock
         }
 
-
-
-
         Describe "MSFT_SqlAgentOperator\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
@@ -299,7 +296,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
             }
 
             $mockSqlAgentOperatorName = 'Fred'
-            #$mockExpectedDatabaseNameToCreate = 'Contoso'
 
             Context 'When the system is not in the desired state and Ensure is set to Present' {
                 It 'Should not throw when creating the sql agent operator' {
@@ -335,9 +331,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                 }
             }
 
-            #$mockExpectedDatabaseNameToDrop = 'Sales'
-            #$mockSqlDatabaseName = 'Sales'
-
             Context 'When the system is not in the desired state and Ensure is set to Absent' {
                 It 'Should not throw when dropping the sql agent operator' {
                     $testParameters = $mockDefaultParameters
@@ -371,19 +364,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                             { Set-TargetResource @testParameters } | Should -Throw $throwInvalidOperation
                         }
 
-                #It 'Should throw the correct error when invalid collation is specified' {
-                #            $testParameters = $mockDefaultParameters
-                #    $testParameters += @{
-                #        Name      = 'Sales'
-                #        Ensure    = 'Present'
-                #        Collation = 'InvalidCollation'
-                #    }
-#
-                #    $throwInvalidOperation = ("The specified collation '{3}' is not a valid collation for database {2} on {0}\{1}." -f $mockServerName, $mockInstanceName, $testParameters.Name, $testParameters.Collation)
-#
-                #    { Set-TargetResource @testParameters } | Should -Throw $throwInvalidOperation
-                #}
-
                 It 'Should call the mock function Connect-SQL' {
                     Assert-MockCalled Connect-SQL -Exactly -Times 1 -Scope Context
                 }
@@ -408,7 +388,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                 It 'Should throw the correct error when Drop() method was called with invalid operation' {
                     $throwInvalidOperation = ('InnerException: Exception calling "Drop" ' + `
                             'with "0" argument(s): "Mock Drop Method was called with invalid operation."')
-                    $testParameters | ogv
                     { Set-TargetResource @testParameters } | Should -Throw $throwInvalidOperation
                 }
 
