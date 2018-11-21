@@ -328,7 +328,8 @@ the operators email address.
 
 #### Examples
 
-* [Set the RecoveryModel of a database](/Examples/Resources/SqlDatabaseRecoveryModel/1-SetDatabaseRecoveryModel.ps1)
+* [Add a SQL Agent Operator](/Examples/Resources/SqlAgentOperator/1-AddOperator.ps1)
+* [Remove a SQL Agent Operator](/Examples/Resources/SqlAgentOperator/2-RemoveOperator.ps1)
 
 #### Known issues
 
