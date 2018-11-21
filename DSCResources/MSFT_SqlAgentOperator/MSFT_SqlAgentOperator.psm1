@@ -169,7 +169,6 @@ function Set-TargetResource
 
                         if ($sqlOperatorObjectToCreate)
                         {
-                            write-host "trying to create $name"
                             Write-Verbose -Message "Adding SQL Agent Operator $Name."
                             if ($PSBoundParameters.ContainsKey('EmailAddress')) {
                                 Write-Verbose -Message "Setting email address to $EmailAddress"
