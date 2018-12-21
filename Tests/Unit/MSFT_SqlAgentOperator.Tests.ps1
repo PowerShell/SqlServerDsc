@@ -74,36 +74,36 @@ try
                     Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockInstanceName -PassThru |
                     Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru |
                     Add-Member -MemberType ScriptProperty -Name JobServer -Value {
-                            return $mockSqlAgent = (New-Object -TypeName Object |
-                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockServerName -PassThru |
-                                    Add-Member -MemberType ScriptProperty -Name Operators -Value {
-                                        return $mockSqlAgentOperator = ( New-Object -TypeName Object |
-                                                Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentOperatorName -PassThru |
-                                                Add-Member -MemberType NoteProperty -Name EmailAddress -Value $mockSqlAgentOperatorEmail -PassThru  |
-                                                Add-Member -MemberType ScriptMethod -Name Drop -Value {
-                                                    if ($mockInvalidOperationForDropMethod)
-                                                    {
-                                                        throw 'Mock Drop Method was called with invalid operation.'
-                                                    }
-                                                    if ( $this.Name -ne $mockExpectedSqlAgentOperatorToDrop )
-                                                    {
-                                                        throw "Called mocked Drop() method without dropping the right sql agent operator. Expected '{0}'. But was '{1}'." `
-                                                        -f $mockExpectedSqlAgentOperatorToDrop, $this.Name
-                                                    }
-                                                } -PassThru |
-                                                Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                                                    if ($mockInvalidOperationForAlterMethod)
-                                                    {
-                                                        throw 'Mock Alter Method was called with invalid operation.'
-                                                    }
-                                                } -PassThru
-                                            )
+                        return (New-Object -TypeName Object |
+                            Add-Member -MemberType NoteProperty -Name Name -Value $mockServerName -PassThru |
+                            Add-Member -MemberType ScriptProperty -Name Operators -Value {
+                                return ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Agent.Operator |
+                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentOperatorName -PassThru -Force |
+                                    Add-Member -MemberType NoteProperty -Name EmailAddress -Value $mockSqlAgentOperatorEmail -PassThru -Force |
+                                    Add-Member -MemberType ScriptMethod -Name Drop -Value {
+                                        if ($mockInvalidOperationForDropMethod)
+                                        {
+                                            throw 'Mock Drop Method was called with invalid operation.'
+                                        }
+                                        if ( $this.Name -ne $mockExpectedSqlAgentOperatorToDrop )
+                                        {
+                                            throw "Called mocked Drop() method without dropping the right sql agent operator. Expected '{0}'. But was '{1}'." `
+                                            -f $mockExpectedSqlAgentOperatorToDrop, $this.Name
+                                        }
+                                    } -PassThru -Force |
+                                    Add-Member -MemberType ScriptMethod -Name Alter -Value {
+                                        if ($mockInvalidOperationForAlterMethod)
+                                        {
+                                            throw 'Mock Alter Method was called with invalid operation.'
+                                        }
                                     } -PassThru -Force
                                 )
-                        } -PassThru
-                    )
+                            } -PassThru
+                        )
+                    } -PassThru -Force
                 )
-            }
+            )
+        }
 
         $mockNewSqlAgentOperator  = {
             return @(
@@ -301,7 +301,7 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                 It 'Should not throw when creating the sql agent operator' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Name   = 'NewOperator'
+                        Name   = 'Bob'
                         Ensure = 'Present'
                     }
 
@@ -325,7 +325,7 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                 }
 
                 It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Operator' {
-                    Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter {
+                    Assert-MockCalled New-Object -Exactly -Times 4 -ParameterFilter {
                         $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Operator'
                     } -Scope Context
                 }
@@ -369,25 +369,27 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                 }
 
                 It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Operator' {
-                    Assert-MockCalled New-Object -Exactly -Times 1 -ParameterFilter {
+                    Assert-MockCalled New-Object -Exactly -Times 2 -ParameterFilter {
                         $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Operator'
                     } -Scope Context
                 }
             }
 
-            $mockSqlAgentOperatorName = 'Bill'
+            #$mockSqlAgentOperatorName = 'Bill'
             $mockInvalidOperationForDropMethod = $true
 
             Context 'When the system is not in the desired state and Ensure is set to Absent' {
+
+                write-host ("mockInvalidOperationForDropMethod set to {0}" -f $mockInvalidOperationForDropMethod)
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
                     Name      = 'Nancy'
                     Ensure    = 'Absent'
                 }
+                $throwInvalidOperation = ('InnerException: Exception calling "Drop" ' + `
+                        'with "0" argument(s): "Mock Drop Method was called with invalid operation."')
 
                 It 'Should throw the correct error when Drop() method was called with invalid operation' {
-                    $throwInvalidOperation = ('InnerException: Exception calling "Drop" ' + `
-                            'with "0" argument(s): "Mock Drop Method was called with invalid operation."')
                     { Set-TargetResource @testParameters } | Should -Throw $throwInvalidOperation
                 }
 

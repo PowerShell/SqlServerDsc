@@ -140,7 +140,7 @@ function Set-TargetResource
         {
             'Present'
             {
-                $sqlOperatorObject = $sqlServerObject.JobServer.Operators[$Name]
+                $sqlOperatorObject = $sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name}
 
                 if ($sqlOperatorObject)
                 {
@@ -192,7 +192,7 @@ function Set-TargetResource
             {
                 try
                 {
-                    $sqlOperatorObjectToDrop = $sqlServerObject.JobServer.Operators[$Name]
+                    $sqlOperatorObjectToDrop = $sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name}
                     if ($sqlOperatorObjectToDrop)
                     {
                         Write-Verbose -Message "Deleting SQL Agent Operator $Name."
