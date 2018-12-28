@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Change to SqlServerLogin so it doesn't check properties for absent logins.
+  - Fix for ([issue #1096](https://github.com/PowerShell/SqlServerDsc/issues/1096))
+
 ## 12.1.0.0
 
 - Changes to SqlServerDsc
@@ -56,8 +59,6 @@
   - Fix unit tests that didn't mock some of the calls. It no longer fail
     when a SQL Server installation is not present on the node running the
     unit test ([issue #983](https://github.com/PowerShell/SqlServerDsc/issues/983)).
-- Change to SqlServerLogin so it doesn't check properties for absent logins.
-  - Fix for ([issue #1096](https://github.com/PowerShell/SqlServerDsc/issues/1096))
 
 ## 12.0.0.0
 
