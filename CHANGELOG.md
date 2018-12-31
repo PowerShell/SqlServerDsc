@@ -7,6 +7,10 @@
     step to make sure the are no residual changes left from a previous SQL
     Server install on the Build Worker done by the AppVeyor Team
     ([issue #1260](https://github.com/PowerShell/SqlServerDsc/issues/1260)).
+  - Updated README.md in the Examples folder.
+    - Added a link to the new xADObjectPermissionEntry examples in
+      ActiveDirectory, fixed a broken link and a typo.
+      [Adam Rush (@adamrushuk)](https://github.com/adamrushuk)
 
 ## 12.1.0.0
 
