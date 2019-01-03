@@ -8,6 +8,10 @@
     Server install on the Build Worker done by the AppVeyor Team
     ([issue #1260](https://github.com/PowerShell/SqlServerDsc/issues/1260)).
   - Code cleanup: Change parameter names of Connect-SQL to align with resources.
+  - Updated README.md in the Examples folder.
+    - Added a link to the new xADObjectPermissionEntry examples in
+      ActiveDirectory, fixed a broken link and a typo.
+      [Adam Rush (@adamrushuk)](https://github.com/adamrushuk)
 - Change to SqlServerLogin so it doesn't check properties for absent logins.
   - Fix for ([issue #1096](https://github.com/PowerShell/SqlServerDsc/issues/1096))
 
