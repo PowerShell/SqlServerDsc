@@ -78,7 +78,7 @@ try
         }
 
         # Define the values that could be passed into the InstanceName parameter
-        $mockSqlInstanceNameParameters = @(
+        $mockInstanceNameParameters = @(
             'MSSQLSERVER',
             'NamedInstance'
         )
@@ -210,16 +210,16 @@ try
 
                 foreach ( $mockSqlServerParameter in $mockSqlServer.Value.Values )
                 {
-                    foreach ( $mockSqlInstanceNameParameter in $mockSqlInstanceNameParameters )
+                    foreach ( $mockInstanceNameParameter in $mockInstanceNameParameters )
                     {
                         # Build the domain instance name
-                        if ( $mockSqlInstanceNameParameter -eq 'MSSQLSERVER' )
+                        if ( $mockInstanceNameParameter -eq 'MSSQLSERVER' )
                         {
                             $domainInstanceNameProperty = $mockSqlServerParameter
                         }
                         else
                         {
-                            $domainInstanceNameProperty = '{0}\{1}' -f $mockSqlServerParameter,$mockSqlInstanceNameParameter
+                            $domainInstanceNameProperty = '{0}\{1}' -f $mockSqlServerParameter,$mockInstanceNameParameter
                         }
 
                         if ( $mockSqlServerToBeUsed -eq 'Server1' )
@@ -227,14 +227,14 @@ try
                             $getTargetResourceAbsentTestCases += @{
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
                             $getTargetResourcePresentTestCases += @{
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -245,7 +245,7 @@ try
                                     Ensure = 'Present'
                                     Name = $createAvailabilityGroupFailureToTest.Key
                                     ServerName = $mockSqlServerParameter
-                                    InstanceName = $mockSqlInstanceNameParameter
+                                    InstanceName = $mockInstanceNameParameter
                                     Version = $majorVersionToTest
                                 }
                             }
@@ -255,7 +255,7 @@ try
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = 'DatabaseMirroringEndpointNotFound'
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -264,7 +264,7 @@ try
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = 'HadrNotEnabled'
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -272,7 +272,7 @@ try
                                 Ensure = 'Absent'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -297,7 +297,7 @@ try
                             Ensure = 'Absent'
                             Name = $setTargetResourceRemoveAvailabilityGroupErrorTestCaseName
                             ServerName = $mockSqlServerParameter
-                            InstanceName = $mockSqlInstanceNameParameter
+                            InstanceName = $mockInstanceNameParameter
                             Version = $majorVersionToTest
                         }
 
@@ -308,7 +308,7 @@ try
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 ProcessOnlyOnActiveNode = $processOnlyOnActiveNode
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -321,7 +321,7 @@ try
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
                                 Result = ( $ensureCaseToTest -eq 'Absent' )
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -330,7 +330,7 @@ try
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 Result = ( $ensureCaseToTest -eq 'Present' )
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -394,7 +394,7 @@ try
                                     ParameterName = $resourceParameter.Key
                                     ParameterValue = $testCaseParameterValue
                                     ServerName = $mockSqlServerParameter
-                                    InstanceName = $mockSqlInstanceNameParameter
+                                    InstanceName = $mockInstanceNameParameter
                                     Version = $majorVersionToTest
                                 }
                             }
@@ -406,7 +406,7 @@ try
                                 ParameterValue = $testCaseParameterValue
                                 Result = $false
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -417,7 +417,7 @@ try
                                 ParameterValue = $testCaseParameterValue
                                 Result = $false
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -445,7 +445,7 @@ try
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
 
@@ -456,7 +456,7 @@ try
                                 Name = $mockNameParameters.PresentAvailabilityGroup
                                 Result = $false
                                 ServerName = $mockSqlServerParameter
-                                InstanceName = $mockSqlInstanceNameParameter
+                                InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
                             }
                         }
@@ -474,11 +474,11 @@ try
             (
                 [Parameter()]
                 [System.String]
-                $SQLServer,
+                $ServerName,
 
                 [Parameter()]
                 [System.String]
-                $SQLInstanceName,
+                $InstanceName,
 
                 # The following two parameters are used to mock Get-PrimaryReplicaServerObject
                 [Parameter()]
@@ -491,21 +491,21 @@ try
             )
 
             # If this mock function is called from the Get-PrimaryReplicaServerObject command mock
-            if ( [System.String]::IsNullOrEmpty($SQLServer) -and [System.String]::IsNullOrEmpty($SQLInstanceName) -and $AvailabilityGroup -and $ServerObject )
+            if ( [System.String]::IsNullOrEmpty($ServerName) -and [System.String]::IsNullOrEmpty($InstanceName) -and $AvailabilityGroup -and $ServerObject )
             {
-                $SQLServer,$SQLInstanceName = $AvailabilityGroup.PrimaryReplicaServerName.Split('\')
+                $ServerName,$InstanceName = $AvailabilityGroup.PrimaryReplicaServerName.Split('\')
             }
 
             # Determine which SQL Server mock data we will use
-            $mockSqlServer = ( $mockSqlServerParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $SQLServer } ).Name
+            $mockSqlServer = ( $mockSqlServerParameters.GetEnumerator() | Where-Object -FilterScript { $_.Value.Values -contains $ServerName } ).Name
             if ( [System.String]::IsNullOrEmpty($mockSqlServer) )
             {
-                $mockSqlServer = $SQLServer
+                $mockSqlServer = $ServerName
             }
             $mockCurrentServerObjectProperties = $mockServerObjectProperties.$mockSqlServer
 
             # Build the domain instance name
-            if ( ( $SQLInstanceName -eq 'MSSQLSERVER' ) -or [System.String]::IsNullOrEmpty($SQLInstanceName) )
+            if ( ( $InstanceName -eq 'MSSQLSERVER' ) -or [System.String]::IsNullOrEmpty($InstanceName) )
             {
                 $mockDomainInstanceName = $mockCurrentServerObjectProperties.NetName
                 $mockPrimaryReplicaServerName = $mockAvailabilityGroupProperties.PrimaryReplicaServerName
@@ -514,19 +514,19 @@ try
             }
             else
             {
-                $mockDomainInstanceName = '{0}\{1}' -f $mockCurrentServerObjectProperties.NetName,$SQLInstanceName
-                $mockPrimaryReplicaServerName = '{0}\{1}' -f $mockAvailabilityGroupProperties.PrimaryReplicaServerName,$SQLInstanceName
-                $mockAvailabilityGroupReplica1Name = '{0}\{1}' -f $mockAvailabilityGroupReplicaProperties.Server1.Name,$SQLInstanceName
-                $mockAvailabilityGroupReplica2Name = '{0}\{1}' -f $mockAvailabilityGroupReplicaProperties.Server2.Name,$SQLInstanceName
+                $mockDomainInstanceName = '{0}\{1}' -f $mockCurrentServerObjectProperties.NetName,$InstanceName
+                $mockPrimaryReplicaServerName = '{0}\{1}' -f $mockAvailabilityGroupProperties.PrimaryReplicaServerName,$InstanceName
+                $mockAvailabilityGroupReplica1Name = '{0}\{1}' -f $mockAvailabilityGroupReplicaProperties.Server1.Name,$InstanceName
+                $mockAvailabilityGroupReplica2Name = '{0}\{1}' -f $mockAvailabilityGroupReplicaProperties.Server2.Name,$InstanceName
 
             }
 
             $mockServerObject = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server
             $mockServerObject.DomainInstanceName = $mockDomainInstanceName
             $mockServerObject.IsHadrEnabled = $mockIsHadrEnabled
-            $mockServerObject.Name = $SQLServer
+            $mockServerObject.Name = $ServerName
             $mockServerObject.NetName = $mockCurrentServerObjectProperties.NetName
-            $mockServerObject.ServiceName = $SQLInstanceName
+            $mockServerObject.ServiceName = $InstanceName
             $mockServerObject.Version = @{
                 Major = $Version
             }

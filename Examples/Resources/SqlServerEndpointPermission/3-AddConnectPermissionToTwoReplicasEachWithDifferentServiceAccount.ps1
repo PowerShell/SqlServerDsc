@@ -8,7 +8,7 @@ $ConfigurationData = @{
     AllNodes = @(
         @{
             NodeName        = '*'
-            SqlInstanceName = 'MSSQLSERVER'
+            InstanceName = 'MSSQLSERVER'
         },
 
         @{
@@ -48,7 +48,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode1Credential.UserName
             Permission           = 'CONNECT'
@@ -60,7 +60,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode2Credential.UserName
             Permission           = 'CONNECT'
@@ -75,7 +75,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode1Credential.UserName
             Permission           = 'CONNECT'
@@ -87,7 +87,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Name                 = 'DefaultMirrorEndpoint'
             Principal            = $SqlServiceNode2Credential.UserName
             Permission           = 'CONNECT'

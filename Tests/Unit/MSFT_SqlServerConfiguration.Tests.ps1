@@ -222,7 +222,7 @@ try
             $mock.Configuration | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
 
             return $mock
-        } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $SQLServer -eq 'CLU01' }
+        } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $ServerName -eq 'CLU01' }
 
         Mock -CommandName Connect-SQL -MockWith {
             $mock = New-Object -TypeName PSObject -Property @{
@@ -241,7 +241,7 @@ try
             $mock.Configuration | Add-Member -MemberType ScriptMethod -Name Alter -Value {}
 
             return $mock
-        } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $SQLServer -eq 'CLU02' }
+        } -ModuleName $script:DSCResourceName -Verifiable -ParameterFilter { $ServerName -eq 'CLU02' }
 
         Mock -CommandName Restart-SqlService -ModuleName $script:DSCResourceName -Verifiable
         Mock -CommandName Write-Warning -ModuleName $script:DSCResourceName -Verifiable

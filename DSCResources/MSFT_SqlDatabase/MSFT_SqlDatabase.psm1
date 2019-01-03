@@ -56,7 +56,7 @@ function Get-TargetResource
         $Collation
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -142,7 +142,7 @@ function Set-TargetResource
         $Collation
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {

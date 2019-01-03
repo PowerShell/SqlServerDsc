@@ -42,7 +42,7 @@ function Get-TargetResource
 
     try
     {
-        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
         $endpointObject = $sqlServerObject.Endpoints[$Name]
         if ( $null -ne $endpointObject )
@@ -147,7 +147,7 @@ function Set-TargetResource
     $getTargetResourceResult = Get-TargetResource @parameters
     if ($getTargetResourceResult.Ensure -ne $Ensure)
     {
-        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
         $endpointObject = $sqlServerObject.Endpoints[$Name]
         if ($null -ne $endpointObject)

@@ -60,7 +60,7 @@ function Get-TargetResource
         $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -208,7 +208,7 @@ function Set-TargetResource
         $InstanceName = 'MSSQLSERVER'
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {

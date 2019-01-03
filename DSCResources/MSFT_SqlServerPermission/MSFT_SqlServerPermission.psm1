@@ -45,7 +45,7 @@ function Get-TargetResource
 
     try
     {
-        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
         # Gets a set of permissions granted based on the desired permissions in $Permission
         $desiredPermissionSet = Get-SQLServerPermissionSet -Permission $Permission
@@ -149,7 +149,7 @@ function Set-TargetResource
     {
         try
         {
-            $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+            $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
             $permissionSet = Get-SQLServerPermissionSet -Permission $Permission
 

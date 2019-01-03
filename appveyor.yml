@@ -5,6 +5,9 @@ version: 9.0.{build}.0
 image: Visual Studio 2017
 install:
     - git clone https://github.com/PowerShell/DscResource.Tests
+    - ps: Start-Sleep -Seconds 5
+    - ps: Restart-Computer -Force
+    - ps: Start-Sleep -Seconds 5
     - ps: Write-Verbose -Message "PowerShell version $($PSVersionTable.PSVersion)" -Verbose
     - ps: Import-Module "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
     - ps: Invoke-AppveyorInstallTask

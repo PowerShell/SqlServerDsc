@@ -45,7 +45,7 @@ function Get-TargetResource
     )
 
     Write-Verbose -Message "Getting owner of database $Database"
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -123,7 +123,7 @@ function Set-TargetResource
     )
 
     Write-Verbose -Message "Setting owner $Name of database $Database"
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {

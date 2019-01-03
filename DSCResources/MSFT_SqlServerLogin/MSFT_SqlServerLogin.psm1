@@ -34,7 +34,7 @@ function Get-TargetResource
         $InstanceName
     )
 
-    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $serverObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     Write-Verbose 'Getting SQL logins'
     New-VerboseMessage -Message "Getting the login '$Name' from '$ServerName\$InstanceName'"
@@ -161,7 +161,7 @@ function Set-TargetResource
         $Disabled
     )
 
-    $serverObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $serverObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     switch ( $Ensure )
     {
@@ -381,7 +381,7 @@ function Test-TargetResource
         $testPassed = $false
     }
 
-    if ( $Ensure -eq 'Present' )
+    if ( $Ensure -eq 'Present' -and $($loginInfo.Ensure) -eq 'Present' )
     {
         if ( $LoginType -ne $loginInfo.LoginType )
         {
@@ -416,7 +416,7 @@ function Test-TargetResource
 
                 try
                 {
-                    Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName -SetupCredential $userCredential -LoginType 'SqlLogin' | Out-Null
+                    Connect-SQL -ServerName $ServerName -InstanceName $InstanceName -SetupCredential $userCredential -LoginType 'SqlLogin' | Out-Null
                 }
                 catch
                 {

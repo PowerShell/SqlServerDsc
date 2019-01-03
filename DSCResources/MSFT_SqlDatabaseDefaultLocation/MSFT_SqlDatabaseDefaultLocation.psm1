@@ -54,7 +54,7 @@ Function Get-TargetResource
     Write-Verbose -Message ($script:localizedData.GetCurrentPath -f $Type, $InstanceName)
 
     # Connect to the instance
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     # Is this node actively hosting the SQL instance?
     $isActiveNode = Test-ActiveNode -ServerObject $sqlServerObject
@@ -153,7 +153,7 @@ Function Set-TargetResource
     else
     {
         Write-Verbose -Message ($script:localizedData.SettingDefaultPath -f $Type)
-        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
         # Check which default location is being updated
         switch ($Type)

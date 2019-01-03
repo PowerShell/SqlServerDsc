@@ -63,7 +63,7 @@ function Get-TargetResource
         $RestartTimeout = 120
     )
 
-    $sql = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sql = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     # Get the current value of the configuration option.
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }
@@ -142,7 +142,7 @@ function Set-TargetResource
         $RestartTimeout = 120
     )
 
-    $sql = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sql = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     # Get the current value of the configuration option.
     $option = $sql.Configuration.Properties | Where-Object { $_.DisplayName -eq $OptionName }

@@ -32,12 +32,12 @@ function Connect-SQL
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $SQLServer = $env:COMPUTERNAME,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $SQLInstanceName = 'MSSQLSERVER',
+        $InstanceName = 'MSSQLSERVER',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -52,13 +52,13 @@ function Connect-SQL
 
     Import-SQLPSModule
 
-    if ($SQLInstanceName -eq 'MSSQLSERVER')
+    if ($InstanceName -eq 'MSSQLSERVER')
     {
-        $databaseEngineInstance = $SQLServer
+        $databaseEngineInstance = $ServerName
     }
     else
     {
-        $databaseEngineInstance = "$SQLServer\$SQLInstanceName"
+        $databaseEngineInstance = "$ServerName\$InstanceName"
     }
 
     if ($SetupCredential)
@@ -772,7 +772,7 @@ function Restart-SqlService
     if (-not $SkipClusterCheck.IsPresent)
     {
         ## Connect to the instance
-        $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+        $serverObject = Connect-SQL -ServerName $SQLServer -InstanceName $SQLInstanceName
 
         if ($serverObject.IsClustered)
         {
@@ -855,7 +855,7 @@ function Restart-SqlService
         do
         {
             # This call, if it fails, will take between ~9-10 seconds to return.
-            $testConnectionServerObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName -ErrorAction SilentlyContinue
+            $testConnectionServerObject = Connect-SQL -ServerName $SQLServer -InstanceName $SQLInstanceName -ErrorAction SilentlyContinue
             if ($testConnectionServerObject -and $testConnectionServerObject.Status -ne 'Online')
             {
                 # Waiting 2 seconds to not hammer the SQL Server instance.
@@ -996,7 +996,7 @@ function Invoke-Query
         $WithResults
     )
 
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -ServerName $SQLServer -InstanceName $SQLInstanceName
 
     if ( $WithResults )
     {
@@ -1162,7 +1162,7 @@ function Test-AvailabilityReplicaSeedingModeAutomatic
     # Assume automatic seeding is disabled by default
     $availabilityReplicaSeedingModeAutomatic = $false
 
-    $serverObject = Connect-SQL -SQLServer $SQLServer -SQLInstanceName $SQLInstanceName
+    $serverObject = Connect-SQL -ServerName $SQLServer -InstanceName $SQLInstanceName
 
     # Only check the seeding mode if this is SQL 2016 or newer
     if ( $serverObject.Version -ge 13 )
@@ -1221,7 +1221,7 @@ function Get-PrimaryReplicaServerObject
     # Determine if we're connected to the primary replica
     if ( ( $AvailabilityGroup.PrimaryReplicaServerName -ne $serverObject.DomainInstanceName ) -and ( -not [System.String]::IsNullOrEmpty($AvailabilityGroup.PrimaryReplicaServerName) ) )
     {
-        $primaryReplicaServerObject = Connect-SQL -SQLServer $AvailabilityGroup.PrimaryReplicaServerName
+        $primaryReplicaServerObject = Connect-SQL -ServerName $AvailabilityGroup.PrimaryReplicaServerName
     }
 
     return $primaryReplicaServerObject
@@ -1288,8 +1288,8 @@ function Split-FullSQLInstanceName
     }
 
     return @{
-        SQLServer       = $sqlServer
-        SQLInstanceName = $sqlInstanceName
+        ServerName   = $sqlServer
+        InstanceName = $sqlInstanceName
     }
 }
 

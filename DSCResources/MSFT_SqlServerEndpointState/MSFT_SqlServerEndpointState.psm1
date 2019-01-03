@@ -37,7 +37,7 @@ function Get-TargetResource
 
     try
     {
-        $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+        $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
         $endpointObject = $sqlServerObject.Endpoints[$Name]
         if ($null -ne $endpointObject)
@@ -114,7 +114,7 @@ function Set-TargetResource
         {
             New-VerboseMessage -Message ('Changing state of endpoint ''{0}''' -f $Name)
 
-            $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+            $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
             $endpointObject = $sqlServerObject.Endpoints[$Name]
 

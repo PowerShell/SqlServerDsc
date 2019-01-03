@@ -7,7 +7,7 @@ $ConfigurationData = @{
     AllNodes = @(
         @{
             NodeName              = '*'
-            SQLInstanceName       = 'MSSQLSERVER'
+            InstanceName          = 'MSSQLSERVER'
             AvailabilityGroupName = 'TestAG'
         },
 
@@ -41,7 +41,7 @@ Configuration Example
             Name                 = 'NT SERVICE\ClusSvc'
             LoginType            = 'WindowsUser'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SQLInstanceName
+            InstanceName         = $Node.InstanceName
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
@@ -51,7 +51,7 @@ Configuration Example
             DependsOn            = '[SqlServerLogin]AddNTServiceClusSvc'
             Ensure               = 'Present'
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SqlInstanceName
+            InstanceName         = $Node.InstanceName
             Principal            = 'NT SERVICE\ClusSvc'
             Permission           = 'AlterAnyAvailabilityGroup', 'ViewServerState'
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -64,7 +64,7 @@ Configuration Example
             Ensure               = 'Present'
             Port                 = 5022
             ServerName           = $Node.NodeName
-            InstanceName         = $Node.SQLInstanceName
+            InstanceName         = $Node.InstanceName
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
 
@@ -75,7 +75,7 @@ Configuration Example
             {
                 Ensure               = 'Present'
                 Name                 = $Node.AvailabilityGroupName
-                InstanceName         = $Node.SQLInstanceName
+                InstanceName         = $Node.InstanceName
                 ServerName           = $Node.NodeName
                 DependsOn            = '[SqlServerEndpoint]HADREndpoint', '[SqlServerPermission]AddNTServiceClusSvcPermissions'
                 PsDscRunAsCredential = $SqlAdministratorCredential
@@ -91,9 +91,9 @@ Configuration Example
                 Name                       = $Node.NodeName
                 AvailabilityGroupName      = $Node.AvailabilityGroupName
                 ServerName                 = $Node.NodeName
-                InstanceName               = $Node.SQLInstanceName
+                InstanceName               = $Node.InstanceName
                 PrimaryReplicaServerName   = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).NodeName
-                PrimaryReplicaInstanceName = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).SQLInstanceName
+                PrimaryReplicaInstanceName = ( $AllNodes | Where-Object { $_.Role -eq 'PrimaryReplica' } ).InstanceName
             }
         }
     }

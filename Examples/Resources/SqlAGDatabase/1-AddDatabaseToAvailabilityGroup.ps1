@@ -12,7 +12,7 @@ $ConfigurationData = @{
     AllNodes = @(
         @{
             NodeName              = '*'
-            InstanceName       = 'MSSQLSERVER'
+            InstanceName          = 'MSSQLSERVER'
             AvailabilityGroupName = 'TestAG'
         },
 

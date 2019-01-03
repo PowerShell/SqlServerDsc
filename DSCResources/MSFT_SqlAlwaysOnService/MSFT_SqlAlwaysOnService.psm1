@@ -40,7 +40,7 @@ function Get-TargetResource
         $InstanceName
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     $isAlwaysOnEnabled = [System.Boolean] $sqlServerObject.IsHadrEnabled
     if ($isAlwaysOnEnabled -eq $true)

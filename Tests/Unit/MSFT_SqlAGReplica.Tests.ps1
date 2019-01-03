@@ -182,11 +182,11 @@ try
             (
                 [Parameter()]
                 [System.String]
-                $SQLServer,
+                $ServerName,
 
                 [Parameter()]
                 [System.String]
-                $SQLInstanceName,
+                $InstanceName,
 
                 # The following two parameters are used to mock Get-PrimaryReplicaServerObject
                 [Parameter()]
@@ -285,11 +285,11 @@ try
             (
                 [Parameter()]
                 [System.String]
-                $SQLServer,
+                $ServerName,
 
                 [Parameter()]
                 [System.String]
-                $SQLInstanceName,
+                $InstanceName,
 
                 # The following two parameters are used to mock Get-PrimaryReplicaServerObject
                 [Parameter()]
@@ -405,11 +405,11 @@ try
             (
                 [Parameter()]
                 [System.String]
-                $SQLServer,
+                $ServerName,
 
                 [Parameter()]
                 [System.String]
-                $SQLInstanceName,
+                $InstanceName,
 
                 # The following two parameters are used to mock Get-PrimaryReplicaServerObject
                 [Parameter()]
@@ -631,13 +631,13 @@ try
                 $mockServer1IsHadrEnabled = $true
 
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlServer1 -Verifiable -ParameterFilter {
-                    $SQLServer -eq $mockServer1Name
+                    $ServerName -eq $mockServer1Name
                 }
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlServer2 -Verifiable -ParameterFilter {
-                    $SQLServer -eq $mockServer2Name
+                    $ServerName -eq $mockServer2Name
                 }
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSqlServer3 -Verifiable -ParameterFilter {
-                    $SQLServer -eq $mockServer3Name
+                    $ServerName -eq $mockServer3Name
                 }
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith $mockConnectSqlServer1 -Verifiable -ParameterFilter {
                     $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -678,13 +678,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -711,13 +711,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'RemoveAvailabilityGroupReplicaFailed'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -772,13 +772,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'HadrNotEnabled'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -807,13 +807,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -838,13 +838,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -871,13 +871,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'DatabaseMirroringEndpointNotFound'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -904,13 +904,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -937,13 +937,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -970,13 +970,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'CreateAvailabilityGroupReplicaFailed'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1003,13 +1003,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'JoinAvailabilityGroupFailed'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1036,13 +1036,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'AvailabilityGroupNotFound'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1111,13 +1111,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'ReplicaNotFound'
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1148,13 +1148,13 @@ try
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                            $SQLServer -eq $mockServer1Name
+                            $ServerName -eq $mockServer1Name
                         } -Times 1 -Exactly
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                            $SQLServer -eq $mockServer2Name
+                            $ServerName -eq $mockServer2Name
                         } -Times 0 -Exactly
                         Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                            $SQLServer -eq $mockServer3Name
+                            $ServerName -eq $mockServer3Name
                         } -Times 0 -Exactly
                         Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                             $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1182,13 +1182,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1217,13 +1217,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name
@@ -1252,13 +1252,13 @@ try
                     { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer1Name
+                        $ServerName -eq $mockServer1Name
                     } -Times 1 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer2Name
+                        $ServerName -eq $mockServer2Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
-                        $SQLServer -eq $mockServer3Name
+                        $ServerName -eq $mockServer3Name
                     } -Times 0 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Time 0 -Exactly -ParameterFilter {
                         $AvailabilityGroup.PrimaryReplicaServerName -eq $mockServer1Name

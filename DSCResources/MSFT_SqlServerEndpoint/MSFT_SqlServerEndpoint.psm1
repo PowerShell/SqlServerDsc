@@ -42,7 +42,7 @@ function Get-TargetResource
         IpAddress    = ''
     }
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
     if ($sqlServerObject)
     {
         Write-Verbose -Message ('Connected to {0}\{1}' -f $ServerName, $InstanceName)
@@ -135,7 +135,7 @@ function Set-TargetResource
 
     $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -ServerName $ServerName -InstanceName $InstanceName
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
     if ($sqlServerObject)
     {
         if ($Ensure -eq 'Present' -and $getTargetResourceResult.Ensure -eq 'Absent')

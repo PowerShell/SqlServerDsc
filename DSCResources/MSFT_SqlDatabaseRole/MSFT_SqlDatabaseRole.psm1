@@ -58,7 +58,7 @@ function Get-TargetResource
 
     Write-Verbose -Message "Getting SQL Database role for $Name"
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -198,7 +198,7 @@ function Set-TargetResource
 
     Write-Verbose -Message "Setting SQL Database role for $Name"
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {

@@ -172,7 +172,7 @@ function Set-TargetResource
             {
                 New-VerboseMessage -Message "Create listener on $AvailabilityGroup"
 
-                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
@@ -220,7 +220,7 @@ function Set-TargetResource
             {
                 New-VerboseMessage -Message "Remove listener from $AvailabilityGroup"
 
-                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
@@ -273,7 +273,7 @@ function Set-TargetResource
                     throw New-TerminatingError -ErrorType AvailabilityGroupListenerDHCPChangeError -FormatArgs @( $DHCP, $($availabilityGroupListenerState.DHCP) ) -ErrorCategory InvalidOperation
                 }
 
-                $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+                $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
                 $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
                 if ($availabilityGroupObject)
@@ -484,7 +484,7 @@ function Get-SQLAlwaysOnAvailabilityGroupListener
 
     Write-Debug "Connecting to availability group $Name as $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     $availabilityGroupObject = $sqlServerObject.AvailabilityGroups[$AvailabilityGroup]
     if ($availabilityGroupObject)
