@@ -2072,11 +2072,11 @@ InModuleScope $script:moduleName {
             }
 
             It 'Should return true for inner exception' {
-                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorMessage 2 | Should -Be $true
+                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorNumber 2 | Should -Be $true
             }
 
             It 'Should return false when message not found' {
-                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorMessage 3 | Should -Be $false
+                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorNumber 3 | Should -Be $false
             }
         }
     }
