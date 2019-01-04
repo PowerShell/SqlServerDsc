@@ -1,6 +1,12 @@
 Import-Module -Name (Join-Path -Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) `
         -ChildPath 'SqlServerDscHelper.psm1') `
     -Force
+
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+    -ChildPath 'CommonResourceHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAgentOperator'
+
 <#
     .SYNOPSIS
     This function gets the SQL Agent Operator.
@@ -55,18 +61,26 @@ function Get-TargetResource
 
     if ($sqlServerObject)
     {
-        Write-Verbose -Message 'Getting SQL Agent Operators'
+        Write-Verbose -Message (
+            $script:localizedData.GetSqlAgents
+        )
         # Check operator exists
         $sqlOperatorObject = $($sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name})
         if ($sqlOperatorObject)
         {
-            Write-Verbose -Message "SQL Agent Operator $Name is present"
+            Write-Verbose -Message (
+                $script:localizedData.SqlAgentPresent `
+                    -f $Name
+            )
             $Ensure = 'Present'
             $SqlOperatorEmail = $sqlOperatorObject.EmailAddress
         }
         else
         {
-            Write-Verbose -Message "SQL Database name $Name is absent"
+            Write-Verbose -Message (
+                $script:localizedData.SqlAgentAbsent `
+                    -f $Name
+            )
             $Ensure = 'Absent'
             $SqlOperatorEmail = $EmailAddress
         }
@@ -147,10 +161,12 @@ function Set-TargetResource
                     if ($PSBoundParameters.ContainsKey('EmailAddress')) {
                         try
                         {
-                            Write-Verbose -Message "Updating SQL Agent Operator $Name with specified settings."
+                            Write-Verbose -Message (
+                                $script:localizedData.UpdatingSqlAgentOperator `
+                                    -f $Name
+                            )
                             $sqlOperatorObject.EmailAddress = $EmailAddress
                             $sqlOperatorObject.Alter()
-                            New-VerboseMessage -Message "Updated SQL Agent Operator $Name."
                         }
                         catch
                         {
@@ -169,19 +185,24 @@ function Set-TargetResource
 
                         if ($sqlOperatorObjectToCreate)
                         {
-                            Write-Verbose -Message "Adding SQL Agent Operator $Name."
+                            Write-Verbose -Message (
+                                $script:localizedData.AddSqlAgentOperator `
+                                    -f $Name
+                            )
                             if ($PSBoundParameters.ContainsKey('EmailAddress')) {
-                                Write-Verbose -Message "Setting email address to $EmailAddress"
+                                Write-Verbose -Message (
+                                    $script:localizedData.UpdateEmailAddress `
+                                        -f $EmailAddress, $Name
+                                )
                                 $sqlOperatorObjectToCreate.EmailAddress = $EmailAddress
                             }
-                            New-VerboseMessage -Message "Created SQL Agent Operator $Name."
                             $sqlOperatorObjectToCreate.Create()
                         }
                     }
                     catch
                     {
                         throw New-TerminatingError -ErrorType CreateOperatorSetError `
-                            -FormatArgs @($ServerName, $InstanceName, $Name) `
+                            -FormatArgs @($Name, $ServerName, $InstanceName) `
                             -ErrorCategory InvalidOperation `
                             -InnerException $_.Exception
                     }
@@ -195,15 +216,17 @@ function Set-TargetResource
                     $sqlOperatorObjectToDrop = $sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name}
                     if ($sqlOperatorObjectToDrop)
                     {
-                        Write-Verbose -Message "Deleting SQL Agent Operator $Name."
+                        Write-Verbose -Message (
+                            $script:localizedData.DeleteSqlAgentOperator `
+                                -f $Name
+                        )
                         $sqlOperatorObjectToDrop.Drop()
-                        New-VerboseMessage -Message "Dropped SQL Agent Operator $Name."
                     }
                 }
                 catch
                 {
                     throw New-TerminatingError -ErrorType DropOperatorSetError `
-                        -FormatArgs @($ServerName, $InstanceName, $Name) `
+                        -FormatArgs @($Name, $ServerName, $InstanceName) `
                         -ErrorCategory InvalidOperation `
                         -InnerException $_.Exception
                 }
@@ -262,7 +285,10 @@ function Test-TargetResource
         $EmailAddress
     )
 
-    Write-Verbose -Message "Checking if SQL Agent Operator $Name is present of absent"
+    Write-Verbose -Message (
+        $script:localizedData.TestSqlAgentOperator `
+            -f $Name
+    )
 
     $getTargetResourceResult = Get-TargetResource @PSBoundParameters
     $isOperatorInDesiredState = $true
@@ -273,7 +299,10 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Absent')
             {
-                New-VerboseMessage -Message "Ensure is set to Absent. The SQL Agent Operator $Name should be dropped"
+                New-VerboseMessage -Message (
+                    $script:localizedData.SqlAgentOperatorExistsButShouldNot `
+                        -f $name
+                )
                 $isOperatorInDesiredState = $false
             }
         }
@@ -282,12 +311,18 @@ function Test-TargetResource
         {
             if ($getTargetResourceResult.Ensure -ne 'Present')
             {
-                New-VerboseMessage -Message "Ensure is set to Present. The SQL Agent Operator $Name should be created"
+                New-VerboseMessage -Message (
+                    $script:localizedData.SqlAgentOperatorDoesNotExistButShould `
+                        -f $name
+                )
                 $isOperatorInDesiredState = $false
             }
             elseif ($getTargetResourceResult.EmailAddress -ne $EmailAddress -and $PSBoundParameters.ContainsKey('EmailAddress'))
             {
-                New-VerboseMessage -Message "SQL Agent Operator $Name exists but has the wrong email address"
+                New-VerboseMessage -Message (
+                    $script:localizedData.SqlAgentOperatorExistsButEmailWrong `
+                        -f $name
+                )
                 $isOperatorInDesiredState = $false
             }
         }
