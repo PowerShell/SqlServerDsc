@@ -424,7 +424,7 @@ function Test-TargetResource
                     if ($Disabled)
                     {
                         # The result of a valid password but account is disabled is an error with a specific error message
-                        if (!(Find-ExceptionByMessage -ExceptionToSearch $_.Exception -ErrorMessage "Login failed for user '$Name'. Reason: The account is disabled."))
+                        if (!(Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18470))
                         {
                             # The password was not correct, password validation failed
                             $testPassed = $false

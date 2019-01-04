@@ -173,7 +173,7 @@ try
             return $managedComputerObject
         }
 
-        $mockGetServiceOBject_DefaultInstance_ManagedServiceAccount = {
+        $mockGetServiceObject_DefaultInstance_ManagedServiceAccount = {
             $managedComputerObject = New-Object -TypeName PSObject -Property @{
                 Name           = $mockDefaultInstanceName
                 ServiceAccount = $mockManagedServiceAccountName
@@ -662,7 +662,7 @@ try
                 It 'Should throw an exception when VersionNumber is not specified'{
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
-                    $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
+                    $getServiceObjectParameters.InstanceName = 'MSSQLSERVER'
 
                     $testErrorMessage = $script:localizedData.UnknownServiceType -f 'IntegrationServices'
 
@@ -799,7 +799,7 @@ try
 
             Context 'When the service account is a Managed Service Account' {
                 BeforeAll {
-                    Mock -CommandName Get-ServiceObject -MockWith $mockGetServiceOBject_DefaultInstance_ManagedServiceAccount
+                    Mock -CommandName Get-ServiceObject -MockWith $mockGetServiceObject_DefaultInstance_ManagedServiceAccount
                 }
 
                 $defaultGetTargetResourceParameters = @{

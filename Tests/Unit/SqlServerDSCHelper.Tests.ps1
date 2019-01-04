@@ -142,14 +142,16 @@ InModuleScope $script:moduleName {
     $mockSetupCredentialSecurePassword = ConvertTo-SecureString -String $mockSetupCredentialPassword -AsPlainText -Force
     $mockSetupCredential = New-Object -TypeName PSCredential -ArgumentList ($mockSetupCredentialUserName, $mockSetupCredentialSecurePassword)
 
-    $mockLocalSystemAccountUserName = 'NT AUTHORITY\LocalSystem'
-    $mockLocalSystemAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalSystemAccountUserName, (New-Object System.Security.SecureString)
+    $mockLocalSystemAccountUserName = 'NT AUTHORITY\SYSTEM'
+    $mockLocalSystemAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalSystemAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockManagedServiceAccountUserName = 'CONTOSO\msa$'
-    $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (New-Object System.Security.SecureString)
+    $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockDomainAccountUserName = 'CONTOSO\User1'
     $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockInnerException = New-Object System.Exception "This is a mock inner excpetion object"
+    $mockInnerException | Add-Member -Name 'Number' -Value 2 -MemberType NoteProperty
     $mockException = New-Object System.Exception "This is a mock exception object", $mockInnerException
+    $mockException | Add-Member -Name 'Number' -Value 1 -MemberType NoteProperty
     
 
     Describe 'Testing Restart-SqlService' {
@@ -2041,10 +2043,11 @@ InModuleScope $script:moduleName {
 
     Describe 'Testing Get-ServiceAccount'{
         Context 'When getting service account' {
-            It 'Should return LocalSystem' {
+            It 'Should return NT AUTHORITY\SYSTEM' {
                 $returnValue = Get-ServiceAccount -ServiceAccount $mockLocalSystemAccountCredential
                 
                 $returnValue.UserName | Should -Be $mockLocalSystemAccountUserName
+                $returnValue.Password | Should -Be $null
             }
 
             It 'Should return Domain Account and Password' {
@@ -2062,18 +2065,18 @@ InModuleScope $script:moduleName {
         }
     }
 
-    Describe 'Testing Find-ExceptionByMessage'{
+    Describe 'Testing Find-ExceptionByNumber'{
         Context 'When searching Exception objects'{
             It 'Should return true for main exception' { 
-                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "This is a mock exception object" | Should -Be $true
+                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorNumber 1 | Should -Be $true
             }
 
             It 'Should return true for inner exception' {
-                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "This is a mock inner excpetion object" | Should -Be $true
+                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorMessage 2 | Should -Be $true
             }
 
             It 'Should return false when message not found' {
-                Find-ExceptionByMessage -ExceptionToSearch $mockException -ErrorMessage "Will not find me" | Should -Be $false
+                Find-ExceptionByNumber -ExceptionToSearch $mockException -ErrorMessage 3 | Should -Be $false
             }
         }
     }

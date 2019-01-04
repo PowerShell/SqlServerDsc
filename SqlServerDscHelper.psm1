@@ -1505,9 +1505,6 @@ function Invoke-SqlScript
 
     .PARAMETER ServiceAccount
         Credential for the service account.
-
-    .PARAMETER ServiceType
-        Type of service account.
 #>
 function Get-ServiceAccount
 {
@@ -1561,41 +1558,49 @@ function Get-ServiceAccount
 
 <#
     .SYNOPSIS
-    Recursevly searches Exception stack for specific error message.
+    Recursevly searches Exception stack for specific error number.
 
     .PARAMETER ExceptionToSearch
     The Exception object to test
 
-    .PARAMETER ErrorMessage
-    The specific error message to look for
+    .PARAMETER ErrorNumber
+    The specific error number to look for
 
     .NOTES
     This function allows us to more easily write mocks.
 #>
-function Find-ExceptionByMessage
+function Find-ExceptionByNumber
 {
     # Define parameters
-    Param ($ExceptionToSearch,
-    $ErrorMessage)
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Exception]
+        $ExceptionToSearch,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $ErrorNumber
+    )
 
     # Define working variables
-    $messageFound = $false
+    $errorFound = $false
 
     # Check to see if the exception has an inner exception
     if ($ExceptionToSearch.InnerException)
     {
         # Assign found to the returned recursive call
-        $messageFound = Find-ExceptionByMessage -ExceptionToSearch $ExceptionToSearch.InnerException -ErrorMessage $ErrorMessage
+        $errorFound = Find-ExceptionByNumber -ExceptionToSearch $ExceptionToSearch.InnerException -ErrorNumber $ErrorNumber
     }
 
     # Check to see if it was found
-    if (!$messageFound)
+    if (!$errorFound)
     {
         # Check this exceptions message
-        $messageFound = $ExceptionToSearch.Message -ieq $ErrorMessage
+        $errorFound = $ExceptionToSearch.Number -eq $ErrorNumber
     }
 
     # Return
-    return $messageFound
+    return $errorFound
 }
 

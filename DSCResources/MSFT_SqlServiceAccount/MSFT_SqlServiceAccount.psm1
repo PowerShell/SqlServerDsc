@@ -303,7 +303,7 @@ function Get-ServiceObject
     )
 
     # Check to see if Integration services was specified, but no version specified
-    if (($ServiceType -eq "IntegrationServices") -and ([String]::IsNullOrEmpty($VersionNumber)))
+    if (($ServiceType -eq 'IntegrationServices') -and ([String]::IsNullOrEmpty($VersionNumber)))
     {
         $errorMessage = $script:localizedData.UnknownServiceType -f $ServiceType
         New-InvalidArgumentException -Message $errorMessage -ArgumentName 'VersionNumber'        
@@ -322,10 +322,10 @@ function Get-ServiceObject
     $serviceNameFilter = Get-SqlServiceName -InstanceName $InstanceName -ServiceType $ServiceType
 
     # Check the service type and append version number if IntegrationServices
-    if ($ServiceType -eq "IntegrationServices")
+    if ($ServiceType -eq 'IntegrationServices')
     {
         # Append version number
-        $serviceNameFilter = $serviceNameFilter + $VersionNumber
+        $serviceNameFilter = '{0}{1}' -f $serviceNameFilter, $VersionNumber
     }
 
     # Get the Service object for the specified instance/type
@@ -415,9 +415,6 @@ function ConvertTo-ManagedServiceType
     .PARAMETER ServiceType
         Type of service to be named. Must be one of the following:
         DatabaseEngine, SQLServerAgent, Search, IntegrationServices, AnalysisServices, ReportingServices, SQLServerBrowser, NotificationServices.
-
-    .PARAMETER VersionNumber
-        Version number of IntegrationServices.
 
     .EXAMPLE
         Get-SqlServiceName -InstanceName 'MSSQLSERVER' -ServiceType ReportingServices
