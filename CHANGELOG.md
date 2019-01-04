@@ -18,7 +18,7 @@
   - Fixed Get-ServiceObject when searching for IntegrationServices service.
     Unlike the rest of SQL Server services, the IntegrationServices service
     cannot be instanced, however you can have multiple versions installed.
-    Get-Service object would return the correct service name that you 
+    Get-Service object would return the correct service name that you
     are looking for, but it appends the version number at the end.  Added
     VersionNumber so the search would return the correct object.
 - Changes to SqlServiceAccount
