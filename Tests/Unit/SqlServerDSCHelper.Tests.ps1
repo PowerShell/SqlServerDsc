@@ -147,6 +147,8 @@ InModuleScope $script:moduleName {
     $mockManagedServiceAccountUserName = 'CONTOSO\msa$'
     $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockDomainAccountUserName = 'CONTOSO\User1'
+    $mockLocalServiceAccountUserName = 'NT SERIVICE\MyService'
+    $mockLocalServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalServiceAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockInnerException = New-Object System.Exception "This is a mock inner excpetion object"
     $mockInnerException | Add-Member -Name 'Number' -Value 2 -MemberType NoteProperty
@@ -2061,6 +2063,13 @@ InModuleScope $script:moduleName {
                 $returnValue = Get-ServiceAccount -ServiceAccount $mockManagedServiceAccountCredential
 
                 $returnValue.UserName | Should -Be $mockManagedServiceAccountUserName
+            }
+
+            It 'Should return local service account' {
+                $returnValue= Get-ServiceAccount -ServiceAccount $mockLocalServiceAccountCredential
+
+                $returnValue.UserName | Should -Be $mockLocalServiceAccountUserName
+                $returnValue.Password | Should -Be $null
             }
         }
     }
