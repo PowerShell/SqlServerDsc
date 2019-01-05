@@ -147,7 +147,7 @@ InModuleScope $script:moduleName {
     $mockManagedServiceAccountUserName = 'CONTOSO\msa$'
     $mockManagedServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockManagedServiceAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockDomainAccountUserName = 'CONTOSO\User1'
-    $mockLocalServiceAccountUserName = 'NT SERIVICE\MyService'
+    $mockLocalServiceAccountUserName = 'NT SERVICE\MyService'
     $mockLocalServiceAccountCredential = New-Object System.Management.Automation.PSCredential $mockLocalServiceAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockDomainAccountCredential = New-Object System.Management.Automation.PSCredential $mockDomainAccountUserName, (ConvertTo-SecureString "Password1" -AsPlainText -Force)
     $mockInnerException = New-Object System.Exception "This is a mock inner excpetion object"
