@@ -322,6 +322,8 @@ the operators email address.
 #### Parameters
 
 * **`[String]` Name** _(Key)_: The SQL Agent Operator name.
+* **`[String]` Ensure** _(Write)_: Specifies if the SQL Agent Operator should
+  be present or absent. Default is Present. { *Present* | Absent }
 * **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` EmailAddress** _(Write)_: The email address for the operator.
