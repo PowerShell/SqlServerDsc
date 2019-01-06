@@ -218,6 +218,8 @@ try
             return $mock
         }
 
+        $mockAccountDisabledException = New-Object System.Exception 'Account disabled'
+        $mockAccountDisabledException | Add-Member -Name 'Number' -Value 18470 -MemberType NoteProperty
         #endregion Pester Test Initialization
 
         Describe 'MSFT_SqlServerLogin\Get-TargetResource' {
@@ -372,6 +374,23 @@ try
                     $result | Should -Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should be return $true when a login should be present but disabled' {
+                    $mockTestTargetResourceParameters = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
+                    $mockTestTargetResourceParameters.Add('Ensure', 'Present')
+
+                    # Override mock declaration
+                    Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException}
+
+                    # Call the test target
+                    $result = Test-TargetResource @mockTestTargetResourceParameters
+
+                    # Should be true
+                    $result | Should -Be $true
+
+                    # Assert that our mock was called
+                    Assert-MockCAlled -CommandName Connect-SQL -Scope -It -Times 1 -Exactly
                 }
             }
 
