@@ -377,15 +377,15 @@ try
                 }
 
                 It 'Should be return $true when a login should be present but disabled' {
-                    $mockTestTargetResourceParameters = $testTargetResource_SqlLoginPresentWithDefaultValues.Clone()
+                    $mockTestTargetResourceParameters = $getTargetResource_KnownSqlLogin.Clone()
                     $mockTestTargetResourceParameters.Add('Ensure', 'Present')
                     $mockTestTargetResourceParameters.Add('Disabled', $true)
 
                     # Override mock declaration
-                    Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException}
+                    Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException} 
 
                     # Override Get-TargetResource
-                    Mock -CommandName Get-TargetResource {return @{
+                    <#Mock -CommandName Get-TargetResource {return @{
                         Ensure       = 'Present'
                         Name         = $mockTestTargetResourceParameters.Name
                         LoginType    = $mockTestTargetResourceParameters.LoginType
@@ -396,7 +396,7 @@ try
                         PasswordExpirationEnabled = $true
                         PasswordPolicyEnforced = $true
                       }
-                    }
+                    }#>
 
                     # Assert that our mock was called
                     Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly                    
