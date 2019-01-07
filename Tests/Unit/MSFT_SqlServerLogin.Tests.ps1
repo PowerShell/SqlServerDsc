@@ -392,6 +392,9 @@ try
                         ServerName   = 'Server1'
                         InstanceName = 'MSSQLERVER'
                         Disabled     = $true
+                        LoginMustChangePassword = $false
+                        PasswordExpirationEnabled = $true
+                        PasswordPolicyEnforced = $true
                       }
                     }
 
