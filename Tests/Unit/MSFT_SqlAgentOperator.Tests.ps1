@@ -148,8 +148,6 @@ try
                     $result = Get-TargetResource @testParameters
                     $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Name | Should -Be $testParameters.Name
-                    $result.EmailAddress | Should -Be $testParameters.EmailAddress
                 }
 
                 It 'Should call the mock function Connect-SQL' {
@@ -304,7 +302,6 @@ Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
                         Name   = 'Bob'
                         Ensure = 'Present'
                     }
-
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
                 }
