@@ -321,12 +321,12 @@ the operators email address.
 
 #### Parameters
 
-* **`[String]` Name** _(Key)_: The SQL Agent Operator name.
+* **`[String]` Name** _(Key)_: The name of the SQL Agent Operator.
 * **`[String]` Ensure** _(Write)_: Specifies if the SQL Agent Operator should
   be present or absent. Default is Present. { *Present* | Absent }
 * **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` EmailAddress** _(Write)_: The email address for the operator.
+* **`[String]` EmailAddress** _(Write)_: The email address to be used for the SQL Agent Operator.
 
 #### Examples
 
@@ -335,7 +335,7 @@ the operators email address.
 
 #### Known issues
 
-All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SQlAgentOperator).
+All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlAgentOperator).
 
 ### SqlAGListener
 
