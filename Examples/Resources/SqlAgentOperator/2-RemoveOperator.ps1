@@ -1,16 +1,11 @@
 <#
-.EXAMPLE
-    This example shows how to ensure that the SQL Agent Operator
-    DbaTeam does not exist.
+    .EXAMPLE
+        This example shows how to ensure that the SQL Agent Operator
+        DbaTeam does not exist.
 #>
 
 Configuration Example
 {
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $SqlAdministratorCredential
-    )
 
     Import-DscResource -ModuleName SqlServerDsc
 
