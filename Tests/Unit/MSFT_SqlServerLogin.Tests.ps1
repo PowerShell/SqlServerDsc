@@ -399,8 +399,8 @@ try
                     }
 
                     # Assert that our mock was called
-                    Assert-MockCalled -CommandName Get-TargetResource -Scope -It -Times 1 -Exactly                    
-                    Assert-MockCAlled -CommandName Connect-SQL -Scope -It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly                    
+                    Assert-MockCAlled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
 
                     # Call the test target
                     $result = Test-TargetResource @mockTestTargetResourceParameters
