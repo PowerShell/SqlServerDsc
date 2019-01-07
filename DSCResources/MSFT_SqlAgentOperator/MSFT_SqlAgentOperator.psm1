@@ -38,8 +38,7 @@ function Get-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -49,7 +48,6 @@ function Get-TargetResource
         $InstanceName,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $EmailAddress
     )
@@ -134,8 +132,7 @@ function Set-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -145,7 +142,6 @@ function Set-TargetResource
         $InstanceName,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $EmailAddress
     )
@@ -283,8 +279,7 @@ function Test-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -294,7 +289,6 @@ function Test-TargetResource
         $InstanceName,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $EmailAddress
     )
@@ -304,7 +298,14 @@ function Test-TargetResource
             -f $Name
     )
 
-    $getTargetResourceResult = Get-TargetResource @PSBoundParameters
+    $getTargetResourceParameters = @{
+        Name           = $Name
+        ServerName     = $ServerName
+        InstanceName   = $InstanceName
+        EmailAddress   = $EmailAddress
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
     $isOperatorInDesiredState = $true
 
     switch ($Ensure)
