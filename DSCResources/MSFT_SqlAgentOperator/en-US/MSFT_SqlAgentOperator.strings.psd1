@@ -10,7 +10,7 @@ ConvertFrom-StringData @'
     CreateOperatorSetError = Unable to create the SQL Agent Operator '{0}' on {1}\\{2}.
     DeleteSqlAgentOperator = Deleting SQL Agent Operator '{0}'.
     DropOperatorSetError = Unable to drop the SQL Agent Operator '{0}' on {1}\\{2}.
-    TestSqlAgentOperator = Checking if SQL Agent Operator '{0}' is present of absent.
+    TestSqlAgentOperator = Checking if SQL Agent Operator '{0}' is present or absent.
     SqlAgentOperatorExistsButShouldNot = SQL Agent Operator exists but ensure is set to Absent. The SQL Agent Operator '{0}' should be deleted.
     SqlAgentOperatorDoesNotExistButShould  = SQL Agent Operator does not exist but Ensure is set to Present. The SQL Agent Operator '{0}' should be created.
     SqlAgentOperatorExistsButEmailWrong  = SQL Agent Operator '{0}' exists but has the wrong email address. Email address is currently '{1}' and should be updated to '{2}'.
