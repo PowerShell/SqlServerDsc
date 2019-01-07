@@ -12,17 +12,19 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAgentOperator'
     This function gets the SQL Agent Operator.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+    Specifies if the SQL Agent Operator should be present or absent. Default is Present
 
     .PARAMETER Name
-    The name of the SQL Agent operator to configure.
+    The name of the SQL Agent Operator.
 
     .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER EmailAddress
+    The email address to be used for the SQL Agent Operator.
 #>
 function Get-TargetResource
 {
@@ -30,11 +32,6 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Ensure = 'Present',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -57,7 +54,15 @@ function Get-TargetResource
         $EmailAddress
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $returnValue = @{
+        Name         = $null
+        Ensure       = 'Absent'
+        ServerName   = $ServerName
+        InstanceName = $InstanceName
+        EmailAddress = $null
+    }
+
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -65,15 +70,16 @@ function Get-TargetResource
             $script:localizedData.GetSqlAgents
         )
         # Check operator exists
-        $sqlOperatorObject = $($sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name})
+        $sqlOperatorObject = $sqlServerObject.JobServer.Operators | Where-Object {$_.Name -eq $Name}
         if ($sqlOperatorObject)
         {
             Write-Verbose -Message (
                 $script:localizedData.SqlAgentPresent `
                     -f $Name
             )
-            $Ensure = 'Present'
-            $SqlOperatorEmail = $sqlOperatorObject.EmailAddress
+            $returnValue['Ensure'] = 'Present'
+            $returnValue['Name'] = $sqlOperatorObject.Name
+            $returnValue['EmailAddress'] = $sqlOperatorObject.EmailAddress
         }
         else
         {
@@ -81,20 +87,16 @@ function Get-TargetResource
                 $script:localizedData.SqlAgentAbsent `
                     -f $Name
             )
-            $Ensure = 'Absent'
-            $SqlOperatorEmail = $EmailAddress
         }
     }
-
-    $returnValue = @{
-        Name         = $Name
-        Ensure       = $Ensure
-        ServerName   = $ServerName
-        InstanceName = $InstanceName
-        EmailAddress = $SqlOperatorEmail
+    else
+    {
+        throw New-TerminatingError -ErrorType ConnectServerFailed `
+            -FormatArgs @($ServerName, $InstanceName) `
+            -ErrorCategory ConnectionError
     }
 
-    $returnValue
+    return $returnValue
 }
 
 <#
@@ -102,17 +104,19 @@ function Get-TargetResource
     This function sets the SQL Agent Operator.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+    Specifies if the SQL Agent Operator should be present or absent. Default is Present
 
     .PARAMETER Name
-    The name of the SQL Agent operator to configure.
+    The name of the SQL Agent Operator.
 
     .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER EmailAddress
+    The email address to be used for the SQL Agent Operator.
 #>
 function Set-TargetResource
 {
@@ -146,7 +150,7 @@ function Set-TargetResource
         $EmailAddress
     )
 
-    $sqlServerObject = Connect-SQL -SQLServer $ServerName -SQLInstanceName $InstanceName
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
     if ($sqlServerObject)
     {
@@ -158,12 +162,13 @@ function Set-TargetResource
 
                 if ($sqlOperatorObject)
                 {
-                    if ($PSBoundParameters.ContainsKey('EmailAddress')) {
+                    if ($PSBoundParameters.ContainsKey('EmailAddress'))
+                    {
                         try
                         {
                             Write-Verbose -Message (
-                                $script:localizedData.UpdatingSqlAgentOperator `
-                                    -f $Name
+                                $script:localizedData.UpdateEmailAddress `
+                                    -f $Name, $EmailAddress
                             )
                             $sqlOperatorObject.EmailAddress = $EmailAddress
                             $sqlOperatorObject.Alter()
@@ -189,7 +194,8 @@ function Set-TargetResource
                                 $script:localizedData.AddSqlAgentOperator `
                                     -f $Name
                             )
-                            if ($PSBoundParameters.ContainsKey('EmailAddress')) {
+                            if ($PSBoundParameters.ContainsKey('EmailAddress'))
+                            {
                                 Write-Verbose -Message (
                                     $script:localizedData.UpdateEmailAddress `
                                         -f $EmailAddress, $Name
@@ -233,6 +239,12 @@ function Set-TargetResource
             }
         }
     }
+    else
+    {
+        throw New-TerminatingError -ErrorType ConnectServerFailed `
+            -FormatArgs @($ServerName, $InstanceName) `
+            -ErrorCategory ConnectionError
+    }
 }
 
 <#
@@ -240,17 +252,19 @@ function Set-TargetResource
     This function tests the SQL Agent Operator.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+    Specifies if the SQL Agent Operator should be present or absent. Default is Present
 
     .PARAMETER Name
-    The name of the SQL Agent operator to configure.
+    The name of the SQL Agent Operator.
 
     .PARAMETER ServerName
     The host name of the SQL Server to be configured.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
+
+    .PARAMETER EmailAddress
+    The email address to be used for the SQL Agent Operator.
 #>
 function Test-TargetResource
 {
@@ -309,18 +323,18 @@ function Test-TargetResource
 
         'Present'
         {
-            if ($getTargetResourceResult.Ensure -ne 'Present')
-            {
-                New-VerboseMessage -Message (
-                    $script:localizedData.SqlAgentOperatorDoesNotExistButShould `
-                        -f $name
-                )
-                $isOperatorInDesiredState = $false
-            }
-            elseif ($getTargetResourceResult.EmailAddress -ne $EmailAddress -and $PSBoundParameters.ContainsKey('EmailAddress'))
+            if ($getTargetResourceResult.EmailAddress -ne $EmailAddress -and $PSBoundParameters.ContainsKey('EmailAddress'))
             {
                 New-VerboseMessage -Message (
                     $script:localizedData.SqlAgentOperatorExistsButEmailWrong `
+                        -f $name, $getTargetResourceResult.EmailAddress, $EmailAddress
+                )
+                $isOperatorInDesiredState = $false
+            }
+            elseif ($getTargetResourceResult.Ensure -ne 'Present')
+            {
+                New-VerboseMessage -Message (
+                    $script:localizedData.SqlAgentOperatorDoesNotExistButShould `
                         -f $name
                 )
                 $isOperatorInDesiredState = $false
