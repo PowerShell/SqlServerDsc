@@ -15,12 +15,13 @@
 - Change to SqlServerLogin so it doesn't check properties for absent logins.
   - Fix for ([issue #1096](https://github.com/PowerShell/SqlServerDsc/issues/1096))
 - Changes to SqlServiceAccount
-  - Fixed Get-ServiceObject when searching for IntegrationServices service.
-    Unlike the rest of SQL Server services, the IntegrationServices service
+  - Fixed Get-ServiceObject when searching for Integration Services service.
+    Unlike the rest of SQL Server services, the Integration Services service
     cannot be instanced, however you can have multiple versions installed.
     Get-Service object would return the correct service name that you
-    are looking for, but it appends the version number at the end.  Added
-    VersionNumber so the search would return the correct object.
+    are looking for, but it appends the version number at the end. Added
+    parameter VersionNumber so the search would return the correct
+    service name.
 - Changes to SqlServiceAccount
   - Added code to allow for using Managed Service Accounts.
 - Changes to SqlServerLogin
@@ -81,14 +82,6 @@
   - Fix unit tests that didn't mock some of the calls. It no longer fail
     when a SQL Server installation is not present on the node running the
     unit test ([issue #983](https://github.com/PowerShell/SqlServerDsc/issues/983)).
-- Changes to SqlServiceAccount
-  - Fixed Get-ServiceObject when searching for IntegrationServices service,
-    added VersionNumber.
-- Changes to SqlServiceAccount
-  - Added code to allow for using Managed Service Accounts.
-- Changes to SqlServerLogin
-  - Fixed issue in Test-TargetResource to valid password
-    on disabled accounts.
 
 ## 12.0.0.0
 

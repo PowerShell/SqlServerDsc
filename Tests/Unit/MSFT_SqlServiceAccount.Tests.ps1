@@ -60,11 +60,11 @@ try
         $mockServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockDesiredServiceAccountName, (New-Object -TypeName System.Security.SecureString))
         $mockDefaultServiceAccountName = 'NT SERVICE\MSSQLSERVER'
         $mockDefaultServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockDefaultServiceAccountName, (New-Object -TypeName System.Security.SecureString))
-        $mockLocalServiceAccountName = "$($mockSqlServer)\SqlService"
+        $mockLocalServiceAccountName = '$($mockSqlServer)\SqlService'
         $mockLocalServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockLocalServiceAccountName, (New-Object -TypeName System.Security.SecureString))
         $mockManagedServiceAccountName = 'CONTOSO\sqlservice$'
         $mockManagedServiceAccountCredential = (New-Object -TypeName System.Management.Automation.PSCredential $mockManagedServiceAccountName, (New-Object -TypeName System.Security.SecureString))
-        $mockIntegrationServicesObject = @{Name = "MsDtsServer130"}
+        $mockIntegrationServicesObject = @{Name = 'MsDtsServer130'}
 
         # Stores the result of SetServiceAccount calls
         $testServiceAccountUpdated = @{
@@ -672,7 +672,7 @@ try
                 It 'Should return service when VersionNumber is specified'{
                     $getServiceObjectParameters = $defaultGetServiceObjectParameters.Clone()
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
-                    $getServiceObjectParameters.InstanceName = "MSSQLSERVER"
+                    $getServiceObjectParameters.InstanceName = 'MSSQLSERVER'
                     $getServiceObjectParameters.VersionNumber = '130'
 
                     Get-ServiceObject @getServiceObjectParameters | Should -Be $mockIntegrationServicesObject

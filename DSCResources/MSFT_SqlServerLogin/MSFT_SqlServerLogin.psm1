@@ -423,7 +423,7 @@ function Test-TargetResource
                     # Check to see if the parameter of $Disabled is true
                     if ($Disabled)
                     {
-                        # The result of a valid password but account is disabled is an error with a specific error message
+                        # The result of a valid password but account is disabled is an error with a specific error message.  The error number for a disabled account is 18470
                         if (!(Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18470))
                         {
                             # The password was not correct, password validation failed
