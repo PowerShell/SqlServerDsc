@@ -381,21 +381,23 @@ try
                     $mockTestTargetResourceParameters.Add('Ensure', 'Present')
                     $mockTestTargetResourceParameters.Add('Disabled', $true)
                     $mockTestTargetResourceParameters.Add('LoginType', 'SqlLogin')
-
+                    $mockTestTargetResourceParameters.Add('LoginCredential', (New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($mockTestTargetResourceParameters.Name, $mockSqlLoginPassword)))
+                    
                     # Override mock declaration
-                    Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException} 
+                    Mock -CommandName Connect-SQL -MockWith {throw $mockAccountDisabledException} 
 
                     # Override Get-TargetResource
-                    Mock -CommandName Get-TargetResource {return @{
+                    Mock -CommandName Get-TargetResource {return New-Object PSObject -Property @{
                         Ensure       = 'Present'
                         Name         = $mockTestTargetResourceParameters.Name
                         LoginType    = $mockTestTargetResourceParameters.LoginType
                         ServerName   = 'Server1'
                         InstanceName = 'MSSQLERVER'
                         Disabled     = $true
-                        MustChangePassword = $false
-                        PasswordPolicyEnforced = $true
-                        PasswordExpirationEnabled = $true
+                        LoginMustChangePassword = $false
+                        LoginPasswordPolicyEnforced = $true
+                        LoginPasswordExpirationEnabled = $true
+                        #LoginCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($mockTestTargetResourceParameters.Name, $mockSqlLoginPassword)
                       }
                     }
         
