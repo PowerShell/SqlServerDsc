@@ -385,7 +385,7 @@ try
                     Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException} 
 
                     # Override Get-TargetResource
-                    <#Mock -CommandName Get-TargetResource {return @{
+                    Mock -CommandName Get-TargetResource {return @{
                         Ensure       = 'Present'
                         Name         = $mockTestTargetResourceParameters.Name
                         LoginType    = $mockTestTargetResourceParameters.LoginType
@@ -396,15 +396,16 @@ try
                         PasswordExpirationEnabled = $true
                         PasswordPolicyEnforced = $true
                       }
-                    }#>
+                    }
 
                     # Assert that our mock was called
-                    #Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly                    
+                    #
                     
 
                     # Call the test target
                     $result = Test-TargetResource @mockTestTargetResourceParameters
 
+                    Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly
                     Assert-MockCAlled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
 
                     # Should be true
