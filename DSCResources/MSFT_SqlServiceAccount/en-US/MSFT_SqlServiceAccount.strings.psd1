@@ -10,4 +10,5 @@ ConvertFrom-StringData @'
     SetServiceAccountFailed = Unable to set the service account for {0} on {1}. Message {2}
     UnknownServiceType = Unknown or unsupported service type '{0}' specified!
     NotInstanceAware = Service type '{0}' is not instance aware.
+	MissingParameter = Missing parameter detected for '{0}'!
 '@

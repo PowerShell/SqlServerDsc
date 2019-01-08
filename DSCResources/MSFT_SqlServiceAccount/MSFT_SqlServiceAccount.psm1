@@ -305,7 +305,7 @@ function Get-ServiceObject
     # Check to see if Integration services was specified, but no version specified
     if (($ServiceType -eq 'IntegrationServices') -and ([String]::IsNullOrEmpty($VersionNumber)))
     {
-        $errorMessage = $script:localizedData.UnknownServiceType -f $ServiceType
+        $errorMessage = $script:localizedData.MissingParameter -f $ServiceType
         New-InvalidArgumentException -Message $errorMessage -ArgumentName 'VersionNumber'        
     }
 

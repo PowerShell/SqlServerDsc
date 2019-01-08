@@ -664,7 +664,7 @@ try
                     $getServiceObjectParameters.ServiceType = 'IntegrationServices'
                     $getServiceObjectParameters.InstanceName = 'MSSQLSERVER'
 
-                    $testErrorMessage = $script:localizedData.UnknownServiceType -f 'IntegrationServices'
+                    $testErrorMessage = $script:localizedData.MissingParameter -f 'IntegrationServices'
 
                     {Get-ServiceObject @getServiceObjectParameters} | Should -Throw $testErrorMessage
                 }
