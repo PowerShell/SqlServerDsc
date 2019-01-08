@@ -393,12 +393,12 @@ try
                         ServerName   = 'Server1'
                         InstanceName = 'MSSQLERVER'
                         Disabled     = $true
-                        LoginMustChangePassword = $false
-                        PasswordExpirationEnabled = $true
+                        MustChangePassword = $false
                         PasswordPolicyEnforced = $true
+                        PasswordExpirationEnabled = $true
                       }
                     }
-
+        
                     # Call the test target
                     $result = Test-TargetResource @mockTestTargetResourceParameters
 
