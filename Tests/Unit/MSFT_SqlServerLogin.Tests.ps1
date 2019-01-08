@@ -380,6 +380,7 @@ try
                     $mockTestTargetResourceParameters = $getTargetResource_KnownSqlLogin.Clone()
                     $mockTestTargetResourceParameters.Add('Ensure', 'Present')
                     $mockTestTargetResourceParameters.Add('Disabled', $true)
+                    $mockTestTargetResourceParameters.Add('LoginType', 'SqlLogin')
 
                     # Override mock declaration
                     Mock -CommandName Connect-SQL -MockWith {return $mockAccountDisabledException} 
@@ -397,10 +398,6 @@ try
                         PasswordPolicyEnforced = $true
                       }
                     }
-
-                    # Assert that our mock was called
-                    #
-                    
 
                     # Call the test target
                     $result = Test-TargetResource @mockTestTargetResourceParameters
