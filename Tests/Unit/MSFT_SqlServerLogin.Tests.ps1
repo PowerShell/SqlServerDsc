@@ -397,7 +397,6 @@ try
                         LoginMustChangePassword = $false
                         LoginPasswordPolicyEnforced = $true
                         LoginPasswordExpirationEnabled = $true
-                        #LoginCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($mockTestTargetResourceParameters.Name, $mockSqlLoginPassword)
                       }
                     }
         

@@ -22,7 +22,6 @@
     are looking for, but it appends the version number at the end. Added
     parameter VersionNumber so the search would return the correct
     service name.
-- Changes to SqlServiceAccount
   - Added code to allow for using Managed Service Accounts.
 - Changes to SqlServerLogin
   - Fixed issue in Test-TargetResource to valid password on disabled accounts.

@@ -1528,7 +1528,7 @@ Manage the service account for SQL Server services.
   Useful for password changes. This will cause `Set-TargetResource` to be run on
   each consecutive run.
 * **`[String]` VersionNumber** (Write): The version number of the SQL Server,
-  mandatory for when Integrationservices is used as **ServiceType**.
+  mandatory for when IntegrationServices is used as **ServiceType**.
   Eg. 130 for SQL 2016.  
 
 #### Read-Only Properties from Get-TargetResource
