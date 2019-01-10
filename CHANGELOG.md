@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 12.2.0.0
+
 - Changes to SqlServerDsc
   - During testing in AppVeyor the Build Worker is restarted in the install
     step to make sure the are no residual changes left from a previous SQL
