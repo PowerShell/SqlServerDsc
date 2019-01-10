@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Changes to SqlServiceAccount
+  - Fixed Get-ServiceObject when searching for Integration Services service.
+    Unlike the rest of SQL Server services, the Integration Services service
+    cannot be instanced, however you can have multiple versions installed.
+    Get-Service object would return the correct service name that you
+    are looking for, but it appends the version number at the end. Added
+    parameter VersionNumber so the search would return the correct
+    service name.
+  - Added code to allow for using Managed Service Accounts.
+- Changes to SqlServerLogin
+  - Fixed issue in Test-TargetResource to valid password on disabled accounts.
+    ([issue #915](https://github.com/PowerShell/SqlServerDsc/issues/915)).
+
 ## 12.2.0.0
 
 - Changes to SqlServerDsc
@@ -16,18 +29,6 @@
       [Adam Rush (@adamrushuk)](https://github.com/adamrushuk)
 - Change to SqlServerLogin so it doesn't check properties for absent logins.
   - Fix for ([issue #1096](https://github.com/PowerShell/SqlServerDsc/issues/1096))
-- Changes to SqlServiceAccount
-  - Fixed Get-ServiceObject when searching for Integration Services service.
-    Unlike the rest of SQL Server services, the Integration Services service
-    cannot be instanced, however you can have multiple versions installed.
-    Get-Service object would return the correct service name that you
-    are looking for, but it appends the version number at the end. Added
-    parameter VersionNumber so the search would return the correct
-    service name.
-  - Added code to allow for using Managed Service Accounts.
-- Changes to SqlServerLogin
-  - Fixed issue in Test-TargetResource to valid password on disabled accounts.
-    ([issue #915](https://github.com/PowerShell/SqlServerDsc/issues/915)).
 
 ## 12.1.0.0
 

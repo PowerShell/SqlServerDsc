@@ -220,6 +220,10 @@ try
 
         $mockAccountDisabledException = New-Object System.Exception 'Account disabled'
         $mockAccountDisabledException | Add-Member -Name 'Number' -Value 18470 -MemberType NoteProperty
+        $mockLoginFailedException = New-Object System.Exception 'Login failed'
+        $mockLoginFailedException | Add-Member -Name 'Number' -Value 18456 -MemberType NoteProperty
+        $mockException = New-Object System.Exception 'Something went wrong'
+        $mockException | Add-Member -Name 'Number' -Value 1 -MemberType NoteProperty
         #endregion Pester Test Initialization
 
         Describe 'MSFT_SqlServerLogin\Get-TargetResource' {
@@ -408,8 +412,72 @@ try
 
                     # Should be true
                     $result | Should -Be $true
-
                 }
+
+                It 'Should be return $false when a login should be present but disabled and password incorrect' {
+                    $mockTestTargetResourceParameters = $getTargetResource_KnownSqlLogin.Clone()
+                    $mockTestTargetResourceParameters.Add('Ensure', 'Present')
+                    $mockTestTargetResourceParameters.Add('Disabled', $true)
+                    $mockTestTargetResourceParameters.Add('LoginType', 'SqlLogin')
+                    $mockTestTargetResourceParameters.Add('LoginCredential', (New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($mockTestTargetResourceParameters.Name, $mockSqlLoginPassword)))
+                    
+                    # Override mock declaration
+                    Mock -CommandName Connect-SQL -MockWith {throw $mockLoginFailedException} 
+
+                    # Override Get-TargetResource
+                    Mock -CommandName Get-TargetResource {return New-Object PSObject -Property @{
+                        Ensure       = 'Present'
+                        Name         = $mockTestTargetResourceParameters.Name
+                        LoginType    = $mockTestTargetResourceParameters.LoginType
+                        ServerName   = 'Server1'
+                        InstanceName = 'MSSQLERVER'
+                        Disabled     = $true
+                        LoginMustChangePassword = $false
+                        LoginPasswordPolicyEnforced = $true
+                        LoginPasswordExpirationEnabled = $true
+                      }
+                    }
+        
+                    # Call the test target
+                    $result = Test-TargetResource @mockTestTargetResourceParameters
+
+                    Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly
+                    Assert-MockCAlled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+
+                    # Should be true
+                    $result | Should -Be $false
+                }
+                
+                It 'Should throw exception when unkown error occurred and account is disabled' {
+                    $mockTestTargetResourceParameters = $getTargetResource_KnownSqlLogin.Clone()
+                    $mockTestTargetResourceParameters.Add('Ensure', 'Present')
+                    $mockTestTargetResourceParameters.Add('Disabled', $true)
+                    $mockTestTargetResourceParameters.Add('LoginType', 'SqlLogin')
+                    $mockTestTargetResourceParameters.Add('LoginCredential', (New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($mockTestTargetResourceParameters.Name, $mockSqlLoginPassword)))
+                    
+                    # Override mock declaration
+                    Mock -CommandName Connect-SQL -MockWith {throw $mockException} 
+
+                    # Override Get-TargetResource
+                    Mock -CommandName Get-TargetResource {return New-Object PSObject -Property @{
+                        Ensure       = 'Present'
+                        Name         = $mockTestTargetResourceParameters.Name
+                        LoginType    = $mockTestTargetResourceParameters.LoginType
+                        ServerName   = 'Server1'
+                        InstanceName = 'MSSQLERVER'
+                        Disabled     = $true
+                        LoginMustChangePassword = $false
+                        LoginPasswordPolicyEnforced = $true
+                        LoginPasswordExpirationEnabled = $true
+                      }
+                    }
+        
+                    # Call the test target
+                    { Test-TargetResource @mockTestTargetResourceParameters } | Should -Throw
+
+                    Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly
+                    Assert-MockCAlled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }                
             }
 
             Context 'When the desired state is Present' {

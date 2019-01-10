@@ -424,14 +424,23 @@ function Test-TargetResource
                     if ($Disabled)
                     {
                         # The result of a valid password but account is disabled is an error with a specific error message.  The error number for a disabled account is 18470
-                        if (!(Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18470))
+                        if ((Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18470))
                         {
+                            New-VerboseMessage -Message "Password valid, but '$Name' is disabled."                            
+                        }
+                        elseif ((Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18456))
+                        {
+                            New-VerboseMessage -Message $_.Exception.message
+                            
                             # The password was not correct, password validation failed
                             $testPassed = $false
                         }
                         else 
                         {
-                            New-VerboseMessage -Message "Password valid, but '$Name' is disabled."
+                            New-VerboseMessage -Message "Unknown error: $($_.Exception.message)"
+                            
+                            # Something else went wrong, rethrow error
+                            throw
                         }
                     }
                     else 
