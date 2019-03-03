@@ -32,7 +32,7 @@
     easier and faster.
   - Changed the logic of 'Build the argument string to be passed to setup' to
     not quote the value if root directory is specified
-    ([issue #1254] (https://github.com/PowerShell/SqlServerDsc/issues/1254))
+    ([issue #1254](https://github.com/PowerShell/SqlServerDsc/issues/1254)).
 
 ## 12.3.0.0
 

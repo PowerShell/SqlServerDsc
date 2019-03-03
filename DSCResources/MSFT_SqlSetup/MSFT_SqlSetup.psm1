@@ -1574,6 +1574,7 @@ function Set-TargetResource
                 }
                 else
                 {
+                    # Logic added as a fix for Issue#1254 SqlSetup:Fails when a root directory is specified
                     if($currentSetupArgument.Value -match '^[a-zA-Z]:\\$')
                     {
                         $setupArgumentValue = $currentSetupArgument.Value   
