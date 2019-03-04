@@ -3348,6 +3348,7 @@ try
 
                     It 'Should set the system in the desired state when feature is SQLENGINE' {
                         $testParameters = $mockDefaultParameters.Clone()
+                        # This is also used to regression test issue #1254, SqlSetup fails when root directory is specified.
                         $testParameters += @{
                             SQLSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
                             ASSysAdminAccounts = 'COMPANY\User1','COMPANY\SQLAdmins'
