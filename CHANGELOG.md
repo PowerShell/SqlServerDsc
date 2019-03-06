@@ -33,6 +33,9 @@
   - Changed the logic of 'Build the argument string to be passed to setup' to
     not quote the value if root directory is specified
     ([issue #1254](https://github.com/PowerShell/SqlServerDsc/issues/1254)).
+  - Changed the logic of how default value of FailoverClusterGroupName is set
+    as this was causing 
+    the ([issue #448](https://github.com/PowerShell/SqlServerDsc/issues/448)).
 
 ## 12.3.0.0
 
