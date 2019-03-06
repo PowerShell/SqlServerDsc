@@ -973,7 +973,7 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $FailoverClusterGroupName = "SQL Server ($InstanceName)",
+        $FailoverClusterGroupName,
 
         [Parameter()]
         [System.String[]]
@@ -1024,6 +1024,13 @@ function Set-TargetResource
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
     $InstanceName = $InstanceName.ToUpper()
+
+    # Fixing issue 448, setting FailoverClusterGroupName to default value if not specified in configuration
+    
+    if(-not $PSBoundParameters.ContainsKey('FailoverClusterGroupName'))
+    {
+        $boundParameters.FailoverClusterGroupName = "SQL Server($InstanceName)"
+    }
 
     $parametersToEvaluateTrailingSlash = @(
         'InstanceDir',
@@ -1900,14 +1907,236 @@ function Test-TargetResource
         [System.String]
         $Action = 'Install',
 
+        [Parameter()]
+        [System.String]
+        $SourcePath,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SourceCredential,
+
+        [Parameter()]
+        [System.Boolean]
+        $SuppressReboot,
+
+        [Parameter()]
+        [System.Boolean]
+        $ForceReboot,
+
+        [Parameter()]
+        [System.String]
+        $Features,
+
         [Parameter(Mandatory = $true)]
         [System.String]
-        $InstanceName
+        $InstanceName,
+
+        [Parameter()]
+        [System.String]
+        $InstanceID,
+
+        [Parameter()]
+        [System.String]
+        $ProductKey,
+
+        [Parameter()]
+        [System.String]
+        $UpdateEnabled,
+
+        [Parameter()]
+        [System.String]
+        $UpdateSource,
+
+        [Parameter()]
+        [System.String]
+        $SQMReporting,
+
+        [Parameter()]
+        [System.String]
+        $ErrorReporting,
+
+        [Parameter()]
+        [System.String]
+        $InstallSharedDir,
+
+        [Parameter()]
+        [System.String]
+        $InstallSharedWOWDir,
+
+        [Parameter()]
+        [System.String]
+        $InstanceDir,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SQLSvcAccount,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $AgtSvcAccount,
+
+        [Parameter()]
+        [System.String]
+        $SQLCollation,
+
+        [Parameter()]
+        [System.String[]]
+        $SQLSysAdminAccounts,
+
+        [Parameter()]
+        [ValidateSet('SQL', 'Windows')]
+        [System.String]
+        $SecurityMode,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $SAPwd,
+
+        [Parameter()]
+        [System.String]
+        $InstallSQLDataDir,
+
+        [Parameter()]
+        [System.String]
+        $SQLUserDBDir,
+
+        [Parameter()]
+        [System.String]
+        $SQLUserDBLogDir,
+
+        [Parameter()]
+        [System.String]
+        $SQLTempDBDir,
+
+        [Parameter()]
+        [System.String]
+        $SQLTempDBLogDir,
+
+        [Parameter()]
+        [System.String]
+        $SQLBackupDir,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $FTSvcAccount,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $RSSvcAccount,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $ASSvcAccount,
+
+        [Parameter()]
+        [System.String]
+        $ASCollation,
+
+        [Parameter()]
+        [System.String[]]
+        $ASSysAdminAccounts,
+
+        [Parameter()]
+        [System.String]
+        $ASDataDir,
+
+        [Parameter()]
+        [System.String]
+        $ASLogDir,
+
+        [Parameter()]
+        [System.String]
+        $ASBackupDir,
+
+        [Parameter()]
+        [System.String]
+        $ASTempDir,
+
+        [Parameter()]
+        [System.String]
+        $ASConfigDir,
+
+        [Parameter()]
+        [ValidateSet('MULTIDIMENSIONAL','TABULAR','POWERPIVOT', IgnoreCase = $false)]
+        [System.String]
+        $ASServerMode,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $ISSvcAccount,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $SqlSvcStartupType,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $AgtSvcStartupType,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $IsSvcStartupType,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $AsSvcStartupType,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $RsSvcStartupType,
+
+        [Parameter()]
+        [System.String]
+        [ValidateSet('Automatic', 'Disabled', 'Manual')]
+        $BrowserSvcStartupType,
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.String]
+        $FailoverClusterGroupName,
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.String[]]
+        $FailoverClusterIPAddress,
+
+        [Parameter(ParameterSetName = 'ClusterInstall')]
+        [System.String]
+        $FailoverClusterNetworkName,
+
+        [Parameter()]
+        [System.UInt32]
+        $SqlTempdbFileCount,
+
+        [Parameter()]
+        [System.UInt32]
+        $SqlTempdbFileSize,
+
+        [Parameter()]
+        [System.UInt32]
+        $SqlTempdbFileGrowth,
+
+        [Parameter()]
+        [System.UInt32]
+        $SqlTempdbLogFileSize,
+
+        [Parameter()]
+        [System.UInt32]
+        $SqlTempdbLogFileGrowth,
+
+        [Parameter()]
+        [System.UInt32]
+        $SetupProcessTimeout = 7200,
+
+        [Parameter()]
+        [System.String[]]
+        $FeatureFlag 
     )
 
     $result = $true
-
-   <# Write-Debug 'I am entering Test, it''s an issue inside'
 
     $getTargetResourceParameters = @{
         Action = $Action
@@ -1923,7 +2152,12 @@ function Test-TargetResource
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
     Write-Verbose -Message ($script:localizedData.FeaturesFound -f $($getTargetResourceResult.Features))
 
-    
+    # Fixing issue 448, setting FailoverClusterGroupName to default value if not specified in configuration
+
+    if(-not $boundParameters.ContainsKey('FailoverClusterGroupName'))
+    {
+        $boundParameters.FailoverClusterGroupName = "SQL Server($InstanceName)"
+    }
 
     if ($getTargetResourceResult.Features )
     {
