@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlScript'
+
 <#
     .SYNOPSIS
         Returns the current state of the SQL Server features.
@@ -89,6 +91,10 @@ function Get-TargetResource
         Verbose        = $VerbosePreference
         ErrorAction    = 'Stop'
     }
+
+    Write-Verbose -Message (
+        $script:localizedData.ExecutingGetScript -f $GetFilePath, $ServerInstance
+    )
 
     $result = Invoke-SqlScript @invokeParameters
 
@@ -177,6 +183,10 @@ function Set-TargetResource
         $Variable
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.ExecutingSetScript -f $SetFilePath, $ServerInstance
+    )
+
     $invokeParameters = @{
         ServerInstance = $ServerInstance
         InputFile      = $SetFilePath
@@ -261,8 +271,16 @@ function Test-TargetResource
         $Variable
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration
+    )
+
     try
     {
+        Write-Verbose -Message (
+            $script:localizedData.ExecutingTestScript -f $TestFilePath, $ServerInstance
+        )
+
         $invokeParameters = @{
             ServerInstance = $ServerInstance
             InputFile      = $TestFilePath
@@ -277,10 +295,18 @@ function Test-TargetResource
 
         if ($null -eq $result)
         {
+            Write-Verbose -Message (
+                $script:localizedData.InDesiredState
+            )
+
             return $true
         }
         else
         {
+            Write-Verbose -Message (
+                $script:localizedData.NotInDesiredState
+            )
+
             return $false
         }
     }
