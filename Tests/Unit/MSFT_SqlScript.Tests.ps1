@@ -41,12 +41,14 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup {
+function Invoke-TestSetup
+{
     # Loading mocked classes
     Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SqlPowerShellSqlExecutionException.cs')
 }
 
-function Invoke-TestCleanup {
+function Invoke-TestCleanup
+{
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 }
 
@@ -156,44 +158,59 @@ try
         }
 
         Describe 'MSFT_SqlScript\Test-TargetResource' {
-            Context 'When Test-TargetResource runs script without issue' {
-                Mock -CommandName Invoke-SqlScript
+            Context 'When the system is in the desired state' {
+                Context 'When Test-TargetResource runs script without issue' {
+                    Mock -CommandName Invoke-SqlScript
 
-                It 'Should return true' {
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $true
+                    It 'Should return true' {
+                        $result = Test-TargetResource @testParameters
+                        $result | Should -Be $true
+                    }
+                }
+
+                Context 'When Test-TargetResource runs script without issue with timeout' {
+                    Mock -CommandName Invoke-SqlScript
+
+                    It 'Should return true' {
+                        $result = Test-TargetResource @testParametersTimeout
+                        $result | Should -Be $true
+                    }
                 }
             }
 
-            Context 'When Test-TargetResource runs script without issue with timeout' {
-                Mock -CommandName Invoke-SqlScript
+            Context 'When the system is not in the desired state' {
+                Context 'When Invoke-SqlScript returns an SQL error code from the script that was ran' {
+                    Mock -CommandName Invoke-SqlScript -MockWith {
+                        return 1
+                    }
 
-                It 'Should return true' {
-                    $result = Test-TargetResource @testParametersTimeout
-                    $result | Should -Be $true
-                }
-            }
-
-            Context 'When Test-TargetResource throws the exception SqlPowerShellSqlExecutionException when running the script in the TestFilePath parameter' {
-                Mock -CommandName Invoke-SqlScript -MockWith {
-                    throw New-Object -TypeName Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException
+                    It 'Should return false' {
+                        $result = Test-TargetResource @testParametersTimeout
+                        $result | Should -Be $false
+                    }
                 }
 
-                It 'Should return false' {
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $false
-                }
-            }
+                Context 'When Test-TargetResource throws the exception SqlPowerShellSqlExecutionException when running the script in the TestFilePath parameter' {
+                    Mock -CommandName Invoke-SqlScript -MockWith {
+                        throw New-Object -TypeName Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException
+                    }
 
-            Context 'When Test-TargetResource throws an unexpected error when running the script in the TestFilePath parameter' {
-                $errorMessage = "Failed to run SQL Script"
-
-                Mock -CommandName Invoke-SqlScript -MockWith {
-                    throw $errorMessage
+                    It 'Should return false' {
+                        $result = Test-TargetResource @testParameters
+                        $result | Should -Be $false
+                    }
                 }
 
-                It 'Should throw the correct error from Invoke-Sqlcmd' {
-                    { Test-TargetResource @testParameters } | Should -Throw $errorMessage
+                Context 'When Test-TargetResource throws an unexpected error when running the script in the TestFilePath parameter' {
+                    $errorMessage = "Failed to run SQL Script"
+
+                    Mock -CommandName Invoke-SqlScript -MockWith {
+                        throw $errorMessage
+                    }
+
+                    It 'Should throw the correct error from Invoke-Sqlcmd' {
+                        { Test-TargetResource @testParameters } | Should -Throw $errorMessage
+                    }
                 }
             }
         }

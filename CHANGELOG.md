@@ -12,12 +12,14 @@
     when verbose output is requested, e.g
     `Start-DscConfiguration -Verbose`.
   - Added en-US localization ([issue #624](https://github.com/PowerShell/SqlServerDsc/issues/624)).
+  - Added additional unit tests for code coverage.
 - Changes to SqlScriptQuery
   - Correctly passes the `$VerbosePreference` to the helper function
     `Invoke-SqlScript` so that `PRINT` statements is outputted correctly
     when verbose output is requested, e.g
     `Start-DscConfiguration -Verbose`.
   - Added en-US localization.
+  - Added additional unit tests for code coverage.
 - Changes to SqlSetup
   - Concatenated Robocopy localization strings ([issue #694](https://github.com/PowerShell/SqlServerDsc/issues/694)).
 
