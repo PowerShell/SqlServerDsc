@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlScriptQuery'
+
 <#
     .SYNOPSIS
         Returns the current state of the SQL Server features.
@@ -78,6 +80,10 @@ function Get-TargetResource
         [Parameter()]
         [System.String[]]
         $Variable
+    )
+
+    Write-Verbose -Message (
+        $script:localizedData.ExecutingGetQuery -f $ServerInstance
     )
 
     $invokeParameters = @{
@@ -177,6 +183,10 @@ function Set-TargetResource
         $Variable
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.ExecutingSetQuery -f $ServerInstance
+    )
+
     $invokeParameters = @{
         Query          = $SetQuery
         ServerInstance = $ServerInstance
@@ -261,8 +271,16 @@ function Test-TargetResource
         $Variable
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration
+    )
+
     try
     {
+        Write-Verbose -Message (
+            $script:localizedData.ExecutingTestQuery -f $ServerInstance
+        )
+
         $invokeParameters = @{
             Query          = $TestQuery
             ServerInstance = $ServerInstance
@@ -277,10 +295,18 @@ function Test-TargetResource
 
         if ($null -eq $result)
         {
+            Write-Verbose -Message (
+                $script:localizedData.InDesiredState
+            )
+
             return $true
         }
         else
         {
+            Write-Verbose -Message (
+                $script:localizedData.NotInDesiredState
+            )
+
             return $false
         }
     }

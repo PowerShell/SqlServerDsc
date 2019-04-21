@@ -17,6 +17,7 @@
     `Invoke-SqlScript` so that `PRINT` statements is outputted correctly
     when verbose output is requested, e.g
     `Start-DscConfiguration -Verbose`.
+  - Added en-US localization.
 - Changes to SqlSetup
   - Concatenated Robocopy localization strings ([issue #694](https://github.com/PowerShell/SqlServerDsc/issues/694)).
 
