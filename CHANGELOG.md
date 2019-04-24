@@ -35,6 +35,9 @@
     coverage.
 - Changes to SqlServerMaxDop
   - Added en-US localization ([issue #616](https://github.com/PowerShell/SqlServerDsc/issues/616)).
+- Changes to SqlServerLogin
+  - Added en-US localization ([issue #615](https://github.com/PowerShell/SqlServerDsc/issues/615)).
+  - Added unit tests to improved code coverage.
 
 ## 12.4.0.0
 

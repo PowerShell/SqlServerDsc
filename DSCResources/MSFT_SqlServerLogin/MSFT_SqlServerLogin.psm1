@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerLogin'
+
 <#
     .SYNOPSIS
     Gets the specified login by name.
@@ -39,26 +41,31 @@ function Get-TargetResource
         $InstanceName
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.GetLogin -f $Name, $ServerName, $InstanceName
+    )
+
     $serverObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
-
-    Write-Verbose 'Getting SQL logins'
-    New-VerboseMessage -Message "Getting the login '$Name' from '$ServerName\$InstanceName'"
-
-    $login = $serverObject.Logins[$Name]
-
-    if ( $login )
+    if ($serverObject)
     {
-        $Ensure = 'Present'
-    }
-    else
-    {
-        $Ensure = 'Absent'
+        $login = $serverObject.Logins[$Name]
+
+        if ($login)
+        {
+            $ensure = 'Present'
+        }
+        else
+        {
+            $ensure = 'Absent'
+        }
     }
 
-    New-VerboseMessage -Message "The login '$Name' is $ensure from the '$ServerName\$InstanceName' instance."
+    Write-Verbose -Message (
+        $script:localizedData.LoginCurrentState -f $Name, $ensure, $ServerName, $InstanceName
+    )
 
     $returnValue = @{
-        Ensure       = $Ensure
+        Ensure       = $ensure
         Name         = $Name
         LoginType    = $login.LoginType
         ServerName   = $ServerName
@@ -66,7 +73,7 @@ function Get-TargetResource
         Disabled     = $login.IsDisabled
     }
 
-    if ( $login.LoginType -eq 'SqlLogin' )
+    if ($login.LoginType -eq 'SqlLogin')
     {
         $returnValue.Add('LoginMustChangePassword', $login.MustChangePassword)
         $returnValue.Add('LoginPasswordExpirationEnabled', $login.PasswordExpirationEnabled)
@@ -180,14 +187,20 @@ function Set-TargetResource
                 {
                     if ( $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
                     {
-                        New-VerboseMessage -Message "Setting PasswordExpirationEnabled to '$LoginPasswordExpirationEnabled' for the login '$Name' on the '$ServerName\$InstanceName' instance."
+                        Write-Verbose -Message (
+                            $script:localizedData.SetPasswordExpirationEnabled -f $LoginPasswordExpirationEnabled, $Name, $ServerName, $InstanceName
+                        )
+
                         $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
                         Update-SQLServerLogin -Login $login
                     }
 
                     if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced )
                     {
-                        New-VerboseMessage -Message "Setting PasswordPolicyEnforced to '$LoginPasswordPolicyEnforced' for the login '$Name' on the '$ServerName\$InstanceName' instance."
+                        Write-Verbose -Message (
+                            $script:localizedData.SetPasswordPolicyEnforced -f $LoginPasswordPolicyEnforced, $Name, $ServerName, $InstanceName
+                        )
+
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
                         Update-SQLServerLogin -Login $login
                     }
@@ -195,19 +208,30 @@ function Set-TargetResource
                     # Set the password if it is specified
                     if ( $LoginCredential )
                     {
+                        Write-Verbose -Message (
+                            $script:localizedData.SetPassword -f $Name, $ServerName, $InstanceName
+                        )
+
                         Set-SQLServerLoginPassword -Login $login -SecureString $LoginCredential.Password
                     }
                 }
 
                 if ( $PSBoundParameters.ContainsKey('Disabled') -and ($login.IsDisabled -ne $Disabled) )
                 {
-                    New-VerboseMessage -Message "Setting IsDisabled to '$Disabled' for the login '$Name' on the '$ServerName\$InstanceName' instance."
                     if ( $Disabled )
                     {
+                        Write-Verbose -Message (
+                            $script:localizedData.SetDisabled -f $Name, $ServerName, $InstanceName
+                        )
+
                         $login.Disable()
                     }
                     else
                     {
+                        Write-Verbose -Message (
+                            $script:localizedData.SetEnabled -f $Name, $ServerName, $InstanceName
+                        )
+
                         $login.Enable()
                     }
                 }
@@ -217,17 +241,21 @@ function Set-TargetResource
                 # Some login types need additional work. These will need to be fleshed out more in the future
                 if ( @('Certificate', 'AsymmetricKey', 'ExternalUser', 'ExternalGroup') -contains $LoginType )
                 {
-                    throw New-TerminatingError -ErrorType LoginTypeNotImplemented -FormatArgs $LoginType -ErrorCategory NotImplemented
+                    $errorMessage = $script:localizedData.LoginTypeNotImplemented -f $LoginType
+                    New-NotImplementedException -Message $errorMessage
                 }
 
                 if ( ( $LoginType -eq 'SqlLogin' ) -and ( -not $LoginCredential ) )
                 {
-                    throw New-TerminatingError -ErrorType LoginCredentialNotFound -FormatArgs $Name -ErrorCategory ObjectNotFound
+                    $errorMessage = $script:localizedData.LoginCredentialNotFound -f $Name
+                    New-ObjectNotFoundException -Message $errorMessage
                 }
 
-                New-VerboseMessage -Message "Adding the login '$Name' to the '$ServerName\$InstanceName' instance."
+                Write-Verbose -Message (
+                    $script:localizedData.CreateLogin -f $Name, $LoginType, $ServerName, $InstanceName
+                )
 
-                $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $serverObject, $Name
+                $login = New-Object -TypeName 'Microsoft.SqlServer.Management.Smo.Login' -ArgumentList $serverObject, $Name
                 $login.LoginType = $LoginType
 
                 switch ($LoginType)
@@ -237,7 +265,8 @@ function Set-TargetResource
                         # Verify the instance is in Mixed authentication mode
                         if ( $serverObject.LoginMode -notmatch 'Mixed|Normal' )
                         {
-                            throw New-TerminatingError -ErrorType IncorrectLoginMode -FormatArgs $ServerName, $InstanceName, $serverObject.LoginMode -ErrorCategory NotImplemented
+                            $errorMessage = $script:localizedData.IncorrectLoginMode -f $ServerName, $InstanceName, $serverObject.LoginMode
+                            New-InvalidOperationException -Message $errorMessage
                         }
 
                         $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
@@ -263,6 +292,10 @@ function Set-TargetResource
                 # we can only disable the login once it's been created
                 if ( $Disabled )
                 {
+                    Write-Verbose -Message (
+                        $script:localizedData.SetDisabled -f $Name, $ServerName, $InstanceName
+                    )
+
                     $login.Disable()
                 }
             }
@@ -272,7 +305,10 @@ function Set-TargetResource
         {
             if ( $serverObject.Logins[$Name] )
             {
-                New-VerboseMessage -Message "Dropping the login '$Name' from the '$ServerName\$InstanceName' instance."
+                Write-Verbose -Message (
+                    $script:localizedData.DropLogin -f $Name, $ServerName, $InstanceName
+                )
+
                 Remove-SQLServerLogin -Login $serverObject.Logins[$Name]
             }
         }
@@ -369,6 +405,10 @@ function Test-TargetResource
         $Disabled
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration -f $Name, $ServerName, $InstanceName
+    )
+
     # Assume the test will pass
     $testPassed = $true
 
@@ -382,7 +422,10 @@ function Test-TargetResource
 
     if ( $Ensure -ne $loginInfo.Ensure )
     {
-        New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' is $($loginInfo.Ensure) rather than $Ensure"
+        Write-Verbose -Message (
+            $script:localizedData.WrongEnsureState -f $Name, $loginInfo.Ensure, $Ensure
+        )
+
         $testPassed = $false
     }
 
@@ -390,13 +433,28 @@ function Test-TargetResource
     {
         if ( $LoginType -ne $loginInfo.LoginType )
         {
-            New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' is a $($loginInfo.LoginType) rather than $LoginType"
+            Write-Verbose -Message (
+                $script:localizedData.WrongLoginType -f $Name, $loginInfo.LoginType, $LoginType
+            )
+
             $testPassed = $false
         }
 
         if ( $PSBoundParameters.ContainsKey('Disabled') -and ($loginInfo.Disabled -ne $Disabled) )
         {
-            New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has IsDisabled set to $($loginInfo.Disabled) rather than $Disabled"
+            if ($Disabled)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.ExpectedDisabled -f $Name
+                )
+            }
+            else
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.ExpectedEnabled -f $Name
+                )
+            }
+
             $testPassed = $false
         }
 
@@ -404,13 +462,37 @@ function Test-TargetResource
         {
             if ( $LoginPasswordExpirationEnabled -ne $loginInfo.LoginPasswordExpirationEnabled )
             {
-                New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has PasswordExpirationEnabled set to $($loginInfo.LoginPasswordExpirationEnabled) rather than $LoginPasswordExpirationEnabled"
+                if ($LoginPasswordExpirationEnabled)
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ExpectedLoginPasswordExpirationEnabled -f $Name
+                    )
+                }
+                else
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ExpectedLoginPasswordExpirationDisabled -f $Name
+                    )
+                }
+
                 $testPassed = $false
             }
 
             if ( $LoginPasswordPolicyEnforced -ne $loginInfo.LoginPasswordPolicyEnforced )
             {
-                New-VerboseMessage -Message "The login '$Name' on the instance '$ServerName\$InstanceName' has PasswordPolicyEnforced set to $($loginInfo.LoginPasswordPolicyEnforced) rather than $LoginPasswordPolicyEnforced"
+                if ($LoginPasswordPolicyEnforced)
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ExpectedLoginPasswordPolicyEnforcedEnabled -f $Name
+                    )
+                }
+                else
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ExpectedLoginPasswordPolicyEnforcedDisabled -f $Name
+                    )
+                }
+
                 $testPassed = $false
             }
 
@@ -439,26 +521,34 @@ function Test-TargetResource
                         #>
                         if ((Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18470))
                         {
-                            New-VerboseMessage -Message "Password valid, but '$Name' is disabled."
+                            Write-Verbose -Message (
+                                    $script:localizedData.PasswordValidButLoginDisabled -f $Name
+                            )
                         }
                         elseif ((Find-ExceptionByNumber -ExceptionToSearch $_.Exception -ErrorNumber 18456))
                         {
-                            New-VerboseMessage -Message $_.Exception.message
+                            Write-Verbose -Message (
+                                '{0} {1}' -f
+                                    ($script:localizedData.PasswordValidationFailed -f $Name),
+                                    ($script:localizedData.PasswordValidationFailedMessage -f $_.Exception.message)
+                            )
 
                             # The password was not correct, password validation failed
                             $testPassed = $false
                         }
                         else
                         {
-                            New-VerboseMessage -Message "Unknown error: $($_.Exception.message)"
-
                             # Something else went wrong, rethrow error
-                            throw
+                            $errorMessage = $script:localizedData.PasswordValidationError
+                            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                         }
                     }
                     else
                     {
-                        New-VerboseMessage -Message "Password validation failed for the login '$Name'."
+                        Write-Verbose -Message (
+                            $script:localizedData.PasswordValidationFailed -f $Name
+                        )
+
                         $testPassed = $false
                     }
                 }
@@ -497,7 +587,8 @@ function Update-SQLServerLogin
     }
     catch
     {
-        throw New-TerminatingError -ErrorType AlterLoginFailed -FormatArgs $Login.Name -ErrorCategory NotSpecified
+        $errorMessage = $script:localizedData.AlterLoginFailed -f $Login.Name
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
     finally
     {
@@ -561,16 +652,19 @@ function New-SQLServerLogin
             {
                 if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
                 {
-                    throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name, $_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
+                    $errorMessage = $script:localizedData.CreateLoginFailedOnPassword -f $Login.Name
+                    New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType LoginCreationFailedFailedOperation -FormatArgs $Name -ErrorCategory NotSpecified
+                    $errorMessage = $script:localizedData.CreateLoginFailed -f $Login.Name
+                    New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
             }
             catch
             {
-                throw New-TerminatingError -ErrorType LoginCreationFailedSqlNotSpecified -FormatArgs $Name -ErrorCategory NotSpecified
+                $errorMessage = $script:localizedData.CreateLoginFailed -f $Login.Name
+                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
             finally
             {
@@ -589,7 +683,8 @@ function New-SQLServerLogin
             }
             catch
             {
-                throw New-TerminatingError -ErrorType LoginCreationFailedWindowsNotSpecified -FormatArgs $Name -ErrorCategory NotSpecified
+                $errorMessage = $script:localizedData.CreateLoginFailed -f $Login.Name
+                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
             finally
             {
@@ -627,7 +722,8 @@ function Remove-SQLServerLogin
     }
     catch
     {
-        throw New-TerminatingError -ErrorType DropLoginFailed -FormatArgs $Login.Name -ErrorCategory NotSpecified
+        $errorMessage = $script:localizedData.DropLoginFailed -f $Login.Name
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
     finally
     {
@@ -672,16 +768,19 @@ function Set-SQLServerLoginPassword
     {
         if ( $_.Exception.InnerException.InnerException.InnerException -match 'Password validation failed' )
         {
-            throw New-TerminatingError -ErrorType PasswordValidationFailed -FormatArgs $Name, $_.Exception.InnerException.InnerException.InnerException -ErrorCategory SecurityError
+            $errorMessage = $script:localizedData.SetPasswordValidationFailed -f $Login.Name
+            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
         }
         else
         {
-            throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+            $errorMessage = $script:localizedData.SetPasswordFailed -f $Login.Name
+            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
         }
     }
     catch
     {
-        throw New-TerminatingError -ErrorType PasswordChangeFailed -FormatArgs $Name -ErrorCategory NotSpecified
+        $errorMessage = $script:localizedData.SetPasswordFailed -f $Login.Name
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
     finally
     {

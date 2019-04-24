@@ -103,19 +103,6 @@ ConvertFrom-StringData @'
     AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '{1}'.
     UnexpectedAlwaysOnStatus = The status of property Server.IsHadrEnabled was neither $true or $false. Status is '{0}'.
 
-    # Login
-    PasswordValidationFailed = Creation of the login '{0}' failed due to the following error: {1}
-    LoginCreationFailedFailedOperation = Creation of the login '{0}' failed due to a failed operation.
-    LoginCreationFailedSqlNotSpecified = Creation of the SQL login '{0}' failed due to an unspecified error.
-    LoginCreationFailedWindowsNotSpecified = Creation of the Windows login '{0}' failed due to an unspecified error.
-    LoginTypeNotImplemented = The login type '{0}' is not implemented in this resource.
-    IncorrectLoginMode = The instance '{0}\{1}' is currently in '{2}' authentication mode. To create a SQL Login, it must be set to 'Mixed' authentication mode.
-    LoginCredentialNotFound = The credential for the SQL Login '{0}' was not found.
-    PasswordChangeFailed = Setting the password failed for the SQL Login '{0}'.
-    AlterLoginFailed = Altering the login '{0}' failed.
-    CreateLoginFailed = Creating the login '{0}' failed.
-    DropLoginFailed = Dropping the login '{0}' failed.
-
     # AlwaysOnAvailabilityGroup
     CreateAvailabilityGroupReplicaFailed = Creating the Availability Group Replica '{0}' failed on the instance '{1}'.
     CreateAvailabilityGroupFailed = Creating the availability group '{0}'.

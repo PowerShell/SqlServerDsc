@@ -487,7 +487,7 @@ try
                     $result | Should -Be $false
                 }
 
-                It 'Should throw exception when unkown error occurred and account is disabled' {
+                It 'Should throw exception when unknown error occurred and account is disabled' {
                     $mockTestTargetResourceParameters = $getTargetResource_KnownSqlLogin.Clone()
                     $mockTestTargetResourceParameters.Add('Ensure', 'Present')
                     $mockTestTargetResourceParameters.Add('Disabled', $true)
@@ -512,10 +512,11 @@ try
                     }
 
                     # Call the test target
-                    { Test-TargetResource @mockTestTargetResourceParameters } | Should -Throw
+                    $errorMessage = $script:localizedData.PasswordValidationError
+                    { Test-TargetResource @mockTestTargetResourceParameters } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Get-TargetResource -Scope It -Times 1 -Exactly
-                    Assert-MockCAlled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
             }
 
@@ -689,6 +690,23 @@ try
 
                     $result = Test-TargetResource @mockTestTargetResourceParameters
                     $result | Should -Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
+                }
+
+                It 'Should be return $false when a login has the wrong login type' {
+                    $mockTestTargetResourceParameters = $instanceParameters.Clone()
+                    $mockTestTargetResourceParameters.Add( 'Ensure', 'Present' )
+                    <#
+                        Use WindowsLogin format here to be able to test the
+                        specific property LoginType.
+                    #>
+                    $mockTestTargetResourceParameters.Add( 'Name', 'Windows\UserDisabled' )
+                    $mockTestTargetResourceParameters.Add( 'LoginType', 'SqlLogin' )
+                    $mockTestTargetResourceParameters.Add( 'Disabled', $true )
+
+                    $result = Test-TargetResource @mockTestTargetResourceParameters
+                    $result | Should -Be $false
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 }
@@ -945,7 +963,8 @@ try
                     $setTargetResource_CertificateAbsent_EnsurePresent = $setTargetResource_CertificateAbsent.Clone()
                     $setTargetResource_CertificateAbsent_EnsurePresent.Add( 'Ensure', 'Present' )
 
-                    { Set-TargetResource @setTargetResource_CertificateAbsent_EnsurePresent } | Should -Throw 'LoginTypeNotImplemented'
+                    $errorMessage = $script:localizedData.LoginTypeNotImplemented -f $setTargetResource_CertificateAbsent_EnsurePresent.LoginType
+                    { Set-TargetResource @setTargetResource_CertificateAbsent_EnsurePresent } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
@@ -960,7 +979,8 @@ try
                     $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred = $setTargetResource_SqlLoginAbsent.Clone()
                     $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred.Add( 'Ensure', 'Present' )
 
-                    { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred } | Should -Throw 'LoginCredentialNotFound'
+                    $errorMessage = $script:localizedData.LoginCredentialNotFound -f $setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred.Name
+                    { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent_NoCred } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
@@ -1058,7 +1078,12 @@ try
                     $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure', 'Present' )
                     $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential', $mockSqlLoginCredential )
 
-                    { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Throw 'IncorrectLoginMode'
+                    $errorMessage = $script:localizedData.IncorrectLoginMode -f
+                        $setTargetResource_SqlLoginAbsent_EnsurePresent.ServerName,
+                        $setTargetResource_SqlLoginAbsent_EnsurePresent.InstanceName,
+                        $mockLoginMode
+
+                    { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
@@ -1077,7 +1102,7 @@ try
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure', 'Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential', $mockSqlLoginCredential )
 
-                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Not -Throw 'IncorrectLoginMode'
+                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Not -Throw
 
                 Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
@@ -1095,7 +1120,7 @@ try
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'Ensure', 'Present' )
                 $setTargetResource_SqlLoginAbsent_EnsurePresent.Add( 'LoginCredential', $mockSqlLoginCredential )
 
-                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Not -Throw 'IncorrectLoginMode'
+                { Set-TargetResource @setTargetResource_SqlLoginAbsent_EnsurePresent } | Should -Not -Throw
 
                 Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                 Assert-MockCalled -CommandName Update-SQLServerLogin  -Scope It -Times 0 -Exactly
@@ -1121,7 +1146,9 @@ try
                     $login.LoginType = 'WindowsUser'
                     $login.MockLoginType = 'SqlLogin'
 
-                    { Update-SQLServerLogin -Login $login } | Should -Throw 'AlterLoginFailed'
+                    $errorMessage = $script:localizedData.AlterLoginFailed -f $login.Name
+
+                    { Update-SQLServerLogin -Login $login } | Should -Throw $errorMessage
                 }
             }
         }
@@ -1157,7 +1184,9 @@ try
                     $login.LoginType = 'WindowsUser'
                     $login.MockLoginType = 'SqlLogin'
 
-                    { New-SQLServerLogin -Login $login } | Should -Throw 'LoginCreationFailedWindowsNotSpecified'
+                    $errorMessage = $script:localizedData.CreateLoginFailed -f $login.Name
+
+                    { New-SQLServerLogin -Login $login } | Should -Throw $errorMessage
                 }
 
                 It 'Should throw the correct error when password validation fails when creating a SQL Login' {
@@ -1170,7 +1199,9 @@ try
                         LoginCreateOptions = 'None'
                     }
 
-                    { New-SQLServerLogin @createLoginParameters } | Should -Throw 'PasswordValidationFailed'
+                    $errorMessage = $script:localizedData.CreateLoginFailedOnPassword -f $login.Name
+
+                    { New-SQLServerLogin @createLoginParameters } | Should -Throw $errorMessage
                 }
 
                 It 'Should throw the correct error when creating a SQL Login fails' {
@@ -1183,7 +1214,9 @@ try
                         LoginCreateOptions = 'None'
                     }
 
-                    { New-SQLServerLogin @createLoginParameters } | Should -Throw 'LoginCreationFailedFailedOperation'
+                    $errorMessage = $script:localizedData.CreateLoginFailed -f $login.Name
+
+                    { New-SQLServerLogin @createLoginParameters } | Should -Throw $errorMessage
                 }
 
                 It 'Should throw the correct error when creating a SQL Login fails with an unhandled exception' {
@@ -1196,7 +1229,9 @@ try
                         LoginCreateOptions = 'None'
                     }
 
-                    { New-SQLServerLogin @createLoginParameters } | Should -Throw 'LoginCreationFailedSqlNotSpecified'
+                    $errorMessage = $script:localizedData.CreateLoginFailed -f $login.Name
+
+                    { New-SQLServerLogin @createLoginParameters } | Should -Throw $errorMessage
                 }
             }
         }
@@ -1217,7 +1252,9 @@ try
                     $login.LoginType = 'WindowsUser'
                     $login.MockLoginType = 'SqlLogin'
 
-                    { Remove-SQLServerLogin -Login $login } | Should -Throw 'DropLoginFailed'
+                    $errorMessage = $script:localizedData.DropLoginFailed -f $login.Name
+
+                    { Remove-SQLServerLogin -Login $login } | Should -Throw $errorMessage
                 }
             }
         }
@@ -1241,7 +1278,9 @@ try
                         SecureString = ConvertTo-SecureString -String 'pw' -AsPlainText -Force
                     }
 
-                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw 'PasswordValidationFailed'
+                    $errorMessage = $script:localizedData.SetPasswordValidationFailed -f $setPasswordParameters.Login.Name
+
+                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw $errorMessage
                 }
 
                 It 'Should throw the correct error when changing the password fails' {
@@ -1250,7 +1289,9 @@ try
                         SecureString = ConvertTo-SecureString -String 'reused' -AsPlainText -Force
                     }
 
-                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw 'PasswordChangeFailed'
+                    $errorMessage = $script:localizedData.SetPasswordFailed -f $setPasswordParameters.Login.Name
+
+                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw $errorMessage
                 }
 
                 It 'Should throw the correct error when changing the password fails' {
@@ -1259,7 +1300,9 @@ try
                         SecureString = ConvertTo-SecureString -String 'other' -AsPlainText -Force
                     }
 
-                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw 'PasswordChangeFailed'
+                    $errorMessage = $script:localizedData.SetPasswordFailed -f $setPasswordParameters.Login.Name
+
+                    { Set-SQLServerLoginPassword @setPasswordParameters } | Should -Throw $errorMessage
                 }
             }
         }
