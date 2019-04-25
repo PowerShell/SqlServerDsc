@@ -731,6 +731,11 @@ function Set-TargetResource
         If connections to the Reporting Services must use SSL. If this
         parameter is not assigned a value, the default is that Reporting
         Services does not use SSL.
+
+    .PARAMETER SuppressRestart
+        Reporting Services need to be restarted after initialization or
+        settings change. If this parameter is set to $true, Reporting Services
+        will not be restarted, even after initialisation.
 #>
 function Test-TargetResource
 {
@@ -768,7 +773,11 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $UseSsl
+        $UseSsl,
+
+        [Parameter()]
+        [System.Boolean]
+        $SuppressRestart
     )
 
     $result = $true
