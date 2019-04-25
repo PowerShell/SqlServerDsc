@@ -35,6 +35,11 @@
     coverage.
 - Changes to SqlServerMaxDop
   - Added en-US localization ([issue #616](https://github.com/PowerShell/SqlServerDsc/issues/616)).
+- Changes to SqlRS
+  - Fixed ([issue #1258](https://github.com/PowerShell/SqlServerDsc/issues/1258)).
+    When initializing Reporting Services, there is no need to execute `InitializeReportServer`
+    CIM method, since executing `SetDatabaseConnection` CIM method initializes
+    Reporting Services.
 
 ## 12.4.0.0
 
