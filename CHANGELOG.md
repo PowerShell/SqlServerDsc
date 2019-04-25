@@ -42,6 +42,10 @@
   - Reporting Services are restarted after changing settings, unless
     `$SuppressRestart` parameter is set ([issue #1331](https://github.com/PowerShell/SqlServerDsc/issues/1331)).
     `$SuppressRestart` will also prevent Reporting Services restart after initialization.
+  - Fixed ([issue #1258](https://github.com/PowerShell/SqlServerDsc/issues/1258)).
+    When initializing Reporting Services, there is no need to execute `InitializeReportServer`
+    CIM method, since executing `SetDatabaseConnection` CIM method initializes
+    Reporting Services.
 - Changes to SqlServerLogin
   - Added en-US localization ([issue #615](https://github.com/PowerShell/SqlServerDsc/issues/615)).
   - Added unit tests to improved code coverage.
