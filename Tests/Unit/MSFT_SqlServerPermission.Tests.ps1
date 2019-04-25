@@ -148,7 +148,7 @@ try
                             throw 'Mocked error.'
                         }
 
-                        { Get-TargetResource @testParameters } | Should -Throw 'Unexpected result when trying to get permissions for ''COMPANY\SqlServiceAcct''. InnerException: Mocked error.'
+                        { Get-TargetResource @testParameters } | Should -Throw ($script:localizedData.PermissionGetError -f $mockPrincipal)
                     }
                 }
             }
@@ -336,7 +336,7 @@ try
                             return $mockObjectSmoServer
                         } -Verifiable
 
-                        { Set-TargetResource @testParameters } | Should -Throw 'Changing permission for principal ''COMPANY\SqlServiceAcct'' failed. InnerException: Exception calling "Grant" with "2" argument(s): "Expected to get granteeName == ''COMPANY\OtherAccount''. But got ''COMPANY\SqlServiceAcct'''
+                        { Set-TargetResource @testParameters } | Should -Throw ($script:localizedData.ChangingPermissionFailed -f $mockPrincipal)
                     }
                 }
             }

@@ -99,10 +99,6 @@ ConvertFrom-StringData @'
     EndpointErrorVerifyExist = Unexpected result when trying to verify existence of endpoint '{0}'.
     EndpointFoundButWrongType = Endpoint '{0}' does exist, but it is not of type 'DatabaseMirroring'.
 
-    # Permission
-    PermissionGetError = Unexpected result when trying to get permissions for '{0}'.
-    ChangingPermissionFailed = Changing permission for principal '{0}' failed.
-
     # AlwaysOnService
     AlterAlwaysOnServiceFailed = Failed to ensure Always On is {0} on the instance '{1}'.
     UnexpectedAlwaysOnStatus = The status of property Server.IsHadrEnabled was neither $true or $false. Status is '{0}'.

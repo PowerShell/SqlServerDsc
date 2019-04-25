@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerPermission'
+
 <#
     .SYNOPSIS
         Returns the current state of the permissions for the principal (login).
@@ -47,7 +49,9 @@ function Get-TargetResource
         $Permission
     )
 
-    New-VerboseMessage -Message "Enumerating permissions for $Principal"
+    Write-Verbose -Message (
+        $script:localizedData.EnumeratingPermission -f $Principal
+    )
 
     try
     {
@@ -83,7 +87,8 @@ function Get-TargetResource
     }
     catch
     {
-        throw New-TerminatingError -ErrorType PermissionGetError -FormatArgs @($Principal) -ErrorCategory InvalidOperation -InnerException $_.Exception
+        $errorMessage = $script:localizedData.PermissionGetError -f $Principal
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
 
     return @{
@@ -161,25 +166,32 @@ function Set-TargetResource
 
             if ($Ensure -eq 'Present')
             {
-                Write-Verbose -Message ('Grant permission for ''{0}''' -f $Principal)
+                Write-Verbose -Message (
+                    $script:localizedData.GrantPermission -f $Principal
+                )
 
                 $sqlServerObject.Grant($permissionSet, $Principal)
             }
             else
             {
-                Write-Verbose -Message ('Revoke permission for ''{0}''' -f $Principal)
+                Write-Verbose -Message (
+                    $script:localizedData.RevokePermission -f $Principal
+                )
 
                 $sqlServerObject.Revoke($permissionSet, $Principal)
             }
         }
         catch
         {
-            throw New-TerminatingError -ErrorType ChangingPermissionFailed -FormatArgs @($Principal) -ErrorCategory InvalidOperation -InnerException $_.Exception
+            $errorMessage = $script:localizedData.ChangingPermissionFailed -f $Principal
+            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
         }
     }
     else
     {
-        New-VerboseMessage -Message "State is already $Ensure"
+        Write-Verbose -Message (
+            $script:localizedData.InDesiredState -f $Ensure
+        )
     }
 }
 
@@ -238,7 +250,9 @@ function Test-TargetResource
         Permission   = $Permission
     }
 
-    New-VerboseMessage -Message "Verifying permissions for $Principal"
+    Write-Verbose -Message (
+        $script:localizedData.EvaluatingPermission -f $Principal
+    )
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
