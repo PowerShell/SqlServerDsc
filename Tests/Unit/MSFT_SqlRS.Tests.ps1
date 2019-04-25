@@ -375,7 +375,7 @@ try
 
                         Assert-MockCalled -CommandName Invoke-RsCimMethod -ParameterFilter {
                             $MethodName -eq 'InitializeReportServer'
-                        } -Exactly -Times 1 -Scope It
+                        } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Invoke-RsCimMethod -ParameterFilter {
                             $MethodName -eq 'SetDatabaseConnection'
@@ -657,7 +657,7 @@ try
 
                         Assert-MockCalled -CommandName Invoke-RsCimMethod -ParameterFilter {
                             $MethodName -eq 'InitializeReportServer'
-                        } -Exactly -Times 1 -Scope It
+                        } -Exactly -Times 0 -Scope It
 
                         Assert-MockCalled -CommandName Invoke-RsCimMethod -ParameterFilter {
                             $MethodName -eq 'SetDatabaseConnection'
