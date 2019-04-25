@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerMemory'
+
 <#
     .SYNOPSIS
         This function gets the value of the min and max memory server configuration option.
@@ -35,11 +37,13 @@ function Get-TargetResource
         $ServerName = $env:COMPUTERNAME
     )
 
-    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+    Write-Verbose -Message (
+        $script:localizedData.GetMemoryValues -f $InstanceName
+    )
 
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
     if ($sqlServerObject)
     {
-        Write-Verbose -Message 'Getting the value for minimum and maximum SQL server memory.'
         $minMemory = $sqlServerObject.Configuration.MinServerMemory.ConfigValue
         $maxMemory = $sqlServerObject.Configuration.MaxServerMemory.ConfigValue
 
@@ -123,11 +127,13 @@ function Set-TargetResource
         $ProcessOnlyOnActiveNode
     )
 
-    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+    Write-Verbose -Message (
+        $script:localizedData.SetNewValues -f $InstanceName
+    )
 
+    $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
     if ($sqlServerObject)
     {
-        Write-Verbose -Message 'Setting the minimum and maximum memory used by the instance.'
         switch ($Ensure)
         {
             'Present'
@@ -136,53 +142,67 @@ function Set-TargetResource
                 {
                     if ($MaxMemory)
                     {
-                        throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
-                            -FormatArgs @( $ServerName, $InstanceName ) `
-                            -ErrorCategory InvalidArgument
+                        $errorMessage = $script:localizedData.MaxMemoryParamMustBeNull
+                        New-InvalidArgumentException -ArgumentName 'MaxMemory' -Message $errorMessage
                     }
 
                     $MaxMemory = Get-SqlDscDynamicMaxMemory
-                    New-VerboseMessage -Message "Dynamic maximum memory has been calculated to $($MaxMemory)MB."
+
+                    Write-Verbose -Message (
+                        $script:localizedData.DynamicMemoryValue -f $MaxMemory
+                    )
                 }
                 else
                 {
                     if (-not $MaxMemory)
                     {
-                        throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
-                            -FormatArgs @( $ServerName, $InstanceName ) `
-                            -ErrorCategory InvalidArgument
+                        $errorMessage = $script:localizedData.MaxMemoryParamMustNotBeNull
+                        New-InvalidArgumentException -ArgumentName 'MaxMemory' -Message $errorMessage
                     }
                 }
 
                 $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $MaxMemory
-                New-VerboseMessage -Message "Maximum memory used by the instance has been limited to $($MaxMemory)MB."
+
+                Write-Verbose -Message (
+                    $script:localizedData.DynamicMaxMemoryValue -f $InstanceName, $MaxMemory
+                )
+
+                if ($MinMemory)
+                {
+                    $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
+
+                    Write-Verbose -Message (
+                        $script:localizedData.MinimumMemoryLimited -f $InstanceName, $MinMemory
+                    )
+                }
             }
 
             'Absent'
             {
-                $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = 2147483647
-                $sqlServerObject.Configuration.MinServerMemory.ConfigValue = 0
-                New-VerboseMessage -Message ('Ensure is set to absent. Minimum and maximum server memory' + `
-                        'values used by the instance are reset to the default values.')
+                $defaultMaxMemory = 2147483647
+                $defaultMinMemory = 0
+
+                Write-Verbose -Message (
+                    $script:localizedData.DefaultValues -f $defaultMinMemory, $defaultMaxMemory
+                )
+
+                $sqlServerObject.Configuration.MaxServerMemory.ConfigValue = $defaultMaxMemory
+                $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $defaultMinMemory
+
+                Write-Verbose -Message (
+                    $script:localizedData.ResetDefaultValues -f $InstanceName
+                )
             }
         }
 
         try
         {
-            if ($MinMemory)
-            {
-                $sqlServerObject.Configuration.MinServerMemory.ConfigValue = $MinMemory
-                New-VerboseMessage -Message "Minimum memory used by the instance is set to $($MinMemory)MB."
-            }
-
             $sqlServerObject.Alter()
         }
         catch
         {
-            throw New-TerminatingError -ErrorType AlterServerMemoryFailed `
-                -FormatArgs @($ServerName, $InstanceName) `
-                -ErrorCategory InvalidOperation `
-                -InnerException $_.Exception
+            $errorMessage = $script:localizedData.AlterServerMemoryFailed -f $ServerName, $InstanceName
+            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
         }
     }
 }
@@ -252,7 +272,9 @@ function Test-TargetResource
         $ProcessOnlyOnActiveNode
     )
 
-    Write-Verbose -Message 'Testing the values of the minimum and maximum memory server configuration option set to be used by the instance.'
+    Write-Verbose -Message (
+        $script:localizedData.EvaluatingMinAndMaxMemory -f $InstanceName
+    )
 
     $getTargetResourceParameters = @{
         InstanceName = $InstanceName
@@ -269,10 +291,12 @@ function Test-TargetResource
         If this is supposed to process only the active node, and this is not the
         active node, don't bother evaluating the test.
     #>
-    if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
+    if ($ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode)
     {
-        # Use localization if the resource has been converted
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
+        Write-Verbose -Message (
+            $script:localizedData.NotActiveNode -f $env:COMPUTERNAME, $InstanceName
+        )
+
         return $isServerMemoryInDesiredState
     }
 
@@ -282,13 +306,19 @@ function Test-TargetResource
         {
             if ($currentMaxMemory -ne 2147483647)
             {
-                New-VerboseMessage -Message "Current maximum server memory used by the instance is $($currentMaxMemory)MB. Expected 2147483647MB."
+                Write-Verbose -Message (
+                    $script:localizedData.WrongMaximumMemory -f $currentMaxMemory, '2147483647'
+                )
+
                 $isServerMemoryInDesiredState = $false
             }
 
             if ($currentMinMemory -ne 0)
             {
-                New-VerboseMessage -Message "Current minimum server memory used by the instance is $($currentMinMemory)MB. Expected 0MB."
+                Write-Verbose -Message (
+                    $script:localizedData.WrongMinimumMemory -f $currentMinMemory, '0'
+                )
+
                 $isServerMemoryInDesiredState = $false
             }
         }
@@ -299,28 +329,31 @@ function Test-TargetResource
             {
                 if ($MaxMemory)
                 {
-                    throw New-TerminatingError -ErrorType MaxMemoryParamMustBeNull `
-                        -FormatArgs @( $ServerName, $InstanceName ) `
-                        -ErrorCategory InvalidArgument
+                    $errorMessage = $script:localizedData.MaxMemoryParamMustBeNull
+                    New-InvalidArgumentException -ArgumentName 'MaxMemory' -Message $errorMessage
                 }
 
                 $MaxMemory = Get-SqlDscDynamicMaxMemory
-                New-VerboseMessage -Message "Dynamic maximum memory has been calculated to $($MaxMemory)MB."
+
+                Write-Verbose -Message (
+                    $script:localizedData.DynamicMaxMemoryValue -f $MaxMemory
+                )
             }
             else
             {
                 if (-not $MaxMemory)
                 {
-                    throw New-TerminatingError -ErrorType MaxMemoryParamMustNotBeNull `
-                        -FormatArgs @( $ServerName, $InstanceName ) `
-                        -ErrorCategory InvalidArgument
+                    $errorMessage = $script:localizedData.MaxMemoryParamMustNotBeNull
+                    New-InvalidArgumentException -ArgumentName 'MaxMemory' -Message $errorMessage
                 }
             }
 
             if ($MaxMemory -ne $currentMaxMemory)
             {
-                New-VerboseMessage -Message ("Current maximum server memory used by the instance " + `
-                        "is $($currentMaxMemory)MB. Expected $($MaxMemory)MB.")
+                Write-Verbose -Message (
+                    $script:localizedData.WrongMaximumMemory -f $currentMaxMemory, $MaxMemory
+                )
+
                 $isServerMemoryInDesiredState = $false
             }
 
@@ -328,8 +361,10 @@ function Test-TargetResource
             {
                 if ($MinMemory -ne $currentMinMemory)
                 {
-                    New-VerboseMessage -Message ("Current minimum server memory used by the instance " + `
-                            "is $($currentMinMemory)MB. Expected $($MinMemory)MB.")
+                    Write-Verbose -Message (
+                        $script:localizedData.WrongMinimumMemory -f $currentMinMemory, $MinMemory
+                    )
+
                     $isServerMemoryInDesiredState = $false
                 }
             }
@@ -392,9 +427,8 @@ function Get-SqlDscDynamicMaxMemory
     }
     catch
     {
-        throw New-TerminatingError -ErrorType ErrorGetDynamicMaxMemory `
-            -ErrorCategory InvalidOperation `
-            -InnerException $_.Exception
+        $errorMessage = $script:localizedData.ErrorGetDynamicMaxMemory
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
 
     $maxMemory

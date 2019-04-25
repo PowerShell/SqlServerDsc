@@ -26,6 +26,13 @@
   - Added en-US localization ([issue #625](https://github.com/PowerShell/SqlServerDsc/issues/625)).
 - Changes to SqlServerPermission
   - Added en-US localization ([issue #619](https://github.com/PowerShell/SqlServerDsc/issues/619)).
+- Changes to SqlServerMemory
+  - Added en-US localization ([issue #617](https://github.com/PowerShell/SqlServerDsc/issues/617)).
+  - No longer will the resource set the MinMemory value if it was provided
+    in a configuration that also set the `Ensure` parameter to 'Absent'
+    ([issue #1329](https://github.com/PowerShell/SqlServerDsc/issues/1329)).
+  - Refactored unit tests to simplify them add add slightly more code
+    coverage.
 - Changes to SqlRS
   - Reporting Services are restarted after changing settings, unless
     `$SuppressRestart` parameter is set ([issue #1331](https://github.com/PowerShell/SqlServerDsc/issues/1331)).
