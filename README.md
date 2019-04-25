@@ -775,6 +775,9 @@ Initializes and configures SQL Reporting Services server.
 * **`[Boolean]` UseSsl** _(Write)_: If connections to the Reporting Services must
   use SSL. If this parameter is not assigned a value, the default is that Reporting
   Services does not use SSL.
+* **`[Boolean]` SupressRestart** _(Write)_: Reporting Services need to be restarted
+  after initialization or settings change. If this parameter is set to $true,
+  Reporting Services will not be restarted, even after initialisation.
 
 #### Read-Only Properties from Get-TargetResource
 

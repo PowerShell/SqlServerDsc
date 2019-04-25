@@ -152,6 +152,11 @@ function Get-TargetResource
         parameter is not assigned a value, the default is that Reporting
         Services does not use SSL.
 
+    .PARAMETER SuppressRestart
+        Reporting Services need to be restarted after initialization or
+        settings change. If this parameter is set to $true, Reporting Services
+        will not be restarted, even after initialisation.
+
     .NOTES
         To find out the parameter names for the methods in the class
         MSReportServer_ConfigurationSetting it's easy to list them using the
@@ -224,7 +229,11 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $UseSsl
+        $UseSsl,
+
+        [Parameter()]
+        [System.Boolean]
+        $SuppressRestart
     )
 
     $reportingServicesData = Get-ReportingServicesData -InstanceName $InstanceName
@@ -278,10 +287,14 @@ function Set-TargetResource
         }
 
         $language = $wmiOperatingSystem.OSLanguage
+        $restartReportingService = $false
 
         if ( -not $reportingServicesData.Configuration.IsInitialized )
         {
             New-VerboseMessage -Message "Initializing Reporting Services on $DatabaseServerName\$DatabaseInstanceName."
+
+            # We will restart Reporting Services after initialization (unless SuppressRestart is set)
+            $restartReportingService = $true
 
             # If no Report Server reserved URLs have been specified, use the default one.
             if ( $null -eq $ReportServerReservedUrl )
@@ -454,8 +467,6 @@ function Set-TargetResource
 
                 Invoke-RsCimMethod @invokeRsCimMethodParameters
             }
-
-            Restart-ReportingServicesService -SQLInstanceName $InstanceName -WaitTime 30
         }
         else
         {
@@ -489,6 +500,8 @@ function Set-TargetResource
             if ( -not [System.String]::IsNullOrEmpty($ReportServerVirtualDirectory) -and ($ReportServerVirtualDirectory -ne $currentConfig.ReportServerVirtualDirectory) )
             {
                 New-VerboseMessage -Message "Setting report server virtual directory on $DatabaseServerName\$DatabaseInstanceName to $ReportServerVirtualDirectory."
+
+                $restartReportingService = $true
 
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
                     $invokeRsCimMethodParameters = @{
@@ -534,6 +547,8 @@ function Set-TargetResource
             if ( -not [System.String]::IsNullOrEmpty($ReportsVirtualDirectory) -and ($ReportsVirtualDirectory -ne $currentConfig.ReportsVirtualDirectory) )
             {
                 New-VerboseMessage -Message "Setting reports virtual directory on $DatabaseServerName\$DatabaseInstanceName to $ReportServerVirtualDirectory."
+
+                $restartReportingService = $true
 
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
                     $invokeRsCimMethodParameters = @{
@@ -583,6 +598,8 @@ function Set-TargetResource
 
             if ( ($null -ne $ReportServerReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
             {
+                $restartReportingService = $true
+
                 $currentConfig.ReportServerReservedUrl | ForEach-Object -Process {
                     $invokeRsCimMethodParameters = @{
                         CimInstance = $reportingServicesData.Configuration
@@ -620,6 +637,8 @@ function Set-TargetResource
 
             if ( ($null -ne $ReportsReservedUrl) -and ($null -ne (Compare-Object @compareParameters)) )
             {
+                $restartReportingService = $true
+
                 $currentConfig.ReportsReservedUrl | ForEach-Object -Process {
                     $invokeRsCimMethodParameters = @{
                         CimInstance = $reportingServicesData.Configuration
@@ -655,6 +674,8 @@ function Set-TargetResource
             {
                 New-VerboseMessage -Message "Changing value for using SSL to '$UseSsl'."
 
+                $restartReportingService = $true
+
                 $invokeRsCimMethodParameters = @{
                     CimInstance = $reportingServicesData.Configuration
                     MethodName = 'SetSecureConnectionLevel'
@@ -665,6 +686,11 @@ function Set-TargetResource
 
                 Invoke-RsCimMethod @invokeRsCimMethodParameters
             }
+        }
+
+        if ( $restartReportingService -and (-not $SuppressRestart) )
+        {
+            Restart-ReportingServicesService -SQLInstanceName $InstanceName -WaitTime 30
         }
     }
 

@@ -9,5 +9,6 @@ class MSFT_SqlRS : OMI_BaseResource
     [Write, Description("Report Server URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.")] String ReportServerReservedUrl[];
     [Write, Description("Report Manager/Report Web App URL reservations. Optional. If not specified, 'http://+:80' URL reservation will be used.")] String ReportsReservedUrl[];
     [Write, Description("If connections to the Reporting Services must use SSL. If this parameter is not assigned a value, the default is that Reporting Services does not use SSL.")] Boolean UseSsl;
+    [Write, Description("Reporting Services need to be restarted after initialization or settings change. If this parameter is set to $true, Reporting Services will not be restarted, even after initialisation.")] Boolean SuppressRestart;
     [Read, Description("Is the Reporting Services instance initialized.")] Boolean IsInitialized;
 };

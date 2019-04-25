@@ -24,6 +24,8 @@
   - Concatenated Robocopy localization strings ([issue #694](https://github.com/PowerShell/SqlServerDsc/issues/694)).
 - Changes to SqlWaitForAG
   - Added en-US localization ([issue #625](https://github.com/PowerShell/SqlServerDsc/issues/625)).
+- Changes to SqlRS
+  - Reporting Services are restarted after changing settings, unless `$SuppressRestart` parameter is set ([issue #1331](https://github.com/PowerShell/SqlServerDsc/issues/1331)). `$SuppressRestart` will also prevent Reporting Services restart after initialization.
 
 ## 12.4.0.0
 
