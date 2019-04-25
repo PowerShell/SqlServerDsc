@@ -688,8 +688,13 @@ function Set-TargetResource
             }
         }
 
-        if ( $restartReportingService -and (-not $SuppressRestart) )
+        if ( $restartReportingService -and $SuppressRestart )
         {
+            Write-Warning -Message $script:localizedData.SuppressRestart
+        }
+        elseif ( $restartReportingService -and (-not $SuppressRestart) )
+        {
+            Write-Verbose -Message $script:localizedData.Restart
             Restart-ReportingServicesService -SQLInstanceName $InstanceName -WaitTime 30
         }
     }
