@@ -445,15 +445,26 @@ function Set-TargetResource
 
             Invoke-RsCimMethod @invokeRsCimMethodParameters
 
-            <#
-                There is no need to execute `InitializeReportServer` CIM method
-                here, since executing `SetDatabaseConnection` CIM method initializes
-                Reporting Services.
+            $reportingServicesData = Get-ReportingServicesData -InstanceName $InstanceName
 
-                A call to `InitializeReportServer` method here will fail on
-                SQL Standard and lower editions, as Reporting Services will try
-                to configure scale-out deployment.
+            <#
+                Only execute InitializeReportServer if SetDatabaseConnection hasn't
+                initialized Reporting Services already. Otherwise, executing
+                InitializeReportServer will fail on SQL Server Standard and
+                lower editions.
             #>
+            if ( -not $reportingServicesData.Configuration.IsInitialized )
+            {
+                $invokeRsCimMethodParameters = @{
+                    CimInstance = $reportingServicesData.Configuration
+                    MethodName = 'InitializeReportServer'
+                    Arguments = @{
+                        InstallationId = $reportingServicesData.Configuration.InstallationID
+                    }
+                }
+
+                Invoke-RsCimMethod @invokeRsCimMethodParameters
+            }
 
             if ( $PSBoundParameters.ContainsKey('UseSsl') -and $UseSsl -ne $currentConfig.UseSsl )
             {
