@@ -317,6 +317,7 @@ Export-ModuleMember -Function @(
     'New-InvalidArgumentException',
     'New-InvalidOperationException',
     'New-ObjectNotFoundException',
-    'New-InvalidResultException'
+    'New-InvalidResultException',
+    'New-NotImplementedException'
     'Get-LocalizedData'
 )

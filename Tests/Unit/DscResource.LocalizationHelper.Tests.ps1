@@ -188,6 +188,30 @@ InModuleScope 'DscResource.LocalizationHelper' {
         Assert-VerifiableMock
     }
 
+    Describe 'DscResource.LocalizationHelper\New-NotImplementedException' {
+        Context 'When calling with Message parameter only' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+
+                { New-NotImplementedException -Message $mockErrorMessage } | Should -Throw $mockErrorMessage
+            }
+        }
+
+        Context 'When calling with both the Message and ErrorRecord parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockExceptionErrorMessage = 'Mocked exception error message'
+
+                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+
+                { New-NotImplementedException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.NotImplementedException: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
     Describe 'DscResource.LocalizationHelper\New-InvalidArgumentException' {
         Context 'When calling with both the Message and ArgumentName parameter' {
             It 'Should throw the correct error' {
