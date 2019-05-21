@@ -676,6 +676,9 @@ function Get-TargetResource
     .PARAMETER RSSvcAccount
         Service account for Reporting Services service.
 
+    .PARAMETER RSInstallMode
+        Install mode for Reporting Services.
+
     .PARAMETER ASSvcAccount
        Service account for Analysis Services service.
 
@@ -896,6 +899,11 @@ function Set-TargetResource
         [Parameter()]
         [System.Management.Automation.PSCredential]
         $RSSvcAccount,
+
+        [Parameter()]
+        [ValidateSet('SharePointFilesOnlyMode', 'DefaultNativeMode', 'FilesOnlyMode')]
+        [System.String]
+        $RSInstallMode,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -1444,6 +1452,10 @@ function Set-TargetResource
         {
             $setupArguments += @{ RsSvcStartupType = $RsSvcStartupType}
         }
+        if ($PSBoundParameters.ContainsKey('RSInstallMode'))
+        {
+            $setupArguments += @{ RSINSTALLMODE = $RSInstallMode}
+        }
     }
 
     if ($Features.Contains('AS'))
@@ -1780,6 +1792,9 @@ function Set-TargetResource
     .PARAMETER RSSvcAccount
         Service account for Reporting Services service.
 
+    .PARAMETER RSInstallMode
+        Install mode for Reporting Services.
+
     .PARAMETER ASSvcAccount
        Service account for Analysis Services service.
 
@@ -1991,6 +2006,11 @@ function Test-TargetResource
         [Parameter()]
         [System.Management.Automation.PSCredential]
         $RSSvcAccount,
+
+        [Parameter()]
+        [ValidateSet('SharePointFilesOnlyMode', 'DefaultNativeMode', 'FilesOnlyMode')]
+        [System.String]
+        $RSInstallMode,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]

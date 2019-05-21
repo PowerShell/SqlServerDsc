@@ -1839,6 +1839,8 @@ need a '*SVCPASSWORD' argument in the setup arguments.
   service.
 * **`[PSCredential]` RSSvcAccount** _(Write)_: Service account for Reporting Services
   service.
+* **`[String]` RSInstallMode** _(Write)_: Reporting Services install mode.
+  { SharePointFilesOnlyMode | DefaultNativeMode | FilesOnlyMode }
 * **`[PSCredential]` ASSvcAccount** _(Write)_: Service account for Analysis Services
   service.
 * **`[String]` ASCollation** _(Write)_: Collation for Analysis Services.

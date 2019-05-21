@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Changes to SqlSetup
+  - Added RSInstallMode parameter ([issue #1163](https://github.com/PowerShell/SqlServerDsc/issues/1163)).
+
 ## 12.5.0.0
 
 - Changes to SqlServerSecureConnection

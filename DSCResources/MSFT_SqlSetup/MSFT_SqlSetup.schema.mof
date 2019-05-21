@@ -35,6 +35,7 @@ class MSFT_SqlSetup : OMI_BaseResource
     [Read, Description("Output username for the Full Text service.")] String FTSvcAccountUsername;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Reporting Services service.")] String RSSvcAccount;
     [Read, Description("Output username for the Reporting Services service.")] String RSSvcAccountUsername;
+    [Write, Description("Specifies the install mode for SQL Server Report service."), ValueMap{"SharePointFilesOnlyMode", "DefaultNativeMode", "FilesOnlyMode"}, Values{"SharePointFilesOnlyMode", "DefaultNativeMode", "FilesOnlyMode"}] String RSInstallMode;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Service account for Analysis Services service.")] String ASSvcAccount;
     [Read, Description("Output username for the Analysis Services service.")] String ASSvcAccountUsername;
     [Write, Description("Collation for Analysis Services.")] String ASCollation;
