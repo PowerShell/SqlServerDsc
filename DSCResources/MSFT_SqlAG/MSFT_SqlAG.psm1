@@ -7,6 +7,8 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAG'
+
 <#
     .SYNOPSIS
         Gets the specified Availability Group.
@@ -37,6 +39,10 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $InstanceName
+    )
+
+    Write-Verbose -Message (
+        $script:localizedData.GetAvailabilityGroup -f $Name, $InstanceName
     )
 
     # Connect to the instance
@@ -246,7 +252,8 @@ function Set-TargetResource
     # Determine if HADR is enabled on the instance. If not, throw an error
     if ( -not $serverObject.IsHadrEnabled )
     {
-        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure, $InstanceName -ErrorCategory NotImplemented
+        $errorMessage = $script:localizedData.HadrNotEnabled
+        New-InvalidOperationException -Message $errorMessage
     }
 
     # Define current version for check compatibility
@@ -257,7 +264,7 @@ function Set-TargetResource
 
     switch ($Ensure)
     {
-        Absent
+        'Absent'
         {
             # If the AG exists
             if ( $availabilityGroup )
@@ -267,21 +274,27 @@ function Set-TargetResource
                 {
                     try
                     {
+                        Write-Verbose -Message (
+                            $script:localizedData.RemoveAvailabilityGroup -f $Name, $InstanceName
+                        )
+
                         Remove-SqlAvailabilityGroup -InputObject $availabilityGroup -ErrorAction Stop
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupFailed -FormatArgs $availabilityGroup.Name, $InstanceName -ErrorCategory ResourceUnavailable -InnerException $_.Exception
+                        $errorMessage = $script:localizedData.FailedRemoveAvailabilityGroup -f $availabilityGroup.Name, $InstanceName
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType InstanceNotPrimaryReplica -FormatArgs $InstanceName, $availabilityGroup.Name -ErrorCategory ResourceUnavailable
+                    $errorMessage = $script:localizedData.NotPrimaryReplica -f $serverObject.DomainInstanceName, $availabilityGroup.Name, $availabilityGroup.PrimaryReplicaServerName
+                    New-InvalidOperationException -Message $errorMessage
                 }
             }
         }
 
-        Present
+        'Present'
         {
             # Ensure the appropriate cluster permissions are present
             Test-ClusterPermissions -ServerObject $serverObject
@@ -290,7 +303,8 @@ function Set-TargetResource
             $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
             if ( -not $endpoint )
             {
-                throw New-TerminatingError -ErrorType DatabaseMirroringEndpointNotFound -FormatArgs $ServerName, $InstanceName -ErrorCategory ObjectNotFound
+                $errorMessage = $script:localizedData.DatabaseMirroringEndpointNotFound -f ('{0}\{1}' -f $ServerName, $InstanceName)
+                New-ObjectNotFoundException -Message $errorMessage
             }
 
             # If the availability group does not exist, create it
@@ -329,11 +343,16 @@ function Set-TargetResource
                 # Create the new replica object
                 try
                 {
+                    Write-Verbose -Message (
+                        $script:localizedData.CreateAvailabilityGroupReplica -f $newReplicaParams.Name, $Name, $InstanceName
+                    )
+
                     $primaryReplica = New-SqlAvailabilityReplica @newReplicaParams -ErrorAction Stop
                 }
                 catch
                 {
-                    throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $newReplicaParams.Name, $InstanceName -ErrorCategory OperationStopped -InnerException $_.Exception
+                    $errorMessage = $script:localizedData.FailedCreateAvailabilityGroupReplica -f $newReplicaParams.Name, $InstanceName
+                    New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
 
                 # Set up the parameters for the new availability group
@@ -368,16 +387,25 @@ function Set-TargetResource
                 # Create the Availability Group
                 try
                 {
+                    Write-Verbose -Message (
+                        $script:localizedData.CreateAvailabilityGroup -f $Name, $InstanceName
+                    )
+
                     New-SqlAvailabilityGroup @newAvailabilityGroupParams -ErrorAction Stop
                 }
                 catch
                 {
-                    throw New-TerminatingError -ErrorType CreateAvailabilityGroupFailed -FormatArgs $Name -ErrorCategory OperationStopped -InnerException $_.Exception
+                    $errorMessage = $script:localizedData.FailedCreateAvailabilityGroup -f $Name, $InstanceName
+                    New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
             }
             # Otherwise let's check each of the parameters passed and update the Availability Group accordingly
             else
             {
+                Write-Verbose -Message (
+                    $script:localizedData.UpdateAvailabilityGroup -f $Name, $InstanceName
+                )
+
                 # Get the parameters that were submitted to the function
                 [System.Array] $submittedParameters = $PSBoundParameters.Keys
 
@@ -631,9 +659,16 @@ function Test-TargetResource
     #>
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
+        Write-Verbose -Message (
+            $script:localizedData.NotActiveNode -f $env:COMPUTERNAME, $InstanceName
+        )
+
         return $result
     }
+
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration -f $Name, $InstanceName
+    )
 
     # Define current version for check compatibility
     $sqlMajorVersion = $getTargetResourceResult.Version
@@ -698,7 +733,9 @@ function Test-TargetResource
 
                     if ( $getTargetResourceResult.($parameterName) -ne $parameterValue )
                     {
-                        New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
+                        Write-Verbose -Message (
+                            $script:localizedData.ParameterNotInDesiredState -f $parameterName, $parameterValue, $getTargetResourceResult.$parameterName
+                        )
 
                         $result = $false
                     }
@@ -715,21 +752,30 @@ function Test-TargetResource
                 # Verify the hostname in the endpoint URL is correct
                 if ( $EndpointHostName -ne $currentEndpointHostName )
                 {
-                    New-VerboseMessage -Message "'EndpointHostName' should be '$EndpointHostName' but is '$currentEndpointHostName'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointHostName', $EndpointHostName, $currentEndpointHostName
+                    )
+
                     $result = $false
                 }
 
                 # Verify the protocol in the endpoint URL is correct
                 if ( 'TCP' -ne $currentEndpointProtocol )
                 {
-                    New-VerboseMessage -Message "'EndpointProtocol' should be 'TCP' but is '$currentEndpointProtocol'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointProtocol', 'TCP', $currentEndpointProtocol
+                    )
+
                     $result = $false
                 }
 
                 # Verify the port in the endpoint URL is correct
                 if ( $getTargetResourceResult.EndpointPort -ne $currentEndpointPort )
                 {
-                    New-VerboseMessage -Message "'EndpointPort' should be '$($getTargetResourceResult.EndpointPort)' but is '$currentEndpointPort'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointPort', $getTargetResourceResult.EndpointPort, $currentEndpointPort
+                    )
+
                     $result = $false
                 }
             }
@@ -767,7 +813,8 @@ function Update-AvailabilityGroup
     }
     catch
     {
-        throw New-TerminatingError -ErrorType AlterAvailabilityGroupFailed -FormatArgs $AvailabilityGroup.Name -ErrorCategory OperationStopped -InnerException $_.Exception
+        $errorMessage = $script:localizedData.FailedAlterAvailabilityGroup -f $AvailabilityGroup.Name
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
     finally
     {

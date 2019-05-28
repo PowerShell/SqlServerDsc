@@ -715,9 +715,10 @@ try
 
                 It 'Should throw the correct error (RemoveAvailabilityGroupReplicaFailed) when removing the availability group replica fails' {
 
-                    Mock -CommandName Remove-SqlAvailabilityReplica -MockWith { Throw 'RemoveAvailabilityGroupReplicaFailed' } -Verifiable
+                    Mock -CommandName Remove-SqlAvailabilityReplica -MockWith { throw 'RemoveAvailabilityGroupReplicaFailed' } -Verifiable
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'RemoveAvailabilityGroupReplicaFailed'
+                    $mockErrorMessage = $script:localizedData.RemoveAvailabilityGroupReplicaFailed -f $setTargetResourceParameters.Name, $setTargetResourceParameters.AvailabilityGroupName, $setTargetResourceParameters.InstanceName
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -740,7 +741,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -778,7 +778,7 @@ try
 
                     $mockServer1IsHadrEnabled = $false
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'HadrNotEnabled'
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $script:localizedData.HadrNotEnabled
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -801,7 +801,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -877,7 +876,9 @@ try
 
                     $mockDatabaseMirroringEndpoint = $false
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'DatabaseMirroringEndpointNotFound'
+                    $mockErrorMessage = $script:localizedData.DatabaseMirroringEndpointNotFound -f ('{0}\{1}' -f $setTargetResourceParameters.ServerName, $setTargetResourceParameters.InstanceName)
+
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -900,7 +901,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -976,7 +976,9 @@ try
 
                     Mock -CommandName New-SqlAvailabilityReplica { throw } -Verifiable
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'CreateAvailabilityGroupReplicaFailed'
+                    $mockErrorMessage = $script:localizedData.FailedCreateAvailabilityGroupReplica -f $setTargetResourceParameters.Name, $setTargetResourceParameters.AvailabilityGroupName, $setTargetResourceParameters.InstanceName
+
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -999,7 +1001,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -1009,7 +1010,9 @@ try
 
                     Mock -CommandName Join-SqlAvailabilityGroup -MockWith { throw } -Verifiable
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'JoinAvailabilityGroupFailed'
+                    $mockErrorMessage = $script:localizedData.FailedJoinAvailabilityGroup -f $setTargetResourceParameters.Name, $setTargetResourceParameters.AvailabilityGroupName, $setTargetResourceParameters.InstanceName
+
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -1032,7 +1035,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -1042,7 +1044,9 @@ try
 
                     $setTargetResourceParameters.AvailabilityGroupName = 'DoesNotExist'
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'AvailabilityGroupNotFound'
+                    $mockErrorMessage = $script:localizedData.AvailabilityGroupNotFound -f $setTargetResourceParameters.AvailabilityGroupName, $setTargetResourceParameters.InstanceName
+
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -1065,7 +1069,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly
@@ -1117,7 +1120,9 @@ try
 
                     $setTargetResourceParameters.Name = 'ReplicaNotFound'
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw 'ReplicaNotFound'
+                    $mockErrorMessage = $script:localizedData.ReplicaNotFound -f $setTargetResourceParameters.Name, $setTargetResourceParameters.AvailabilityGroupName, $setTargetResourceParameters.InstanceName
+
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $mockErrorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -ParameterFilter {
                         $ServerName -eq $mockServer1Name
@@ -1140,7 +1145,6 @@ try
                     Assert-MockCalled -CommandName Import-SQLPSModule -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Join-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Test-ClusterPermissions -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Update-AvailabilityGroupReplica -Scope It -Times 0 -Exactly

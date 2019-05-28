@@ -263,7 +263,7 @@ try
                             $setTargetResourceEndpointMissingTestCases += @{
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
-                                Result = 'DatabaseMirroringEndpointNotFound'
+                                Result = $script:localizedData.DatabaseMirroringEndpointNotFound -f ('{0}\{1}' -f $mockSqlServerParameter, $mockInstanceNameParameter)
                                 ServerName = $mockSqlServerParameter
                                 InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
@@ -272,7 +272,7 @@ try
                             $setTargetResourceHadrDisabledTestCases += @{
                                 Ensure = 'Present'
                                 Name = $mockNameParameters.AbsentAvailabilityGroup
-                                Result = 'HadrNotEnabled'
+                                Result = $script:localizedData.HadrNotEnabled
                                 ServerName = $mockSqlServerParameter
                                 InstanceName = $mockInstanceNameParameter
                                 Version = $majorVersionToTest
@@ -800,9 +800,6 @@ try
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith $mockConnectSql -Verifiable
                 Mock -CommandName New-SqlAvailabilityGroup $mockNewSqlAvailabilityGroup -Verifiable
                 Mock -CommandName New-SqlAvailabilityReplica -MockWith $mockNewSqlAvailabilityGroupReplica -Verifiable
-                Mock -CommandName New-TerminatingError -MockWith {
-                    $ErrorType
-                } -Verifiable
                 Mock -CommandName Remove-SqlAvailabilityGroup -Verifiable -ParameterFilter {
                     $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                 }
@@ -847,7 +844,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times @{Absent=0;Present=1}.$Ensure -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times @{Absent=0;Present=1}.$Ensure -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -880,11 +876,20 @@ try
                         'CreateAvailabilityGroupFailed'
                         {
                             $assertCreateAvailabilityGroup = 1
+                            $errorMessage = $script:localizedData.FailedCreateAvailabilityGroup -f $Name, $InstanceName
                         }
 
                         'CreateAvailabilityGroupReplicaFailed'
                         {
                             $assertCreateAvailabilityGroup = 0
+                            if ($InstanceName -eq 'MSSQLSERVER')
+                            {
+                                $errorMessage = $script:localizedData.FailedCreateAvailabilityGroupReplica -f 'Server1', $InstanceName
+                            }
+                            else
+                            {
+                                $errorMessage = $script:localizedData.FailedCreateAvailabilityGroupReplica -f 'Server1\NamedInstance', $InstanceName
+                            }
                         }
                     }
 
@@ -895,13 +900,12 @@ try
                         InstanceName = $InstanceName
                     }
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw "$($ErrorResult)"
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times $assertCreateAvailabilityGroup -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 1 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -957,7 +961,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -997,7 +1000,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 1 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -1030,11 +1032,20 @@ try
                         'RemoveAvailabilityGroupFailed'
                         {
                             $assertRemoveAvailabilityGroupFailed = 1
+                            $errorMessage = $script:localizedData.FailedRemoveAvailabilityGroup -f $Name, $InstanceName
                         }
 
                         'InstanceNotPrimaryReplica'
                         {
                             $assertRemoveAvailabilityGroupFailed = 0
+                            if ($InstanceName -eq 'MSSQLSERVER')
+                            {
+                                $errorMessage = $script:localizedData.NotPrimaryReplica -f 'Server2', $Name, 'Server1'
+                            }
+                            else
+                            {
+                                $errorMessage = $script:localizedData.NotPrimaryReplica -f 'Server2\NamedInstance', $Name, 'Server1\NamedInstance'
+                            }
                         }
                     }
 
@@ -1045,13 +1056,12 @@ try
                         InstanceName = $InstanceName
                     }
 
-                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw "$($ErrorResult)"
+                    { Set-TargetResource @setTargetResourceParameters } | Should -Throw $errorMessage
 
                     Assert-MockCalled -CommandName Connect-SQL -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -1100,7 +1110,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -1149,7 +1158,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -1206,7 +1214,6 @@ try
                     Assert-MockCalled -CommandName Get-PrimaryReplicaServerObject -Scope It -Times 1 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityGroup -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName New-SqlAvailabilityReplica -Scope It -Times 0 -Exactly
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                     Assert-MockCalled -CommandName Remove-SqlAvailabilityGroup -Scope It -Times 0 -Exactly -ParameterFilter {
                         $InputObject.Name -eq $mockNameParameters.PresentAvailabilityGroup
                     }
@@ -1406,10 +1413,6 @@ try
 
         Describe 'SqlAG\Update-AvailabilityGroup' -Tag 'Helper' {
             BeforeAll {
-                Mock -CommandName New-TerminatingError -MockWith {
-                    $ErrorType
-                }
-
                 $mockAvailabilityGroup = New-Object -TypeName Microsoft.SqlServer.Management.Smo.AvailabilityGroup
             }
 
@@ -1417,17 +1420,13 @@ try
                 It 'Should silently alter the Availability Group' {
 
                     { Update-AvailabilityGroup -AvailabilityGroup $mockAvailabilityGroup } | Should -Not -Throw
-
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 0 -Exactly
                 }
 
                 It 'Should throw the correct error, AlterAvailabilityGroupFailed, when altering the Availability Group fails' {
 
                     $mockAvailabilityGroup.Name = 'AlterFailed'
 
-                    { Update-AvailabilityGroup -AvailabilityGroup $mockAvailabilityGroup } | Should -Throw 'AlterAvailabilityGroupFailed'
-
-                    Assert-MockCalled -CommandName New-TerminatingError -Scope It -Times 1 -Exactly
+                    { Update-AvailabilityGroup -AvailabilityGroup $mockAvailabilityGroup } | Should -Throw ($script:localizedData.FailedAlterAvailabilityGroup -f $mockAvailabilityGroup.Name)
                 }
             }
         }

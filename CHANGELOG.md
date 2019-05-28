@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Changes to SqlAG
+  - Added en-US localization.
+- Changes to SqlAGReplica
+  - Added en-US localization.
 - Changes to SqlDatabaseRole
   - BREAKING CHANGE: Refactored to enable creation/deletion of the database role
     itself as well as management of the role members. ([issue #845](https://github.com/PowerShell/SqlServerDsc/issues/845),

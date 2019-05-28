@@ -7,6 +7,7 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'DscResource.Common.psm1')
 
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAGReplica'
 <#
     .SYNOPSIS
         Gets the specified Availability Group Replica from the specified Availability Group.
@@ -47,6 +48,10 @@ function Get-TargetResource
         $InstanceName
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.GetAvailabilityGroup -f $Name, $AvailabilityGroupName, $InstanceName
+    )
+
     # Connect to the instance
     $serverObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
 
@@ -54,7 +59,7 @@ function Get-TargetResource
     $isActiveNode = Test-ActiveNode -ServerObject $serverObject
 
     # Get the endpoint properties
-    $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
+    $endpoint = $serverObject.Endpoints | Where-Object -FilterScript { $_.EndpointType -eq 'DatabaseMirroring' }
     if ( $endpoint )
     {
         $endpointPort = $endpoint.Protocol.Tcp.ListenerPort
@@ -248,7 +253,8 @@ function Set-TargetResource
     # Determine if HADR is enabled on the instance. If not, throw an error
     if ( -not $serverObject.IsHadrEnabled )
     {
-        throw New-TerminatingError -ErrorType HadrNotEnabled -FormatArgs $Ensure, $InstanceName -ErrorCategory NotImplemented
+        $errorMessage = $script:localizedData.HadrNotEnabled
+        New-InvalidOperationException -Message $errorMessage
     }
 
     # Get the Availability Group if it exists
@@ -266,7 +272,7 @@ function Set-TargetResource
 
     switch ( $Ensure )
     {
-        Absent
+        'Absent'
         {
             if ( $availabilityGroup )
             {
@@ -280,22 +286,24 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType RemoveAvailabilityGroupReplicaFailed -FormatArgs $Name -ErrorCategory ResourceUnavailable -InnerException $_.Exception
+                        $errorMessage = $script:localizedData.RemoveAvailabilityGroupReplicaFailed -f $Name, $AvailabilityGroupName, $InstanceName
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
                 }
             }
         }
 
-        Present
+        'Present'
         {
             # Ensure the appropriate cluster permissions are present
             Test-ClusterPermissions -ServerObject $serverObject
 
             # Make sure a database mirroring endpoint exists.
-            $endpoint = $serverObject.Endpoints | Where-Object { $_.EndpointType -eq 'DatabaseMirroring' }
+            $endpoint = $serverObject.Endpoints | Where-Object -FilterScript { $_.EndpointType -eq 'DatabaseMirroring' }
             if ( -not $endpoint )
             {
-                throw New-TerminatingError -ErrorType DatabaseMirroringEndpointNotFound -FormatArgs $ServerName, $InstanceName -ErrorCategory ObjectNotFound
+                $errorMessage = $script:localizedData.DatabaseMirroringEndpointNotFound -f ('{0}\{1}' -f $ServerName, $InstanceName)
+                New-ObjectNotFoundException -Message $errorMessage
             }
 
             # If a hostname for the endpoint was not specified, define it now.
@@ -391,7 +399,8 @@ function Set-TargetResource
                 }
                 else
                 {
-                    throw New-TerminatingError -ErrorType ReplicaNotFound -FormatArgs $Name, $InstanceName -ErrorCategory ResourceUnavailable
+                    $errorMessage = $script:localizedData.ReplicaNotFound -f $Name, $AvailabilityGroupName, $InstanceName
+                    New-ObjectNotFoundException -Message $errorMessage
                 }
             }
             else
@@ -451,7 +460,8 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType CreateAvailabilityGroupReplicaFailed -FormatArgs $Name, $InstanceName -ErrorCategory OperationStopped -InnerException $_.Exception
+                        $errorMessage = $script:localizedData.FailedCreateAvailabilityGroupReplica -f $Name, $AvailabilityGroupName, $InstanceName
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
 
                     # Join the Availability Group Replica to the Availability Group
@@ -461,13 +471,15 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        throw New-TerminatingError -ErrorType JoinAvailabilityGroupFailed -FormatArgs $Name -ErrorCategory OperationStopped -InnerException $_.Exception
+                        $errorMessage = $script:localizedData.FailedJoinAvailabilityGroup -f $Name, $AvailabilityGroupName, $InstanceName
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
                 }
                 # The Availability Group doesn't exist on the primary replica
                 else
                 {
-                    throw New-TerminatingError -ErrorType AvailabilityGroupNotFound -FormatArgs $AvailabilityGroupName, $PrimaryReplicaInstanceName -ErrorCategory ResourceUnavailable
+                    $errorMessage = $script:localizedData.AvailabilityGroupNotFound -f $AvailabilityGroupName, $InstanceName
+                    New-ObjectNotFoundException -Message $errorMessage
                 }
             }
         }
@@ -622,10 +634,16 @@ function Test-TargetResource
     #>
     if ( $ProcessOnlyOnActiveNode -and -not $getTargetResourceResult.IsActiveNode )
     {
-        # Use localization if the resource has been converted
-        New-VerboseMessage -Message ( 'The node "{0}" is not actively hosting the instance "{1}". Exiting the test.' -f $env:COMPUTERNAME, $InstanceName )
+        Write-Verbose -Message (
+            $script:localizedData.NotActiveNode -f $env:COMPUTERNAME, $InstanceName
+        )
+
         return $result
     }
+
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration -f $Name, $InstanceName
+    )
 
     switch ($Ensure)
     {
@@ -682,7 +700,9 @@ function Test-TargetResource
 
                     if ( $different )
                     {
-                        New-VerboseMessage -Message "'$($parameterName)' should be '$($parameterValue)' but is '$($getTargetResourceResult.($parameterName))'"
+                        Write-Verbose -Message (
+                            $script:localizedData.ParameterNotInDesiredState -f $parameterName, $parameterValue, $getTargetResourceResult.$parameterName
+                        )
 
                         $result = $false
                     }
@@ -699,21 +719,30 @@ function Test-TargetResource
                 # Verify the hostname in the endpoint URL is correct
                 if ( $EndpointHostName -ne $currentEndpointHostName )
                 {
-                    New-VerboseMessage -Message "'EndpointHostName' should be '$EndpointHostName' but is '$currentEndpointHostName'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointHostName', $EndpointHostName, $currentEndpointHostName
+                    )
+
                     $result = $false
                 }
 
                 # Verify the protocol in the endpoint URL is correct
                 if ( 'TCP' -ne $currentEndpointProtocol )
                 {
-                    New-VerboseMessage -Message "'EndpointProtocol' should be 'TCP' but is '$currentEndpointProtocol'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointProtocol', 'TCP', $currentEndpointProtocol
+                    )
+
                     $result = $false
                 }
 
                 # Verify the port in the endpoint URL is correct
                 if ( $getTargetResourceResult.EndpointPort -ne $currentEndpointPort )
                 {
-                    New-VerboseMessage -Message "'EndpointPort' should be '$($getTargetResourceResult.EndpointPort)' but is '$currentEndpointPort'"
+                    Write-Verbose -Message (
+                        $script:localizedData.ParameterNotInDesiredState -f 'EndpointPort', $getTargetResourceResult.EndpointPort, $currentEndpointPort
+                    )
+
                     $result = $false
                 }
             }
