@@ -1,8 +1,9 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the user account CONTOSO\SQLAdmin
-    has "MyRole" and "MySecondRole" SQL database roles.
+    This example shows how to ensure that the database roles named ReportEditor and ReportViewer is present in the
+    AdventureWorks database on instance sqltest.company.local\DSC.
 #>
+
 Configuration Example
 {
     param
@@ -16,14 +17,23 @@ Configuration Example
 
     node localhost
     {
-        SqlDatabaseRole Add_Database_Role
+        SqlDatabaseRole ReportEditor_AddRole
         {
-            Ensure               = 'Present'
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
-            Name                 = 'CONTOSO\SQLAdmin'
-            Role                 = 'MyRole', 'MySecondRole'
             Database             = 'AdventureWorks'
+            Name                 = 'ReportEditor'
+            Ensure               = 'Present'
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
+
+        SqlDatabaseRole ReportViewer_AddRole
+        {
+            ServerName           = 'sqltest.company.local'
+            InstanceName         = 'DSC'
+            Database             = 'AdventureWorks'
+            Name                 = 'ReportViewer'
+            Ensure               = 'Present'
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
     }
