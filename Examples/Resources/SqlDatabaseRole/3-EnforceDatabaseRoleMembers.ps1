@@ -1,13 +1,13 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the database role named ReportViewer is not present in the AdventureWorks
-    database on instance sqltest.company.local\DSC.
+    This example shows how to ensure that the database role named ReportViewer is present in the AdventureWorks
+    database on instance sqltest.company.local\DSC and that only users CONTOSO\Barbara and CONTOSO\Fred are members of
+    this role.
 #>
 
 Configuration Example
 {
-    param
-    (
+    param(
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $SqlAdministratorCredential
@@ -17,13 +17,14 @@ Configuration Example
 
     node localhost
     {
-        SqlDatabaseRole ReportViewer_DropRole
+        SqlDatabaseRole ReportViewer_EnforceRoleMembers
         {
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             Database             = 'AdventureWorks'
             Name                 = 'ReportViewer'
-            Ensure               = 'Absent'
+            Members              = @('CONTOSO\Barbara', 'CONTOSO\Fred')
+            Ensure               = 'Present'
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
     }
