@@ -126,8 +126,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   manage SQL database permissions.
 * [**SqlDatabaseRecoveryModel**](#sqldatabaserecoverymodel) resource
   to manage database recovery model.
-* [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL
-  database roles.
+* [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL database roles.
 * [**SqlRS**](#sqlrs) configures SQL Server Reporting.
   Services to use a database engine in another instance.
 * [**SqlRSSetup**](#sqlrssetup) Installs the standalone
@@ -709,8 +708,9 @@ All issues are not listed here, see [here for all open issues](https://github.co
 
 ### SqlDatabaseRole
 
-This resource is used to add or remove role for a login in a database.
-Read more about database role in this article [CREATE ROLE (Transact-SQL)](https://msdn.microsoft.com/en-us/library/ms187936.aspx)
+This resource is used to create a database role when Ensure is set to 'Present'
+or remove a database role when Ensure is set to 'Absent'. The resource also
+manages members in both built-in and user created database roles.
 
 #### Requirements
 
@@ -719,22 +719,33 @@ Read more about database role in this article [CREATE ROLE (Transact-SQL)](https
 
 #### Parameters
 
-* **`[String]` Name** _(Key)_: The name of the login that will become a member, or
-  removed as a member, of the role(s).
 * **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` Database** _(Key)_: The database in which the login (user) and role(s)
-  exist.
-* **`[String]` Ensure** _(Write)_: If 'Present' (the default value) then the login
-  (user) will be added to the role(s). If 'Absent' then the login (user) will be
-  removed from the role(s). { *Present* | Absent }.
-* **`[String[]]` Role**_(Required): One or more roles to which the login (user) will
-  be added or removed.
+* **`[String]` Database** _(Key)_: The name of the database in which the role should
+  be configured.
+* **`[String]` Name** _(Key)_: The name of the database role to be added or removed.
+* **`[String[]]` Members** _(Write)_: The members the database role should have.
+  This parameter will replace all the current database role members with the
+  specified members. Can only be used when parameter Ensure is set to 'Present'.
+* **`[String[]]` MembersToInclude** _(Write)_: The members the database role should
+  include. This parameter will only add members to a database role. Can only
+  be used when parameter Ensure is set to 'Present'. Can not be used at the same
+  time as parameter Members.
+* **`[String[]]` MembersToExclude** _(Write)_: The members the database role should
+  exclude. This parameter will only remove members from a database role. Can only
+  be used when parameter Ensure is set to 'Present'. Can not be used at the same
+  time as parameter Members.
+* **`[String]` Ensure** _(Write)_: If 'Present' (the default value) then the role
+  will be added to the database and the role membership will be set. If 'Absent'
+  then the role will be removed from the database. { *Present* | Absent }.
 
 #### Examples
 
-* [Add Role of a database](/Examples/Resources/SqlDatabaseRole/1-AddDatabaseRole.ps1)
-* [Remove Role of a database](/Examples/Resources/SqlDatabaseRole/2-RemoveDatabaseRole.ps1)
+* [Add Role to a database](/Examples/Resources/SqlDatabaseRole/1-AddDatabaseRole.ps1)
+* [Remove Role from a database](/Examples/Resources/SqlDatabaseRole/2-RemoveDatabaseRole.ps1)
+* [Enforce Role membership](/Examples/Resources/SqlDatabaseRole/3-EnforceDatabaseRoleMembers.ps1)
+* [Members to include in database role](/Examples/Resources/SqlDatabaseRole/4-MembersToIncludeInDatabaseRole.ps1)
+* [Members to exclude from database role](/Examples/Resources/SqlDatabaseRole/5-MembersToExcludeFromDatabaseRole.ps1)
 
 #### Known issues
 

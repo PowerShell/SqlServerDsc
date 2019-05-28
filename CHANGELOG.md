@@ -30,6 +30,14 @@
   - Fix minor issue that when unable to connect to an instance. Instead
     of showing a message saying that connect failed another unrelated
     error message could have been shown, because of an error in the code.
+- Changes to SqlDatabaseRole
+  - BREAKING CHANGE: Refactored to enable creation/deletion of the database role
+    itself as well as management of the role members. *Note that the resource no
+    longer adds database users.* ([issue #845](https://github.com/PowerShell/SqlServerDsc/issues/845),
+    [issue #847](https://github.com/PowerShell/SqlServerDsc/issues/847),
+    [issue #1252](https://github.com/PowerShell/SqlServerDsc/issues/1252),
+    [issue #1339](https://github.com/PowerShell/SqlServerDsc/issues/1339)).
+    [Paul Shamus @pshamus](https://github.com/pshamus)
 
 ## 12.5.0.0
 
