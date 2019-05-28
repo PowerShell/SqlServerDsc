@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Changes to SqlDatabaseRole
+  - BREAKING CHANGE: Refactored to enable creation/deletion of the database role
+    itself as well as management of the role members. ([issue #845](https://github.com/PowerShell/SqlServerDsc/issues/845),
+    [issue #847](https://github.com/PowerShell/SqlServerDsc/issues/847),
+    [issue #1252](https://github.com/PowerShell/SqlServerDsc/issues/1252),
+    [issue #1339](https://github.com/PowerShell/SqlServerDsc/issues/1339)).
+    [Paul Shamus @pshamus](https://github.com/pshamus)
+
 ## 12.5.0.0
 
 - Changes to SqlServerSecureConnection
