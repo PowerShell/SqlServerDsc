@@ -71,12 +71,7 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String[]]
-        $MembersToExclude,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present'
+        $MembersToExclude
     )
 
     Write-Verbose -Message (
@@ -86,12 +81,12 @@ function Get-TargetResource
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
     if ($sqlServerObject)
     {
-        $currentEnsure = 'Present'
+        $membersInDesiredState = $true
+        $roleStatus = 'Present'
 
         # Check if database exists.
         if (-not ($sqlDatabaseObject = $sqlServerObject.Databases[$Database]))
         {
-            $currentEnsure = 'Absent'
             $errorMessage = $script:localizedData.DatabaseNotFound -f $Database
             New-ObjectNotFoundException -Message $errorMessage
         }
@@ -104,7 +99,6 @@ function Get-TargetResource
             }
             catch
             {
-                $currentEnsure = 'Absent'
                 $errorMessage = $script:localizedData.EnumDatabaseRoleMemberNamesError -f $Name, $Database
                 New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
@@ -113,7 +107,6 @@ function Get-TargetResource
             {
                 if ($MembersToInclude -or $MembersToExclude)
                 {
-                    $currentEnsure = 'Absent'
                     $errorMessage = $script:localizedData.MembersToIncludeAndExcludeParamMustBeNull
                     New-InvalidOperationException -Message $errorMessage
                 }
@@ -123,7 +116,7 @@ function Get-TargetResource
                     Write-Verbose -Message (
                         $script:localizedData.DesiredMembersNotPresent -f $Name, $Database
                     )
-                    $currentEnsure = 'Absent'
+                    $membersInDesiredState = $false
                 }
             }
             else
@@ -137,7 +130,7 @@ function Get-TargetResource
                             Write-Verbose -Message (
                                 $script:localizedData.MemberNotPresent -f $memberName, $Name, $Database
                             )
-                            $currentEnsure = 'Absent'
+                            $membersInDesiredState = $false
                         }
                     }
                 }
@@ -151,7 +144,7 @@ function Get-TargetResource
                             Write-Verbose -Message (
                                 $script:localizedData.MemberPresent -f $memberName, $Name, $Database
                             )
-                            $currentEnsure = 'Absent'
+                            $membersInDesiredState = $false
                         }
                     }
                 }
@@ -159,19 +152,20 @@ function Get-TargetResource
         }
         else
         {
-            $currentEnsure = 'Absent'
+            $roleStatus = 'Absent'
         }
     }
 
     $returnValue = @{
-        ServerName       = $ServerName
-        InstanceName     = $InstanceName
-        Database         = $Database
-        Name             = $Name
-        Members          = $roleMembers
-        MembersToInclude = $MembersToInclude
-        MembersToExclude = $MembersToExclude
-        Ensure           = $currentEnsure
+        ServerName            = $ServerName
+        InstanceName          = $InstanceName
+        Database              = $Database
+        Name                  = $Name
+        Members               = $roleMembers
+        MembersToInclude      = $MembersToInclude
+        MembersToExclude      = $MembersToExclude
+        MembersInDesiredState = $membersInDesiredState
+        Ensure                = $roleStatus
     }
 
     $returnValue
@@ -489,7 +483,7 @@ function Test-TargetResource
 
         'Present'
         {
-            if ($getTargetResourceResult.Ensure -ne 'Present')
+            if ($getTargetResourceResult.Ensure -ne 'Present' -or $getTargetResourceResult.MembersInDesiredState -eq $false)
             {
                 Write-Verbose -Message (
                     $script:localizedData.EnsureIsPresent -f $Name
