@@ -746,6 +746,7 @@ manages members in both built-in and user created database roles.
 * [Enforce Role membership](/Examples/Resources/SqlDatabaseRole/3-EnforceDatabaseRoleMembers.ps1)
 * [Members to include in database role](/Examples/Resources/SqlDatabaseRole/4-MembersToIncludeInDatabaseRole.ps1)
 * [Members to exclude from database role](/Examples/Resources/SqlDatabaseRole/5-MembersToExcludeFromDatabaseRole.ps1)
+* [Members to include and exclude in a database role](/Examples/Resources/SqlDatabaseRole/6-MembersToIncludeAndExcludeInDatabaseRole.ps1)
 
 #### Known issues
 

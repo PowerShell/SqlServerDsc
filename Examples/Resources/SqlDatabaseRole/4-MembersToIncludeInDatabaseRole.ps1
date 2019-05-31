@@ -1,8 +1,10 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the database role named ReportViewer is present in the AdventureWorks
-    database on instance sqltest.company.local\DSC and that users CONTOSO\Barbara and CONTOSO\Fred are added as members
-    of this role.
+    This example shows how to do the following:
+
+    1. Ensure that the database role named ReportViewer is present in the AdventureWorks database on instance
+       sqltest.company.local\DSC
+    2. Ensure that users CONTOSO\Barbara and CONTOSO\Fred will always be members of the role
 #>
 
 Configuration Example

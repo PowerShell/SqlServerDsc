@@ -1,6 +1,6 @@
 <#
 .EXAMPLE
-    This example shows how to ensure that the database roles named ReportEditor and ReportViewer is present in the
+    This example shows how to ensure that the database roles named ReportEditor and ReportViewer are present in the
     AdventureWorks database on instance sqltest.company.local\DSC.
 #>
 
