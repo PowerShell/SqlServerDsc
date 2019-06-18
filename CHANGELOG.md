@@ -18,6 +18,14 @@
   - Added StatementTimeout to function 'Connect-SQL' with default 600 seconds (10mins).
   - Added StatementTimeout to function 'Invoke-Query' with default 600 seconds (10mins)
     ([issue #1358](https://github.com/PowerShell/SqlServerDsc/issues/1358)).
+  - Changes to helper function Connect-SQL
+    - The function now make it more clear that when using the parameter
+      `SetupCredential` is impersonates that user, and by default it does
+      not impersonates a user but uses the credential that the resource
+      is run as (for example the built-in credential parameter
+      `PsDscRunAsCredential`).
+    - Added parameter alias `-DatabaseCredential` for the parameter
+      `-SetupCredential`.
 - Changes to SqlAG
   - Added en-US localization.
 - Changes to SqlAGReplica
