@@ -2231,7 +2231,6 @@ InModuleScope 'SqlServerDsc.Common' {
                     Add-Member -MemberType NoteProperty -Name ConnectionContext -Value (
                         New-Object -TypeName Object |
                             Add-Member -MemberType NoteProperty -Name ServerInstance -Value $serverInstance -PassThru |
-                            #Add-Member -MemberType ScriptProperty -Name LoginSecure -Value { [System.Boolean] $mockExpectedDatabaseEngineLoginSecure } -PassThru -Force |
                             Add-Member -MemberType NoteProperty -Name LoginSecure -Value $true -PassThru |
                             Add-Member -MemberType NoteProperty -Name Login -Value '' -PassThru |
                             Add-Member -MemberType NoteProperty -Name SecurePassword -Value $null -PassThru |
@@ -2240,6 +2239,9 @@ InModuleScope 'SqlServerDsc.Common' {
                             Add-Member -MemberType NoteProperty -Name ConnectAsUserName -Value '' -PassThru |
                             Add-Member -MemberType NoteProperty -Name StatementTimeout -Value 600 -PassThru |
                             Add-Member -MemberType NoteProperty -Name ApplicationName -Value 'SqlServerDsc' -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name Disconnect -Value {
+                                return $true
+                            } -PassThru |
                             Add-Member -MemberType ScriptMethod -Name Connect -Value {
                                 if ($mockExpectedDatabaseEngineInstance -eq 'MSSQLSERVER')
                                 {
@@ -2286,7 +2288,7 @@ InModuleScope 'SqlServerDsc.Common' {
                 -Verifiable
         }
 
-        Context 'When connecting to the default instance using Windows Authentication' {
+        Context 'When connecting to the default instance using integrated Windows Authentication' {
             It 'Should return the correct service instance' {
                 $mockExpectedDatabaseEngineServer = 'TestServer'
                 $mockExpectedDatabaseEngineInstance = 'MSSQLSERVER'
@@ -2316,7 +2318,7 @@ InModuleScope 'SqlServerDsc.Common' {
             }
         }
 
-        Context 'When connecting to the named instance using Windows Authentication' {
+        Context 'When connecting to the named instance using integrated Windows Authentication' {
             It 'Should return the correct service instance' {
                 $mockExpectedDatabaseEngineServer = $env:COMPUTERNAME
                 $mockExpectedDatabaseEngineInstance = $mockInstanceName
@@ -2346,7 +2348,7 @@ InModuleScope 'SqlServerDsc.Common' {
             }
         }
 
-        Context 'When connecting to the named instance using Windows Authentication and different server name' {
+        Context 'When connecting to the named instance using integrated Windows Authentication and different server name' {
             It 'Should return the correct service instance' {
                 $mockExpectedDatabaseEngineServer = 'SERVER'
                 $mockExpectedDatabaseEngineInstance = $mockInstanceName
@@ -2368,6 +2370,7 @@ InModuleScope 'SqlServerDsc.Common' {
                     ServerName = $mockExpectedDatabaseEngineServer
                     InstanceName = $mockExpectedDatabaseEngineInstance
                     SetupCredential = $mockSetupCredential
+                    LoginType = 'WindowsUser'
                 }
 
                 $databaseEngineServerObject = Connect-SQL @testParameters
@@ -2394,6 +2397,25 @@ InModuleScope 'SqlServerDsc.Common' {
 
                 $mockCorrectErrorMessage = ($script:localizedData.FailedToConnectToDatabaseEngineInstance -f $mockExpectedDatabaseEngineServer)
                 { Connect-SQL } | Should -Throw $mockCorrectErrorMessage
+
+                Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It `
+                    -ParameterFilter $mockNewObject_MicrosoftDatabaseEngine_ParameterFilter
+            }
+        }
+
+        Context 'When the logon type is WindowsUser or SqlLogin, but not credentials were passed' {
+            It 'Should throw the correct error' {
+                $mockExpectedDatabaseEngineServer = 'TestServer'
+                $mockExpectedDatabaseEngineInstance = 'MSSQLSERVER'
+
+                 $connectSqlParameters = @{
+                    ServerName      = $mockExpectedDatabaseEngineServer
+                    LoginType       = 'WindowsUser'
+                }
+
+                $mockCorrectErrorMessage = $script:localizedData.CredentialsNotSpecified -f $connectSqlParameters.LoginType
+
+                { Connect-SQL @connectSqlParameters } | Should -Throw $mockCorrectErrorMessage
 
                 Assert-MockCalled -CommandName New-Object -Exactly -Times 1 -Scope It `
                     -ParameterFilter $mockNewObject_MicrosoftDatabaseEngine_ParameterFilter
