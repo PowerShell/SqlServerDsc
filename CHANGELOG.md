@@ -23,9 +23,9 @@
       `SetupCredential` is impersonates that user, and by default it does
       not impersonates a user but uses the credential that the resource
       is run as (for example the built-in credential parameter
-      `PsDscRunAsCredential`).
+      `PsDscRunAsCredential`). [@kungfu71186](https://github.com/kungfu71186)
     - Added parameter alias `-DatabaseCredential` for the parameter
-      `-SetupCredential`.
+      `-SetupCredential`. [@kungfu71186](https://github.com/kungfu71186)
 - Changes to SqlAG
   - Added en-US localization.
 - Changes to SqlAGReplica
