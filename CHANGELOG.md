@@ -21,6 +21,9 @@
   - Changes to helper function Connect-SQL
     - When impersonating WindowsUser credential use the NetworkCredential UserName.
     - Added addtional verbose logging.
+    - Connect-SQL now uses parameter sets to more intuitive evaluate that
+      the correct parameters are used in different scenarios
+      ([issue #1403](https://github.com/PowerShell/SqlServerDsc/issues/1403)).
 - Changes to SqlServerSecureConnection
   - Forced $Thumbprint to lowercase to fix [issue #1350](https://github.com/PowerShell/SqlServerDsc/issues/1350).
 - Changes to SqlSetup

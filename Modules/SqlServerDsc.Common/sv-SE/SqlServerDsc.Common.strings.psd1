@@ -61,6 +61,5 @@ ConvertFrom-StringData @'
     ClusterLoginMissingRecommendedPermissions = The recommended account '{0}' is missing one or more of the following permissions: {1} (SQLCOMMON0052)
     ClusterLoginPermissionsPresent = The cluster login '{0}' has the required permissions. (SQLCOMMON0053)
     ConnectingUsingIntegrated = Anslutning som nuvarande användare '{0}' med integrerad säkerhet. (SQLCOMMON0054)
-    CredentialsNotSpecified = The Logon type of '{0}' was specified which requires credentials, but the credentials parameter was not specified. (SQLCOMMON0055)
     ConnectingUsingImpersonation = Impersoner credential '{0}' med inloggningstyp '{1}'. (SQLCOMMON0056)
 '@
