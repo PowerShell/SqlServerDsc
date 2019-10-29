@@ -6,6 +6,7 @@
   - Add .gitattributes file to checkout file correctly with CRLF.
   - Updated .vscode/analyzersettings.psd1 file to correct use PSSA rules
     and custom rules in VS Code.
+  - Fix hashtables to align with style guideline ([issue #1437](https://github.com/PowerShell/SqlServerDsc/issues/1437)).
 
 ## 13.2.0.0
 

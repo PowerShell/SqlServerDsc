@@ -517,7 +517,7 @@ function Test-TargetResource
                 Make sure default values are part of desired values if the user did
                 not specify them in the configuration.
             #>
-            $desiredValues = @{ } + $PSBoundParameters
+            $desiredValues = @{} + $PSBoundParameters
             $desiredValues['Ensure'] = $Ensure
             $desiredValues['UserType'] = $UserType
 
