@@ -63,11 +63,11 @@ function Get-TargetResource
 
     # Create the return object. Default ensure to Absent.
     $alwaysOnAvailabilityGroupResource = @{
-        Name            = $Name
-        ServerName      = $ServerName
+        Name         = $Name
+        ServerName   = $ServerName
         InstanceName = $InstanceName
-        Ensure          = 'Absent'
-        IsActiveNode    = $isActiveNode
+        Ensure       = 'Absent'
+        IsActiveNode = $isActiveNode
     }
 
     if ( $availabilityGroup )
@@ -641,8 +641,8 @@ function Test-TargetResource
 
     $getTargetResourceParameters = @{
         InstanceName = $InstanceName
-        ServerName      = $ServerName
-        Name            = $Name
+        ServerName   = $ServerName
+        Name         = $Name
     }
 
     # Assume this will pass. We will determine otherwise later
