@@ -122,7 +122,8 @@ try
 
                 $resultObject.Name | Should -Be $ConfigurationData.AllNodes.Database1Name
                 $resourceCurrentState.GetQuery | Should -Be $ConfigurationData.AllNodes.GetQuery
-                $resourceCurrentState.TestQuery | Should -Be $ConfigurationData.AllNodes.TestQuery
+                # Need to remove excessive CR from the compare string due to the code being cloned using CRLF.
+                $resourceCurrentState.TestQuery | Should -Be ($ConfigurationData.AllNodes.TestQuery -replace [Environment]::NewLine, "`n")
                 $resourceCurrentState.SetQuery | Should -Be $ConfigurationData.AllNodes.SetQuery
             }
 
