@@ -443,7 +443,6 @@ try
                             ),
                             # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
                             (New-Object -TypeName Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
-                                    Add-Member -MemberType NoteProperty -Name IsDHCP -Value $false -PassThru |
                                     Add-Member -MemberType NoteProperty -Name IPAddress -Value 'f00::ba12' -PassThru
                             )
                         )
