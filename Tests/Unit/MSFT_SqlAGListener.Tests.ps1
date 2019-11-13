@@ -444,7 +444,7 @@ try
                             # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddressCollection
                             (New-Object -TypeName Object |    # TypeName: Microsoft.SqlServer.Management.Smo.AvailabilityGroupListenerIPAddress
                                     Add-Member -MemberType NoteProperty -Name IsDHCP -Value $false -PassThru |
-                                    Add-Member -MemberType NoteProperty -Name IPAddress -Value 'f000::ba7' -PassThru
+                                    Add-Member -MemberType NoteProperty -Name IPAddress -Value 'f00::ba12' -PassThru
                             )
                         )
                     } -PassThru -Force
@@ -452,7 +452,7 @@ try
 
                 It 'Should return that desired state is present when wanted desired state is to be Present, without DHCP' {
                     $testParameters['Ensure'] = 'Present'
-                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0', 'f000::ba7')
+                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0', 'f00::ba12')
                     $testParameters['Port'] = 5030
                     $testParameters['DHCP'] = $false
 
@@ -463,7 +463,7 @@ try
                 }
 
                 It 'Should return that desired state is present when IP address is the only set parameter' {
-                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0', 'f000::ba7')
+                    $testParameters['IpAddress'] = @('192.168.0.1/255.255.255.0', 'f00::ba12')
 
                     $result = Test-TargetResource @testParameters
                     $result | Should -Be $true
