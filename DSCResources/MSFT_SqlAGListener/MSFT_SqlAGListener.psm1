@@ -69,7 +69,14 @@ function Get-TargetResource
             $ipAddress = @()
             foreach ($currentIpAddress in $presentIpAddress)
             {
-                $ipAddress += "$($currentIpAddress.IPAddress)/$($currentIpAddress.SubnetMask)"
+                if ($currentIpAddress.SubnetMask)
+                {
+                    $ipAddress += "$($currentIpAddress.IPAddress)/$($currentIpAddress.SubnetMask)"
+                }
+                else
+                {
+                    $ipAddress += "$($currentIpAddress.IPAddress)"
+                }
             }
         }
         else
