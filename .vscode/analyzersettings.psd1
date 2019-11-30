@@ -50,4 +50,6 @@
         #>
         'Measure-*'
     )
+
+    IncludeDefaultRules = $true
 }

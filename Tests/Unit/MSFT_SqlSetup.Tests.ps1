@@ -717,7 +717,9 @@ try
                     New-Object -TypeName Microsoft.Management.Infrastructure.CimInstance 'MSCluster_Resource','root/MSCluster' |
                         Add-Member -MemberType NoteProperty -Name 'Name' -Value "SQL Server ($mockCurrentInstanceName)" -PassThru -Force |
                         Add-Member -MemberType NoteProperty -Name 'Type' -Value 'SQL Server' -TypeName 'String' -PassThru -Force |
-                        Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{ InstanceName = $mockCurrentInstanceName } -PassThru -Force
+                        Add-Member -MemberType NoteProperty -Name 'PrivateProperties' -Value @{
+                            InstanceName = $mockCurrentInstanceName
+                        } -PassThru -Force
                 )
             )
         }
@@ -836,12 +838,16 @@ try
                         {
                             'Network Name'
                             {
-                                $propertyValue.Value = @{ DnsName = $mockDefaultInstance_FailoverClusterNetworkName }
+                                $propertyValue.Value = @{
+                                    DnsName = $mockDefaultInstance_FailoverClusterNetworkName
+                                }
                             }
 
                             'IP Address'
                             {
-                                $propertyValue.Value = @{ Address = $mockDefaultInstance_FailoverClusterIPAddress }
+                                $propertyValue.Value = @{
+                                    Address = $mockDefaultInstance_FailoverClusterIPAddress
+                                }
                             }
                         }
 

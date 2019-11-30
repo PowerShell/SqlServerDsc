@@ -44,25 +44,35 @@ try
     InModuleScope $script:dscResourceName {
         Describe 'Helper functions' {
             Context 'Get-SqlServerMajorVersion' {
-
-                Mock -CommandName Get-ItemProperty `
-                    -MockWith { return [pscustomobject]@{ MSSQLSERVER = 'MSSQL12.MSSQLSERVER'} } `
-                    -ParameterFilter { $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL' }
+                Mock -CommandName Get-ItemProperty -MockWith {
+                    return [PSCustomObject] @{
+                        MSSQLSERVER = 'MSSQL12.MSSQLSERVER'
+                    }
+                } -ParameterFilter {
+                    $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+                }
 
                 It 'Should return correct major version for default instance' {
-
-                    Mock -CommandName Get-ItemProperty `
-                        -MockWith { return [pscustomobject]@{ Version = '12.1.4100.1' } } `
-                        -ParameterFilter { $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\Setup' }
+                    Mock -CommandName Get-ItemProperty -MockWith {
+                        return [PSCustomObject] @{
+                            Version = '12.1.4100.1'
+                        }
+                    } -ParameterFilter {
+                        $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\Setup'
+                    }
 
                     Get-SqlServerMajorVersion -InstanceName 'MSSQLSERVER' | Should -Be '12'
                 }
 
                 It 'Should throw error if major version cannot be resolved' {
 
-                    Mock -CommandName Get-ItemProperty `
-                        -MockWith { return [pscustomobject]@{ Version = '' } }`
-                        -ParameterFilter { $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\Setup' }
+                    Mock -CommandName Get-ItemProperty -MockWith {
+                        return [PSCustomObject] @{
+                            Version = ''
+                        }
+                    } -ParameterFilter {
+                        $Path -eq 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\Setup'
+                    }
 
                     { Get-SqlServerMajorVersion -InstanceName 'MSSQLSERVER' } | Should -Throw ($script:localizedData.FailedToDetectSqlVersion -f 'MSSQLSERVER')
                 }
@@ -96,12 +106,12 @@ try
                 Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
                 Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME' }
                 Mock -CommandName New-ServerConnection -MockWith {
-                    return [pscustomobject]@{
+                    return [PSCustomObject] @{
                         ServerInstance = $SqlServerName
                     }
                 }
                 Mock -CommandName New-ReplicationServer -MockWith {
-                    return [pscustomobject]@{
+                    return [PSCustomObject] @{
                         IsDistributor = $false
                         IsPublisher = $false
                         DistributionDatabase = ''
@@ -109,7 +119,7 @@ try
                         WorkingDirectory = ''
                     }
                 }
-                Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+                Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
                 Mock -CommandName Install-LocalDistributor -MockWith { }
                 Mock -CommandName Install-RemoteDistributor -MockWith { }
                 Mock -CommandName Register-DistributorPublisher -MockWith { }
@@ -230,12 +240,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME\INSTANCENAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $false
                     IsPublisher = $false
                     DistributionDatabase = ''
@@ -243,7 +253,7 @@ try
                     WorkingDirectory = ''
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }
@@ -375,12 +385,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $true
                     IsPublisher = $true
                     DistributionDatabase = 'distribution'
@@ -388,7 +398,7 @@ try
                     WorkingDirectory = 'C:\temp'
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }
@@ -503,12 +513,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME\INSTANCENAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $false
                     IsPublisher = $true
                     DistributionDatabase = 'distribution'
@@ -516,13 +526,13 @@ try
                     WorkingDirectory = 'C:\temp'
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }
             Mock -CommandName Uninstall-Distributor -MockWith {}
 
-            Context 'Get methot' {
+            Context 'Get method' {
                 $result = Get-TargetResource @testParameters
                 It 'Get method calls Get-SqlServerMajorVersion with $InstanceName = INSTANCENAME' {
                     Assert-MockCalled -CommandName Get-SqlServerMajorVersion -Times 1 `
@@ -630,12 +640,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $true
                     IsPublisher = $true
                     DistributionDatabase = 'distribution'
@@ -643,7 +653,7 @@ try
                     WorkingDirectory = 'C:\temp'
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }
@@ -760,12 +770,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME\INSTANCENAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $false
                     IsPublisher = $true
                     DistributionDatabase = 'distribution'
@@ -773,13 +783,13 @@ try
                     WorkingDirectory = 'C:\temp'
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }
             Mock -CommandName Uninstall-Distributor -MockWith {}
 
-            Context 'Get methot' {
+            Context 'Get method' {
                 $result = Get-TargetResource @testParameters
                 It 'Get method calls Get-SqlServerMajorVersion with $InstanceName = INSTANCENAME' {
                     Assert-MockCalled -CommandName Get-SqlServerMajorVersion -Times 1 `
@@ -888,12 +898,12 @@ try
             Mock -CommandName Get-SqlServerMajorVersion -MockWith { return '99' }
             Mock -CommandName Get-SqlLocalServerName -MockWith { return 'SERVERNAME' }
             Mock -CommandName New-ServerConnection -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     ServerInstance = $SqlServerName
                 }
             }
             Mock -CommandName New-ReplicationServer -MockWith {
-                return [pscustomobject]@{
+                return [PSCustomObject] @{
                     IsDistributor = $false
                     IsPublisher = $false
                     DistributionDatabase = ''
@@ -901,7 +911,7 @@ try
                     WorkingDirectory = ''
                 }
             }
-            Mock -CommandName New-DistributionDatabase -MockWith { return [pscustomobject]@{} }
+            Mock -CommandName New-DistributionDatabase -MockWith { return [PSCustomObject] @{} }
             Mock -CommandName Install-LocalDistributor -MockWith { }
             Mock -CommandName Install-RemoteDistributor -MockWith { }
             Mock -CommandName Register-DistributorPublisher -MockWith { }

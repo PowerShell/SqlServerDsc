@@ -1412,17 +1412,23 @@ function Restart-SqlService
 
             # Stop the SQL Server and dependent resources
             Write-Verbose -Message ($script:localizedData.BringClusterResourcesOffline -f $resourceNames) -Verbose
-            $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{ Timeout = $Timeout }
+            $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{
+                Timeout = $Timeout
+            }
 
             # Start the SQL server resource
             Write-Verbose -Message ($script:localizedData.BringSqlServerClusterResourcesOnline) -Verbose
-            $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
+            $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{
+                Timeout = $Timeout
+            }
 
             # Start the SQL Agent resource
             if ($agentService)
             {
                 Write-Verbose -Message ($script:localizedData.BringSqlServerAgentClusterResourcesOnline) -Verbose
-                $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{ Timeout = $Timeout }
+                $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{
+                    Timeout = $Timeout
+                }
             }
         }
         else
