@@ -298,7 +298,7 @@ function Set-TargetResource
                         if ( -not ($Members.Contains($memberName)))
                         {
                             Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                -LoginName $memberName `
+                                -SecurityPrincipal $memberName `
                                 -ServerRoleName $ServerRoleName
                         }
                     }
@@ -308,7 +308,7 @@ function Set-TargetResource
                         if ( -not ($memberNamesInRoleObject.Contains($memberToAdd)))
                         {
                             Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                -LoginName $memberToAdd `
+                                -SecurityPrincipal $memberToAdd `
                                 -ServerRoleName $ServerRoleName
                         }
                     }
@@ -324,7 +324,7 @@ function Set-TargetResource
                             if ( -not ($memberNamesInRoleObject.Contains($memberToInclude)))
                             {
                                 Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                    -LoginName $memberToInclude `
+                                    -SecurityPrincipal $memberToInclude `
                                     -ServerRoleName $ServerRoleName
                             }
                         }
@@ -339,7 +339,7 @@ function Set-TargetResource
                             if ($memberNamesInRoleObject.Contains($memberToExclude))
                             {
                                 Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
-                                    -LoginName $memberToExclude `
+                                    -SecurityPrincipal $memberToExclude `
                                     -ServerRoleName $ServerRoleName
                             }
                         }
@@ -490,7 +490,7 @@ function Add-SqlDscServerRoleMember
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $LoginName,
+        $SecurityPrincipal,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -498,10 +498,11 @@ function Add-SqlDscServerRoleMember
         $ServerRoleName
     )
 
-    if ( -not ($SqlServerObject.Logins[$LoginName]) )
+    if ($false -eq ($SqlServerObject.Logins.Contains($SecurityPrincipal) -or
+        $SqlServerObject.Roles.Contains($SecurityPrincipal)))
     {
-        $errorMessage = $script:localizedData.LoginNotFound `
-            -f $LoginName, $ServerName, $InstanceName
+        $errorMessage = $script:localizedData.SecurityPrincipalNotFound `
+            -f $SecurityPrincipal, $ServerName, $InstanceName
 
         New-ObjectNotFoundException -Message $errorMessage
     }
@@ -510,15 +511,15 @@ function Add-SqlDscServerRoleMember
     {
         Write-Verbose -Message (
             $script:localizedData.AddMemberToRole `
-                -f $LoginName, $ServerRoleName
+                -f $SecurityPrincipal, $ServerRoleName
         )
 
-        $SqlServerObject.Roles[$ServerRoleName].AddMember($LoginName)
+        $SqlServerObject.Roles[$ServerRoleName].AddMember($SecurityPrincipal)
     }
     catch
     {
         $errorMessage = $script:localizedData.AddMemberServerRoleSetError `
-            -f $ServerName, $InstanceName, $ServerRoleName, $LoginName
+            -f $ServerName, $InstanceName, $ServerRoleName, $SecurityPrincipal
 
         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
@@ -550,7 +551,7 @@ function Remove-SqlDscServerRoleMember
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $LoginName,
+        $SecurityPrincipal,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -558,10 +559,11 @@ function Remove-SqlDscServerRoleMember
         $ServerRoleName
     )
 
-    if ( -not ($SqlServerObject.Logins[$LoginName]) )
+    if ($false -eq ($SqlServerObject.Logins.Contains($SecurityPrincipal) -or
+        $SqlServerObject.Roles.Contains($SecurityPrincipal)))
     {
-        $errorMessage = $script:localizedData.LoginNotFound `
-            -f $LoginName, $ServerName, $InstanceName
+        $errorMessage = $script:localizedData.SecurityPrincipalNotFound `
+            -f $SecurityPrincipal, $ServerName, $InstanceName
 
         New-ObjectNotFoundException -Message $errorMessage
     }
@@ -570,15 +572,15 @@ function Remove-SqlDscServerRoleMember
     {
         Write-Verbose -Message (
             $script:localizedData.RemoveMemberFromRole `
-                -f $LoginName, $ServerRoleName
+                -f $SecurityPrincipal, $ServerRoleName
         )
 
-        $SqlServerObject.Roles[$ServerRoleName].DropMember($LoginName)
+        $SqlServerObject.Roles[$ServerRoleName].DropMember($SecurityPrincipal)
     }
     catch
     {
         $errorMessage = $script:localizedData.DropMemberServerRoleSetError `
-            -f $ServerName, $InstanceName, $ServerRoleName, $LoginName
+            -f $ServerName, $InstanceName, $ServerRoleName, $SecurityPrincipal
 
         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }

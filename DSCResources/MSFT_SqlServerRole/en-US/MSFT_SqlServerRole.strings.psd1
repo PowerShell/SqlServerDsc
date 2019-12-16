@@ -18,6 +18,7 @@ ConvertFrom-StringData @'
     EnsureIsAbsent = Ensure is set to Absent. The existing role '{0}' should be removed.
     EnsureIsPresent = Ensure is set to Present. Either the role '{0}' is missing and should be created, or members in the role is not in desired state.
     LoginNotFound = Login '{0}' does not exist on SQL server '{1}\\{2}'.
+    SecurityPrincipalNotFound = Security principal '{0}' does not exist on SQL server '{1}\\{2}'.
     AddMemberToRole = Adding login '{0}' to role '{1}'.
     RemoveMemberFromRole = Removing login '{0}' from role '{1}'.
 '@
