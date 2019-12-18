@@ -72,107 +72,103 @@ try
         #region Function mocks
 
         $mockConnectSQL = {
-            return @(
-                (
-                    New-Object -TypeName Object |
-                        Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockInstanceName -PassThru |
-                        Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru |
-                        Add-Member -MemberType ScriptProperty -Name Roles -Value {
-                        return @{
-                            $mockSqlServerRole = ( New-Object -TypeName Object |
-                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlServerRole -PassThru |
-                                    Add-Member -MemberType ScriptMethod -Name EnumMemberNames -Value {
-                                    if ($mockInvalidOperationForEnumMethod)
-                                    {
-                                        throw 'Mock EnumMemberNames Method was called with invalid operation.'
-                                    }
-                                    else
-                                    {
-                                        $mockEnumMemberNames
-                                    }
-                                } -PassThru |
-                                    Add-Member -MemberType ScriptMethod -Name Drop -Value {
-                                    if ($mockInvalidOperationForDropMethod)
-                                    {
-                                        throw 'Mock Drop Method was called with invalid operation.'
-                                    }
+            $mockServerObject = [PSCustomObject]@{
+                InstanceName = $mockInstanceName
+                ComputerNamePhysicalNetBIOS = $mockServerName
+                Roles = @{}
+                Logins = @{}
+            }
 
-                                    if ( $this.Name -ne $mockExpectedServerRoleToDrop )
-                                    {
-                                        throw "Called mocked drop() method without dropping the right server role. Expected '{0}'. But was '{1}'." `
-                                            -f $mockExpectedServerRoleToDrop, $this.Name
-                                    }
-                                } -PassThru |
-                                    Add-Member -MemberType ScriptMethod -Name AddMember -Value {
-                                    if ($mockInvalidOperationForAddMemberMethod)
-                                    {
-                                        throw 'Mock AddMember Method was called with invalid operation.'
-                                    }
+            $mockRoleObject = [PSCustomObject]@{
+                Name = $mockSqlServerRole
+            }
 
-                                    if ( $mockSqlServerLoginToAdd -ne $mockExpectedMemberToAdd )
-                                    {
-                                        throw "Called mocked AddMember() method without adding the right login. Expected '{0}'. But was '{1}'." `
-                                            -f $mockExpectedMemberToAdd, $mockSqlServerLoginToAdd
-                                    }
-                                } -PassThru |
-                                    Add-Member -MemberType ScriptMethod -Name DropMember -Value {
-                                    if ($mockInvalidOperationForDropMemberMethod)
-                                    {
-                                        throw 'Mock DropMember Method was called with invalid operation.'
-                                    }
+            $mockRoleObject | Add-Member -MemberType ScriptMethod -Name EnumMemberNames -Value {
+                if ($mockInvalidOperationForEnumMethod)
+                {
+                    throw 'Mock EnumMemberNames Method was called with invalid operation.'
+                }
+                else
+                {
+                    $mockEnumMemberNames
+                }
+            }
 
-                                    if ( $mockSqlServerLoginToDrop -ne $mockExpectedMemberToDrop )
-                                    {
-                                        throw "Called mocked DropMember() method without removing the right login. Expected '{0}'. But was '{1}'." `
-                                            -f $mockExpectedMemberToDrop, $mockSqlServerLoginToDrop
-                                    }
-                                } -PassThru
-                            )
-                        }
-                    } -PassThru |
-                        Add-Member -MemberType ScriptProperty -Name Logins -Value {
-                        return @{
-                            $mockSqlServerLoginOne  = @((
-                                    New-Object -TypeName Object |
-                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru
-                                ))
-                            $mockSqlServerLoginTwo  = @((
-                                    New-Object -TypeName Object |
-                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru
-                                ))
-                            $mockSqlServerLoginTree = @((
-                                    New-Object -TypeName Object |
-                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru
-                                ))
-                            $mockSqlServerLoginFour = @((
-                                    New-Object -TypeName Object |
-                                        Add-Member -MemberType NoteProperty -Name LoginType -Value $mockSqlServerLoginType -PassThru
-                                ))
-                        }
-                    } -PassThru -Force
-                )
-            )
+            $mockRoleObject | Add-Member -MemberType ScriptMethod -Name Drop -Value {
+                if ($mockInvalidOperationForDropMethod)
+                {
+                    throw 'Mock Drop Method was called with invalid operation.'
+                }
+
+                if ( $this.Name -ne $mockExpectedServerRoleToDrop )
+                {
+                    throw "Called mocked drop() method without dropping the right server role. Expected '{0}'. But was '{1}'." `
+                        -f $mockExpectedServerRoleToDrop, $this.Name
+                }
+            }
+
+            $mockRoleObject |  Add-Member -MemberType ScriptMethod -Name AddMember -Value {
+                if ($mockInvalidOperationForAddMemberMethod)
+                {
+                    throw 'Mock AddMember Method was called with invalid operation.'
+                }
+
+                if ( $mockSqlServerLoginToAdd -ne $mockExpectedMemberToAdd )
+                {
+                    throw "Called mocked AddMember() method without adding the right login. Expected '{0}'. But was '{1}'." `
+                        -f $mockExpectedMemberToAdd, $mockSqlServerLoginToAdd
+                }
+            }
+
+            $mockRoleObject | Add-Member -MemberType ScriptMethod -Name DropMember -Value {
+                if ($mockInvalidOperationForDropMemberMethod)
+                {
+                    throw 'Mock DropMember Method was called with invalid operation.'
+                }
+
+                if ( $mockSqlServerLoginToDrop -ne $mockExpectedMemberToDrop )
+                {
+                    throw "Called mocked DropMember() method without removing the right login. Expected '{0}'. But was '{1}'." `
+                        -f $mockExpectedMemberToDrop, $mockSqlServerLoginToDrop
+                }
+            }
+
+            # Add the mock role to the roles collection
+            $mockServerObject.Roles.Add($mockSqlServerRole, $mockRoleObject)
+
+            # Add all mock logins
+            foreach ($mockLoginName in @($mockSqlServerLoginOne, $mockSqlServerLoginTwo, $mockSqlServerLoginTree, $mockSqlServerLoginFour))
+            {
+                $mockLoginProperties = @{
+                    Name = $mockLoginName
+                    LoginType = $mockSqlServerLoginType
+                }
+
+                $mockServerObject.Logins.Add($mockLoginName, (New-Object -TypeName PSObject -Property $mockLoginProperties))
+            }
+
+            return @($mockServerObject)
         }
 
         $mockNewObjectServerRole = {
-            return @(
-                (
-                    New-Object -TypeName Object |
-                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlServerRoleAdd -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Create -Value {
-                        if ($mockInvalidOperationForCreateMethod)
-                        {
-                            throw 'Mock Create Method was called with invalid operation.'
-                        }
+            $mockObject = New-Object -TypeName PSObject -Property @{
+                Name = $mockSqlServerRoleAdd
+            }
 
-                        if ( $this.Name -ne $mockExpectedServerRoleToCreate )
-                        {
-                            throw "Called mocked Create() method without adding the right server role. Expected '{0}'. But was '{1}'." `
-                                -f $mockExpectedServerRoleToCreate, $this.Name
-                        }
-                    } -PassThru -Force
-                )
-            )
+            $mockObject | Add-Member -MemberType ScriptMethod -Name Create -Value {
+                if ($mockInvalidOperationForCreateMethod)
+                {
+                    throw 'Mock Create Method was called with invalid operation.'
+                }
+
+                if ( $this.Name -ne $mockExpectedServerRoleToCreate )
+                {
+                    throw "Called mocked Create() method without adding the right server role. Expected '{0}'. But was '{1}'." `
+                        -f $mockExpectedServerRoleToCreate, $this.Name
+                }
+            }
+
+            return @($mockObject)
         }
         #endregion
 
@@ -892,7 +888,7 @@ try
                         MembersToInclude = 'KingJulian'
                     }
 
-                    $errorMessage = $script:localizedData.LoginNotFound `
+                    $errorMessage = $script:localizedData.SecurityPrincipalNotFound `
                         -f 'KingJulian', $mockServerName, $mockInstanceName
 
                     { Set-TargetResource @testParameters } | Should -Throw $errorMessage
@@ -951,7 +947,7 @@ try
                         MembersToExclude = 'KingJulian'
                     }
 
-                    $errorMessage = $script:localizedData.LoginNotFound `
+                    $errorMessage = $script:localizedData.SecurityPrincipalNotFound `
                         -f 'KingJulian', $mockServerName, $mockInstanceName
 
                     { Set-TargetResource @testParameters } | Should -Throw $errorMessage
@@ -971,7 +967,7 @@ try
                         Members        = @('KingJulian', $mockSqlServerLoginOne, $mockSqlServerLoginTree)
                     }
 
-                    $errorMessage = $script:localizedData.LoginNotFound `
+                    $errorMessage = $script:localizedData.SecurityPrincipalNotFound `
                      -f 'KingJulian', $mockServerName, $mockInstanceName
 
                     { Set-TargetResource @testParameters } | Should -Throw $errorMessage
