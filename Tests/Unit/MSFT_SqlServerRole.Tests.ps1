@@ -55,6 +55,7 @@ try
         $mockServerName = 'localhost'
         $mockInstanceName = 'MSSQLSERVER'
         $mockSqlServerRole = 'AdminSqlforBI'
+        $mockSqlServerChildRole = 'TestChildRole'
         $mockSqlServerLoginOne = 'CONTOSO\John'
         $mockSqlServerLoginTwo = 'CONTOSO\Kelly'
         $mockSqlServerLoginTree = 'CONTOSO\Lucy'
@@ -92,9 +93,8 @@ try
                 {
                     $mockEnumMemberNames
                 }
-            }
-
-            $mockRoleObject | Add-Member -MemberType ScriptMethod -Name Drop -Value {
+            } -PassThru |
+            Add-Member -MemberType ScriptMethod -Name Drop -Value {
                 if ($mockInvalidOperationForDropMethod)
                 {
                     throw 'Mock Drop Method was called with invalid operation.'
@@ -105,9 +105,8 @@ try
                     throw "Called mocked drop() method without dropping the right server role. Expected '{0}'. But was '{1}'." `
                         -f $mockExpectedServerRoleToDrop, $this.Name
                 }
-            }
-
-            $mockRoleObject |  Add-Member -MemberType ScriptMethod -Name AddMember -Value {
+            } -PassThru |
+            Add-Member -MemberType ScriptMethod -Name AddMember -Value {
                 if ($mockInvalidOperationForAddMemberMethod)
                 {
                     throw 'Mock AddMember Method was called with invalid operation.'
@@ -118,9 +117,8 @@ try
                     throw "Called mocked AddMember() method without adding the right login. Expected '{0}'. But was '{1}'." `
                         -f $mockExpectedMemberToAdd, $mockSqlServerLoginToAdd
                 }
-            }
-
-            $mockRoleObject | Add-Member -MemberType ScriptMethod -Name DropMember -Value {
+            } -PassThru |
+            Add-Member -MemberType ScriptMethod -Name DropMember -Value {
                 if ($mockInvalidOperationForDropMemberMethod)
                 {
                     throw 'Mock DropMember Method was called with invalid operation.'
@@ -135,6 +133,14 @@ try
 
             # Add the mock role to the roles collection
             $mockServerObject.Roles.Add($mockSqlServerRole, $mockRoleObject)
+
+            # Mock the child role
+            $mockChildRole = [PSCustomObject]@{
+                Name = $mockSqlServerChildRole
+            }
+
+            # Add the role member to the roles collection
+            $mockServerObject.Roles.Add($mockSqlServerChildRole, $mockChildRole)
 
             # Add all mock logins
             foreach ($mockLoginName in @($mockSqlServerLoginOne, $mockSqlServerLoginTwo, $mockSqlServerLoginTree, $mockSqlServerLoginFour))
@@ -992,6 +998,62 @@ try
                     { Set-TargetResource @testParameters } | Should -Not -Throw
 
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When nesting role membership' {
+                Context 'When defining an explicit list of members.' {
+                    It 'Should not throw when the member is a Role' {
+                        $mockExpectedMemberToAdd = $mockSqlServerChildRole
+                        $mockSqlServerLoginToAdd = $mockSqlServerChildRole
+                        $testParameters = $mockDefaultParameters.Clone()
+
+                        $testParameters += @{
+                            Ensure = 'Present'
+                            ServerRoleName = $mockSqlServerRole
+                            Members = @($mockSqlServerChildRole)
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When specifying a list of security principals to include in the Role.' {
+                    It 'Should not throw when a member to inculde is a Role.' {
+                        $mockExpectedMemberToAdd = $mockSqlServerChildRole
+                        $mockSqlServerLoginToAdd = $mockSqlServerChildRole
+                        $testParameters = $mockDefaultParameters.Clone()
+
+                        $testParameters += @{
+                            Ensure = 'Present'
+                            ServerRoleName = $mockSqlServerRole
+                            MembersToInclude = @($mockSqlServerChildRole)
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When specifying a list of security principals to remove from the Role.' {
+                    It 'Should not throw when the member to exclude is a Role.' {
+                        $mockExpectedMemberToDrop = $mockSqlServerChildRole
+                        $mockSqlServerLoginToDrop = $mockSqlServerChildRole
+                        $testParameters = $mockDefaultParameters.Clone()
+
+                        $testParameters += @{
+                            Ensure = 'Present'
+                            ServerRoleName = $mockSqlServerRole
+                            MembersToExclude = @($mockSqlServerChildRole)
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
                 }
             }
 
