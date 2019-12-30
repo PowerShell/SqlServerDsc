@@ -20,26 +20,25 @@ $script:dscResourceName = 'MSFT_SqlServerRole'
 
 #region HEADER
 
-# Unit Test Template Version: 1.2.0
+# Unit Test Template Version: 1.2.4
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
 
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:dscModuleName `
     -DSCResourceName $script:dscResourceName `
+    -ResourceType 'Mof' `
     -TestType Unit
 
 #endregion HEADER
 
-function Invoke-TestSetup
-{
-}
+function Invoke-TestSetup {}
 
 function Invoke-TestCleanup
 {
@@ -190,10 +189,11 @@ try
 
             return @($mockObject)
         }
+
         #endregion
 
         Describe "MSFT_SqlServerRole\Get-TargetResource" -Tag 'Get' {
-            BeforeEach {
+            BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
 
@@ -597,7 +597,7 @@ try
         }
 
         Describe "MSFT_SqlServerRole\Test-TargetResource" -Tag 'Test' {
-            BeforeEach {
+            BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
 
@@ -766,7 +766,7 @@ try
         }
 
         Describe "MSFT_SqlServerRole\Set-TargetResource" -Tag 'Set' {
-            BeforeEach {
+            BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewObjectServerRole -ParameterFilter {
                     $TypeName -eq 'Microsoft.SqlServer.Management.Smo.ServerRole'
@@ -1177,4 +1177,3 @@ finally
 {
     Invoke-TestCleanup
 }
-
