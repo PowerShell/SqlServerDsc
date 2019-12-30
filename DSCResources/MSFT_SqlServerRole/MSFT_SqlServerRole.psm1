@@ -110,7 +110,7 @@ function Get-TargetResource
                 {
                     foreach ($memberToInclude in $MembersToInclude)
                     {
-                        if ( -not ($membersInRole.Contains($memberToInclude)))
+                        if ($membersInRole -notcontains $memberToInclude)
                         {
                             Write-Verbose -Message (
                                 $script:localizedData.MemberNotPresent `
@@ -126,7 +126,7 @@ function Get-TargetResource
                 {
                     foreach ($memberToExclude in $MembersToExclude)
                     {
-                        if ($membersInRole.Contains($memberToExclude))
+                        if ($membersInRole -contains $memberToExclude)
                         {
                             Write-Verbose -Message (
                                 $script:localizedData.MemberPresent `
@@ -295,7 +295,7 @@ function Set-TargetResource
 
                     foreach ($memberName in $memberNamesInRoleObject)
                     {
-                        if ( -not ($Members.Contains($memberName)))
+                        if ($Members -notcontains $memberName)
                         {
                             Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                 -SecurityPrincipal $memberName `
@@ -305,7 +305,7 @@ function Set-TargetResource
 
                     foreach ($memberToAdd in $Members)
                     {
-                        if ( -not ($memberNamesInRoleObject.Contains($memberToAdd)))
+                        if ($memberNamesInRoleObject -notcontains $memberToAdd)
                         {
                             Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                 -SecurityPrincipal $memberToAdd `
@@ -321,7 +321,7 @@ function Set-TargetResource
 
                         foreach ($memberToInclude in $MembersToInclude)
                         {
-                            if ( -not ($memberNamesInRoleObject.Contains($memberToInclude)))
+                            if ($memberNamesInRoleObject -notcontains $memberToInclude)
                             {
                                 Add-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                     -SecurityPrincipal $memberToInclude `
@@ -336,7 +336,7 @@ function Set-TargetResource
 
                         foreach ($memberToExclude in $MembersToExclude)
                         {
-                            if ($memberNamesInRoleObject.Contains($memberToExclude))
+                            if ($memberNamesInRoleObject -contains $memberToExclude)
                             {
                                 Remove-SqlDscServerRoleMember -SqlServerObject $sqlServerObject `
                                     -SecurityPrincipal $memberToExclude `
