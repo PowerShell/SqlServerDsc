@@ -9,6 +9,12 @@
   - Fix hashtables to align with style guideline ([issue #1437](https://github.com/PowerShell/SqlServerDsc/issues/1437)).
 - Changes to SqlServerMaxDop
   - Fix line endings in code which did not use the correct format.
+- Changes to SqlServerRole
+  - Add support for nested role membership
+  - Removed use of case-sensitive Contains() when evalutating role membership.
+    ([issue #1153](https://github.com/dsccommunity/SqlServerDsc/issues/1153))
+  - Update unit tests to template 1.2.4
+  - Refactored mocks and unit tests to increase performance. ([issue #979](https://github.com/dsccommunity/SqlServerDsc/issues/979))
 
 ## 13.2.0.0
 
