@@ -107,27 +107,41 @@ try
                 }
             } -PassThru |
             Add-Member -MemberType ScriptMethod -Name AddMember -Value {
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [String]
+                    $memberName
+                )
+
                 if ($mockInvalidOperationForAddMemberMethod)
                 {
                     throw 'Mock AddMember Method was called with invalid operation.'
                 }
 
-                if ( $mockSqlServerLoginToAdd -ne $mockExpectedMemberToAdd )
+                if ($mockExpectedMemberToAdd -ne $memberName)
                 {
                     throw "Called mocked AddMember() method without adding the right login. Expected '{0}'. But was '{1}'." `
-                        -f $mockExpectedMemberToAdd, $mockSqlServerLoginToAdd
+                        -f $mockExpectedMemberToAdd, $memberName
                 }
             } -PassThru |
             Add-Member -MemberType ScriptMethod -Name DropMember -Value {
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [String]
+                    $memberName
+                )
+
                 if ($mockInvalidOperationForDropMemberMethod)
                 {
                     throw 'Mock DropMember Method was called with invalid operation.'
                 }
 
-                if ( $mockSqlServerLoginToDrop -ne $mockExpectedMemberToDrop )
+                if ($mockExpectedMemberToDrop -ne $memberName)
                 {
                     throw "Called mocked DropMember() method without removing the right login. Expected '{0}'. But was '{1}'." `
-                        -f $mockExpectedMemberToDrop, $mockSqlServerLoginToDrop
+                        -f $mockExpectedMemberToDrop, $memberName
                 }
             }
 
@@ -145,19 +159,19 @@ try
             # Add all mock logins
             foreach ($mockLoginName in @($mockSqlServerLoginOne, $mockSqlServerLoginTwo, $mockSqlServerLoginTree, $mockSqlServerLoginFour))
             {
-                $mockLoginProperties = @{
+                $mockLoginObject = [PSCustomObject]@{
                     Name = $mockLoginName
                     LoginType = $mockSqlServerLoginType
                 }
 
-                $mockServerObject.Logins.Add($mockLoginName, (New-Object -TypeName PSObject -Property $mockLoginProperties))
+                $mockServerObject.Logins.Add($mockLoginName, $mockLoginObject)
             }
 
             return @($mockServerObject)
         }
 
         $mockNewObjectServerRole = {
-            $mockObject = New-Object -TypeName PSObject -Property @{
+            $mockObject = [PSCustomObject] @{
                 Name = $mockSqlServerRoleAdd
             }
 
@@ -547,6 +561,38 @@ try
                 }
             }
 
+            Context 'When evaluating role membership, case sensitivity should not be used. (Issue #1153)' {
+                It 'Should return Present when the MemberToInclude is a member of the role.' {
+                    $testParameters = $mockDefaultParameters.Clone()
+                    $testParameters += @{
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToInclude = $mockSqlServerLoginOne.ToUpper()
+                    }
+
+                    $result = Get-TargetResource @testParameters
+
+                    $result.Ensure | Should -Be 'Present'
+                    $result.Members | Should -Contain $mockSqlServerLoginOne
+
+                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+
+                It 'Should return Absent when the MembersToExclude is a member of the role.' {
+                    $testParameters = $mockDefaultParameters.Clone()
+                    $testParameters += @{
+                        ServerRoleName = $mockSqlServerRole
+                        MembersToExclude = $mockSqlServerLoginOne.ToUpper()
+                    }
+
+                    $result = Get-TargetResource @testParameters
+
+                    $result.Ensure | Should -Be 'Absent'
+                    $result.Members | Should -Contain $mockSqlServerLoginOne
+
+                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+            }
+
             Assert-VerifiableMock
         }
 
@@ -905,8 +951,8 @@ try
 
             Context 'When parameter MembersToExclude is assigned a value, parameter Members is not assigned a value, and ensure is set to Present' {
                 It 'Should not throw when calling the DropMember method' {
-                    $mockExpectedMemberToAdd = $mockSqlServerLoginTwo
-                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTwo
+                    $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure           = 'Present'
@@ -964,8 +1010,8 @@ try
 
             Context 'When parameter Members is assigned a value and ensure is set to Present' {
                 It 'Should throw the correct error when login does not exist' {
-                    $mockExpectedMemberToAdd = $mockSqlServerLoginTree
-                    $mockSqlServerLoginToAdd = $mockSqlServerLoginTree
+                    $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
                         Ensure         = 'Present'
@@ -1005,13 +1051,13 @@ try
                 Context 'When defining an explicit list of members.' {
                     It 'Should not throw when the member is a Role' {
                         $mockExpectedMemberToAdd = $mockSqlServerChildRole
-                        $mockSqlServerLoginToAdd = $mockSqlServerChildRole
+
                         $testParameters = $mockDefaultParameters.Clone()
 
                         $testParameters += @{
                             Ensure = 'Present'
                             ServerRoleName = $mockSqlServerRole
-                            Members = @($mockSqlServerChildRole)
+                            Members = @($mockSqlServerLoginOne, $mockSqlServerLoginTwo, $mockSqlServerChildRole)
                         }
 
                         { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -1048,6 +1094,72 @@ try
                             Ensure = 'Present'
                             ServerRoleName = $mockSqlServerRole
                             MembersToExclude = @($mockSqlServerChildRole)
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+                }
+            }
+
+            Context 'When evaluating role membership, case sensitivity should not be used. (Issue #1153)' {
+                Context 'When speciifying explicit role members.' {
+                    It 'Should not attempt to remove an explicit member from the role.' {
+                        $mockExpectedMemberToDrop = $mockSqlServerLoginTwo
+
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters += @{
+                            ServerRoleName = $mockSqlServerRole
+                            Ensure = 'Present'
+                            Members = $mockSqlServerLoginOne.ToUpper()
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+
+                    It 'Should not attempt to add an explicit member that already exists in the role.' {
+                        $mockExpectedMemberToAdd = ''
+
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters += @{
+                            ServerRoleName = $mockSqlServerRole
+                            Ensure = 'Present'
+                            Members = @($mockSqlServerLoginOne.ToUpper(), $mockSqlServerLoginTwo)
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When specifying mandatory role membership.' {
+                    It 'Should not attempt to add a member that already exists in the role.' {
+                        $mockExpectedMemberToAdd = ''
+
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters += @{
+                            ServerRoleName = $mockSqlServerRole
+                            Ensure = 'Present'
+                            MembersToInclude = @($mockSqlServerLoginOne.ToUpper())
+                        }
+
+                        { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+
+                    It 'Should attempt to remove a member that is to be excluded.' {
+                        $mockExpectedMemberToDrop = $mockSqlServerLoginOne
+
+                        $testParameters = $mockDefaultParameters.Clone()
+                        $testParameters += @{
+                            ServerRoleName = $mockSqlServerRole
+                            Ensure = 'Present'
+                            MembersToExclude = @($mockSqlServerLoginOne.ToUpper())
                         }
 
                         { Set-TargetResource @testParameters } | Should -Not -Throw
