@@ -21,7 +21,7 @@ $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPat
 
 Import-Module -Name (Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.LocalizationHelper.psm1') -Force
 
-$timer = [System.Diagnostics.Stopwatch]::StartNew()
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 InModuleScope 'DscResource.LocalizationHelper' {
     Describe 'DscResource.LocalizationHelper\Get-LocalizedData' {
@@ -204,5 +204,5 @@ InModuleScope 'DscResource.LocalizationHelper' {
     }
 }
 
-Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
-$timer.Stop()
+Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+$script:timer.Stop()

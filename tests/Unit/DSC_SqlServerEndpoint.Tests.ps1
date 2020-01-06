@@ -20,7 +20,7 @@ $script:dscResourceName    = 'DSC_SqlServerEndpoint'
 
 function Invoke-TestSetup
 {
-    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
     try
     {
@@ -44,8 +44,8 @@ function Invoke-TestSetup
 function Invoke-TestCleanup {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
-    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceName) -Verbose
-    $timer.Stop()
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceName) -Verbose
+    $script:timer.Stop()
 }
 
 Invoke-TestSetup

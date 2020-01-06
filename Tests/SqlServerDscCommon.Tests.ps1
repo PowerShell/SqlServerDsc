@@ -29,5 +29,5 @@ Describe 'SqlServerDsc module common tests' {
     }
 }
 
-Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
-$timer.Stop()
+Write-Verbose -Message ('Test run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss")) -Verbose
+$script:timer.Stop()
