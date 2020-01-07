@@ -9,6 +9,8 @@ $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlSetup'
 $script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -58,8 +60,6 @@ function Show-SqlBootstrapLog
     }
     Write-Verbose -Message $('-' * 80) -Verbose
 }
-
-$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 <#
     This is used in both the configuration file and in this script file
@@ -596,11 +596,8 @@ try
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
 
     Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
     $script:timer.Stop()
-
-    #endregion
 }

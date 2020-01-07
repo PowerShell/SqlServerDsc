@@ -26,7 +26,6 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -ResourceType 'Mof' `
     -TestType 'Integration'
 
-# Using try/finally to always cleanup.
 try
 {
     $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:dscResourceName).config.ps1"
@@ -522,11 +521,8 @@ try
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
     Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
     $script:timer.Stop()
-
-    #endregion
 }

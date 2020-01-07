@@ -18,6 +18,8 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceName = 'DSC_SqlAlwaysOnService'
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -32,8 +34,6 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -DSCResourceName $script:dscResourceName `
     -ResourceType 'Mof' `
     -TestType 'Unit'
-
-$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 $disableHadr = @{
     Ensure       = 'Absent'

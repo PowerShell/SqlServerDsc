@@ -9,6 +9,8 @@ $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlAlwaysOnService'
 $script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -23,8 +25,6 @@ $script:testEnvironment = Initialize-TestEnvironment `
     -DSCResourceName $script:dscResourceName `
     -ResourceType 'Mof' `
     -TestType 'Integration'
-
-$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 try
 {

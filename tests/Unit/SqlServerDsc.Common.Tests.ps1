@@ -10,6 +10,8 @@
 
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 if (-not (Test-BuildCategory -Type 'Unit'))
 {
     return
@@ -31,8 +33,6 @@ $script:subModuleFile = Join-Path -Path $script:subModulesFolder -ChildPath "$($
 
 Import-Module $script:subModuleFile -Force -ErrorAction Stop
 #endregion HEADER
-
-$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 # Loading mocked classes
 Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SMO.cs')
