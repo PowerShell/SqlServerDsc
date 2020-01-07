@@ -766,7 +766,7 @@ function Get-SqlDatabase {
 function Get-SqlErrorLog {
     [CmdletBinding(DefaultParameterSetName='ByPath')]
     param(
-        [timespan]
+        [System.TimeSpan]
         ${Timespan},
 
         [datetime]

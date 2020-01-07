@@ -523,6 +523,6 @@ finally
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
-    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:DSCResourceFriendlyName) -Verbose
+    Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:DSCResourceFriendlyName) -Verbose
     $script:timer.Stop()
 }

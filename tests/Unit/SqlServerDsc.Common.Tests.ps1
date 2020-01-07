@@ -3729,5 +3729,5 @@ InModuleScope $script:subModuleName {
     }
 }
 
-Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([timespan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString("mm\:ss"), $script:subModuleName) -Verbose
+Write-Verbose -Message ('Test {1} run for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:subModuleName) -Verbose
 $script:timer.Stop()
