@@ -42,7 +42,7 @@ function Invoke-TestCleanup
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
-    Write-Verbose -Message ('Test run for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss')) -Verbose
+    Write-Verbose -Message ('Test ran for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:dscResourceName) -Verbose
     $script:timer.Stop()
 }
 
