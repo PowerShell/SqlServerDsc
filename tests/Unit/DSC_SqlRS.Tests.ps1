@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlRS DSC resource.
+        Automated unit test for DSC_SqlRS DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -15,7 +15,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlRS'
+$script:dscResourceName = 'DSC_SqlRS'
 
 function Invoke-TestSetup
 {

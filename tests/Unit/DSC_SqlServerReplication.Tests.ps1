@@ -1,7 +1,7 @@
 <#
     .N<#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerReplication DSC resource.
+        Automated unit test for DSC_SqlServerReplication DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -20,7 +20,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName   = 'SqlServerDSC'
-$script:dscResourceName = 'MSFT_SqlServerReplication'
+$script:dscResourceName = 'DSC_SqlServerReplication'
 
 try
 {

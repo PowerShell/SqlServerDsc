@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerLogin")]
-class MSFT_SqlServerLogin : OMI_BaseResource
+class DSC_SqlServerLogin : OMI_BaseResource
 {
     [Write, Description("The specified login is Present or Absent. Default is Present."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Key, Description("The name of the login.")] String Name;

@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlAlias DSC resource.
+        Automated unit test for DSC_SqlAlias DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlAlias'
+$script:dscResourceName = 'DSC_SqlAlias'
 
 function Invoke-TestSetup
 {

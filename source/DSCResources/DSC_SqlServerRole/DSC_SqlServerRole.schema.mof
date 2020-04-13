@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerRole")]
-class MSFT_SqlServerRole : OMI_BaseResource
+class DSC_SqlServerRole : OMI_BaseResource
 {
     [Key, Description("The name of of SQL role to add or remove.")] String ServerRoleName;
     [Key, Description("The host name of the SQL Server to be configured.")] String ServerName;

@@ -66,7 +66,7 @@ else
         create the service account, make sure .NET Framework 4.5 is installed,
         and installs the Reporting Services,
 #>
-Configuration MSFT_SqlRS_CreateDependencies_Config
+Configuration DSC_SqlRS_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
     Import-DscResource -ModuleName 'StorageDsc' -ModuleVersion '4.9.0.0'
@@ -133,7 +133,7 @@ Configuration MSFT_SqlRS_CreateDependencies_Config
             }
         }
         <#
-            MSFT_SqlRSSetup.Integration.Tests.ps1 will have installed SSRS 2017.
+            DSC_SqlRSSetup.Integration.Tests.ps1 will have installed SSRS 2017.
             We just need to start SSRS.
         #>
         elseif($script:sqlVersion -eq '140')
@@ -151,7 +151,7 @@ Configuration MSFT_SqlRS_CreateDependencies_Config
     .SYNOPSIS
         Configures the Reporting Services.
 #>
-Configuration MSFT_SqlRS_InstallReportingServices_Config
+Configuration DSC_SqlRS_InstallReportingServices_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -181,7 +181,7 @@ Configuration MSFT_SqlRS_InstallReportingServices_Config
     .SYNOPSIS
         Enables SSL on the Reporting Services.
 #>
-Configuration MSFT_SqlRS_InstallReportingServices_ConfigureSsl_Config
+Configuration DSC_SqlRS_InstallReportingServices_ConfigureSsl_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -212,7 +212,7 @@ Configuration MSFT_SqlRS_InstallReportingServices_ConfigureSsl_Config
     .SYNOPSIS
         Disables SSL on the Reporting Services.
 #>
-Configuration MSFT_SqlRS_InstallReportingServices_RestoreToNoSsl_Config
+Configuration DSC_SqlRS_InstallReportingServices_RestoreToNoSsl_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -243,7 +243,7 @@ Configuration MSFT_SqlRS_InstallReportingServices_RestoreToNoSsl_Config
     .SYNOPSIS
         Stops the Reporting Services instance to save resource on the build worker.
 #>
-Configuration MSFT_SqlRS_StopReportingServicesInstance_Config
+Configuration DSC_SqlRS_StopReportingServicesInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 

@@ -1,4 +1,4 @@
-# Localized resources for MSFT_SqlServerAgentOperator
+# Localized resources for DSC_SqlServerAgentOperator
 
 ConvertFrom-StringData @'
     GetSqlAgents = Getting SQL Agent Operators.

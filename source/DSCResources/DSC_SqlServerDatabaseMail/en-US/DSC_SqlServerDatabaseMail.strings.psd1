@@ -1,5 +1,5 @@
 <#
-    Localized resources for MSFT_SqlServerDatabaseMail
+    Localized resources for DSC_SqlServerDatabaseMail
 
     Note: The named text strings MailServerProperty* are used in conjunction with
     UpdatingPropertyOfMailServer to build a complete localized string.

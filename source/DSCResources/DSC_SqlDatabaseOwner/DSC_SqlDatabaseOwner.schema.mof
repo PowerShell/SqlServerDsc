@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlDatabaseOwner")]
-class MSFT_SqlDatabaseOwner : OMI_BaseResource
+class DSC_SqlDatabaseOwner : OMI_BaseResource
 {
     [Key, Description("The name of database to be configured.")] String Database;
     [Required, Description("The name of the login that will become a owner of the desired sql database.")] String Name;

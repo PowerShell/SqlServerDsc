@@ -140,29 +140,29 @@ stages:
               ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
                   # Run the integration tests in a specific group order.
                   # Group 1
-                  'tests/Integration/MSFT_SqlSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
                   # Group 2
-                  'tests/Integration/MSFT_SqlAgentAlert.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerNetwork.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerLogin.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerEndPoint.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerDatabaseMail.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlRSSetup.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabase.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAlwaysOnService.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAgentOperator.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServiceAccount.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAgentFailsafe.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerNetwork.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerLogin.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerEndPoint.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerDatabaseMail.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
                   # Group 3
-                  'tests/Integration/MSFT_SqlServerRole.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlRS.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerRole.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
                   # Group 4
-                  'tests/Integration/MSFT_SqlScript.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
                   # Group 5
-                  'tests/Integration/MSFT_SqlServerSecureConnection.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlScriptQuery.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerSecureConnection.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
               )
             name: test
             displayName: 'Run Integration Test'
@@ -203,29 +203,29 @@ stages:
               ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
                   # Run the integration tests in a specific group order.
                   # Group 1
-                  'tests/Integration/MSFT_SqlSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
                   # Group 2
-                  'tests/Integration/MSFT_SqlAgentAlert.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerNetwork.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerLogin.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerEndPoint.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServerDatabaseMail.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlRSSetup.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabase.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAlwaysOnService.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAgentOperator.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlServiceAccount.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlAgentFailsafe.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerNetwork.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerLogin.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerEndPoint.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerDatabaseMail.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
                   # Group 3
-                  'tests/Integration/MSFT_SqlServerRole.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlRS.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerRole.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
                   # Group 4
-                  'tests/Integration/MSFT_SqlScript.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
                   # Group 5
-                  'tests/Integration/MSFT_SqlServerSecureConnection.Integration.Tests.ps1'
-                  'tests/Integration/MSFT_SqlScriptQuery.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerSecureConnection.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
               )
             name: test
             displayName: 'Run Integration Test'

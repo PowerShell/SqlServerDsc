@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlAGReplica")]
-class MSFT_SqlAGReplica : OMI_BaseResource
+class DSC_SqlAGReplica : OMI_BaseResource
 {
     [Key, Description("The name of the availability group replica. For named instances this must be in the following format ServerName\\InstanceName.")] String Name;
     [Key, Description("The name of the availability group.")] String AvailabilityGroupName;

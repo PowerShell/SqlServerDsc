@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerEndpointState DSC resource.
+        Automated unit test for DSC_SqlServerEndpointState DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerEndpointState'
+$script:dscResourceName = 'DSC_SqlServerEndpointState'
 
 function Invoke-TestSetup
 {
@@ -82,7 +82,7 @@ try
 
         #endregion Pester Test Initialization
 
-        Describe 'MSFT_SqlServerEndpointState\Get-TargetResource' -Tag Get {
+        Describe 'DSC_SqlServerEndpointState\Get-TargetResource' -Tag Get {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -194,7 +194,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerEndpointState\Test-TargetResource' -Tag Test {
+        Describe 'DSC_SqlServerEndpointState\Test-TargetResource' -Tag Test {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -272,7 +272,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerEndpointState\Set-TargetResource' -Tag Set {
+        Describe 'DSC_SqlServerEndpointState\Set-TargetResource' -Tag Set {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 

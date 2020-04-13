@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerNetwork")]
-class MSFT_SqlServerNetwork : OMI_BaseResource
+class DSC_SqlServerNetwork : OMI_BaseResource
 {
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
     [Required, Description("The name of network protocol to be configured. Only tcp is currently supported."), ValueMap{"Tcp"}, Values{"Tcp"}] String ProtocolName;

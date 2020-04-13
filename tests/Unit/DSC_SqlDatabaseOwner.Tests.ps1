@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabaseOwner DSC resource.
+        Automated unit test for DSC_SqlDatabaseOwner DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -15,7 +15,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabaseOwner'
+$script:dscResourceName = 'DSC_SqlDatabaseOwner'
 
 function Invoke-TestSetup
 {
@@ -101,7 +101,7 @@ try
         }
         #endregion
 
-        Describe "MSFT_SqlDatabaseOwner\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlDatabaseOwner\Get-TargetResource" -Tag 'Get' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -174,7 +174,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseOwner\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlDatabaseOwner\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -218,7 +218,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseOwner\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlDatabaseOwner\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }

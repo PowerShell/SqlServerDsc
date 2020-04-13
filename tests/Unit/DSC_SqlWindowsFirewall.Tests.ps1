@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlWindowsFirewall DSC resource.
+        Automated unit test for DSC_SqlWindowsFirewall DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName      = 'SqlServerDsc'
-$script:dscResourceName    = 'MSFT_SqlWindowsFirewall'
+$script:dscResourceName    = 'DSC_SqlWindowsFirewall'
 
 function Invoke-TestSetup
 {
@@ -249,7 +249,7 @@ try
         $mockGetNetFirewallRule = {
             return @(
                 (
-                    New-CimInstance -ClassName 'MSFT_NetFirewallRule' -Property @{
+                    New-CimInstance -ClassName 'DSC_NetFirewallRule' -Property @{
                         'DisplayName' = $DisplayName
                         'Enabled' = $true
                         'Profile' = 'Any'
@@ -266,7 +266,7 @@ try
         $mockGetNetFirewallRule_EmptyDisplayName = {
             return @(
                 (
-                    New-CimInstance -ClassName 'MSFT_NetFirewallRule' -Property @{
+                    New-CimInstance -ClassName 'DSC_NetFirewallRule' -Property @{
                         'DisplayName' = "SQL Server Database Engine instance $mockCurrentInstanceName"
                         'Enabled' = $true
                         'Profile' = 'Any'

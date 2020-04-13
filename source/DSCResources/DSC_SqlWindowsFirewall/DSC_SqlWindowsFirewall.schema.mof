@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlWindowsFirewall")]
-class MSFT_SqlWindowsFirewall : OMI_BaseResource
+class DSC_SqlWindowsFirewall : OMI_BaseResource
 {
     [Write, Description("An enumerated value that describes if the SQL firewall rules are is expected to be enabled on the machine.\nPresent {default}  \nAbsent   \n"), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("UNC path to the root of the source files for installation.")] String SourcePath;

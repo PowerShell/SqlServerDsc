@@ -1,4 +1,4 @@
-# Localized resources for MSFT_SqlServerAgentAlert
+# Localized resources for DSC_SqlServerAgentAlert
 
 ConvertFrom-StringData @'
     GetSqlAlerts = Getting SQL Agent Alerts.

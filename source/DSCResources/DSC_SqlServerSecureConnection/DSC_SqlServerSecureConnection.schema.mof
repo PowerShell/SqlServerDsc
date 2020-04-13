@@ -1,6 +1,6 @@
 
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerSecureConnection")]
-class MSFT_SqlServerSecureConnection : OMI_BaseResource
+class DSC_SqlServerSecureConnection : OMI_BaseResource
 {
     [Key, Description("Name of the SQL Server instance to be configured.")] String InstanceName;
     [Required, Description("Thumbprint of the certificate being used for encryption. If parameter Ensure is set to 'Absent', then the parameter Certificate can be set to an empty string.")] String Thumbprint;

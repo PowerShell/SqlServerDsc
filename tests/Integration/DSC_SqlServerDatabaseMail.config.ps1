@@ -45,7 +45,7 @@ else
     .NOTES
         This also enables the option 'Database Mail XPs'.
 #>
-Configuration MSFT_SqlServerDatabaseMail_Add_Config
+Configuration DSC_SqlServerDatabaseMail_Add_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -89,7 +89,7 @@ Configuration MSFT_SqlServerDatabaseMail_Add_Config
     .NOTES
         This also disables the option 'Database Mail XPs'.
 #>
-Configuration MSFT_SqlServerDatabaseMail_Remove_Config
+Configuration DSC_SqlServerDatabaseMail_Remove_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

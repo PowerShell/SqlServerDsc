@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlAGListener DSC resource.
+        Automated unit test for DSC_SqlAGListener DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlAGListener'
+$script:dscResourceName = 'DSC_SqlAGListener'
 
 function Invoke-TestSetup
 {

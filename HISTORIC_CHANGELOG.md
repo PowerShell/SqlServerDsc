@@ -1804,7 +1804,7 @@ change log short.
     SQLInstanceName. SQLServer and SQLInstanceName are keys which will be used to
     uniquely identify the resource which allows AlwaysOn to be enabled on multiple
     instances on the same machine.
-- Moved Restart-SqlService from MSFT_xSQLServerConfiguration.psm1 to xSQLServerHelper.psm1.
+- Moved Restart-SqlService from DSC_xSQLServerConfiguration.psm1 to xSQLServerHelper.psm1.
 
 ## [3.0.0.0] - 2016-11-02
 
@@ -1819,7 +1819,7 @@ change log short.
   - xSQLServerDatabaseOwner
     - 1-SetDatabaseOwner.ps1
 - Added tests for resources
-  - MSFT_xSQLServerDatabaseOwner
+  - DSC_xSQLServerDatabaseOwner
 
 ## [2.0.0.0] - 2016-09-21
 

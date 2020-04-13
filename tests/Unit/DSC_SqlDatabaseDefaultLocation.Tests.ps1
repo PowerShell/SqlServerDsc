@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabaseDefaultLocation DSC resource.
+        Automated unit test for DSC_SqlDatabaseDefaultLocation DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -15,7 +15,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabaseDefaultLocation'
+$script:dscResourceName = 'DSC_SqlDatabaseDefaultLocation'
 
 function Invoke-TestSetup
 {
@@ -100,7 +100,7 @@ try
         }
         #endregion
 
-        Describe 'MSFT_SqlDatabaseDefaultLocation\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlDatabaseDefaultLocation\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 $testCases = @(
                     @{
@@ -152,7 +152,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlDatabaseDefaultLocation\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_SqlDatabaseDefaultLocation\Test-TargetResource' -Tag 'Test' {
             BeforeAll {
                 $testCases = @(
                     @{
@@ -249,7 +249,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlDatabaseDefaultLocation\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_SqlDatabaseDefaultLocation\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 $testCases = @(
                     @{

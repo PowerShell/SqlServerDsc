@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabaseUser DSC resource.
+        Automated unit test for DSC_SqlDatabaseUser DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabaseUser'
+$script:dscResourceName = 'DSC_SqlDatabaseUser'
 
 function Invoke-TestSetup
 {
@@ -68,7 +68,7 @@ try
             Verbose      = $true
         }
 
-        Describe 'MSFT_SqlDatabaseUser\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlDatabaseUser\Get-TargetResource' -Tag 'Get' {
             Context 'When the system is in the desired state' {
                 BeforeAll {
                     # Scriptblock for mocked object for mocks of Connect-SQL.
@@ -192,7 +192,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlDatabaseUser\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_SqlDatabaseUser\Test-TargetResource' -Tag 'Test' {
             Context 'When the system is in the desired state' {
                 Context 'When the configuration is absent' {
                     BeforeAll {
@@ -383,7 +383,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlDatabaseUser\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_SqlDatabaseUser\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Invoke-Query
                 Mock -CommandName Assert-SqlLogin

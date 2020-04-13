@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerPermission DSC resource.
+        Automated unit test for DSC_SqlServerPermission DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerPermission'
+$script:dscResourceName = 'DSC_SqlServerPermission'
 
 function Invoke-TestSetup
 {
@@ -64,7 +64,7 @@ try
             Permission   = $mockPermission
         }
 
-        Describe 'MSFT_SqlServerPermission\Get-TargetResource' {
+        Describe 'DSC_SqlServerPermission\Get-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -190,7 +190,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerPermission\Test-TargetResource' {
+        Describe 'DSC_SqlServerPermission\Test-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -258,7 +258,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerPermission\Set-TargetResource' {
+        Describe 'DSC_SqlServerPermission\Set-TargetResource' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 

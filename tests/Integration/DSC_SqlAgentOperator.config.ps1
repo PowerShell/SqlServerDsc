@@ -37,7 +37,7 @@ else
     .SYNOPSIS
         Adds a SQL Agent operator.
 #>
-Configuration MSFT_SqlAgentOperator_Add_Config
+Configuration DSC_SqlAgentOperator_Add_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -62,7 +62,7 @@ Configuration MSFT_SqlAgentOperator_Add_Config
     .SYNOPSIS
         Removes a SQL Agent operator.
 #>
-Configuration MSFT_SqlAgentOperator_Remove_Config
+Configuration DSC_SqlAgentOperator_Remove_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

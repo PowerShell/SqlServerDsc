@@ -60,7 +60,7 @@ else
         Creates a database user with a login against a SQL login which is of type
         Windows user.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser1_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser1_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -87,7 +87,7 @@ Configuration MSFT_SqlDatabaseUser_AddDatabaseUser1_Config
     .SYNOPSIS
         Creates a database user with a login against a SQL login which is of type SQL.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser2_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -114,7 +114,7 @@ Configuration MSFT_SqlDatabaseUser_AddDatabaseUser2_Config
     .SYNOPSIS
         Creates a database user without a login.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser3_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser3_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -141,7 +141,7 @@ Configuration MSFT_SqlDatabaseUser_AddDatabaseUser3_Config
         Creates a database user with a login against a SQL login which is of type
         Windows Group.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser4_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser4_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -168,7 +168,7 @@ Configuration MSFT_SqlDatabaseUser_AddDatabaseUser4_Config
     .SYNOPSIS
         Re-creates a database user which had a login, to a user without login.
 #>
-Configuration MSFT_SqlDatabaseUser_RecreateDatabaseUser4_Config
+Configuration DSC_SqlDatabaseUser_RecreateDatabaseUser4_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -195,7 +195,7 @@ Configuration MSFT_SqlDatabaseUser_RecreateDatabaseUser4_Config
     .SYNOPSIS
         Removes a database user.
 #>
-Configuration MSFT_SqlDatabaseUser_RemoveDatabaseUser4_Config
+Configuration DSC_SqlDatabaseUser_RemoveDatabaseUser4_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -220,7 +220,7 @@ Configuration MSFT_SqlDatabaseUser_RemoveDatabaseUser4_Config
     .SYNOPSIS
         Creates a database user mapped to a certificate.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser5_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser5_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -284,7 +284,7 @@ CREATE CERTIFICATE [$(CertificateName)]
     .SYNOPSIS
         Creates a database user mapped to an asymmetric key.
 #>
-Configuration MSFT_SqlDatabaseUser_AddDatabaseUser6_Config
+Configuration DSC_SqlDatabaseUser_AddDatabaseUser6_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

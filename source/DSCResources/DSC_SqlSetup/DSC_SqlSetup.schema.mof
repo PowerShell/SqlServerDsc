@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlSetup")]
-class MSFT_SqlSetup : OMI_BaseResource
+class DSC_SqlSetup : OMI_BaseResource
 {
     [Write, Description("The action to be performed. Default value is 'Install'."), ValueMap{"Install","Upgrade","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}, Values{"Install","Upgrade","InstallFailoverCluster","AddNode","PrepareFailoverCluster","CompleteFailoverCluster"}] String Action;
     [Write, Description("The path to the root of the source files for installation. I.e and UNC path to a shared resource. Environment variables can be used in the path.")] String SourcePath;

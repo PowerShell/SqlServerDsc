@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlRSSetup DSC resource.
+        Automated unit test for DSC_SqlRSSetup DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlRSSetup'
+$script:dscResourceName = 'DSC_SqlRSSetup'
 
 function Invoke-TestSetup
 {
@@ -132,7 +132,7 @@ try
             SourcePath         = '\\server\share\SQLServerReportingServices.exe'
         }
 
-        Describe "MSFT_SqlRSSetup\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlRSSetup\Get-TargetResource" -Tag 'Get' {
             BeforeEach {
                 $mockGetTargetResourceParameters = $mockDefaultParameters.Clone()
             }
@@ -325,7 +325,7 @@ try
             }
         }
 
-        Describe "MSFT_SqlRSSetup\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlRSSetup\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 $mockTestTargetResourceParameters = $mockDefaultParameters.Clone()
             }
@@ -466,7 +466,7 @@ try
             }
         }
 
-        Describe "MSFT_SqlRSSetup\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlRSSetup\Set-TargetResource" -Tag 'Set' {
             BeforeAll {
                 $mockProductKey = '1FAKE-2FAKE-3FAKE-4FAKE-5FAKE'
             }
@@ -878,7 +878,7 @@ try
             }
         }
 
-        Describe "MSFT_SqlRSSetup\Convert-EditionName" -Tag 'Helper' {
+        Describe "DSC_SqlRSSetup\Convert-EditionName" -Tag 'Helper' {
             Context 'When converting edition names' {
                 $testCases = @(
                     @{
@@ -924,7 +924,7 @@ try
             }
         }
 
-        Describe "MSFT_SqlRSSetup\Get-FileProductVersion" -Tag 'Helper' {
+        Describe "DSC_SqlRSSetup\Get-FileProductVersion" -Tag 'Helper' {
             Context 'When converting edition names' {
                 $mockProductVersion = '14.0.0.0'
 

@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerEndpoint")]
-class MSFT_SqlServerEndpoint : OMI_BaseResource
+class DSC_SqlServerEndpoint : OMI_BaseResource
 {
     [Key, Description("The name of the endpoint.")] String EndpointName;
     [Write, Description("If the endpoint should be present or absent. Default values is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;

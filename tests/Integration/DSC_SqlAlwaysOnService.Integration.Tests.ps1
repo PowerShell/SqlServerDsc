@@ -7,7 +7,7 @@ if (-not (Test-BuildCategory -Type 'Integration' -Category @('Skipped')))
 
 $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlAlwaysOnService'
-$script:dscResourceName = "MSFT_$($script:dscResourceFriendlyName)"
+$script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
 try
 {

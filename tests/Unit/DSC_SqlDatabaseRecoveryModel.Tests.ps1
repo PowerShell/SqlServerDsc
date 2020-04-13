@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabaseRecoveryModel DSC resource.
+        Automated unit test for DSC_SqlDatabaseRecoveryModel DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -15,7 +15,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabaseRecoveryModel'
+$script:dscResourceName = 'DSC_SqlDatabaseRecoveryModel'
 
 function Invoke-TestSetup
 {
@@ -90,7 +90,7 @@ try
         }
         #endregion
 
-        Describe "MSFT_SqlDatabaseRecoveryModel\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlDatabaseRecoveryModel\Get-TargetResource" -Tag 'Get' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -162,7 +162,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseRecoveryModel\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlDatabaseRecoveryModel\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -204,7 +204,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseRecoveryModel\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlDatabaseRecoveryModel\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }

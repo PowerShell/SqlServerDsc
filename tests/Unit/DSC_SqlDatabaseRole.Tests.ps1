@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabaseRole DSC resource.
+        Automated unit test for DSC_SqlDatabaseRole DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabaseRole'
+$script:dscResourceName = 'DSC_SqlDatabaseRole'
 
 function Invoke-TestSetup
 {
@@ -276,7 +276,7 @@ try
         }
         #endregion
 
-        Describe 'MSFT_SqlDatabaseRole\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlDatabaseRole\Get-TargetResource' -Tag 'Get' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -633,7 +633,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseRole\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlDatabaseRole\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewObjectDatabaseRole -ParameterFilter {
@@ -888,7 +888,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabaseRole\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlDatabaseRole\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }

@@ -1,6 +1,6 @@
 
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerEndpointPermission")]
-class MSFT_SqlServerEndpointPermission : OMI_BaseResource
+class DSC_SqlServerEndpointPermission : OMI_BaseResource
 {
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
     [Required, Description("The host name of the SQL Server to be configured.")] String ServerName;

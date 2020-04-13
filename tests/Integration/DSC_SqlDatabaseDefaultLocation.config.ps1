@@ -41,7 +41,7 @@ else
     .SYNOPSIS
         Changes the DATA default location
 #>
-Configuration MSFT_SqlDatabaseDefaultLocation_Data_Config
+Configuration DSC_SqlDatabaseDefaultLocation_Data_Config
 {
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
     Import-DscResource -ModuleName 'SqlServerDsc'
@@ -78,7 +78,7 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Data_Config
     .SYNOPSIS
         Changes the LOG default location
 #>
-Configuration MSFT_SqlDatabaseDefaultLocation_Log_Config
+Configuration DSC_SqlDatabaseDefaultLocation_Log_Config
 {
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
     Import-DscResource -ModuleName 'SqlServerDsc'
@@ -115,7 +115,7 @@ Configuration MSFT_SqlDatabaseDefaultLocation_Log_Config
     .SYNOPSIS
         Changes the BACKUP default location
 #>
-Configuration MSFT_SqlDatabaseDefaultLocation_Backup_Config
+Configuration DSC_SqlDatabaseDefaultLocation_Backup_Config
 {
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
     Import-DscResource -ModuleName 'SqlServerDsc'

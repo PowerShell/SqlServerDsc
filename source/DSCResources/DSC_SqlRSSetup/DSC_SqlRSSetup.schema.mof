@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlRSSetup")]
-class MSFT_SqlRSSetup : OMI_BaseResource
+class DSC_SqlRSSetup : OMI_BaseResource
 {
     [Key, Description("Name of the Microsoft SQL Server Reporting Service instance to installed. This can only be set to 'SSRS'. { 'SSRS' }"), ValueMap{"SSRS"}, Values{"SSRS"}] String InstanceName;
     [Required, Description("Accept licens terms. This must be set to 'Yes'. { 'Yes' }"), ValueMap{"Yes"}, Values{"Yes"}] String IAcceptLicenseTerms;

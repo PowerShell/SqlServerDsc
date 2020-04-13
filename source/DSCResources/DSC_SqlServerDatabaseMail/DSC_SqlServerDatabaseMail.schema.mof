@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlServerDatabaseMail")]
-class MSFT_SqlServerDatabaseMail : OMI_BaseResource
+class DSC_SqlServerDatabaseMail : OMI_BaseResource
 {
     [Key, Description("The name of the Database Mail account.")] String AccountName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;

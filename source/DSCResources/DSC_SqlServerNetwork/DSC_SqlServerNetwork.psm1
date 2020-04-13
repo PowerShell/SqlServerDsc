@@ -5,7 +5,7 @@ $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -Ch
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'SqlServerDsc.Common.psm1')
 
 # Load localized string data
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerNetwork'
+$script:localizedData = Get-LocalizedData -ResourceName 'DSC_SqlServerNetwork'
 
 <#
     .SYNOPSIS

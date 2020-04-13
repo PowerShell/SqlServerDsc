@@ -51,7 +51,7 @@ else
     .SYNOPSIS
         Creates the logins that are dependencies.
 #>
-Configuration MSFT_SqlServerLogin_CreateDependencies_Config
+Configuration DSC_SqlServerLogin_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
     Import-DscResource -ModuleName 'SqlServerDsc'
@@ -121,7 +121,7 @@ Configuration MSFT_SqlServerLogin_CreateDependencies_Config
     .SYNOPSIS
         Adds a Windows User login.
 #>
-Configuration MSFT_SqlServerLogin_AddLoginDscUser1_Config
+Configuration DSC_SqlServerLogin_AddLoginDscUser1_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -147,7 +147,7 @@ Configuration MSFT_SqlServerLogin_AddLoginDscUser1_Config
     .SYNOPSIS
         Adds a second Windows User login.
 #>
-Configuration MSFT_SqlServerLogin_AddLoginDscUser2_Config
+Configuration DSC_SqlServerLogin_AddLoginDscUser2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -174,7 +174,7 @@ Configuration MSFT_SqlServerLogin_AddLoginDscUser2_Config
     .SYNOPSIS
         Adds a third Windows User login, and creates it as disabled.
 #>
-Configuration MSFT_SqlServerLogin_AddLoginDscUser3_Disabled_Config
+Configuration DSC_SqlServerLogin_AddLoginDscUser3_Disabled_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -201,7 +201,7 @@ Configuration MSFT_SqlServerLogin_AddLoginDscUser3_Disabled_Config
     .SYNOPSIS
         Adds a SQL login.
 #>
-Configuration MSFT_SqlServerLogin_AddLoginDscUser4_Config
+Configuration DSC_SqlServerLogin_AddLoginDscUser4_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -233,7 +233,7 @@ Configuration MSFT_SqlServerLogin_AddLoginDscUser4_Config
     .SYNOPSIS
         Adds a Windows Group login.
 #>
-Configuration MSFT_SqlServerLogin_AddLoginDscSqlUsers1_Config
+Configuration DSC_SqlServerLogin_AddLoginDscSqlUsers1_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -259,7 +259,7 @@ Configuration MSFT_SqlServerLogin_AddLoginDscSqlUsers1_Config
     .SYNOPSIS
         Removes the third Windows User login that was created.
 #>
-Configuration MSFT_SqlServerLogin_RemoveLoginDscUser3_Config
+Configuration DSC_SqlServerLogin_RemoveLoginDscUser3_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -286,7 +286,7 @@ Configuration MSFT_SqlServerLogin_RemoveLoginDscUser3_Config
         Clean up test resources so they are not interfering with
         the other integration tests.
 #>
-Configuration MSFT_SqlServerLogin_CleanupDependencies_Config
+Configuration DSC_SqlServerLogin_CleanupDependencies_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

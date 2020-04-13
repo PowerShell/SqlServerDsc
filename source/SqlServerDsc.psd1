@@ -66,7 +66,7 @@
         'SqlServerMemory'
         'SqlServerNetwork'
         'SqlServerPermission'
-        'MSFT_SqlServerReplication'
+        'SqlServerReplication'
         'SqlServerRole'
         'SqlServerSecureConnection'
         'SqlServiceAccount'

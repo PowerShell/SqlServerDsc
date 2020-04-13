@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServiceAccount DSC resource.
+        Automated unit test for DSC_SqlServiceAccount DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServiceAccount'
+$script:dscResourceName = 'DSC_SqlServiceAccount'
 
 function Invoke-TestSetup
 {
@@ -378,7 +378,7 @@ try
             Verifiable = $true
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
+        Describe 'DSC_SqlServerServiceAccount\ConvertTo-ManagedServiceType' -Tag 'Helper' {
             Context 'Translating service types' {
                 $testCases = @(
                     @{
@@ -441,7 +441,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\ConvertTo-ResourceServiceType' -Tag 'Helper' {
+        Describe 'DSC_SqlServerServiceAccount\ConvertTo-ResourceServiceType' -Tag 'Helper' {
             Context 'Translating service types' {
                 $testCases = @(
                     @{
@@ -509,7 +509,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\Get-SqlServiceName' -Tag 'Helper' {
+        Describe 'DSC_SqlServerServiceAccount\Get-SqlServiceName' -Tag 'Helper' {
             BeforeAll {
                 Mock @mockGetChildItemParameters
             }
@@ -666,7 +666,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
+        Describe 'DSC_SqlServerServiceAccount\Get-ServiceObject' -Tag 'Helper' {
             BeforeAll {
                 Mock -CommandName Import-SQLPSModule -Verifiable
             }
@@ -746,7 +746,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlServerServiceAccount\Get-TargetResource' -Tag 'Get' {
             Context 'When getting the service information for a default instance' {
                 BeforeAll {
                     Mock -CommandName Get-ServiceObject -MockWith $mockGetServiceObject_DefaultInstance -ParameterFilter {
@@ -887,7 +887,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_SqlServerServiceAccount\Test-TargetResource' -Tag 'Test' {
             Context 'When the system is not in the desired state for a default instance' {
                 Mock -CommandName Get-TargetResource -MockWith {
                     return @{
@@ -1022,7 +1022,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlServerServiceAccount\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_SqlServerServiceAccount\Set-TargetResource' -Tag 'Set' {
             Context 'When changing the service account for the default instance' {
                 BeforeAll {
                     $defaultSetTargetResourceParameters = @{

@@ -48,7 +48,7 @@ else
         The dependencies:
           - Must have the default instance MSSQLSERVER started.
 #>
-Configuration MSFT_SqlServiceAccount_CreateDependencies_Config
+Configuration DSC_SqlServiceAccount_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 
@@ -76,7 +76,7 @@ Configuration MSFT_SqlServiceAccount_CreateDependencies_Config
     .NOTES
         This test was intentionally meant to run as SYSTEM.
 #>
-Configuration MSFT_SqlServiceAccount_DatabaseEngine_DefaultInstance_Config
+Configuration DSC_SqlServiceAccount_DatabaseEngine_DefaultInstance_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -104,7 +104,7 @@ Configuration MSFT_SqlServiceAccount_DatabaseEngine_DefaultInstance_Config
         This test is intentionally meant to run using the credentials in
         $SqlInstallCredential.
 #>
-Configuration MSFT_SqlServiceAccount_SqlServerAgent_DefaultInstance_Config
+Configuration DSC_SqlServiceAccount_SqlServerAgent_DefaultInstance_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -135,7 +135,7 @@ Configuration MSFT_SqlServiceAccount_SqlServerAgent_DefaultInstance_Config
     .NOTES
         This test was intentionally meant to run as SYSTEM.
 #>
-Configuration MSFT_SqlServiceAccount_DatabaseEngine_DefaultInstance_Restore_Config
+Configuration DSC_SqlServiceAccount_DatabaseEngine_DefaultInstance_Restore_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -163,7 +163,7 @@ Configuration MSFT_SqlServiceAccount_DatabaseEngine_DefaultInstance_Restore_Conf
         This test is intentionally meant to run using the credentials in
         $SqlInstallCredential.
 #>
-Configuration MSFT_SqlServiceAccount_SqlServerAgent_DefaultInstance_Restore_Config
+Configuration DSC_SqlServiceAccount_SqlServerAgent_DefaultInstance_Restore_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -190,7 +190,7 @@ Configuration MSFT_SqlServiceAccount_SqlServerAgent_DefaultInstance_Restore_Conf
     .SYNOPSIS
         Stopping the default instance service to save memory on the build worker.
 #>
-Configuration MSFT_SqlServiceAccount_StopSqlServerDefaultInstance_Config
+Configuration DSC_SqlServiceAccount_StopSqlServerDefaultInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 
@@ -218,7 +218,7 @@ Configuration MSFT_SqlServiceAccount_StopSqlServerDefaultInstance_Config
     .NOTES
         This test was intentionally meant to run as SYSTEM.
 #>
-Configuration MSFT_SqlServiceAccount_DatabaseEngine_NamedInstance_Config
+Configuration DSC_SqlServiceAccount_DatabaseEngine_NamedInstance_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -246,7 +246,7 @@ Configuration MSFT_SqlServiceAccount_DatabaseEngine_NamedInstance_Config
         This test is intentionally meant to run using the credentials in
         $SqlInstallCredential.
 #>
-Configuration MSFT_SqlServiceAccount_SqlServerAgent_NamedInstance_Config
+Configuration DSC_SqlServiceAccount_SqlServerAgent_NamedInstance_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -277,7 +277,7 @@ Configuration MSFT_SqlServiceAccount_SqlServerAgent_NamedInstance_Config
     .NOTES
         This test was intentionally meant to run as SYSTEM.
 #>
-Configuration MSFT_SqlServiceAccount_DatabaseEngine_NamedInstance_Restore_Config
+Configuration DSC_SqlServiceAccount_DatabaseEngine_NamedInstance_Restore_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -305,7 +305,7 @@ Configuration MSFT_SqlServiceAccount_DatabaseEngine_NamedInstance_Restore_Config
         This test is intentionally meant to run using the credentials in
         $SqlInstallCredential.
 #>
-Configuration MSFT_SqlServiceAccount_SqlServerAgent_NamedInstance_Restore_Config
+Configuration DSC_SqlServiceAccount_SqlServerAgent_NamedInstance_Restore_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

@@ -37,7 +37,7 @@ else
     .SYNOPSIS
         Adds a SQL Agent Failsafe Operator.
 #>
-Configuration MSFT_SqlAgentFailsafe_Add_Config
+Configuration DSC_SqlAgentFailsafe_Add_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -62,7 +62,7 @@ Configuration MSFT_SqlAgentFailsafe_Add_Config
     .SYNOPSIS
         Removes a SQL Agent Failsafe Operator.
 #>
-Configuration MSFT_SqlAgentFailsafe_Remove_Config
+Configuration DSC_SqlAgentFailsafe_Remove_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

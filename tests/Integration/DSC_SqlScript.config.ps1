@@ -64,7 +64,7 @@ CREATE DATABASE [$(DatabaseName)]
         - Creates the script files, Get, Test, and Set.
         - Creates the SqlLogin and adds it to db_creator role.
 #>
-Configuration MSFT_SqlScript_CreateDependencies_Config
+Configuration DSC_SqlScript_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
     Import-DscResource -ModuleName 'SqlServerDsc'
@@ -200,7 +200,7 @@ Configuration MSFT_SqlScript_CreateDependencies_Config
     .SYNOPSIS
         Runs the SQL script as a Windows User.
 #>
-Configuration MSFT_SqlScript_RunSqlScriptAsWindowsUser_Config
+Configuration DSC_SqlScript_RunSqlScriptAsWindowsUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -229,7 +229,7 @@ Configuration MSFT_SqlScript_RunSqlScriptAsWindowsUser_Config
     .SYNOPSIS
         Runs the SQL script as a SQL login.
 #>
-Configuration MSFT_SqlScript_RunSqlScriptAsSqlUser_Config
+Configuration DSC_SqlScript_RunSqlScriptAsSqlUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

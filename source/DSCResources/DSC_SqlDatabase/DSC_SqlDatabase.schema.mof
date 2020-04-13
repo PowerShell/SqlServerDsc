@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlDatabase")]
-class MSFT_SqlDatabase : OMI_BaseResource
+class DSC_SqlDatabase : OMI_BaseResource
 {
     [Key, Description("The name of the SQL database.")] String Name;
     [Write, Description("An enumerated value that describes if the database is added (Present) or dropped (Absent). Valid values are 'Present' or 'Absent'. Default Value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;

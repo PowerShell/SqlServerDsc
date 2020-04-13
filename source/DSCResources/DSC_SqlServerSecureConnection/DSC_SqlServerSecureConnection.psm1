@@ -4,7 +4,7 @@ $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPat
 $script:resourceHelperModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'SqlServerDsc.Common'
 Import-Module -Name (Join-Path -Path $script:resourceHelperModulePath -ChildPath 'SqlServerDsc.Common.psm1')
 
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerSecureConnection'
+$script:localizedData = Get-LocalizedData -ResourceName 'DSC_SqlServerSecureConnection'
 
 <#
     .SYNOPSIS

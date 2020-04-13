@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerNetwork DSC resource.
+        Automated unit test for DSC_SqlServerNetwork DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName      = 'SqlServerDsc'
-$script:dscResourceName    = 'MSFT_SqlServerNetwork'
+$script:dscResourceName    = 'DSC_SqlServerNetwork'
 
 function Invoke-TestSetup
 {
@@ -108,7 +108,7 @@ try
             ProtocolName = $mockTcpProtocolName
         }
 
-        Describe "MSFT_SqlServerNetwork\Get-TargetResource" -Tag 'Get'{
+        Describe "DSC_SqlServerNetwork\Get-TargetResource" -Tag 'Get'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -146,7 +146,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerNetwork\Test-TargetResource" -Tag 'Test'{
+        Describe "DSC_SqlServerNetwork\Test-TargetResource" -Tag 'Test'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 
@@ -330,7 +330,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerNetwork\Set-TargetResource" -Tag 'Set'{
+        Describe "DSC_SqlServerNetwork\Set-TargetResource" -Tag 'Set'{
             BeforeEach {
                 $testParameters = $mockDefaultParameters.Clone()
 

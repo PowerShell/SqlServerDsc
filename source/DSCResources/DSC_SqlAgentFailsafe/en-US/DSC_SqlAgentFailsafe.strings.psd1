@@ -1,4 +1,4 @@
-# Localized resources for MSFT_SqlServerAgentFailsafe
+# Localized resources for DSC_SqlServerAgentFailsafe
 
 ConvertFrom-StringData @'
     GetSqlAgentFailsafe = Getting SQL Agent Failsafe Operator.

@@ -37,7 +37,7 @@ else
     .SYNOPSIS
         Creates a database with standard collation.
 #>
-Configuration MSFT_SqlDatabase_AddDatabase1_Config
+Configuration DSC_SqlDatabase_AddDatabase1_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -61,7 +61,7 @@ Configuration MSFT_SqlDatabase_AddDatabase1_Config
     .SYNOPSIS
         Creates a database with a specific collation.
 #>
-Configuration MSFT_SqlDatabase_AddDatabase2_Config
+Configuration DSC_SqlDatabase_AddDatabase2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -86,7 +86,7 @@ Configuration MSFT_SqlDatabase_AddDatabase2_Config
     .SYNOPSIS
         Creates a database with a specific collation.
 #>
-Configuration MSFT_SqlDatabase_RemoveDatabase2_Config
+Configuration DSC_SqlDatabase_RemoveDatabase2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

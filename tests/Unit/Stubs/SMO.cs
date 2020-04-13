@@ -14,7 +14,7 @@ namespace Microsoft.SqlServer.Management.Smo
 
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginCreateOptions
     // Used by:
-    //  MSFT_SqlServerLogin.Tests.ps1
+    //  DSC_SqlServerLogin.Tests.ps1
     public enum LoginCreateOptions
     {
         None = 0,
@@ -25,7 +25,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.LoginType
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlServerLogin
+    //  DSC_SqlServerLogin
     public enum LoginType
     {
         AsymmetricKey = 4,
@@ -232,7 +232,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // BaseType: Microsoft.SqlServer.Management.Smo.SqlSmoObject
     // Used by:
     //  SqlServerPermission
-    //  MSFT_SqlServerLogin
+    //  DSC_SqlServerLogin
     public class Server
     {
         public string MockGranteeName;
@@ -340,7 +340,7 @@ namespace Microsoft.SqlServer.Management.Smo
     // TypeName: Microsoft.SqlServer.Management.Smo.Login
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlServerLogin
+    //  DSC_SqlServerLogin
     public class Login
     {
         private bool _mockPasswordPassed = false;
@@ -525,7 +525,7 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.ServerRole
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlServerRole
+    //  DSC_SqlServerRole
     public class ServerRole
     {
         public ServerRole( Server server, string name ) {
@@ -543,9 +543,9 @@ namespace Microsoft.SqlServer.Management.Smo
 	// TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
-    //  MSFT_SqlAGDatabase
-    //  MSFT_SqlDatabase
-    //  MSFT_SqlDatabasePermission
+    //  DSC_SqlAGDatabase
+    //  DSC_SqlDatabase
+    //  DSC_SqlDatabasePermission
 	public class Database
 	{
         public bool AutoClose = false;
@@ -948,7 +948,7 @@ namespace Microsoft.SqlServer.Management.Smo.Wmi
 
     // TypeName: Microsoft.SqlServer.Management.Smo.Wmi.ManagedServiceType
     // Used by:
-    //  MSFT_SqlServiceAccount.Tests.ps1
+    //  DSC_SqlServiceAccount.Tests.ps1
     public enum ManagedServiceType
     {
         SqlServer = 1,

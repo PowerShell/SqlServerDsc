@@ -158,7 +158,7 @@ $SqlAgentServiceSecondaryCredential = New-Object `
     .SYNOPSIS
         Setting up the dependencies to test installing SQL Server instances.
 #>
-Configuration MSFT_SqlSetup_CreateDependencies_Config
+Configuration DSC_SqlSetup_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
     Import-DscResource -ModuleName 'StorageDsc' -ModuleVersion '4.9.0.0'
@@ -243,7 +243,7 @@ Configuration MSFT_SqlSetup_CreateDependencies_Config
     .NOTES
         This is the instance that is used for many of the other integration tests.
 #>
-Configuration MSFT_SqlSetup_InstallDatabaseEngineNamedInstanceAsSystem_Config
+Configuration DSC_SqlSetup_InstallDatabaseEngineNamedInstanceAsSystem_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -309,7 +309,7 @@ Configuration MSFT_SqlSetup_InstallDatabaseEngineNamedInstanceAsSystem_Config
     .NOTES
         The named instance is restarted at the end of the tests.
 #>
-Configuration MSFT_SqlSetup_StopServicesInstance_Config
+Configuration DSC_SqlSetup_StopServicesInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 
@@ -347,7 +347,7 @@ Configuration MSFT_SqlSetup_StopServicesInstance_Config
     .SYNOPSIS
         Installs a default instance of Database Engine.
 #>
-Configuration MSFT_SqlSetup_InstallDatabaseEngineDefaultInstanceAsUser_Config
+Configuration DSC_SqlSetup_InstallDatabaseEngineDefaultInstanceAsUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -381,7 +381,7 @@ Configuration MSFT_SqlSetup_InstallDatabaseEngineDefaultInstanceAsUser_Config
     .SYNOPSIS
         Stopping the default instance to save memory on the build worker.
 #>
-Configuration MSFT_SqlSetup_StopSqlServerDefaultInstance_Config
+Configuration DSC_SqlSetup_StopSqlServerDefaultInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 
@@ -406,7 +406,7 @@ Configuration MSFT_SqlSetup_StopSqlServerDefaultInstance_Config
     .SYNOPSIS
         Installs a named instance of Analysis Services in tabular mode.
 #>
-Configuration MSFT_SqlSetup_InstallTabularAnalysisServicesAsSystem_Config
+Configuration DSC_SqlSetup_InstallTabularAnalysisServicesAsSystem_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -441,7 +441,7 @@ Configuration MSFT_SqlSetup_InstallTabularAnalysisServicesAsSystem_Config
         Stopping the Analysis Services tabular named instance to save memory on
         the build worker.
 #>
-Configuration MSFT_SqlSetup_StopTabularAnalysisServices_Config
+Configuration DSC_SqlSetup_StopTabularAnalysisServices_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 
@@ -463,7 +463,7 @@ Configuration MSFT_SqlSetup_StopTabularAnalysisServices_Config
         This is so that other integration tests are dependent on this
         named instance.
 #>
-Configuration MSFT_SqlSetup_StartServicesInstance_Config
+Configuration DSC_SqlSetup_StartServicesInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 

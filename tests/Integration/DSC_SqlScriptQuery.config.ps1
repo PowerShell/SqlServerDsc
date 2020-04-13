@@ -57,7 +57,7 @@ CREATE DATABASE [$(DatabaseName)]
     .SYNOPSIS
         Runs the SQL query as a Windows User.
 #>
-Configuration MSFT_SqlScriptQuery_RunSqlScriptQueryAsWindowsUser_Config
+Configuration DSC_SqlScriptQuery_RunSqlScriptQueryAsWindowsUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -85,7 +85,7 @@ Configuration MSFT_SqlScriptQuery_RunSqlScriptQueryAsWindowsUser_Config
     .SYNOPSIS
         Runs the SQL query as a SQL login.
 #>
-Configuration MSFT_SqlScriptQuery_RunSqlScriptQueryAsSqlUser_Config
+Configuration DSC_SqlScriptQuery_RunSqlScriptQueryAsSqlUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerMaxDop DSC resource.
+        Automated unit test for DSC_SqlServerMaxDop DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerMaxDop'
+$script:dscResourceName = 'DSC_SqlServerMaxDop'
 
 function Invoke-TestSetup
 {
@@ -111,7 +111,7 @@ try
 
         #endregion
 
-        Describe "MSFT_SqlServerMaxDop\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlServerMaxDop\Get-TargetResource" -Tag 'Get' {
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             Mock -CommandName Test-ActiveNode -MockWith { return $mockProcessOnlyOnActiveNode } -Verifiable
 
@@ -141,7 +141,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerMaxDop\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlServerMaxDop\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 
@@ -391,7 +391,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerMaxDop\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlServerMaxDop\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 

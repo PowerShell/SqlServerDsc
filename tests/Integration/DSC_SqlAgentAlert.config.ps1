@@ -37,7 +37,7 @@ else
     .SYNOPSIS
         Adds a SQL Agent alert.
 #>
-Configuration MSFT_SqlAgentAlert_Add_Config
+Configuration DSC_SqlAgentAlert_Add_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -62,7 +62,7 @@ Configuration MSFT_SqlAgentAlert_Add_Config
     .SYNOPSIS
         Removes a SQL Agent alert.
 #>
-Configuration MSFT_SqlAgentAlert_Remove_Config
+Configuration DSC_SqlAgentAlert_Remove_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

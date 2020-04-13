@@ -1,6 +1,6 @@
 
 [ClassVersion("1.0.0.0"), FriendlyName("SqlAGListener")]
-class MSFT_SqlAGListener : OMI_BaseResource
+class DSC_SqlAGListener : OMI_BaseResource
 {
     [Key, Description("The SQL Server instance name of the primary replica.")] String InstanceName;
     [Required, Description("The host name or FQDN of the primary replica.")] String ServerName;

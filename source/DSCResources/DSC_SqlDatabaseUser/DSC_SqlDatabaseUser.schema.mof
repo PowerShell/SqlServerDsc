@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlDatabaseUser")]
-class MSFT_SqlDatabaseUser : OMI_BaseResource
+class DSC_SqlDatabaseUser : OMI_BaseResource
 {
     [Key, Description("Specifies the name of the database user to be added or removed.")] String Name;
     [Key, Description("Specifies the host name of the SQL Server on which the instance exist.")] String ServerName;

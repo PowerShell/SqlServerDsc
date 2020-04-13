@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerEndpoint DSC resource.
+        Automated unit test for DSC_SqlServerEndpoint DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName      = 'SqlServerDsc'
-$script:dscResourceName    = 'MSFT_SqlServerEndpoint'
+$script:dscResourceName    = 'DSC_SqlServerEndpoint'
 
 function Invoke-TestSetup
 {
@@ -159,7 +159,7 @@ try
             EndpointName = $mockEndpointName
         }
 
-        Describe 'MSFT_SqlServerEndpoint\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlServerEndpoint\Get-TargetResource' -Tag 'Get' {
             BeforeEach {
                 $testParameters = $defaultParameters
 
@@ -245,7 +245,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerEndpoint\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_SqlServerEndpoint\Test-TargetResource' -Tag 'Test' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 
@@ -376,7 +376,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerEndpoint\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_SqlServerEndpoint\Set-TargetResource' -Tag 'Set' {
             BeforeEach {
                 $testParameters = $defaultParameters.Clone()
 

@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlScriptQuery DSC resource.
+        Automated unit test for DSC_SqlScriptQuery DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -20,7 +20,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlScriptQuery'
+$script:dscResourceName = 'DSC_SqlScriptQuery'
 
 function Invoke-TestSetup
 {
@@ -56,7 +56,7 @@ Invoke-TestSetup
 try
 {
     InModuleScope $script:dscResourceName {
-         Describe 'MSFT_SqlScriptQuery\Get-TargetResource' {
+         Describe 'DSC_SqlScriptQuery\Get-TargetResource' {
              BeforeAll {
                 $testParameters = @{
                     ServerInstance = $env:COMPUTERNAME
@@ -118,7 +118,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlScriptQuery\Set-TargetResource' {
+        Describe 'DSC_SqlScriptQuery\Set-TargetResource' {
             Context 'Set-TargetResource runs script without issue' {
                 Mock -CommandName Invoke-SqlScript -MockWith {
                     return ''
@@ -154,7 +154,7 @@ try
             }
         }
 
-        Describe 'MSFT_SqlScriptQuery\Test-TargetResource' {
+        Describe 'DSC_SqlScriptQuery\Test-TargetResource' {
             Context 'When the system is in the desired state' {
                 Context 'Test-TargetResource runs script without issue' {
                     Mock -CommandName Invoke-SqlScript

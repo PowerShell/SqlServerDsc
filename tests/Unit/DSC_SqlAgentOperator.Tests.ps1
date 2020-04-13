@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlAgentOperator DSC resource.
+        Automated unit test for DSC_SqlAgentOperator DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlAgentOperator'
+$script:dscResourceName = 'DSC_SqlAgentOperator'
 
 function Invoke-TestSetup
 {
@@ -123,7 +123,7 @@ try
         }
         #endregion
 
-        Describe "MSFT_SqlAgentOperator\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlAgentOperator\Get-TargetResource" -Tag 'Get' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewSqlAgentOperator -ParameterFilter {
@@ -192,7 +192,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlAgentOperator\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewSqlAgentOperator -ParameterFilter {
@@ -320,7 +320,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlAgentOperator\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlAgentOperator\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewSqlAgentOperator -ParameterFilter {

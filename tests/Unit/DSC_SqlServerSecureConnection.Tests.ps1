@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerSecureConnection DSC resource.
+        Automated unit test for DSC_SqlServerSecureConnection DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerSecureConnection'
+$script:dscResourceName = 'DSC_SqlServerSecureConnection'
 
 function Invoke-TestSetup
 {

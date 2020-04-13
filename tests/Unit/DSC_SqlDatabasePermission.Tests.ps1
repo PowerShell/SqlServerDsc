@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlDatabasePermission DSC resource.
+        Automated unit test for DSC_SqlDatabasePermission DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlDatabasePermission'
+$script:dscResourceName = 'DSC_SqlDatabasePermission'
 
 function Invoke-TestSetup
 {
@@ -237,7 +237,7 @@ try
 
         #endregion
 
-        Describe "MSFT_SqlDatabasePermission\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlDatabasePermission\Get-TargetResource" -Tag 'Get' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -404,7 +404,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabasePermission\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlDatabasePermission\Test-TargetResource" -Tag 'Test' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -538,7 +538,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlDatabasePermission\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlDatabasePermission\Set-TargetResource" -Tag 'Set' {
             BeforeEach {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewObjectUser -ParameterFilter {

@@ -44,7 +44,7 @@ else
     .SYNOPSIS
         Adds a server role with a single member.
 #>
-Configuration MSFT_SqlServerRole_AddRole1_Config
+Configuration DSC_SqlServerRole_AddRole1_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -71,7 +71,7 @@ Configuration MSFT_SqlServerRole_AddRole1_Config
     .SYNOPSIS
         Adds a server role without any members.
 #>
-Configuration MSFT_SqlServerRole_AddRole2_Config
+Configuration DSC_SqlServerRole_AddRole2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -95,7 +95,7 @@ Configuration MSFT_SqlServerRole_AddRole2_Config
     .SYNOPSIS
         Adds a server role with multiple members.
 #>
-Configuration MSFT_SqlServerRole_AddRole3_Config
+Configuration DSC_SqlServerRole_AddRole3_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -126,7 +126,7 @@ Configuration MSFT_SqlServerRole_AddRole3_Config
         Role1 started out with one member, but will end up containing only two
         new members.
 #>
-Configuration MSFT_SqlServerRole_Role1_ChangeMembers_Config
+Configuration DSC_SqlServerRole_Role1_ChangeMembers_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -154,7 +154,7 @@ Configuration MSFT_SqlServerRole_Role1_ChangeMembers_Config
     .SYNOPSIS
         Adding multiple members to an existing group, saving any previous members.
 #>
-Configuration MSFT_SqlServerRole_Role2_AddMembers_Config
+Configuration DSC_SqlServerRole_Role2_AddMembers_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -183,7 +183,7 @@ Configuration MSFT_SqlServerRole_Role2_AddMembers_Config
     .SYNOPSIS
         Removes two members from an existing group.
 #>
-Configuration MSFT_SqlServerRole_Role2_RemoveMembers_Config
+Configuration DSC_SqlServerRole_Role2_RemoveMembers_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -211,7 +211,7 @@ Configuration MSFT_SqlServerRole_Role2_RemoveMembers_Config
     .SYNOPSIS
         Removes an existing group.
 #>
-Configuration MSFT_SqlServerRole_RemoveRole3_Config
+Configuration DSC_SqlServerRole_RemoveRole3_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -235,7 +235,7 @@ Configuration MSFT_SqlServerRole_RemoveRole3_Config
     .SYNOPSIS
         Adds a custom server role to an existing role
 #>
-Configuration MSFT_SqlServerRole_AddNestedRole_Config
+Configuration DSC_SqlServerRole_AddNestedRole_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -281,7 +281,7 @@ Configuration MSFT_SqlServerRole_AddNestedRole_Config
     .SYNOPSIS
         Removes a custom server role to an existing role
 #>
-Configuration MSFT_SqlServerRole_RemoveNestedRole_Config
+Configuration DSC_SqlServerRole_RemoveNestedRole_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

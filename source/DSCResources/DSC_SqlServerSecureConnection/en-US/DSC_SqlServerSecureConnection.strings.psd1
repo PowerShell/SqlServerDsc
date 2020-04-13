@@ -1,5 +1,5 @@
 <#
-    Localized resources for MSFT_SqlServerSecureConnection
+    Localized resources for DSC_SqlServerSecureConnection
 #>
 
 ConvertFrom-StringData @'

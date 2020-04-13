@@ -35,7 +35,7 @@ else
     .SYNOPSIS
         Configuration to ensure present and specify all the parameters
 #>
-Configuration MSFT_SqlServerEndpoint_Add_Config
+Configuration DSC_SqlServerEndpoint_Add_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -60,7 +60,7 @@ Configuration MSFT_SqlServerEndpoint_Add_Config
     .SYNOPSIS
         Configuration to ensure Absent and specify all the parameters
 #>
-Configuration MSFT_SqlServerEndpoint_Remove_Config
+Configuration DSC_SqlServerEndpoint_Remove_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

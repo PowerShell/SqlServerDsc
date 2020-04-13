@@ -35,7 +35,7 @@ else
     .SYNOPSIS
         Enable a secure connection, adding a correct certificate.
 #>
-Configuration MSFT_SqlServerSecureConnection_AddSecureConnection_Config
+Configuration DSC_SqlServerSecureConnection_AddSecureConnection_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -56,7 +56,7 @@ Configuration MSFT_SqlServerSecureConnection_AddSecureConnection_Config
     .SYNOPSIS
         Remove the secure connection.
 #>
-Configuration MSFT_SqlServerSecureConnection_RemoveSecureConnection_Config
+Configuration DSC_SqlServerSecureConnection_RemoveSecureConnection_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

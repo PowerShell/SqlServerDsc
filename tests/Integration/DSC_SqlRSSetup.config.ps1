@@ -44,7 +44,7 @@ else
         SQL Server 2017 Reporting Services instance it requires a restart which
         prevents uninstall until the node is rebooted.
 #>
-Configuration MSFT_SqlRSSetup_InstallReportingServicesAsUser_Config
+Configuration DSC_SqlRSSetup_InstallReportingServicesAsUser_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -75,7 +75,7 @@ Configuration MSFT_SqlRSSetup_InstallReportingServicesAsUser_Config
         Stopping the Microsoft SQL Server Reporting Services instance to
         save memory on the build worker.
 #>
-Configuration MSFT_SqlRSSetup_StopReportingServicesInstance_Config
+Configuration DSC_SqlRSSetup_StopReportingServicesInstance_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
 

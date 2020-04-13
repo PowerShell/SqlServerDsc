@@ -1,4 +1,4 @@
-# Localized resources for MSFT_SqlDatabaseDefaultLocation
+# Localized resources for DSC_SqlDatabaseDefaultLocation
 
 ConvertFrom-StringData @'
     GetCurrentPath = Getting default path for '{0}' for instance '{1}'.

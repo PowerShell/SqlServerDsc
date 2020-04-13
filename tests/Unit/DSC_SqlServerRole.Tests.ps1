@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerRole DSC resource.
+        Automated unit test for DSC_SqlServerRole DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerRole'
+$script:dscResourceName = 'DSC_SqlServerRole'
 
 function Invoke-TestSetup
 {
@@ -226,7 +226,7 @@ try
 
         #endregion
 
-        Describe "MSFT_SqlServerRole\Get-TargetResource" -Tag 'Get' {
+        Describe "DSC_SqlServerRole\Get-TargetResource" -Tag 'Get' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -630,7 +630,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerRole\Test-TargetResource" -Tag 'Test' {
+        Describe "DSC_SqlServerRole\Test-TargetResource" -Tag 'Test' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
             }
@@ -799,7 +799,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "MSFT_SqlServerRole\Set-TargetResource" -Tag 'Set' {
+        Describe "DSC_SqlServerRole\Set-TargetResource" -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
                 Mock -CommandName New-Object -MockWith $mockNewObjectServerRole -ParameterFilter {
@@ -1211,7 +1211,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerRole\Test-SqlSecurityPrincipal' -Tag 'Helper' {
+        Describe 'DSC_SqlServerRole\Test-SqlSecurityPrincipal' -Tag 'Helper' {
             BeforeAll {
                 Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
 

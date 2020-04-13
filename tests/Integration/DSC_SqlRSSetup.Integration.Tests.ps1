@@ -8,7 +8,7 @@ if (-not (Test-BuildCategory -Type 'Integration' -Category @('Integration_SQL201
 
 $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlRSSetup'
-$script:dscResourceName = "MSFT_$($script:dscResourceFriendlyName)"
+$script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
 try
 {

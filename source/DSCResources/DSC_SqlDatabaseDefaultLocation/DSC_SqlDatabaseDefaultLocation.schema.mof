@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlDatabaseDefaultLocation")]
-class MSFT_SqlDatabaseDefaultLocation : OMI_BaseResource
+class DSC_SqlDatabaseDefaultLocation : OMI_BaseResource
 {
     [Key, Description("The host name of the SQL Server to be configured.")] String ServerName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;

@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlScriptQuery")]
-class MSFT_SqlScriptQuery : OMI_BaseResource
+class DSC_SqlScriptQuery : OMI_BaseResource
 {
     [Key, Description("The name of an instance of the Database Engine. For a default instance, only specify the computer name. For a named instance, use the format ComputerName\\InstanceName")] String ServerInstance;
     [Key, Description("Full Query that will perform Get action. Any values returned by the T-SQL queries will also be returned by the cmdlet Get-DscConfiguration through the 'GetResult' property.")] String GetQuery;

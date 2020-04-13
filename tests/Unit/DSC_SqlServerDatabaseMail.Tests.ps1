@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Automated unit test for MSFT_SqlServerDatabaseMail DSC resource.
+        Automated unit test for DSC_SqlServerDatabaseMail DSC resource.
 
     .NOTES
         To run this script locally, please make sure to first run the bootstrap
@@ -16,7 +16,7 @@ if (-not (Test-BuildCategory -Type 'Unit'))
 }
 
 $script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'MSFT_SqlServerDatabaseMail'
+$script:dscResourceName = 'DSC_SqlServerDatabaseMail'
 
 function Invoke-TestSetup
 {
@@ -186,7 +186,7 @@ try
             } -PassThru -Force
         }
 
-        Describe 'MSFT_SqlServerDatabaseMail\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_SqlServerDatabaseMail\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue
@@ -330,7 +330,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerDatabaseMail\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_SqlServerDatabaseMail\Test-TargetResource' -Tag 'Test' {
             BeforeAll {
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue
@@ -488,7 +488,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe 'MSFT_SqlServerDatabaseMail\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_SqlServerDatabaseMail\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 $mockDynamicDatabaseMailEnabledRunValue = $mockDatabaseMailEnabledConfigValue
                 $mockDynamicLoggingLevelValue = $mockLoggingLevelExtendedValue

@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlRS")]
-class MSFT_SqlRS : OMI_BaseResource
+class DSC_SqlRS : OMI_BaseResource
 {
     [Key, Description("Name of the SQL Server Reporting Services instance to be configured.")] String InstanceName;
     [Required, Description("Name of the SQL Server to host the Reporting Service database.")] String DatabaseServerName;

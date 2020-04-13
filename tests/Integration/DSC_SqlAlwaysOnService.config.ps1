@@ -68,7 +68,7 @@ else
         integration tests), and then configures Failover Clustering as a
         detached cluster.
 #>
-Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
+Configuration DSC_SqlAlwaysOnService_CreateDependencies_Config
 {
     Import-DscResource -ModuleName 'PSDscResources' -ModuleVersion '2.12.0.0'
     Import-DscResource -ModuleName 'NetworkingDsc' -ModuleVersion '7.4.0.0'
@@ -196,7 +196,7 @@ Configuration MSFT_SqlAlwaysOnService_CreateDependencies_Config
         Clean up settings on the loopback adapter so it is not interfering
         with the other integration tests.
 #>
-Configuration MSFT_SqlAlwaysOnService_CleanupDependencies_Config
+Configuration DSC_SqlAlwaysOnService_CleanupDependencies_Config
 {
     Import-DscResource -ModuleName 'NetworkingDsc' -ModuleVersion '7.4.0.0'
 
@@ -217,7 +217,7 @@ Configuration MSFT_SqlAlwaysOnService_CleanupDependencies_Config
     .SYNOPSIS
         Enables AlwaysOn.
 #>
-Configuration MSFT_SqlAlwaysOnService_EnableAlwaysOn_Config
+Configuration DSC_SqlAlwaysOnService_EnableAlwaysOn_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -242,7 +242,7 @@ Configuration MSFT_SqlAlwaysOnService_EnableAlwaysOn_Config
     .SYNOPSIS
         Disables AlwaysOn.
 #>
-Configuration MSFT_SqlAlwaysOnService_DisableAlwaysOn_Config
+Configuration DSC_SqlAlwaysOnService_DisableAlwaysOn_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

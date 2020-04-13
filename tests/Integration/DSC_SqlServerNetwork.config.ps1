@@ -40,7 +40,7 @@ else
     .SYNOPSIS
         Disable network protocol.
 #>
-Configuration MSFT_SqlServerNetwork_SetDisabled_Config
+Configuration DSC_SqlServerNetwork_SetDisabled_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -65,7 +65,7 @@ Configuration MSFT_SqlServerNetwork_SetDisabled_Config
     .SYNOPSIS
         Enable network protocol.
 #>
-Configuration MSFT_SqlServerNetwork_SetEnabled_Config
+Configuration DSC_SqlServerNetwork_SetEnabled_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 

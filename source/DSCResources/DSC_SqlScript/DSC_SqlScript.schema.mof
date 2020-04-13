@@ -1,5 +1,5 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlScript")]
-class MSFT_SqlScript : OMI_BaseResource
+class DSC_SqlScript : OMI_BaseResource
 {
     [Key, Description("The name of an instance of the Database Engine. For a default instance, only specify the computer name. For a named instance, use the format ComputerName\\InstanceName")] String ServerInstance;
     [Key, Description("Path to the T-SQL file that will perform Set action.")] String SetFilePath;
