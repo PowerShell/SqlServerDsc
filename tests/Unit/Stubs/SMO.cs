@@ -522,7 +522,7 @@ namespace Microsoft.SqlServer.Management.Smo
         }
     }
 
-	// TypeName: Microsoft.SqlServer.Management.Smo.ServerRole
+    // TypeName: Microsoft.SqlServer.Management.Smo.ServerRole
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
     //  DSC_SqlServerRole
@@ -540,14 +540,14 @@ namespace Microsoft.SqlServer.Management.Smo
     }
 
 
-	// TypeName: Microsoft.SqlServer.Management.Smo.Database
+    // TypeName: Microsoft.SqlServer.Management.Smo.Database
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase
     // Used by:
     //  DSC_SqlAGDatabase
     //  DSC_SqlDatabase
     //  DSC_SqlDatabasePermission
-	public class Database
-	{
+    public class Database
+    {
         public bool AutoClose = false;
         public string AvailabilityGroupName = "";
         public Certificate[] Certificates;
@@ -581,11 +581,11 @@ namespace Microsoft.SqlServer.Management.Smo
 
         public string Name;
 
-		public void Create()
+        public void Create()
         {
         }
 
-		public void Drop()
+        public void Drop()
         {
         }
 
@@ -626,7 +626,7 @@ namespace Microsoft.SqlServer.Management.Smo
                 throw new System.ArgumentException(errorMessage, "granteeName");
             }
         }
-	}
+    }
 
     // TypeName: Microsoft.SqlServer.Management.Smo.User
     // BaseType: Microsoft.SqlServer.Management.Smo.ScriptNameObjectBase

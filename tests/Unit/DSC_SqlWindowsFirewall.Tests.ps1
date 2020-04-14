@@ -249,7 +249,7 @@ try
         $mockGetNetFirewallRule = {
             return @(
                 (
-                    New-CimInstance -ClassName 'DSC_NetFirewallRule' -Property @{
+                    New-CimInstance -ClassName 'MSFT_NetFirewallRule' -Property @{
                         'DisplayName' = $DisplayName
                         'Enabled' = $true
                         'Profile' = 'Any'
@@ -266,7 +266,7 @@ try
         $mockGetNetFirewallRule_EmptyDisplayName = {
             return @(
                 (
-                    New-CimInstance -ClassName 'DSC_NetFirewallRule' -Property @{
+                    New-CimInstance -ClassName 'MSFT_NetFirewallRule' -Property @{
                         'DisplayName' = "SQL Server Database Engine instance $mockCurrentInstanceName"
                         'Enabled' = $true
                         'Profile' = 'Any'

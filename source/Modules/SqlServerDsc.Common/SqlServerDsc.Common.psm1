@@ -8,9 +8,9 @@ $script:modulesFolderPath = Split-Path -Path $PSScriptRoot -Parent
     .PARAMETER ResourceName
         The name of the resource as it appears before '.strings.psd1' of the localized string file.
         For example:
-            For WindowsOptionalFeature: DSC_WindowsOptionalFeature
-            For Service: DSC_ServiceResource
-            For Registry: DSC_RegistryResource
+            For WindowsOptionalFeature: MSFT_WindowsOptionalFeature
+            For Service: MSFT_ServiceResource
+            For Registry: MSFT_RegistryResource
             For Helper: SqlServerDscHelper
 
     .PARAMETER ScriptRoot
@@ -777,11 +777,11 @@ function Invoke-InstallationMediaCopy
         The credentials to access the path provided in SourcePath.
 
     .PARAMETER PassThru
-        If used, returns a DSC_SmbMapping object that represents the newly
+        If used, returns a MSFT_SmbMapping object that represents the newly
         created SMB mapping.
 
     .OUTPUTS
-        Returns a DSC_SmbMapping object that represents the newly created
+        Returns a MSFT_SmbMapping object that represents the newly created
         SMB mapping (ony when used with parameter PassThru).
 #>
 function Connect-UncPath
