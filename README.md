@@ -1793,13 +1793,14 @@ Manage the service account for SQL Server services.
 #### Parameters
 
 * **`[String]` ServerName** (Key): The host name of the SQL Server to be configured.
-* **`[String]` InstanceName** (Key): The name of the SQL instance to be configured.
 * **`[String]` ServiceType** (Key): The service type for **InstanceName**.
   { DatabaseEngine | SQLServerAgent | Search | IntegrationServices
   | AnalysisServices | ReportingServices | SQLServerBrowser
   | NotificationServices }
 * **`[PSCredential]` ServiceAccount** (Required): The service account that should
   be used when running the service.
+* **`[String]` InstanceName** (Write): The name of the SQL instance to be configured.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** (Write): Determines whether the service is
   automatically restarted when a change to the configuration was needed.
 * **`[Boolean]` Force** (Write): Forces the service account to be updated.

@@ -7,6 +7,12 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ## [Unreleased]
 
+### Changed
+
+- SqlServiceAccount
+  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
+    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+
 ## [13.5.0] - 2020-04-12
 
 ### Added

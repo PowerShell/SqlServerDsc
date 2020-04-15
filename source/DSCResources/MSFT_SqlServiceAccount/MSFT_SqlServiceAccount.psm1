@@ -11,7 +11,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServiceAccount'
         Gets the service account for the specified instance.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage.
+        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.
@@ -29,7 +29,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServiceAccount'
         Version number of IntegrationServices.
 
     .EXAMPLE
-        Get-TargetResource -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
+        Get-TargetResource -InstanceName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
         Get-TargetResource -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType IntegrationServices -ServiceAccount $account -VersionNumber 130
 #>
 function Get-TargetResource
@@ -38,9 +38,9 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -94,7 +94,7 @@ function Get-TargetResource
         Tests whether the specified instance's service account is correctly configured.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage.
+        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.
@@ -117,7 +117,7 @@ function Get-TargetResource
         Version number of IntegrationServices
 
     .EXAMPLE
-        Test-TargetResource -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
+        Test-TargetResource -InstanceName MSSQLSERVER -ServiceType DatabaseEngine -ServiceAccount $account
         Test-TargetResource -ServerName $env:COMPUTERNAME -InstanceName MSSQLSERVER -ServiceType IntegrationServices -ServiceAccount $account -VersionNumber 130
 
 #>
@@ -127,9 +127,9 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -175,7 +175,7 @@ function Test-TargetResource
         Sets the SQL Server service account to the desired state.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage.
+        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.
@@ -205,9 +205,9 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
