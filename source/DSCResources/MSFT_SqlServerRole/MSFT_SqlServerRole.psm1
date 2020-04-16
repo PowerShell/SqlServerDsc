@@ -51,10 +51,10 @@ function Get-TargetResource
         [System.String]
         $ServerRoleName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -210,10 +210,10 @@ function Set-TargetResource
         [System.String]
         $ServerRoleName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -404,10 +404,10 @@ function Test-TargetResource
         [System.String]
         $ServerRoleName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

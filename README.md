@@ -1701,8 +1701,9 @@ server roles, please read the below articles.
 #### Parameters
 
 * **`[String]` ServerRoleName** _(Key)_: The name of of SQL role to add or remove.
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: An enumerated value that describes if the server
   role is added (Present) or dropped (Absent). Default value is 'Present'.
   { *Present* | Absent }.
