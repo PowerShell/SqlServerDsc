@@ -2,9 +2,9 @@
 class MSFT_SqlDatabase : OMI_BaseResource
 {
     [Key, Description("The name of the SQL database.")] String Name;
-    [Write, Description("An enumerated value that describes if the database is added (Present) or dropped (Absent). Valid values are 'Present' or 'Absent'. Default Value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Key, Description("The host name of the SQL Server to be configured.")] String ServerName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
+    [Write, Description("An enumerated value that describes if the database is added (Present) or dropped (Absent). Valid values are 'Present' or 'Absent'. Default Value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Write, Description("The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.")] String ServerName;
     [Write, Description("The name of the SQL collation to use for the new database. Defaults to server collation.")] String Collation;
     [Write, Description("The version of the SQL Database Compatibility Level to use for the specified database. Defaults to server version."), ValueMap{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}, Values{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}] String CompatibilityLevel;
     [Write, Description("The recovery model for the specified database. Defaults to Full."), ValueMap{"Simple","Full","BulkLogged"}, Values{"Simple","Full","BulkLogged"}] String RecoveryModel;

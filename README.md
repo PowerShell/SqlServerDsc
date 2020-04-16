@@ -582,9 +582,10 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of database to be created or dropped.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String]` Collation** _(Write)_: The name of the SQL collation to use
   for the new database. Defaults to server collation.
 * **`[String]` Ensure** _(Write)_: When set to 'Present', the database will be created.
@@ -619,7 +620,7 @@ more information about database default locations, please read the article
   configured. { Data | Log | Backup }
 * **`[String]` Path** _(Required)_: The path to the default directory to be configured.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** _(Write)_: If set to $true then SQL Server and
   dependent services will be restarted if a change to the configuration is made.
   The default value is $false.
@@ -730,7 +731,7 @@ Read more about recovery model in this article
 * **`[String]` RecoveryModel** _(Required)_: The recovery model to use for the database.
   { Full | Simple | BulkLogged }.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 
 #### Examples
 
@@ -758,7 +759,7 @@ manages members in both built-in and user created database roles.
   be configured.
 * **`[String]` Name** _(Key)_: The name of the database role to be added or removed.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String[]]` Members** _(Write)_: The members the database role should have.
   This parameter will replace all the current database role members with the
   specified members. Can only be used when parameter Ensure is set to 'Present'.
@@ -815,7 +816,7 @@ SQL login.
 * **`[String]` DatabaseName** _(Key)_: Specifies the name of the database in
   which to configure the user.
 * **`[String]` ServerName** _(Write)_: Specifies the host name of the SQL
-  Server on which the instance exist. Defaults to $env:COMPUTERNAME.
+  Server on which the instance exist. Defaults to `$env:COMPUTERNAME`.
 * **`[String]` LoginName** _(Write)_: Specifies the name of the SQL login to
   associate with the database user. This must be specified if parameter
   UserType is set to 'Login'.
@@ -1209,7 +1210,7 @@ on a SQL Server instance.
 * **`[SInt32]` OptionValue** _(Required)_: The desired value of the SQL configuration
   option.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** _(Write)_: Determines whether the instance should
   be restarted after updating the configuration option.
 * **`[UInt32]` RestartTimeout** _(Write)_: The length of time, in seconds, to wait
@@ -1241,7 +1242,7 @@ Resource to manage SQL Server Database Mail.
 
 * **`[String]` AccountName** _(Key)_: The name of the Database Mail account.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Write)_: Specifies the desired state of the Database Mail.
   When set to 'Present', the Database Mail will be created. When set to 'Absent',
@@ -1333,7 +1334,7 @@ This resource is used to give connect permission to an endpoint for a user (logi
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Principal** _(Key)_: The login to which permission will be set.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: If the permission should be present or absent.
   Default value is 'Present'. { *Present* | Absent }.
 * **`[String]` Name** _(Required)_: The name of the endpoint.
@@ -1400,7 +1401,7 @@ No description.
 * **`[String]` Name** _(Key)_: The name of the login.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` ServerName** _(Write)_:The hostname of the SQL Server to be configured.
-  Defaults to $env:COMPUTERNAME.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: The specified login is Present or Absent.
   { *Present* | Absent }.
 * **`[PSCredential]` LoginCredential** _(Write)_: If LoginType is 'SqlLogin' then

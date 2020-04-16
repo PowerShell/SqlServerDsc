@@ -18,6 +18,9 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Changed
 
+- SqlDatabase
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlDatabaseDefaultLocation
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
