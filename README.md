@@ -807,12 +807,12 @@ SQL login.
 
 * **`[String]` Name** _(Key)_: Specifies the name of the database user to
   be added or removed.
-* **`[String]` ServerName** _(Key)_: Specifies the host name of the SQL
-  Server on which the instance exist.
 * **`[String]` InstanceName** _(Key)_: Specifies the SQL instance in which
   the database exist.
 * **`[String]` DatabaseName** _(Key)_: Specifies the name of the database in
   which to configure the user.
+* **`[String]` ServerName** _(Write)_: Specifies the host name of the SQL
+  Server on which the instance exist. Defaults to $env:COMPUTERNAME.
 * **`[String]` LoginName** _(Write)_: Specifies the name of the SQL login to
   associate with the database user. This must be specified if parameter
   UserType is set to 'Login'.
@@ -896,7 +896,7 @@ Initializes and configures SQL Reporting Services server.
   Services does not use SSL.
 * **`[Boolean]` SuppressRestart** _(Write)_: Reporting Services need to be restarted
   after initialization or settings change. If this parameter is set to $true,
-  Reporting Services will not be restarted, even after initialisation.
+  Reporting Services will not be restarted, even after initialization.
 
 #### Read-Only Properties from Get-TargetResource
 

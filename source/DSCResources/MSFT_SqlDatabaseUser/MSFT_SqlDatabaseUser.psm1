@@ -15,6 +15,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseUser'
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -32,9 +33,9 @@ function Get-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -111,6 +112,7 @@ function Get-TargetResource
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -149,9 +151,9 @@ function Set-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -408,6 +410,7 @@ function Set-TargetResource
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
+        Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -447,9 +450,9 @@ function Test-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
