@@ -7,6 +7,11 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ## [Unreleased]
 
+### Fixed
+
+- SqlRs
+  - Fix typo in the schema parameter `SuppressRestart` description.
+
 ### Changed
 
 - SqlServerConfiguration
