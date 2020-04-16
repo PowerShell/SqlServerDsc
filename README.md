@@ -509,7 +509,7 @@ No description.
 #### Parameters
 
 * **`[String]` Name** _(Key)_: The name of Alias (e.g. svr01\inst01).
-* **`[String]` ServerName** _(Key)_: The SQL Server you are aliasing (the NetBIOS
+* **`[String]` ServerName** _(Write)_: The SQL Server you are aliasing (the NetBIOS
   name or FQDN).
 * **`[String]` Ensure** _(Write)_: Determines whether the alias should be added or
   removed. Default value is 'Present'. { *Present* | Absent }.

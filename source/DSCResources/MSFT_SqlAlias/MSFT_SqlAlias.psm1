@@ -15,18 +15,13 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Name,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ServerName
+        $Name
     )
 
     $returnValue = @{
         Name = [System.String] $Name
         Protocol = [System.String] ''
-        ServerName = [System.String] $ServerName
+        ServerName = [System.String] $null
         TcpPort = [System.UInt16] 0
         UseDynamicTcpPort = [System.Boolean] $false
         PipeName = [System.String] ''
@@ -114,7 +109,7 @@ function Set-TargetResource
         [System.String]
         $Protocol = 'TCP',
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName,
@@ -219,7 +214,7 @@ function Test-TargetResource
         [System.String]
         $Protocol = 'TCP',
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName,
@@ -246,7 +241,6 @@ function Test-TargetResource
 
     $parameters = @{
         Name = $PSBoundParameters.Name
-        ServerName = $PSBoundParameters.ServerName
     }
 
     $currentValues = Get-TargetResource @parameters
