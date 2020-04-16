@@ -1392,9 +1392,10 @@ No description.
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_:The hostname of the SQL Server to be configured.
-* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of the login.
+* **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
+* **`[String]` ServerName** _(Write)_:The hostname of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[String]` Ensure** _(Write)_: The specified login is Present or Absent.
   { *Present* | Absent }.
 * **`[PSCredential]` LoginCredential** _(Write)_: If LoginType is 'SqlLogin' then

@@ -29,9 +29,9 @@ function Get-TargetResource
         [System.String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -145,9 +145,9 @@ function Set-TargetResource
         [System.String]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -397,9 +397,9 @@ function Test-TargetResource
         [System.String]
         $LoginType = 'WindowsUser',
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
