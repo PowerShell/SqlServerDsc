@@ -11,7 +11,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseDefault
         Returns the current path to the the desired default location for the Data, Log, or Backup files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured.
+        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -29,10 +29,10 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -91,7 +91,7 @@ function Get-TargetResource
         This function sets the current path for the default SQL Instance location for the Data, Log, or Backups files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured.
+        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -115,10 +115,10 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -213,7 +213,7 @@ function Set-TargetResource
         This function tests the current path to the default database location for the Data, Log, or Backups files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured.
+        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -237,10 +237,10 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

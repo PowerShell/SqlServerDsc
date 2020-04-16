@@ -613,12 +613,13 @@ more information about database default locations, please read the article
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to
   be configured.
 * **`[String]` Type** _(Key)_: The type of database default location to be
   configured. { Data | Log | Backup }
 * **`[String]` Path** _(Required)_: The path to the default directory to be configured.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[Boolean]` RestartService** _(Write)_: If set to $true then SQL Server and
   dependent services will be restarted if a change to the configuration is made.
   The default value is $false.
