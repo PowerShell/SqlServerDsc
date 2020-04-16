@@ -11,7 +11,8 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseRole'
         Returns the current state of the database role along with its membership.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured.
+        Specifies the host name of the SQL Server to be configured. Defaults to
+        $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the name of the SQL instance to be configured.
@@ -38,10 +39,10 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -172,7 +173,8 @@ function Get-TargetResource
         'Absent' the role is removed from the database.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured.
+        Specifies the host name of the SQL Server to be configured. Defaults to
+        $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the name of the SQL instance to be configured.
@@ -202,10 +204,10 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -379,7 +381,8 @@ function Set-TargetResource
         Tests the current state of the database role along with its membership.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured.
+        Specifies the host name of the SQL Server to be configured. Defaults to
+        $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the name of the SQL instance to be configured.
@@ -409,10 +412,10 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -452,7 +455,7 @@ function Test-TargetResource
     )
 
     $getTargetResourceParameters = @{
-        ServerName       = $PSBoundParameters.ServerName
+        ServerName       = $ServerName
         InstanceName     = $PSBoundParameters.InstanceName
         Database         = $PSBoundParameters.Database
         Name             = $PSBoundParameters.Name

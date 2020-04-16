@@ -751,11 +751,12 @@ manages members in both built-in and user created database roles.
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Database** _(Key)_: The name of the database in which the role should
   be configured.
 * **`[String]` Name** _(Key)_: The name of the database role to be added or removed.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[String[]]` Members** _(Write)_: The members the database role should have.
   This parameter will replace all the current database role members with the
   specified members. Can only be used when parameter Ensure is set to 'Present'.
