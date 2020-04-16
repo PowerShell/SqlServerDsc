@@ -683,10 +683,8 @@ will also get their permission revoked.
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
-  Default values is '$env:COMPUTERNAME'.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-  Default value is 'MSSQLSERVER'.
+  Default value is `'MSSQLSERVER'`.
 * **`[String]` Database** _(Key)_: The name of the database.
 * **`[String]` Name** _(Key)_: The name of the user that should be granted or denied
   the permission.
@@ -695,6 +693,8 @@ will also get their permission revoked.
 * **`[String[]]` Permissions** _(Required)_: The permissions to be granted or denied
   for the user in the database. Valid permissions can be found in the article
   [SQL Server Permissions](https://msdn.microsoft.com/en-us/library/ms191291.aspx#Anchor_3).
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Default values is `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: If the permission should be granted (Present)
   or revoked (Absent). { Present | Absent }.
 

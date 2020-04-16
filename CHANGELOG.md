@@ -10,37 +10,41 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 ### Fixed
 
 - SqlRs
-  - Fix typo in the schema parameter `SuppressRestart` description.
+  - Fix typo in the schema parameter `SuppressRestart` description
+    and in the parameter description in the `README.md`.
 - SqlSetup
   - Update integration tests to correctly detect sysadmins because of changes
     to the build worker.
 
 ### Changed
 
+- SqlDatabasePermission
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlDatabaseRecoveryModel
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlDatabaseRole
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlDatabaseUser
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerConfiguration
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerEndpointPermission
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerLogin
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerRole
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServiceAccount
-  - The parameter `ServerName` is now non-mandatory and defaults to `$env:COMPUTERNAME`
-    ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
+    defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 
 ## [13.5.0] - 2020-04-12
 

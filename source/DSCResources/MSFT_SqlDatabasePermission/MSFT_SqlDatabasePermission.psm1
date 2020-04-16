@@ -8,25 +8,25 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabasePermiss
 
 <#
     .SYNOPSIS
-    Returns the current permissions for the user in the database
+    Returns the current permissions for the user in the database.
 
     .PARAMETER Database
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER Name
-    This is the name of the SQL login for the permission set
+    This is the name of the SQL login for the permission set.
 
     .PARAMETER PermissionState
-    This is the state of permission set. Valid values are 'Grant' or 'Deny'
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'.
 
     .PARAMETER Permissions
-    This is a list that represents a SQL Server set of database permissions
+    This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database
+    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is the SQL instance for the database
+    This is the SQL instance for the database.
 #>
 function Get-TargetResource
 {
@@ -54,10 +54,11 @@ function Get-TargetResource
         [System.String[]]
         $Permissions,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
+
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -146,25 +147,25 @@ function Get-TargetResource
     Sets the permissions for the user in the database.
 
     .PARAMETER Ensure
-    This is The Ensure if the permission should be granted (Present) or revoked (Absent)
+    This is The Ensure if the permission should be granted (Present) or revoked (Absent).
 
     .PARAMETER Database
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER Name
-    This is the name of the SQL login for the permission set
+    This is the name of the SQL login for the permission set.
 
     .PARAMETER PermissionState
-    This is the state of permission set. Valid values are 'Grant' or 'Deny'
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'.
 
     .PARAMETER Permissions
-    This is a list that represents a SQL Server set of database permissions
+    This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database
+    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is the SQL instance for the database
+    This is the SQL instance for the database.
 #>
 function Set-TargetResource
 {
@@ -196,7 +197,7 @@ function Set-TargetResource
         [System.String[]]
         $Permissions,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
@@ -317,28 +318,28 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Tests if the permissions is set for the user in the database
+    Tests if the permissions is set for the user in the database.
 
     .PARAMETER Ensure
-    This is The Ensure if the permission should be granted (Present) or revoked (Absent)
+    This is The Ensure if the permission should be granted (Present) or revoked (Absent).
 
     .PARAMETER Database
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER Name
-    This is the name of the SQL login for the permission set
+    This is the name of the SQL login for the permission set.
 
     .PARAMETER PermissionState
-    This is the state of permission set. Valid values are 'Grant' or 'Deny'
+    This is the state of permission set. Valid values are 'Grant' or 'Deny'.
 
     .PARAMETER Permissions
-    This is a list that represents a SQL Server set of database permissions
+    This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database
+    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is the SQL instance for the database
+    This is the SQL instance for the database.
 #>
 function Test-TargetResource
 {
@@ -371,7 +372,7 @@ function Test-TargetResource
         [System.String[]]
         $Permissions,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
@@ -388,7 +389,7 @@ function Test-TargetResource
 
     $getTargetResourceParameters = @{
         InstanceName    = $PSBoundParameters.InstanceName
-        ServerName      = $PSBoundParameters.ServerName
+        ServerName      = $ServerName
         Database        = $PSBoundParameters.Database
         Name            = $PSBoundParameters.Name
         PermissionState = $PSBoundParameters.PermissionState
