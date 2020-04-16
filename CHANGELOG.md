@@ -11,6 +11,9 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 - SqlRs
   - Fix typo in the schema parameter `SuppressRestart` description.
+- SqlSetup
+  - Update integration tests to correctly detect sysadmins because of changes
+    to the build worker.
 
 ### Changed
 
