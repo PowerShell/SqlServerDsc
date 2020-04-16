@@ -19,7 +19,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAlwaysOnService
     *** Not used in this function ***
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured.
+    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -35,9 +35,9 @@ function Get-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -75,7 +75,7 @@ function Get-TargetResource
     disabled ('Absent').
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured.
+    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -93,9 +93,9 @@ function Set-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -171,7 +171,7 @@ function Set-TargetResource
     disabled ('Absent').
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured.
+    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -192,9 +192,9 @@ function Test-TargetResource
         [System.String]
         $Ensure,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]

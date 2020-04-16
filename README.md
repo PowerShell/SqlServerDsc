@@ -547,11 +547,12 @@ Enables or disabled SQL Server Always On high availability and disaster recovery
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Required)_: An enumerated value that describes if the SQL
   Server should have Always On high availability and disaster recovery (HADR)
   property enabled ('Present') or disabled ('Absent'). { Present | Absent }.
+* **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
+  Defaults to `$env:COMPUTERNAME`.
 * **`[SInt32]` RestartTimeout** _(Write)_: The length of time, in seconds, to wait
   for the service to restart. Default is 120 seconds.
 
