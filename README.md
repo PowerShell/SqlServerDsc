@@ -1199,13 +1199,14 @@ on a SQL Server instance.
 
 #### Parameters
 
-* **`[String]` ServerName** _(Key)_: The hostname of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` OptionName** _(Key)_: The name of the SQL configuration option to
   be checked. For all possible values reference [MSDN](https://msdn.microsoft.com/en-us/library/ms189631.aspx)
   or run sp_configure.
 * **`[SInt32]` OptionValue** _(Required)_: The desired value of the SQL configuration
   option.
+* **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[Boolean]` RestartService** _(Write)_: Determines whether the instance should
   be restarted after updating the configuration option.
 * **`[UInt32]` RestartTimeout** _(Write)_: The length of time, in seconds, to wait

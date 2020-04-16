@@ -8,19 +8,19 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerConfigura
 
 <#
     .SYNOPSIS
-        Gets the current value of a SQL configuration option
+        Gets the current value of a SQL configuration option.
 
     .PARAMETER ServerName
-        Hostname of the SQL Server to be configured
+        Hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
+        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'.
 
     .PARAMETER OptionName
-        The name of the SQL configuration option to be checked
+        The name of the SQL configuration option to be checked.
 
     .PARAMETER OptionValue
-        The desired value of the SQL configuration option
+        The desired value of the SQL configuration option.
 
     .PARAMETER RestartService
         *** Not used in this function ***
@@ -38,9 +38,9 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -91,23 +91,23 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-        Sets the value of a SQL configuration option
+        Sets the value of a SQL configuration option.
 
     .PARAMETER ServerName
-        Hostname of the SQL Server to be configured
+        Hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
+        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'.
 
     .PARAMETER OptionName
-        The name of the SQL configuration option to be set
+        The name of the SQL configuration option to be set.
 
     .PARAMETER OptionValue
-        The desired value of the SQL configuration option
+        The desired value of the SQL configuration option.
 
     .PARAMETER RestartService
         Determines whether the instance should be restarted after updating the
-        configuration option
+        configuration option.
 
     .PARAMETER RestartTimeout
         The length of time, in seconds, to wait for the service to restart. Default
@@ -118,9 +118,9 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -186,24 +186,24 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-        Determines whether a SQL configuration option value is properly set
+        Determines whether a SQL configuration option value is properly set.
 
     .PARAMETER ServerName
-        Hostname of the SQL Server to be configured
+        Hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'
+        Name of the SQL instance to be configured. Default is 'MSSQLSERVER'.
 
     .PARAMETER OptionName
-        The name of the SQL configuration option to be tested
+        The name of the SQL configuration option to be tested.
 
     .PARAMETER OptionValue
-        The desired value of the SQL configuration option
+        The desired value of the SQL configuration option.
 
     .PARAMETER RestartService
         *** Not used in this function ***
         Determines whether the instance should be restarted after updating the
-        configuration option
+        configuration option.
 
     .PARAMETER RestartTimeout
         *** Not used in this function ***
@@ -216,9 +216,9 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
