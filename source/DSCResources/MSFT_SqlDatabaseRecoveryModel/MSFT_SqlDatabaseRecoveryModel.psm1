@@ -8,19 +8,19 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseRecover
 
 <#
     .SYNOPSIS
-    This function gets all Key properties defined in the resource schema file
+    This function gets all Key properties defined in the resource schema file.
 
     .PARAMETER Name
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER RecoveryModel
-    This is the RecoveryModel of the SQL database
+    This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database
+    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is a the SQL instance for the database
+    This is a the SQL instance for the database.
 #>
 function Get-TargetResource
 {
@@ -34,10 +34,10 @@ function Get-TargetResource
         [System.String]
         $RecoveryModel,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -83,19 +83,19 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    This function gets all Key properties defined in the resource schema file
+    This function gets all Key properties defined in the resource schema file.
 
     .PARAMETER Name
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER RecoveryModel
-    This is the RecoveryModel of the SQL database
+    This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database
+    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is a the SQL instance for the database
+    This is a the SQL instance for the database.
 #>
 function Set-TargetResource
 {
@@ -108,10 +108,10 @@ function Set-TargetResource
         [System.String]
         $RecoveryModel,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -154,19 +154,19 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    This function gets all Key properties defined in the resource schema file
+    This function gets all Key properties defined in the resource schema file.
 
     .PARAMETER Name
-    This is the SQL database
+    This is the SQL database.
 
     .PARAMETER RecoveryModel
-    This is the RecoveryModel of the SQL database
+    This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database
+    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    This is a the SQL instance for the database
+    This is a the SQL instance for the database.
 #>
 function Test-TargetResource
 {
@@ -180,10 +180,10 @@ function Test-TargetResource
         [System.String]
         $RecoveryModel,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

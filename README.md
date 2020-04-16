@@ -725,10 +725,11 @@ Read more about recovery model in this article
 #### Parameters
 
 * **`[String]` Name** _(Key)_: The SQL database name.
-* **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` RecoveryModel** _(Required)_: The recovery model to use for the database.
   { Full | Simple | BulkLogged }.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 
 #### Examples
 
