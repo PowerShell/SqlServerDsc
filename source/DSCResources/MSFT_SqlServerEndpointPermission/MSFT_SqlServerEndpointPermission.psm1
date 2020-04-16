@@ -32,9 +32,9 @@ function Get-TargetResource
         [System.String]
         $InstanceName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -128,9 +128,9 @@ function Set-TargetResource
         [System.String]
         $InstanceName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -237,9 +237,9 @@ function Test-TargetResource
         [System.String]
         $InstanceName,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
-        $ServerName,
+        $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]

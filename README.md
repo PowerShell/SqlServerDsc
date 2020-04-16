@@ -1327,11 +1327,12 @@ This resource is used to give connect permission to an endpoint for a user (logi
 #### Parameters
 
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` ServerName** _(Required)_: The host name of the SQL Server to be configured.
+* **`[String]` Principal** _(Key)_: The login to which permission will be set.
+* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
+  Defaults to $env:COMPUTERNAME.
 * **`[String]` Ensure** _(Write)_: If the permission should be present or absent.
   Default value is 'Present'. { *Present* | Absent }.
 * **`[String]` Name** _(Required)_: The name of the endpoint.
-* **`[String]` Principal** _(Key)_: The login to which permission will be set.
 * **`[String]` Permission** _(Write)_: The permission to set for the login. Valid
   value for permission are only CONNECT. { Connect }.
 
