@@ -37,6 +37,7 @@ function Get-TargetResource
     param
     (
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -240,6 +241,7 @@ function Set-TargetResource
         $Ensure = 'Present',
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -645,6 +647,7 @@ function Test-TargetResource
         $AccountName,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 

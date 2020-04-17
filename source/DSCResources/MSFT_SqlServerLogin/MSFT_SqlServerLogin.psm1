@@ -30,6 +30,7 @@ function Get-TargetResource
         $Name,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -146,6 +147,7 @@ function Set-TargetResource
         $LoginType = 'WindowsUser',
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -398,6 +400,7 @@ function Test-TargetResource
         $LoginType = 'WindowsUser',
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 

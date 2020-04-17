@@ -33,6 +33,7 @@ function Get-TargetResource
         $Name,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -123,6 +124,7 @@ function Set-TargetResource
         $Name,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -263,6 +265,7 @@ function Test-TargetResource
         $Name,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 

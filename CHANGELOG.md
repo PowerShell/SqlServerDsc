@@ -20,6 +20,27 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - SqlSetup
   - Update integration tests to correctly detect sysadmins because of changes
     to the build worker.
+- SqlAgentAlert
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlAgentFailsafe
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlAgentOperator
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlServerDatabaseMail
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlServerEndpoint
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlServerEndpointState
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlServerPermission
+  - The parameter `ServerName` now throws when passing an empty string or
+    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 
 ### Changed
 

@@ -30,6 +30,7 @@ function Get-TargetResource
         $EndpointName,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -137,6 +138,7 @@ function Set-TargetResource
         $Port = 5022,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
@@ -298,6 +300,7 @@ function Test-TargetResource
         $Port = 5022,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [System.String]
         $ServerName = $env:COMPUTERNAME,
 
