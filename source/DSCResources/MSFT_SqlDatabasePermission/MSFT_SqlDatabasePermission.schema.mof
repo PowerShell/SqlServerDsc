@@ -7,5 +7,5 @@ class MSFT_SqlDatabasePermission : OMI_BaseResource
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
     [Required, Description("The set of permissions for the SQL database.")] String Permissions[];
     [Write, Description("If the values should be present or absent. Valid values are 'Present' or 'Absent'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Write, Description("The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.")] String ServerName;
+    [Write, Description("The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String ServerName;
 };

@@ -14,7 +14,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerLogin'
     The name of the login to retrieve.
 
     .PARAMETER ServerName
-    Hostname of the SQL Server to retrieve the login from. Defaults to $env:COMPUTERNAME.
+    Hostname of the SQL Server to retrieve the login from. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     Name of the SQL instance to retrieve the login from.
@@ -95,7 +95,7 @@ function Get-TargetResource
     The type of login to create. Default is 'WindowsUser'
 
     .PARAMETER ServerName
-    Hostname of the SQL Server to create the login on. Defaults to $env:COMPUTERNAME.
+    Hostname of the SQL Server to create the login on. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     Name of the SQL instance to create the login on.
@@ -347,7 +347,7 @@ function Set-TargetResource
     The type of login. Default is 'WindowsUser'
 
     .PARAMETER ServerName
-    Hostname of the SQL Server to create the login on. Defaults to $env:COMPUTERNAME.
+    Hostname of the SQL Server to create the login on. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     Name of the SQL instance.

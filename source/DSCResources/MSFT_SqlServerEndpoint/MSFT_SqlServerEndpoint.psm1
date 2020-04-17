@@ -112,7 +112,8 @@ function Get-TargetResource
         The name of the SQL instance to be configured.
 
     .PARAMETER IpAddress
-        The network IP address the endpoint is listening on. Defaults to '0.0.0.0' which means listen on any valid IP address.
+        The network IP address the endpoint is listening on. Default value is '0.0.0.0'
+        which means listen on any valid IP address.
 
     .PARAMETER Owner
         The owner of the endpoint. Default is the login used for the creation.
@@ -271,7 +272,8 @@ function Set-TargetResource
         The name of the SQL instance to be configured.
 
     .PARAMETER IpAddress
-        The network IP address the endpoint is listening on. Defaults to '0.0.0.0' which means listen on any valid IP address.
+        The network IP address the endpoint is listening on. Default value is '0.0.0.0'
+        which means listen on any valid IP address.
 
     .PARAMETER Owner
         The owner of the endpoint. Default is the login used for the creation.

@@ -11,7 +11,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServiceAccount'
         Gets the service account for the specified instance.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
+        Host name of the SQL Server to manage. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.
@@ -94,7 +94,7 @@ function Get-TargetResource
         Tests whether the specified instance's service account is correctly configured.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
+        Host name of the SQL Server to manage. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.
@@ -175,7 +175,7 @@ function Test-TargetResource
         Sets the SQL Server service account to the desired state.
 
     .PARAMETER ServerName
-        Host name of the SQL Server to manage. Defaults to $env:COMPUTERNAME.
+        Host name of the SQL Server to manage. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Name of the SQL instance.

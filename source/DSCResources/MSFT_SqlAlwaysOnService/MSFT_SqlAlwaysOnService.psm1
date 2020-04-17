@@ -19,7 +19,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlAlwaysOnService
     *** Not used in this function ***
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The hostname of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -75,7 +75,7 @@ function Get-TargetResource
     disabled ('Absent').
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The hostname of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -171,7 +171,7 @@ function Set-TargetResource
     disabled ('Absent').
 
     .PARAMETER ServerName
-    The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The hostname of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.

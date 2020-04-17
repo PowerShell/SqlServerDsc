@@ -15,7 +15,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseUser'
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -112,7 +112,7 @@ function Get-TargetResource
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -134,13 +134,13 @@ function Get-TargetResource
 
     .PARAMETER UserType
         Specifies the type of the database user. Valid values are 'Login',
-        'NoLogin', 'Certificate', or 'AsymmetricKey'. Defaults to 'NoLogin'.
+        'NoLogin', 'Certificate', or 'AsymmetricKey'. Default value is 'NoLogin'.
 
     .PARAMETER Ensure
         Specifies if the database user should be present or absent. If 'Present'
         then the user will be added to the database and, if needed, the login
         mapping will be updated. If 'Absent' then the user will be removed from
-        the database. Defaults to 'Present'.
+        the database. Default value is 'Present'.
 #>
 function Set-TargetResource
 {
@@ -410,7 +410,7 @@ function Set-TargetResource
 
     .PARAMETER ServerName
         Specifies the host name of the SQL Server on which the instance exist.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         Specifies the SQL instance in which the database exist.
@@ -432,13 +432,13 @@ function Set-TargetResource
 
     .PARAMETER UserType
         Specifies the type of the database user. Valid values are 'Login',
-        'NoLogin', 'Certificate', or 'AsymmetricKey'. Defaults to 'NoLogin'.
+        'NoLogin', 'Certificate', or 'AsymmetricKey'. Default value is 'NoLogin'.
 
     .PARAMETER Ensure
         Specifies if the database user should be present or absent. If 'Present'
         then the user will be added to the database and, if needed, the login
         mapping will be updated. If 'Absent' then the user will be removed from
-        the database. Defaults to 'Present'.
+        the database. Default value is 'Present'.
 #>
 function Test-TargetResource
 {
@@ -631,7 +631,7 @@ function ConvertTo-UserType
         user.
 
     .PARAMETER UserType
-        Specifies the type of the database user. Defaults to 'NoLogin'.
+        Specifies the type of the database user. Default value is 'NoLogin'.
 
     .PARAMETER RemainingArguments
         Not used.

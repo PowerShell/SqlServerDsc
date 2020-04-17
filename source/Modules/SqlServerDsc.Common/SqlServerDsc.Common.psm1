@@ -920,11 +920,11 @@ function Start-SqlSetupProcess
 
     .PARAMETER ServerName
         String containing the host name of the SQL Server to connect to.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         String containing the SQL Server Database Engine instance to connect to.
-        Defaults to 'MSSQLSERVER'.
+        Default value is 'MSSQLSERVER'.
 
     .PARAMETER SetupCredential
         The credentials to use to impersonate a user when connecting to the
@@ -934,7 +934,7 @@ function Start-SqlSetupProcess
 
     .PARAMETER LoginType
         Specifies which type of logon credential should be used. The valid types
-        are 'WindowsUser' or 'SqlLogin'. Defaults to 'WindowsUser'
+        are 'WindowsUser' or 'SqlLogin'. Default value is 'WindowsUser'
         If set to 'WindowsUser' then the it will impersonate using the Windows
         login specified in the parameter SetupCredential.
         If set to 'WindowsUser' then the it will impersonate using the native SQL
@@ -1519,7 +1519,7 @@ function Restart-SqlService
 
     .PARAMETER WaitTime
         Number of seconds to wait between service stop and service start.
-        Defaults to 0 seconds.
+        Default value is 0 seconds.
 #>
 function Restart-ReportingServicesService
 {

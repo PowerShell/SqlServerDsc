@@ -4,7 +4,7 @@ class MSFT_SqlServerConfiguration : OMI_BaseResource
     [Key, Description("Name of the SQL instance to be configured.")] String InstanceName;
     [Key, Description("The name of the SQL configuration option to be checked.")] String OptionName;
     [Required, Description("The desired value of the SQL configuration option.")] SInt32 OptionValue;
-    [Write, Description("The hostname of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.")] String ServerName;
+    [Write, Description("The hostname of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String ServerName;
     [Write, Description("Determines whether the instance should be restarted after updating the configuration option.")] Boolean RestartService;
     [Write, Description("The length of time, in seconds, to wait for the service to restart. Default is 120 seconds.")] UInt32 RestartTimeout;
 };

@@ -12,7 +12,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerDatabaseM
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -188,7 +188,7 @@ function Get-TargetResource
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -589,7 +589,7 @@ function Set-TargetResource
 
     .PARAMETER ServerName
         The hostname of the SQL Server to be configured.
-        Defaults to $env:COMPUTERNAME.
+        Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.

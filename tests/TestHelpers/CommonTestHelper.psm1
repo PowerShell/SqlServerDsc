@@ -298,7 +298,7 @@ function New-SQLSelfSignedCertificate
         in the parameter Type.
 
     .PARAMETER Name
-        Name of the test script that is called. Defaults to the name of the
+        Name of the test script that is called. Default value is the name of the
         calling script.
 
     .PARAMETER Type

@@ -11,7 +11,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseRole'
         Returns the current state of the database role along with its membership.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Defaults to
+        Specifies the host name of the SQL Server to be configured. Default value is
         $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
@@ -173,7 +173,7 @@ function Get-TargetResource
         'Absent' the role is removed from the database.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Defaults to
+        Specifies the host name of the SQL Server to be configured. Default value is
         $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
@@ -381,7 +381,7 @@ function Set-TargetResource
         Tests the current state of the database role along with its membership.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Defaults to
+        Specifies the host name of the SQL Server to be configured. Default value is
         $env:COMPUTERNAME.
 
     .PARAMETER InstanceName

@@ -23,7 +23,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabasePermiss
     This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is the SQL instance for the database.
@@ -162,7 +162,7 @@ function Get-TargetResource
     This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is the SQL instance for the database.
@@ -336,7 +336,7 @@ function Set-TargetResource
     This is a list that represents a SQL Server set of database permissions.
 
     .PARAMETER ServerName
-    This is the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is the SQL instance for the database.

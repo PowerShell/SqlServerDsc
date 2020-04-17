@@ -26,39 +26,55 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - SqlAlwaysOnService
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabase
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabaseDefaultLocation
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabasePermission
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabaseRecoveryModel
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabaseRole
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlDatabaseUser
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlServerConfiguration
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
+- SqlServerDatabaseMail
+  - Normalize parameter descriptive text for default values.
+- SqlServerEndpoint
+  - Normalize parameter descriptive text for default values.
 - SqlServerEndpointPermission
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlServerLogin
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlServerRole
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 - SqlServiceAccount
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - Normalize parameter descriptive text for default values.
 
 ## [13.5.0] - 2020-04-12
 

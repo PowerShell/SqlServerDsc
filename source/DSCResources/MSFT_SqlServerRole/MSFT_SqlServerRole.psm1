@@ -23,7 +23,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlServerRole'
     The name of server role to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -178,7 +178,7 @@ function Get-TargetResource
     The name of server role to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
@@ -371,7 +371,7 @@ function Set-TargetResource
     The name of server role to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.

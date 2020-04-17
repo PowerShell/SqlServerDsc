@@ -17,7 +17,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseRecover
     This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is a the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is a the SQL instance for the database.
@@ -92,7 +92,7 @@ function Get-TargetResource
     This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is a the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is a the SQL instance for the database.
@@ -163,7 +163,7 @@ function Set-TargetResource
     This is the RecoveryModel of the SQL database.
 
     .PARAMETER ServerName
-    This is a the SQL Server for the database. Defaults to $env:COMPUTERNAME.
+    This is a the SQL Server for the database. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     This is a the SQL instance for the database.

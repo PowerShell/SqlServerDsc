@@ -552,7 +552,7 @@ Enables or disabled SQL Server Always On high availability and disaster recovery
   Server should have Always On high availability and disaster recovery (HADR)
   property enabled ('Present') or disabled ('Absent'). { Present | Absent }.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[SInt32]` RestartTimeout** _(Write)_: The length of time, in seconds, to wait
   for the service to restart. Default is 120 seconds.
 
@@ -586,9 +586,9 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Name** _(Key)_: The name of database to be created or dropped.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String]` Collation** _(Write)_: The name of the SQL collation to use
-  for the new database. Defaults to server collation.
+  for the new database. Default value is server collation.
 * **`[String]` Ensure** _(Write)_: When set to 'Present', the database will be created.
   When set to 'Absent', the database will be dropped. { *Present* | Absent }.
 
@@ -621,7 +621,7 @@ more information about database default locations, please read the article
   configured. { Data | Log | Backup }
 * **`[String]` Path** _(Required)_: The path to the default directory to be configured.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** _(Write)_: If set to $true then SQL Server and
   dependent services will be restarted if a change to the configuration is made.
   The default value is $false.
@@ -732,7 +732,7 @@ Read more about recovery model in this article
 * **`[String]` RecoveryModel** _(Required)_: The recovery model to use for the database.
   { Full | Simple | BulkLogged }.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 
 #### Examples
 
@@ -760,7 +760,7 @@ manages members in both built-in and user created database roles.
   be configured.
 * **`[String]` Name** _(Key)_: The name of the database role to be added or removed.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String[]]` Members** _(Write)_: The members the database role should have.
   This parameter will replace all the current database role members with the
   specified members. Can only be used when parameter Ensure is set to 'Present'.
@@ -817,7 +817,7 @@ SQL login.
 * **`[String]` DatabaseName** _(Key)_: Specifies the name of the database in
   which to configure the user.
 * **`[String]` ServerName** _(Write)_: Specifies the host name of the SQL
-  Server on which the instance exist. Defaults to `$env:COMPUTERNAME`.
+  Server on which the instance exist. Default value is `$env:COMPUTERNAME`.
 * **`[String]` LoginName** _(Write)_: Specifies the name of the SQL login to
   associate with the database user. This must be specified if parameter
   UserType is set to 'Login'.
@@ -829,15 +829,15 @@ SQL login.
   if parameter UserType is set to 'Certificate'.
 * **`[String]` UserType** _(Write)_: Specifies the type of the database
   user. Valid values are 'Login', 'NoLogin', 'Certificate', or 'AsymmetricKey'.
-  Defaults to 'NoLogin'. { Login | *NoLogin* | Certificate | AsymmetricKey }.
+  Default value is 'NoLogin'. { Login | *NoLogin* | Certificate | AsymmetricKey }.
 * **`[String]` Ensure** _(Write)_: Specifies if the database user should
   be present or absent. If 'Present' then the database user will be added
   to the database and, if needed, the login mapping will be updated. If
   'Absent' then the database user will be removed from the database.
-  Defaults to 'Present'. { *Present* | Absent }.
+  Default value is 'Present'. { *Present* | Absent }.
 * **`[Boolean]` Force** _(Write)_: Specifies if the resource is allowed
   to re-create the database user if either the user type, the asymmetric
-  key, or the certificate changes. Defaults to $false not allowing
+  key, or the certificate changes. Default value is $false not allowing
   database users to be re-created.
 
 #### Read-Only Properties from Get-TargetResource
@@ -1211,7 +1211,7 @@ on a SQL Server instance.
 * **`[SInt32]` OptionValue** _(Required)_: The desired value of the SQL configuration
   option.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** _(Write)_: Determines whether the instance should
   be restarted after updating the configuration option.
 * **`[UInt32]` RestartTimeout** _(Write)_: The length of time, in seconds, to wait
@@ -1243,7 +1243,7 @@ Resource to manage SQL Server Database Mail.
 
 * **`[String]` AccountName** _(Key)_: The name of the Database Mail account.
 * **`[String]` ServerName** _(Write)_: The hostname of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` Ensure** _(Write)_: Specifies the desired state of the Database Mail.
   When set to 'Present', the Database Mail will be created. When set to 'Absent',
@@ -1307,7 +1307,7 @@ the resource [**SqlServerEndpointPermission**](#sqlserverendpointpermission).
   Default value is $env:COMPUTERNAME.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` IpAddress** _(Write)_: The network IP address the endpoint is listening
-  on. Defaults to '0.0.0.0' which means listen on any valid IP address.
+  on. Default value is '0.0.0.0' which means listen on any valid IP address.
 * **`[String]` Owner** _(Write)_: The owner of the endpoint. Default is the
   login used for the creation.
 
@@ -1335,7 +1335,7 @@ This resource is used to give connect permission to an endpoint for a user (logi
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` Principal** _(Key)_: The login to which permission will be set.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: If the permission should be present or absent.
   Default value is 'Present'. { *Present* | Absent }.
 * **`[String]` Name** _(Required)_: The name of the endpoint.
@@ -1402,7 +1402,7 @@ No description.
 * **`[String]` Name** _(Key)_: The name of the login.
 * **`[String]` InstanceName** _(Key)_: Name of the SQL instance to be configured.
 * **`[String]` ServerName** _(Write)_:The hostname of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: The specified login is Present or Absent.
   { *Present* | Absent }.
 * **`[PSCredential]` LoginCredential** _(Write)_: If LoginType is 'SqlLogin' then
@@ -1711,7 +1711,7 @@ server roles, please read the below articles.
 * **`[String]` ServerRoleName** _(Key)_: The name of of SQL role to add or remove.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[String]` Ensure** _(Write)_: An enumerated value that describes if the server
   role is added (Present) or dropped (Absent). Default value is 'Present'.
   { *Present* | Absent }.
@@ -1771,7 +1771,7 @@ In that case, the 'SYSTEM' service account can be used.
    connection error is displayed. Use the "SYSTEM" account instead, in that
    case.
 * **`[String]` Ensure** _(Write)_: If Encryption should be Enabled (Present)
-  or Disabled (Absent). { *Present* | Absent }. Defaults to Present.
+  or Disabled (Absent). { *Present* | Absent }. Default value is Present.
 * **`[Boolean]` ForceEncryption** _(Write)_: If all connections to the SQL
   instance should be encrypted. If this parameter is not assigned a value,
   the default is, set to *True*, that all connections must be encrypted.
@@ -1809,7 +1809,7 @@ Manage the service account for SQL Server services.
 * **`[PSCredential]` ServiceAccount** (Required): The service account that should
   be used when running the service.
 * **`[String]` InstanceName** (Write): The name of the SQL instance to be configured.
-  Defaults to `$env:COMPUTERNAME`.
+  Default value is `$env:COMPUTERNAME`.
 * **`[Boolean]` RestartService** (Write): Determines whether the service is
   automatically restarted when a change to the configuration was needed.
 * **`[Boolean]` Force** (Write): Forces the service account to be updated.
@@ -1917,7 +1917,7 @@ need a '*SVCPASSWORD' argument in the setup arguments.
 
 #### Parameters
 
-* **`[String]` Action** _(Write)_: The action to be performed. Defaults to 'Install'.
+* **`[String]` Action** _(Write)_: The action to be performed. Default value is 'Install'.
   *Note: AddNode is not currently functional.*
   { _Install_ | InstallFailoverCluster | AddNode | PrepareFailoverCluster |
    CompleteFailoverCluster }

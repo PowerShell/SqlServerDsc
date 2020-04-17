@@ -29,22 +29,22 @@ $script:supportedCompatibilityLevels = @{
     The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
-    Defaults to server collation.
+    Default value is server collation.
 
     .PARAMETER CompatibilityLevel
     The version of the SQL compatibility level to use for the new database.
-    Defaults to server version.
+    Default value is server version.
 
     .PARAMETER RecoveryModel
     The recovery model to be used for the new database.
-    Defaults to Full.
+    Default value is Full.
 #>
 
 function Get-TargetResource
@@ -146,22 +146,22 @@ function Get-TargetResource
     The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
-    Defaults to server collation.
+    Default value is server collation.
 
     .PARAMETER CompatibilityLevel
     The version of the SQL compatibility level to use for the new database.
-    Defaults to server version.
+    Default value is server version.
 
     .PARAMETER RecoveryModel
     The recovery model to be used for the new database.
-    Defaults to Full.
+    Default value is Full.
 #>
 function Set-TargetResource
 {
@@ -325,22 +325,22 @@ function Set-TargetResource
     The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
     The name of the SQL collation to use for the new database.
-    Defaults to server collation.
+    Default value is server collation.
 
     .PARAMETER CompatibilityLevel
     The version of the SQL compatibility level to use for the new database.
-    Defaults to server version.
+    Default value is server version.
 
     .PARAMETER RecoveryModel
     The recovery model to be used for the new database.
-    Defaults to Full.
+    Default value is Full.
 #>
 function Test-TargetResource
 {

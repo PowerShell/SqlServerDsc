@@ -11,7 +11,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabaseDefault
         Returns the current path to the the desired default location for the Data, Log, or Backup files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+        The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -91,7 +91,7 @@ function Get-TargetResource
         This function sets the current path for the default SQL Instance location for the Data, Log, or Backups files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+        The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
@@ -213,7 +213,7 @@ function Set-TargetResource
         This function tests the current path to the default database location for the Data, Log, or Backups files.
 
     .PARAMETER ServerName
-        The host name of the SQL Server to be configured. Defaults to $env:COMPUTERNAME.
+        The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
