@@ -10,7 +10,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_SqlDatabasePermiss
     .SYNOPSIS
     Returns the current permissions for the user in the database
 
-    .PARAMETER Database
+    .PARAMETER DatabaseName
     This is the SQL database
 
     .PARAMETER Name
@@ -37,7 +37,7 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Database,
+        $DatabaseName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -66,7 +66,7 @@ function Get-TargetResource
     )
 
     Write-Verbose -Message (
-        $script:localizedData.GetDatabasePermission -f $Name, $Database, $InstanceName
+        $script:localizedData.GetDatabasePermission -f $Name, $DatabaseName, $InstanceName
     )
 
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
@@ -74,7 +74,7 @@ function Get-TargetResource
     {
         $currentEnsure = 'Absent'
 
-        if ($sqlDatabaseObject = $sqlServerObject.Databases[$Database])
+        if ($sqlDatabaseObject = $sqlServerObject.Databases[$DatabaseName])
         {
             if ($sqlServerObject.Logins[$Name])
             {
@@ -102,7 +102,7 @@ function Get-TargetResource
                 }
                 catch
                 {
-                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $Name, $Database
+                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $Name, $DatabaseName
                     New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
 
@@ -115,7 +115,7 @@ function Get-TargetResource
         }
         else
         {
-            $errorMessage = $script:localizedData.DatabaseNotFound -f $Database
+            $errorMessage = $script:localizedData.DatabaseNotFound -f $DatabaseName
             New-ObjectNotFoundException -Message $errorMessage
         }
 
@@ -132,7 +132,7 @@ function Get-TargetResource
 
     return @{
         Ensure          = $currentEnsure
-        Database        = $Database
+        DatabaseName    = $DatabaseName
         Name            = $Name
         PermissionState = $PermissionState
         Permissions     = $getSqlDatabasePermissionResult
@@ -148,7 +148,7 @@ function Get-TargetResource
     .PARAMETER Ensure
     This is The Ensure if the permission should be granted (Present) or revoked (Absent)
 
-    .PARAMETER Database
+    .PARAMETER DatabaseName
     This is the SQL database
 
     .PARAMETER Name
@@ -179,7 +179,7 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Database,
+        $DatabaseName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -211,10 +211,10 @@ function Set-TargetResource
     if ($sqlServerObject)
     {
         Write-Verbose -Message (
-            $script:localizedData.ChangePermissionForUser -f $Name, $Database, $InstanceName
+            $script:localizedData.ChangePermissionForUser -f $Name, $DatabaseName, $InstanceName
         )
 
-        if ($sqlDatabaseObject = $sqlServerObject.Databases[$Database])
+        if ($sqlDatabaseObject = $sqlServerObject.Databases[$DatabaseName])
         {
             if ($sqlServerObject.Logins[$Name])
             {
@@ -224,7 +224,7 @@ function Set-TargetResource
                     {
                         Write-Verbose -Message (
                             '{0} {1}' -f
-                                ($script:localizedData.LoginIsNotUser -f $Name, $Database),
+                                ($script:localizedData.LoginIsNotUser -f $Name, $DatabaseName),
                                 $script:localizedData.AddingLoginAsUser
                         )
 
@@ -234,7 +234,7 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        $errorMessage = $script:localizedData.FailedToAddUser -f $Name, $Database
+                        $errorMessage = $script:localizedData.FailedToAddUser -f $Name, $DatabaseName
                         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
                 }
@@ -255,7 +255,7 @@ function Set-TargetResource
                             'Present'
                             {
                                 Write-Verbose -Message (
-                                    $script:localizedData.AddPermission -f $PermissionState, ($Permissions -join ','), $Database
+                                    $script:localizedData.AddPermission -f $PermissionState, ($Permissions -join ','), $DatabaseName
                                 )
 
                                 switch ($PermissionState)
@@ -280,7 +280,7 @@ function Set-TargetResource
                             'Absent'
                             {
                                 Write-Verbose -Message (
-                                    $script:localizedData.DropPermission -f $PermissionState, ($Permissions -join ','), $Database
+                                    $script:localizedData.DropPermission -f $PermissionState, ($Permissions -join ','), $DatabaseName
                                 )
 
                                 if ($PermissionState -eq 'GrantWithGrant')
@@ -296,7 +296,7 @@ function Set-TargetResource
                     }
                     catch
                     {
-                        $errorMessage = $script:localizedData.FailedToSetPermissionDatabase -f $Name, $Database
+                        $errorMessage = $script:localizedData.FailedToSetPermissionDatabase -f $Name, $DatabaseName
                         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
                 }
@@ -309,7 +309,7 @@ function Set-TargetResource
         }
         else
         {
-            $errorMessage = $script:localizedData.DatabaseNotFound -f $Database
+            $errorMessage = $script:localizedData.DatabaseNotFound -f $DatabaseName
             New-ObjectNotFoundException -Message $errorMessage
         }
     }
@@ -322,7 +322,7 @@ function Set-TargetResource
     .PARAMETER Ensure
     This is The Ensure if the permission should be granted (Present) or revoked (Absent)
 
-    .PARAMETER Database
+    .PARAMETER DatabaseName
     This is the SQL database
 
     .PARAMETER Name
@@ -354,7 +354,7 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Database,
+        $DatabaseName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -383,13 +383,13 @@ function Test-TargetResource
     )
 
     Write-Verbose -Message (
-        $script:localizedData.TestingConfiguration -f $Name, $Database, $InstanceName
+        $script:localizedData.TestingConfiguration -f $Name, $DatabaseName, $InstanceName
     )
 
     $getTargetResourceParameters = @{
         InstanceName    = $PSBoundParameters.InstanceName
         ServerName      = $PSBoundParameters.ServerName
-        Database        = $PSBoundParameters.Database
+        DatabaseName    = $PSBoundParameters.DatabaseName
         Name            = $PSBoundParameters.Name
         PermissionState = $PSBoundParameters.PermissionState
         Permissions     = $PSBoundParameters.Permissions

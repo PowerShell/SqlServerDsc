@@ -23,7 +23,7 @@ full release to [PowerShell Gallery](https://www.powershellgallery.com/).
 ## Contributing
 
 Please check out common DSC Community [contributing guidelines](https://dsccommunity.org/guidelines/contributing)
-and the specific [Contributing to SqlServerDsc](https://github.com/dsccommunity/SqlServerDsc/blob/dev/CONTRIBUTING.md)
+and the specific [Contributing to SqlServerDsc](https://github.com/dsccommunity/SqlServerDsc/blob/master/CONTRIBUTING.md)
 guidelines.
 
 ## Installation
@@ -652,7 +652,7 @@ For more information about database owner, please read the article
 
 #### Parameters
 
-* **`[String]` Database** _(Key)_: The name of database to be configured.
+* **`[String]` DatabaseName** _(Key)_: The name of database to be configured.
 * **`[String]` Name** _(Required)_: The name of the login that will become a owner
   of the desired sql database.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
@@ -687,7 +687,7 @@ will also get their permission revoked.
   Default values is '$env:COMPUTERNAME'.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
   Default value is 'MSSQLSERVER'.
-* **`[String]` Database** _(Key)_: The name of the database.
+* **`[String]` DatabaseName** _(Key)_: The name of the database.
 * **`[String]` Name** _(Key)_: The name of the user that should be granted or denied
   the permission.
 * **`[String]` PermissionState** _(Key)_: The state of the permission.
@@ -753,7 +753,7 @@ manages members in both built-in and user created database roles.
 
 * **`[String]` ServerName** _(Key)_: The host name of the SQL Server to be configured.
 * **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` Database** _(Key)_: The name of the database in which the role should
+* **`[String]` DatabaseName** _(Key)_: The name of the database in which the role should
   be configured.
 * **`[String]` Name** _(Key)_: The name of the database role to be added or removed.
 * **`[String[]]` Members** _(Write)_: The members the database role should have.

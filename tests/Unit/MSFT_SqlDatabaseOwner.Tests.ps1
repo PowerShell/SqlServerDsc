@@ -110,8 +110,8 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = 'unknownDatabaseName'
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = 'unknownDatabaseName'
+                        Name         = $mockSqlServerLogin
                     }
 
                     $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.Database
@@ -128,8 +128,8 @@ try
                 It 'Should not throw' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $result = Get-TargetResource @testParameters
@@ -160,8 +160,8 @@ try
                 It 'Should throw the correct error when the method SetOwner() set the wrong login' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $errorMessage = $script:localizedData.FailedToGetOwnerDatabase -f $testParameters.Database
@@ -183,8 +183,8 @@ try
                 It 'Should return the state as false when desired login is not the database owner' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -202,8 +202,8 @@ try
                     $mockSqlServerLogin = 'Zebes\SamusAran'
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -227,8 +227,8 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = 'unknownDatabaseName'
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = 'unknownDatabaseName'
+                        Name         = $mockSqlServerLogin
                     }
 
 
@@ -246,8 +246,8 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = 'John'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = 'John'
                     }
 
                     $errorMessage = $script:localizedData.LoginNotFound -f $testParameters.Name
@@ -266,8 +266,8 @@ try
                     $mockDatabaseOwner = $mockSqlServerLogin
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -283,8 +283,8 @@ try
                     $mockExpectedDatabaseOwner = $mockSqlServerLogin
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $errorMessage = $script:localizedData.FailedToSetOwnerDatabase -f $testParameters.Database
@@ -303,8 +303,8 @@ try
                     $mockExpectedDatabaseOwner = $mockSqlServerLogin
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlServerLogin
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlServerLogin
                     }
 
                     $errorMessage = $script:localizedData.FailedToSetOwnerDatabase -f $testParameters.Database

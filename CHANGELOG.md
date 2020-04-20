@@ -9,6 +9,19 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Changed
 
+- BREAKING CHANGE: Database changed to DatabaseName for consistency with other modules.
+  ([issue #1484](https://github.com/dsccommunity/SqlServerDsc/issues/1484)).
+  - SqlDatabaseOwner
+  - SqlDatabasePermission
+  - SqlDatabaseRole
+
+- README.md
+  - Changed to point to CONTRIBUTING.md on master branch to avoid "404 Page not found"
+
+## [Unreleased]
+
+### Changed
+
 - SqlServerDsc
   - Update the CI pipeline files.
   - Replaced Microsoft-hosted agent (build image) `win1803` with `windows-2019`

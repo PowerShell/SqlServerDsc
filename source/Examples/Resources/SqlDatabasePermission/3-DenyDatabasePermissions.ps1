@@ -43,7 +43,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             PermissionState      = 'Deny'
             Permissions          = 'Select', 'Create Table'
             ServerName           = 'sqltest.company.local'
@@ -56,7 +56,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             Name                 = 'CONTOSO\SQLUser'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             PermissionState      = 'Deny'
             Permissions          = 'Select', 'Create Table'
             ServerName           = 'sqltest.company.local'
@@ -69,7 +69,7 @@ Configuration Example
         {
             Ensure               = 'Present'
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorksLT'
+            DatabaseName         = 'AdventureWorksLT'
             PermissionState      = 'Deny'
             Permissions          = 'Select', 'Create Table'
             ServerName           = 'sqltest.company.local'

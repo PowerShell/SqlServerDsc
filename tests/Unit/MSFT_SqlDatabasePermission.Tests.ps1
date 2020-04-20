@@ -246,7 +246,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = 'unknownDatabaseName'
+                        DatabaseName    = 'unknownDatabaseName'
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -264,7 +264,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = 'unknownLoginName'
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -283,7 +283,7 @@ try
                     $mockInvalidOperationEnumDatabasePermissions = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -300,7 +300,7 @@ try
             Context 'When the system is in the desired state and ensure is set to Absent' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database        = $mockSqlDatabaseName
+                    DatabaseName    = $mockSqlDatabaseName
                     Name            = $mockSqlServerLogin
                     PermissionState = 'Grant'
                     Permissions     = @( 'Connect', 'Update', 'Select' )
@@ -326,7 +326,7 @@ try
             Context 'When the system is not in the desired state and ensure is set to Absent' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database        = $mockSqlDatabaseName
+                    DatabaseName    = $mockSqlDatabaseName
                     Name            = $mockSqlServerLogin
                     PermissionState = 'Grant'
                     Permissions     = @( 'Connect', 'Update' )
@@ -352,7 +352,7 @@ try
             Context 'When the system is in the desired state and ensure is set to Present' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database        = $mockSqlDatabaseName
+                    DatabaseName    = $mockSqlDatabaseName
                     Name            = $mockSqlServerLogin
                     PermissionState = 'Grant'
                     Permissions     = @( 'Connect', 'Update' )
@@ -378,7 +378,7 @@ try
             Context 'When the system is not in the desired state and ensure is set to Present' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database        = $mockSqlDatabaseName
+                    DatabaseName    = $mockSqlDatabaseName
                     Name            = $mockSqlServerLogin
                     PermissionState = 'Grant'
                     Permissions     = @( 'Connect', 'Update', 'Select' )
@@ -413,7 +413,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = 'unknownDatabaseName'
+                        DatabaseName    = 'unknownDatabaseName'
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -432,7 +432,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = 'unknownLoginName'
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -452,7 +452,7 @@ try
                     $mockInvalidOperationEnumDatabasePermissions = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -471,7 +471,7 @@ try
                 It 'Should return the state as true when the desired permission does not exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update', 'Select' )
@@ -488,7 +488,7 @@ try
                 It 'Should return the state as false when the desired permission does not exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -505,7 +505,7 @@ try
                 It 'Should return the state as false when the desired permission does not exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update', 'Select' )
@@ -522,7 +522,7 @@ try
                 It 'Should return the state as true when the desired permission does exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -555,7 +555,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = 'unknownDatabaseName'
+                        DatabaseName    = 'unknownDatabaseName'
                         Name            = $mockSqlServerLogin
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -574,7 +574,7 @@ try
                 It 'Should throw the correct error' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = 'unknownLoginName'
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -595,7 +595,7 @@ try
                     $mockInvalidOperationForCreateMethod = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database        = $mockSqlDatabaseName
+                        DatabaseName    = $mockSqlDatabaseName
                         Name            = $mockSqlServerLoginUnknown
                         PermissionState = 'Grant'
                         Permissions     = @( 'Connect', 'Update' )
@@ -623,7 +623,7 @@ try
                     It 'Should throw the correct error when mock Grant() method is called' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Grant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -640,7 +640,7 @@ try
                     It 'Should throw the correct error when mock Grant() method is called (for GrantWithGrant)' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'GrantWithGrant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -658,7 +658,7 @@ try
                     It 'Should throw the correct error when mock Deny() method is called' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Deny'
                             Permissions     = @( 'Connect', 'Update' )
@@ -675,7 +675,7 @@ try
                     It 'Should throw the correct error when mock Revoke() method is called' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Grant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -692,7 +692,7 @@ try
                     It 'Should throw the correct error when mock Revoke() method is called' {
                         $testParameters = $mockDefaultParameters.Clone()
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'GrantWithGrant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -714,7 +714,7 @@ try
                             $mockExpectedSqlServerLogin = $mockSqlServerLoginUnknown
                             $testParameters = $mockDefaultParameters
                             $testParameters += @{
-                                Database        = $mockSqlDatabaseName
+                                DatabaseName    = $mockSqlDatabaseName
                                 Name            = $mockSqlServerLoginUnknown
                                 PermissionState = 'Grant'
                                 Permissions     = @( 'Connect', 'Update' )
@@ -733,7 +733,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Grant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -753,7 +753,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'GrantWithGrant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -773,7 +773,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Deny'
                             Permissions     = @( 'Connect', 'Update' )
@@ -795,7 +795,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Grant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -815,7 +815,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'GrantWithGrant'
                             Permissions     = @( 'Connect', 'Update' )
@@ -835,7 +835,7 @@ try
                         $mockExpectedSqlServerLogin = $mockSqlServerLogin
                         $testParameters = $mockDefaultParameters
                         $testParameters += @{
-                            Database        = $mockSqlDatabaseName
+                            DatabaseName    = $mockSqlDatabaseName
                             Name            = $mockSqlServerLogin
                             PermissionState = 'Deny'
                             Permissions     = @( 'Connect', 'Update' )

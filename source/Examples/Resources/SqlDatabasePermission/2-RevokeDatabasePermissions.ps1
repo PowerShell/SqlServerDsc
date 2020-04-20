@@ -21,7 +21,7 @@ Configuration Example
         {
             Ensure               = 'Absent'
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             PermissionState      = 'Grant'
             Permissions          = 'Connect', 'Update'
             ServerName           = 'sqltest.company.local'
@@ -34,7 +34,7 @@ Configuration Example
         {
             Ensure               = 'Absent'
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             PermissionState      = 'Deny'
             Permissions          = 'Select', 'Create Table'
             ServerName           = 'sqltest.company.local'

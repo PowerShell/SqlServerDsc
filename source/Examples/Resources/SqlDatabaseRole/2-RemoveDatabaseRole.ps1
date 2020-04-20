@@ -22,8 +22,8 @@ Configuration Example
         {
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
-            Database             = 'AdventureWorks'
-            Name                 = 'ReportViewer'
+            DatabaseName         = 'AdventureWorks'
+            RoleName             = 'ReportViewer'
             Ensure               = 'Absent'
 
             PsDscRunAsCredential = $SqlAdministratorCredential

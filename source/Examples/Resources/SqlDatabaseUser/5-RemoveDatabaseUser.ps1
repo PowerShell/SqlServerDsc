@@ -22,7 +22,7 @@ Configuration Example
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             DatabaseName         = 'AdventureWorks'
-            Name                 = 'CONTOSO\ReportViewer'
+            UserName             = 'CONTOSO\ReportViewer'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
         }

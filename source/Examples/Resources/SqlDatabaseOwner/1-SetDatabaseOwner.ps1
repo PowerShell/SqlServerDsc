@@ -41,7 +41,7 @@ Configuration Example
         SqlDatabaseOwner 'Set_SqlDatabaseOwner_SQLAdmin_DSC'
         {
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
 
@@ -51,7 +51,7 @@ Configuration Example
         SqlDatabaseOwner 'Set_SqlDatabaseOwner_SQLAdmin_DSC2'
         {
             Name                 = 'CONTOSO\SQLAdmin'
-            Database             = 'AdventureWorks'
+            DatabaseName         = 'AdventureWorks'
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC2'
 

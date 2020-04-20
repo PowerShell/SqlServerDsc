@@ -284,8 +284,8 @@ try
             Context 'When only key parameters have values and database name does not exist' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = 'unknownDatabaseName'
-                    Name     = $mockSqlDatabaseRole1
+                    DatabaseName = 'unknownDatabaseName'
+                    Name         = $mockSqlDatabaseRole1
                 }
 
                 It 'Should throw the correct error' {
@@ -302,8 +302,8 @@ try
             Context 'When only key parameters have values and the role does not exist' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = $mockSqlDatabaseName
-                    Name     = 'UnknownRoleName'
+                    DatabaseName = $mockSqlDatabaseName
+                    Name         = 'UnknownRoleName'
                 }
 
                 It 'Should return the state as Absent' {
@@ -334,8 +334,8 @@ try
             Context 'When only key parameters have values and the role exists' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = $mockSqlDatabaseName
-                    Name     = $mockSqlDatabaseRole1
+                    DatabaseName = $mockSqlDatabaseName
+                    Name         = $mockSqlDatabaseRole1
                 }
 
                 It 'Should return the state as Present' {
@@ -354,8 +354,8 @@ try
                 $mockInvalidOperationForEnumMethod = $true
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = $mockSqlDatabaseName
-                    Name     = $mockSqlDatabaseRole1
+                    DatabaseName = $mockSqlDatabaseName
+                    Name         = $mockSqlDatabaseRole1
                 }
 
                 It 'Should throw the correct error' {
@@ -372,9 +372,9 @@ try
             Context 'When parameter Members is assigned a value, the role exists, and the role members are in the desired state' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = $mockSqlDatabaseName
-                    Name     = $mockSqlDatabaseRole1
-                    Members  = $mockEnumMembers
+                    DatabaseName = $mockSqlDatabaseName
+                    Name         = $mockSqlDatabaseRole1
+                    Members      = $mockEnumMembers
                 }
 
                 It 'Should return Ensure as Present' {
@@ -420,9 +420,9 @@ try
             Context 'When parameter Members is assigned a value, the role exists, and the role members are not in the desired state' {
                 $testParameters = $mockDefaultParameters
                 $testParameters += @{
-                    Database = $mockSqlDatabaseName
-                    Name     = $mockSqlDatabaseRole1
-                    Members  = @($mockSqlServerLogin1, $mockSqlServerLogin3)
+                    DatabaseName = $mockSqlDatabaseName
+                    Name         = $mockSqlDatabaseRole1
+                    Members      = @($mockSqlServerLogin1, $mockSqlServerLogin3)
                 }
 
                 It 'Should return Ensure as Present' {
@@ -647,9 +647,9 @@ try
                     $mockExpectedSqlDatabaseRole = 'DatabaseRoleToDrop'
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRoleToDrop
-                        Ensure   = 'Absent'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRoleToDrop
+                        Ensure       = 'Absent'
                     }
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -663,9 +663,9 @@ try
                     $mockInvalidOperationForDropMethod = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Ensure   = 'Absent'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Ensure       = 'Absent'
                     }
 
                     $errorMessage = $script:localizedData.DropDatabaseRoleError -f $mockSqlDatabaseRole1, $mockSqlDatabaseName
@@ -682,9 +682,9 @@ try
                     $mockExpectedSqlDatabaseRole = 'DatabaseRoleToAdd'
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRoleAdd
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRoleAdd
+                        Ensure       = 'Present'
                     }
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -706,9 +706,9 @@ try
                     $mockInvalidOperationForCreateMethod = $true
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRoleAdd
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRoleAdd
+                        Ensure       = 'Present'
                     }
 
                     $errorMessage = $script:localizedData.CreateDatabaseRoleError -f $mockSqlDatabaseRoleAdd, $mockSqlDatabaseName
@@ -730,10 +730,10 @@ try
                     $mockExpectedMemberToAdd = $mockSqlServerInvalidLogin
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Members  = @($mockSqlServerInvalidLogin, $mockSqlServerLogin1, $mockSqlServerLogin2)
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Members      = @($mockSqlServerInvalidLogin, $mockSqlServerLogin1, $mockSqlServerLogin2)
+                        Ensure       = 'Present'
                     }
 
                     $errorMessage = $script:localizedData.DatabaseUserNotFound -f $mockSqlServerInvalidLogin, $mockSqlDatabaseName
@@ -748,10 +748,10 @@ try
                     $mockExpectedMemberToDrop = $mockSqlServerLogin2
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Members  = @($mockSqlServerLogin1, $mockSqlServerLogin3)
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Members      = @($mockSqlServerLogin1, $mockSqlServerLogin3)
+                        Ensure       = 'Present'
                     }
 
                     { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -897,9 +897,9 @@ try
                 It 'Should return False when the desired database role exists' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Ensure   = 'Absent'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Ensure       = 'Absent'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -913,9 +913,9 @@ try
                 It 'Should return True when the desired database role does not exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole3
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole3
+                        Ensure       = 'Present'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -929,9 +929,9 @@ try
                 It 'Should return True when the desired database role does not exist' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole3
-                        Ensure   = 'Absent'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole3
+                        Ensure       = 'Absent'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -945,9 +945,9 @@ try
                 It 'Should return True when the desired database role exists' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Ensure       = 'Present'
                     }
 
                     $result = Test-TargetResource @testParameters
@@ -961,10 +961,10 @@ try
                 It 'Should return False when the desired members are not in the desired database role' {
                     $testParameters = $mockDefaultParameters
                     $testParameters += @{
-                        Database = $mockSqlDatabaseName
-                        Name     = $mockSqlDatabaseRole1
-                        Members  = @($mockSqlServerLogin3)
-                        Ensure   = 'Present'
+                        DatabaseName = $mockSqlDatabaseName
+                        Name         = $mockSqlDatabaseRole1
+                        Members      = @($mockSqlServerLogin3)
+                        Ensure       = 'Present'
                     }
 
                     $result = Test-TargetResource @testParameters

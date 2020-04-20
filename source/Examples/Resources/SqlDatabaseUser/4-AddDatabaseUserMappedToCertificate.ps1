@@ -22,7 +22,7 @@ Configuration Example
             ServerName           = 'sqltest.company.local'
             InstanceName         = 'DSC'
             DatabaseName         = 'AdventureWorks'
-            Name                 = 'ReportAdmin'
+            UserName             = 'ReportAdmin'
             UserType             = 'Certificate'
             CertificateName      = 'Certificate1'
 
