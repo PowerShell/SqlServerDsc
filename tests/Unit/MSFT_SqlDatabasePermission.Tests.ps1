@@ -252,7 +252,7 @@ try
                         Permissions     = @( 'Connect', 'Update' )
                     }
 
-                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.Database
+                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.DatabaseName
 
                     { Get-TargetResource @testParameters } | Should -Throw $errorMessage
 
@@ -289,7 +289,7 @@ try
                         Permissions     = @( 'Connect', 'Update' )
                     }
 
-                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $testParameters.Name, $testParameters.Database
+                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $testParameters.Name, $testParameters.DatabaseName
 
                     { Get-TargetResource @testParameters } | Should -Throw $errorMessage
 
@@ -420,7 +420,7 @@ try
                         Ensure          = 'Present'
                     }
 
-                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.Database
+                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.DatabaseName
 
                     { Test-TargetResource @testParameters } | Should -Throw $errorMessage
 
@@ -459,7 +459,7 @@ try
                         Ensure          = 'Present'
                     }
 
-                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $testParameters.Name, $testParameters.Database
+                    $errorMessage = $script:localizedData.FailedToEnumDatabasePermissions -f $testParameters.Name, $testParameters.DatabaseName
 
                     { Test-TargetResource @testParameters } | Should -Throw $errorMessage
 
@@ -562,7 +562,7 @@ try
                         Ensure          = 'Present'
                     }
 
-                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.Database
+                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.DatabaseName
 
                     { Set-TargetResource @testParameters } | Should -Throw $errorMessage
 
@@ -602,7 +602,7 @@ try
                         Ensure          = 'Present'
                     }
 
-                    $errorMessage = $script:localizedData.FailedToAddUser -f $testParameters.Name, $testParameters.Database
+                    $errorMessage = $script:localizedData.FailedToAddUser -f $testParameters.Name, $testParameters.DatabaseName
 
                     { Set-TargetResource @testParameters } | Should -Throw $errorMessage
 

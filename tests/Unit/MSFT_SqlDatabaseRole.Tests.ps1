@@ -289,7 +289,7 @@ try
                 }
 
                 It 'Should throw the correct error' {
-                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.Database
+                    $errorMessage = $script:localizedData.DatabaseNotFound -f $testParameters.DatabaseName
 
                     { Get-TargetResource @testParameters } | Should -Throw $errorMessage
                 }
@@ -324,7 +324,7 @@ try
                     $result = Get-TargetResource @testParameters
                     $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Database | Should -Be $testParameters.Database
+                    $result.Database | Should -Be $testParameters.DatabaseName
                     $result.Name | Should -Be $testParameters.Name
 
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
@@ -409,7 +409,7 @@ try
                     $result = Get-TargetResource @testParameters
                     $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Database | Should -Be $testParameters.Database
+                    $result.Database | Should -Be $testParameters.DatabaseName
                     $result.Name | Should -Be $testParameters.Name
                     $result.Members | Should -Be $testParameters.Members
 
@@ -507,7 +507,7 @@ try
                     $result = Get-TargetResource @testParameters
                     $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Database | Should -Be $testParameters.Database
+                    $result.Database | Should -Be $testParameters.DatabaseName
                     $result.Name | Should -Be $testParameters.Name
                     $result.MembersToInclude | Should -Be $testParameters.MembersToInclude
 
@@ -592,7 +592,7 @@ try
                     $result = Get-TargetResource @testParameters
                     $result.ServerName | Should -Be $testParameters.ServerName
                     $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Database | Should -Be $testParameters.Database
+                    $result.Database | Should -Be $testParameters.DatabaseName
                     $result.Name | Should -Be $testParameters.Name
                     $result.MembersToExclude | Should -Be $testParameters.MembersToExclude
 
