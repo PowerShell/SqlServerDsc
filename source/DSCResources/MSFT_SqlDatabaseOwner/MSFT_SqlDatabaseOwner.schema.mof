@@ -1,7 +1,7 @@
 [ClassVersion("1.0.0.0"), FriendlyName("SqlDatabaseOwner")]
 class MSFT_SqlDatabaseOwner : OMI_BaseResource
 {
-    [Key, Description("The name of database to be configured.")] String Database;
+    [Key, Description("The name of database to be configured.")] String DatabaseName;
     [Required, Description("The name of the login that will become a owner of the desired sql database.")] String Name;
     [Write, Description("The host name of the SQL Server to be configured.")] String ServerName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
