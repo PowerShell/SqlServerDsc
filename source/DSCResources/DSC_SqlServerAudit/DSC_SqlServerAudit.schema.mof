@@ -1,0 +1,20 @@
+[ClassVersion("1.0.0.0"), FriendlyName("SqlServerAudit")]
+class DSC_SqlServerAudit : OMI_BaseResource
+{
+    [Key, Description("Specifies the host name of the SQL Server on which the instance exist.")] String ServerName;
+    [Key, Description("Specifies the SQL instance in which the Audit exist.")] String InstanceName;
+    [Key, Description("Specifies the name of the SQL audit to be added or removed.")] String Name;
+    [Write, Description("Specifies the storage type of the server audit."), ValueMap{"File", "SecurityLog", "ApplicationLog"}, Values{"File", "SecurityLog", "ApplicationLog"}] String DestinationType;
+    [Write, Description("Specifies the path where the audit files are stored when DestinationType is set to File.")] String FilePath;
+    [Write, Description("Specifies if the audit should be enabled. Defaults to $false")] Boolean Enabled;
+    [Write, Description("Specifies the filter that should be used on the audit.")] String Filter;
+    [Write, Description("Specifies the number of file a file audit can have.")] UInt32 MaximumFiles;
+    [Write, Description("Specifies the maximum file size of an audit file")] UInt32 MaximumFileSize;
+    [Write, Description("Specifies the FileSize unit of an audit file"), ValueMap{"KB", "MB", "GB"}, Values{"KB", "MB", "GB"}] String MaximumFileSizeUnit;
+    [Write, Description("Specifies the number of file a file audit can have before a rollover starts")] UInt32 MaximumRolloverFiles;
+    [Write, Description("Specifies the maximum delay before a event is written to disk. defaults to 1000 ( 1 sec ). When set to low, performance can degrade. When set to high, events can get lost with a server crash.")] UInt32 QueueDelay;
+    [Write, Description("Specifies if the disk space for the audit files should be reserved. Defaults to $false")] Boolean ReserveDiskSpace;
+    [Write, Description("Specifies the type of the database user. Valid"), ValueMap{"CONTINUE", "FAIL_OPERATION", "SHUTDOWN"}, Values{"CONTINUE", "FAIL_OPERATION", "SHUTDOWN"}] String OnFailure;
+    [Write, Description("Specifies if the audit should be present or absent. If 'Present' then the audit will be added to the server and, if needed, the audit will be updated. If 'Absent' then the audit will be removed from the server. Defaults to 'Present'."), ValueMap{"Present", "Absent"}, Values{"Present", "Absent"}] String Ensure;
+    [Write, Description("Specifies if it is allowed to re-create the server audit when the DestinationType changes. Defaults to $false not allowing server audits to be re-created.")] Boolean Force;
+};

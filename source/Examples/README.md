@@ -26,6 +26,8 @@ These are the links to the examples for each individual resource.
 - [SqlRSSetup](Resources/SqlRSSetup)
 - [SqlScript](Resources/SqlScript)
 - [SqlScriptQuery](Resources/SqlScriptQuery)
+- [SqlServerAudit](Resources/SqlServerAudit)
+- [SqlServerAuditSpecification](Resources/SqlServerAuditSpecification)
 - [SqlServerConfiguration](Resources/SqlServerConfiguration)
 - [SqlServerDatabaseMail](Resources/SqlServerDatabaseMail)
 - [SqlServerEndpoint](Resources/SqlServerEndpoint)

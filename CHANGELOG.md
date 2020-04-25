@@ -7,6 +7,12 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ## [Unreleased]
 
+### Added
+
+- SqlServerDsc
+  - Add new resource SqlServerAudit.
+  - Add new resource SqlServerAuditSpecification.
+
 ### Changed
 
 - BREAKING CHANGE: Database changed to DatabaseName for consistency with other modules.

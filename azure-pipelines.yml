@@ -154,6 +154,8 @@ stages:
                   'tests/Integration/MSFT_SqlAgentOperator.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlServiceAccount.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlAgentFailsafe.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerAudit.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerAuditSpecification.Integration.Tests.ps1'
                   # Group 3
                   'tests/Integration/MSFT_SqlServerRole.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlRS.Integration.Tests.ps1'
@@ -217,6 +219,8 @@ stages:
                   'tests/Integration/MSFT_SqlAgentOperator.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlServiceAccount.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlAgentFailsafe.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerAudit.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerAuditSpecification.Integration.Tests.ps1'
                   # Group 3
                   'tests/Integration/MSFT_SqlServerRole.Integration.Tests.ps1'
                   'tests/Integration/MSFT_SqlRS.Integration.Tests.ps1'
