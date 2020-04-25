@@ -44,7 +44,7 @@ function Get-TargetResource
         $ServerName = $env:COMPUTERNAME,
 
         [Parameter()]
-        [System.UInt16]
+        [System.Boolean]
         $SuppressRestart = $false,
 
         [Parameter()]
