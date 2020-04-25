@@ -9,6 +9,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Added
 
+- SqlServerDsc
+  - Added new resource SqlServerProtocol
 - SqlSetup
   - A read only property `IsClustered` was added that can be used to determine
     if the instance is clustered.
@@ -18,6 +20,10 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - SqlServerDsc
   - Changed all resource prefixes from `MSFT_` to `DSC_` ([issue #1496](https://github.com/dsccommunity/SqlServerDsc/issues/1496)).
   - All resources are now using the common module DscResource.Common.
+  - When a PR is labelled with 'ready for merge' it is no longer being
+    marked as stale if the PR is not merged for 30 days (for example it is
+    dependent on something else) ([issue #1504](https://github.com/dsccommunity/SqlServerDsc/issues/1504)).
+  - Updated the CI pipeline to use latest version of the module ModuleBuilder.
 - SqlAlwaysOnService
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).

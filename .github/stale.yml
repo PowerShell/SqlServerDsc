@@ -12,6 +12,7 @@ pulls:
     - needs review
     - on hold
     - waiting for CLA pass
+    - ready for merge
 
   markComment: >
     Labeling this pull request (PR) as abandoned since it has gone 14 days or more
