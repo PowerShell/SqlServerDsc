@@ -92,13 +92,13 @@ function Get-TargetResource
         {
             'TcpIp'
             {
-                $returnValue.ListenOnAllIpAddresses = $serverProtocolProperties.ProtocolProperties.ListenOnAllIPs
-                $returnValue.KeepAlive = $serverProtocolProperties.ProtocolProperties.KeepAlive
+                $returnValue.ListenOnAllIpAddresses = $serverProtocolProperties.ProtocolProperties['ListenOnAllIPs'].Value
+                $returnValue.KeepAlive = $serverProtocolProperties.ProtocolProperties['KeepAlive'].Value
             }
 
             'NamedPipes'
             {
-                $returnValue.PipeName = $serverProtocolProperties.ProtocolProperties.PipeName
+                $returnValue.PipeName = $serverProtocolProperties.ProtocolProperties['PipeName'].Value
             }
 
             'SharedMemory'

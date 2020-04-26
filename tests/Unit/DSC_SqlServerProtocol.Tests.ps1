@@ -78,8 +78,12 @@ try
                                 IsEnabled           = $true
                                 HasMultiIPAddresses = $true
                                 ProtocolProperties  = @{
-                                    ListenOnAllIPs = $true
-                                    KeepAlive      = 30000
+                                    ListenOnAllIPs = @{
+                                        Value = $true
+                                    }
+                                    KeepAlive      = @{
+                                        Value = 30000
+                                    }
                                 }
                             }
                         }
@@ -115,7 +119,9 @@ try
                                 IsEnabled           = $true
                                 HasMultiIPAddresses = $false
                                 ProtocolProperties  = @{
-                                    PipeName = $mockPipeName
+                                    PipeName = @{
+                                        Value = $mockPipeName
+                                    }
                                 }
                             }
                         }
