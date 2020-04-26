@@ -988,7 +988,7 @@ function Restart-SqlService
                 else
                 {
                     Write-Verbose -Message (
-                        $script:localizedData.NotOwnerOfClusterResource -f $ServerName, $sqlService.Name, $sqlService.OwnerNode
+                        $script:localizedData.NotOwnerOfClusterResource -f $env:COMPUTERNAME, $sqlService.Name, $sqlService.OwnerNode
                     ) -Verbose
                 }
             }
