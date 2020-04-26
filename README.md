@@ -1668,6 +1668,10 @@ for a SQL Server instance.
   is enabled that was previously disabled and no other protocol allows
   connecting to the instance then the parameter `SuppressRestart` must also
   be used.
+* When connecting to a Failover Cluster where the account `SYSTEM` does
+  not have access then the correct credential must be provided in
+  the built-in parameter `PSDscRunAsCredential`. If not the following error
+  can appear; `An internal error occurred`.
 
 #### Parameters
 
