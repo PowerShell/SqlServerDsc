@@ -152,6 +152,13 @@ function Get-TargetResource
     .PARAMETER RestartTimeout
         Timeout value for restarting the SQL Server services. The default value
         is 120 seconds.
+
+    .NOTES
+        If a protocol is disabled that prevents Restart-SqlService to contact the
+        instance to evaluate if it is a cluster then the parameter `SuppressRestart`
+        must be used to override the restart. Same if a protocol is enabled that
+        was previously disabled and no other protocol allows connecting to the
+        instance then the parameter `SuppressRestart` must also be used.
 #>
 function Set-TargetResource
 {
@@ -305,40 +312,7 @@ function Set-TargetResource
                 ServerName   = $ServerName
                 InstanceName = $InstanceName
                 Timeout      = $RestartTimeout
-            }
-
-            $enabledPropertyState = $propertyState.Where( { $_.ParameterName -eq 'Enabled' })
-
-            if ($enabledPropertyState)
-            {
-                if ($enabledPropertyState.Actual -eq $false -and $Enabled -eq $true)
-                {
-                    <#
-                        If the protocol was disabled and now being enabled, is not possible
-                        to connect to the instance to evaluate if it is a clustered instance.
-                        This is being tracked in issue #1174.
-                    #>
-                    $restartSqlServiceParameters['SkipClusterCheck'] = $true
-                }
-            }
-
-            <#
-                If the parameter Enabled is specified and set to $false,
-                or if the parameter Enabled is _not_ specified and the current
-                state of the protocol is disabled then skip waiting for the
-                server to come back online after restart.
-            #>
-            if ((
-                    $PSBoundParameters.ContainsKey('Enabled') `
-                        -and $Enabled -eq $false
-                ) -or (
-                    -not $PSBoundParameters.ContainsKey('Enabled') `
-                        -and $enabledPropertyState.Actual -eq $false
-                )
-            )
-            {
-                # If the protocol is disabled it is not possible to connect to the instance.
-                $restartSqlServiceParameters['SkipWaitForOnline'] = $true
+                OwnerNode    = $env:COMPUTERNAME
             }
 
             Restart-SqlService @restartSqlServiceParameters
