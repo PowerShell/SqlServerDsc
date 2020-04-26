@@ -14,6 +14,15 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - SqlSetup
   - A read only property `IsClustered` was added that can be used to determine
     if the instance is clustered.
+- SqlServerDsc.Common
+  - The helper function `Restart-SqlService` was improved to handle Failover
+    Clusters better. Now the SQL Server service will only be taken offline
+    and back online again if the service is online to begin with.
+  - The helper function `Restart-SqlServer` learned the new parameter
+    `OwnerNode`. The parameter `OwnerNode` takes an array of Cluster node
+    names. Using this parameter the cluster group will only be taken
+    offline and back online if the cluster group owner is one specified
+    in this parameter.
 
 ### Changed
 

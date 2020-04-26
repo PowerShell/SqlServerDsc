@@ -65,4 +65,6 @@ ConvertFrom-StringData @'
     UnableToCompareType = Unable to compare the type {0} as it is not handled by the Test-DscPropertyState cmdlet. (SQLCOMMON0064)
     ArrayDoesNotMatch = One or more values in an array does not match the desired state. Details of the changes are below. (SQLCOMMON0065)
     ParameterUsageWrong = None of the parameter(s) '{0}' may be used at the same time as any of the parameter(s) '{1}'.
+    ClusterResourceNotFoundOrOffline = The SQL Server cluster resource '{0}' was not found or the resource has been taken offline.
+    NotOwnerOfClusterResource = The node '{0}' is not the owner of the cluster resource '{1}'. Owner is node '{2}' so no restart is needed.
 '@

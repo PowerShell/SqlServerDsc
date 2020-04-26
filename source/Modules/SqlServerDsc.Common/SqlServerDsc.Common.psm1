@@ -850,6 +850,16 @@ function Import-SQLPSModule
         This need to be used for some resource, for example for the SqlServerNetwork
         resource when it's used to disable protocol.
 
+    .PARAMETER OwnerNode
+        Specifies a list of owner nodes names of a cluster groups. If the SQL Server
+        instance is a Failover Cluster instance then the cluster group will only
+        be taken offline and back online when the owner of the cluster group is
+        one of the nodes specified in this list. These node names specified in this
+        parameter must match the Owner property of the cluster resource, for example
+        @('sqltest10', 'SQLTEST11'). The names are case-insensitive.
+        If this parameter is not specified the cluster group will be taken offline
+        and back online regardless of owner.
+
     .EXAMPLE
         Restart-SqlService -ServerName localhost
 
@@ -861,6 +871,9 @@ function Import-SQLPSModule
 
     .EXAMPLE
         Restart-SqlService -ServerName CLU01 -Timeout 300
+
+    .EXAMPLE
+        Restart-SqlService -ServerName CLU01 -Timeout 300 -OwnerNode 'testclu10'
 #>
 function Restart-SqlService
 {
@@ -885,7 +898,11 @@ function Restart-SqlService
 
         [Parameter()]
         [Switch]
-        $SkipWaitForOnline
+        $SkipWaitForOnline,
+
+        [Parameter()]
+        [System.String[]]
+        $OwnerNode
     )
 
     if (-not $SkipClusterCheck.IsPresent)
@@ -897,113 +914,167 @@ function Restart-SqlService
         {
             # Get the cluster resources
             Write-Verbose -Message ($script:localizedData.GetSqlServerClusterResources) -Verbose
-            $sqlService = Get-CimInstance -Namespace root/MSCluster -ClassName MSCluster_Resource -Filter "Type = 'SQL Server'" |
-                Where-Object -FilterScript { $_.PrivateProperties.InstanceName -eq $serverObject.ServiceName }
 
-            Write-Verbose -Message ($script:localizedData.GetSqlAgentClusterResource) -Verbose
-            $agentService = $sqlService | Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
-                Where-Object -FilterScript { ($_.Type -eq 'SQL Server Agent') -and ($_.State -eq 2) }
+            $sqlService = Get-CimInstance -Namespace 'root/MSCluster' -ClassName 'MSCluster_Resource' -Filter "Type = 'SQL Server'" |
+                Where-Object -FilterScript {
+                    $_.PrivateProperties.InstanceName -eq $serverObject.ServiceName -and $_.State -eq 2
+                }
 
-        # Build a listing of resources being acted upon
-        $resourceNames = @($sqlService.Name, ($agentService | Select-Object -ExpandProperty Name)) -join ","
+            # If the cluster resource is found and online then continue.
+            if ($sqlService)
+            {
+                $isOwnerOfClusterResource = $true
 
-        # Stop the SQL Server and dependent resources
-        Write-Verbose -Message ($script:localizedData.BringClusterResourcesOffline -f $resourceNames) -Verbose
-        $sqlService | Invoke-CimMethod -MethodName TakeOffline -Arguments @{
-            Timeout = $Timeout
-        }
+                if ($PSBoundParameters.ContainsKey('OwnerNode') -and $sqlService.OwnerNode -notin $OwnerNode)
+                {
+                    $isOwnerOfClusterResource = $false
+                }
 
-        # Start the SQL server resource
-        Write-Verbose -Message ($script:localizedData.BringSqlServerClusterResourcesOnline) -Verbose
-        $sqlService | Invoke-CimMethod -MethodName BringOnline -Arguments @{
-            Timeout = $Timeout
-        }
+                if ($isOwnerOfClusterResource)
+                {
+                    Write-Verbose -Message ($script:localizedData.GetSqlAgentClusterResource) -Verbose
 
-        # Start the SQL Agent resource
-        if ($agentService)
-        {
-            Write-Verbose -Message ($script:localizedData.BringSqlServerAgentClusterResourcesOnline) -Verbose
-            $agentService | Invoke-CimMethod -MethodName BringOnline -Arguments @{
-                Timeout = $Timeout
+                    $agentService = $sqlService |
+                        Get-CimAssociatedInstance -ResultClassName MSCluster_Resource |
+                            Where-Object -FilterScript {
+                                $_.Type -eq 'SQL Server Agent' -and $_.State -eq 2
+                            }
+
+                    # Build a listing of resources being acted upon
+                    $resourceNames = @($sqlService.Name, ($agentService |
+                                Select-Object -ExpandProperty Name)) -join ","
+
+                    # Stop the SQL Server and dependent resources
+                    Write-Verbose -Message ($script:localizedData.BringClusterResourcesOffline -f $resourceNames) -Verbose
+
+                    $sqlService |
+                        Invoke-CimMethod -MethodName TakeOffline -Arguments @{
+                            Timeout = $Timeout
+                        }
+
+                    # Start the SQL server resource
+                    Write-Verbose -Message ($script:localizedData.BringSqlServerClusterResourcesOnline) -Verbose
+
+                    $sqlService |
+                        Invoke-CimMethod -MethodName BringOnline -Arguments @{
+                            Timeout = $Timeout
+                        }
+
+                    # Start the SQL Agent resource
+                    if ($agentService)
+                    {
+                        if ($PSBoundParameters.ContainsKey('OwnerNode') -and $agentService.OwnerNode -notin $OwnerNode)
+                        {
+                            $isOwnerOfClusterResource = $false
+                        }
+
+                        if ($isOwnerOfClusterResource)
+                        {
+                            Write-Verbose -Message ($script:localizedData.BringSqlServerAgentClusterResourcesOnline) -Verbose
+
+                            $agentService |
+                                Invoke-CimMethod -MethodName BringOnline -Arguments @{
+                                    Timeout = $Timeout
+                                }
+                        else
+                        {
+                            Write-Verbose -Message (
+                                $script:localizedData.NotOwnerOfClusterResource -f $ServerName, $agentService.Name, $agentService.OwnerNode
+                            )
+                        }
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.NotOwnerOfClusterResource -f $ServerName, $sqlService.Name, $sqlService.OwnerNode
+                    )
+                }
             }
+            else
+            {
+                Write-Warning -Message ($script:localizedData.ClusterResourceNotFoundOrOffline -f $serverObject.ServiceName)
+            }
+        }
+        else
+        {
+            # Not a cluster, restart the Windows service.
+            $restartWindowsService = $true
         }
     }
     else
     {
-        # Not a cluster, restart the Windows service.
+        # Should not check if a cluster, assume that a Windows service should be restarted.
         $restartWindowsService = $true
     }
-}
-else
-{
-    # Should not check if a cluster, assume that a Windows service should be restarted.
-    $restartWindowsService = $true
-}
 
-if ($restartWindowsService)
-{
-    if ($InstanceName -eq 'MSSQLSERVER')
+    if ($restartWindowsService)
     {
-        $serviceName = 'MSSQLSERVER'
-    }
-    else
-    {
-        $serviceName = 'MSSQL${0}' -f $InstanceName
-    }
-
-    Write-Verbose -Message ($script:localizedData.GetServiceInformation -f 'SQL Server') -Verbose
-    $sqlService = Get-Service -Name $serviceName
-
-    <#
-            Get all dependent services that are running.
-            There are scenarios where an automatic service is stopped and should not be restarted automatically.
-        #>
-    $agentService = $sqlService.DependentServices | Where-Object -FilterScript { $_.Status -eq 'Running' }
-
-    # Restart the SQL Server service
-    Write-Verbose -Message ($script:localizedData.RestartService -f 'SQL Server') -Verbose
-    $sqlService | Restart-Service -Force
-
-    # Start dependent services
-    $agentService | ForEach-Object {
-        Write-Verbose -Message ($script:localizedData.StartingDependentService -f $_.DisplayName) -Verbose
-        $_ | Start-Service
-    }
-}
-
-Write-Verbose -Message ($script:localizedData.WaitingInstanceTimeout -f $ServerName, $InstanceName, $Timeout) -Verbose
-
-if (-not $SkipWaitForOnline.IsPresent)
-{
-    $connectTimer = [System.Diagnostics.StopWatch]::StartNew()
-
-    do
-    {
-        # This call, if it fails, will take between ~9-10 seconds to return.
-        $testConnectionServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName -ErrorAction SilentlyContinue
-
-        # Make sure we have an SMO object to test Status
-        if ($testConnectionServerObject)
+        if ($InstanceName -eq 'MSSQLSERVER')
         {
-            if ($testConnectionServerObject.Status -eq 'Online')
-            {
-                break
-            }
+            $serviceName = 'MSSQLSERVER'
+        }
+        else
+        {
+            $serviceName = 'MSSQL${0}' -f $InstanceName
         }
 
-        # Waiting 2 seconds to not hammer the SQL Server instance.
-        Start-Sleep -Seconds 2
-    } until ($connectTimer.Elapsed.Seconds -ge $Timeout)
+        Write-Verbose -Message ($script:localizedData.GetServiceInformation -f 'SQL Server') -Verbose
+        $sqlService = Get-Service -Name $serviceName
 
-    $connectTimer.Stop()
+        <#
+                    Get all dependent services that are running.
+                    There are scenarios where an automatic service is stopped and should not be restarted automatically.
+                #>
+        $agentService = $sqlService.DependentServices |
+            Where-Object -FilterScript { $_.Status -eq 'Running' }
 
-    # Was the timeout period reach before able to connect to the SQL Server instance?
-    if (-not $testConnectionServerObject -or $testConnectionServerObject.Status -ne 'Online')
-    {
-        $errorMessage = $script:localizedData.FailedToConnectToInstanceTimeout -f $ServerName, $InstanceName, $Timeout
-        New-InvalidOperationException -Message $errorMessage
+        # Restart the SQL Server service
+        Write-Verbose -Message ($script:localizedData.RestartService -f 'SQL Server') -Verbose
+        $sqlService |
+            Restart-Service -Force
+
+        # Start dependent services
+        $agentService |
+            ForEach-Object {
+                Write-Verbose -Message ($script:localizedData.StartingDependentService -f $_.DisplayName) -Verbose
+                $_ | Start-Service
+            }
     }
-}
+
+    Write-Verbose -Message ($script:localizedData.WaitingInstanceTimeout -f $ServerName, $InstanceName, $Timeout) -Verbose
+
+    if (-not $SkipWaitForOnline.IsPresent)
+    {
+        $connectTimer = [System.Diagnostics.StopWatch]::StartNew()
+
+        do
+        {
+            # This call, if it fails, will take between ~9-10 seconds to return.
+            $testConnectionServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName -ErrorAction SilentlyContinue
+
+            # Make sure we have an SMO object to test Status
+            if ($testConnectionServerObject)
+            {
+                if ($testConnectionServerObject.Status -eq 'Online')
+                {
+                    break
+                }
+            }
+
+            # Waiting 2 seconds to not hammer the SQL Server instance.
+            Start-Sleep -Seconds 2
+        } until ($connectTimer.Elapsed.Seconds -ge $Timeout)
+
+        $connectTimer.Stop()
+
+        # Was the timeout period reach before able to connect to the SQL Server instance?
+        if (-not $testConnectionServerObject -or $testConnectionServerObject.Status -ne 'Online')
+        {
+            $errorMessage = $script:localizedData.FailedToConnectToInstanceTimeout -f $ServerName, $InstanceName, $Timeout
+            New-InvalidOperationException -Message $errorMessage
+        }
+    }
 }
 
 <#
