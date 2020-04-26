@@ -73,8 +73,12 @@ function Get-TargetResource
 
     Import-SQLPSModule
 
+    <#
+        Must connect to the local machine name because $ServerName can point
+        to a cluster instance or availability group listener.
+    #>
     $getServerProtocolObjectParameters = @{
-        ServerName   = $ServerName
+        ServerName   = $env:COMPUTERNAME
         Instance     = $InstanceName
         ProtocolName = $ProtocolName
     }
@@ -222,8 +226,12 @@ function Set-TargetResource
             $script:localizedData.SetDesiredState -f $protocolNameProperties.DisplayName, $InstanceName
         )
 
+        <#
+            Must connect to the local machine name because $ServerName can point
+            to a cluster instance or availability group listener.
+        #>
         $getServerProtocolObjectParameters = @{
-            ServerName   = $ServerName
+            ServerName   = $env:COMPUTERNAME
             Instance     = $InstanceName
             ProtocolName = $ProtocolName
         }
