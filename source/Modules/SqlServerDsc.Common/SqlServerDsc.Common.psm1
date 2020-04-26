@@ -976,6 +976,7 @@ function Restart-SqlService
                                 Invoke-CimMethod -MethodName BringOnline -Arguments @{
                                     Timeout = $Timeout
                                 }
+                        }
                         else
                         {
                             Write-Verbose -Message (
@@ -1020,12 +1021,13 @@ function Restart-SqlService
         }
 
         Write-Verbose -Message ($script:localizedData.GetServiceInformation -f 'SQL Server') -Verbose
+
         $sqlService = Get-Service -Name $serviceName
 
         <#
-                    Get all dependent services that are running.
-                    There are scenarios where an automatic service is stopped and should not be restarted automatically.
-                #>
+            Get all dependent services that are running.
+            There are scenarios where an automatic service is stopped and should not be restarted automatically.
+        #>
         $agentService = $sqlService.DependentServices |
             Where-Object -FilterScript { $_.Status -eq 'Running' }
 
