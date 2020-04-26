@@ -1651,6 +1651,64 @@ AlterAnyEndPoint and ViewServerState.
 
 All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlServerPermission).
 
+### SqlServerProtocol
+
+The `SqlServerProtocol` DSC resource will manage the SQL Server protocols
+for a SQL Server instance.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must have access to the SQLPS PowerShell module or the SqlServer
+  PowerShell module.
+* If a protocol is disabled that prevents the cmdlet `Restart-SqlService` to
+  contact the instance to evaluate if it is a cluster then the parameter
+  `SuppressRestart` must be used to override the restart. Same if a protocol
+  is enabled that was previously disabled and no other protocol allows
+  connecting to the instance then the parameter `SuppressRestart` must also
+  be used.
+
+#### Parameters
+
+* **`[String]` InstanceName** _(Key)_: Specifies the name of the SQL Server
+  instance to enable the protocol for.
+* **`[String]` ProtocolName** _(Key)_: Specifies the name of network protocol
+  to be configured. { 'TcpIp' | 'NamedPipes' | 'ShareMemory' }
+* **`[String]` ServerName** _(Write)_: Specifies the host name of the SQL
+  Server to be configured. If the SQL Server belongs to a cluster or
+  availability group specify the host name for the listener or cluster group.
+  Default value is `$env:COMPUTERNAME`.
+* **`[String]` Enabled** _(Write)_: Specifies if the protocol should be
+  enabled or disabled.
+* **`[String[]]` ListenOnAllIpAddresses** _(Write)_: Specifies to listen
+  on all IP addresses. Only used for the TCP/IP protocol, ignored for all
+  other protocols.
+* **`[String[]]` KeepAlive** _(Write)_: Specifies the keep alive duration
+  in milliseconds. Only used for the TCP/IP protocol, ignored for all other
+  protocols.
+* **`[String[]]` PipeName** _(Write)_: Specifies the name of the named pipe.
+  Only used for the Named Pipes protocol, ignored for all other protocols.
+* **`[String[]]` SuppressRestart** _(Write)_: If set to $true then the any
+  attempt by the resource to restart the services is suppressed. The default
+  value is $false.
+* **`[String[]]` RestartTimeout** _(Write)_: Timeout value for restarting
+  the SQL Server services. The default value is 120 seconds.
+
+#### Read-Only Properties from Get-TargetResource
+
+* **`[String]` HasMultiIPAddresses** _(Read)_: Returns $true or $false whether
+  the instance has multiple IP addresses or not.
+
+#### Examples
+
+* [Add server permission for a login](/source/Examples/Resources/SqlServerPermission/1-AddServerPermissionForLogin.ps1)
+* [Remove server permission for a login](/source/Examples/Resources/SqlServerPermission/2-RemoveServerPermissionForLogin.ps1)
+
+#### Known issues
+
+All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlServerPermission).
+
 ### SqlServerReplication
 
 This resource manage SQL Replication distribution and publishing.
