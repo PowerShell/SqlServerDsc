@@ -10,7 +10,7 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 ### Added
 
 - SqlServerDsc
-  - Added new resource SqlServerProtocol
+  - Added new resource SqlServerProtocol ([issue #1377](https://github.com/dsccommunity/SqlServerDsc/issues/1377)).
 - SqlSetup
   - A read only property `IsClustered` was added that can be used to determine
     if the instance is clustered.
