@@ -981,7 +981,7 @@ function Restart-SqlService
                         {
                             Write-Verbose -Message (
                                 $script:localizedData.NotOwnerOfClusterResource -f $ServerName, $agentService.Name, $agentService.OwnerNode
-                            )
+                            ) -Verbose
                         }
                     }
                 }
@@ -989,7 +989,7 @@ function Restart-SqlService
                 {
                     Write-Verbose -Message (
                         $script:localizedData.NotOwnerOfClusterResource -f $ServerName, $sqlService.Name, $sqlService.OwnerNode
-                    )
+                    ) -Verbose
                 }
             }
             else
