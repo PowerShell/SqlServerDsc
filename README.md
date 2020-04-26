@@ -1683,25 +1683,25 @@ for a SQL Server instance.
   Server to be configured. If the SQL Server belongs to a cluster or
   availability group specify the host name for the listener or cluster group.
   Default value is `$env:COMPUTERNAME`.
-* **`[String]` Enabled** _(Write)_: Specifies if the protocol should be
+* **`[Boolean]` Enabled** _(Write)_: Specifies if the protocol should be
   enabled or disabled.
-* **`[String[]]` ListenOnAllIpAddresses** _(Write)_: Specifies to listen
+* **`[Boolean]` ListenOnAllIpAddresses** _(Write)_: Specifies to listen
   on all IP addresses. Only used for the TCP/IP protocol, ignored for all
   other protocols.
-* **`[String[]]` KeepAlive** _(Write)_: Specifies the keep alive duration
+* **`[UInt16]` KeepAlive** _(Write)_: Specifies the keep alive duration
   in milliseconds. Only used for the TCP/IP protocol, ignored for all other
   protocols.
-* **`[String[]]` PipeName** _(Write)_: Specifies the name of the named pipe.
+* **`[String` PipeName** _(Write)_: Specifies the name of the named pipe.
   Only used for the Named Pipes protocol, ignored for all other protocols.
-* **`[String[]]` SuppressRestart** _(Write)_: If set to $true then the any
+* **`[Boolean]` SuppressRestart** _(Write)_: If set to $true then the any
   attempt by the resource to restart the services is suppressed. The default
   value is $false.
-* **`[String[]]` RestartTimeout** _(Write)_: Timeout value for restarting
+* **`[UInt16]` RestartTimeout** _(Write)_: Timeout value for restarting
   the SQL Server services. The default value is 120 seconds.
 
 #### Read-Only Properties from Get-TargetResource
 
-* **`[String]` HasMultiIPAddresses** _(Read)_: Returns $true or $false whether
+* **`[Boolean]` HasMultiIPAddresses** _(Read)_: Returns $true or $false whether
   the instance has multiple IP addresses or not.
 
 #### Examples
