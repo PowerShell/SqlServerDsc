@@ -147,12 +147,14 @@ function Copy-ItemWithRobocopy
         Write-Verbose -Message $script:localizedData.RobocopyNotUsingUnbufferedIo -Verbose
     }
 
-    $robocopyArgumentList = '{0} {1} {2} {3} {4} {5}' -f $quotedPath,
-    $quotedDestinationPath,
-    $robocopyArgumentCopySubDirectoriesIncludingEmpty,
-    $robocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource,
-    $robocopyArgumentUseUnbufferedIO,
-    $robocopyArgumentSilent
+    $robocopyArgumentList = '{0} {1} {2} {3} {4} {5}' -f @(
+        $quotedPath,
+        $quotedDestinationPath,
+        $robocopyArgumentCopySubDirectoriesIncludingEmpty,
+        $robocopyArgumentDeletesDestinationFilesAndDirectoriesNotExistAtSource,
+        $robocopyArgumentUseUnbufferedIO,
+        $robocopyArgumentSilent
+    )
 
     $robocopyStartProcessParameters = @{
         FilePath     = $robocopyExecutable.Name
