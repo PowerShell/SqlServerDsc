@@ -33,7 +33,7 @@ else
     .SYNOPSIS
         Disables Named Pipes.
 #>
-Configuration MSFT_SqlServerProtocol_DisableNamedPipes_Config
+Configuration DSC_SqlServerProtocol_DisableNamedPipes_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -56,7 +56,7 @@ Configuration MSFT_SqlServerProtocol_DisableNamedPipes_Config
     .SYNOPSIS
         Enabled Named Pipes.
 #>
-Configuration MSFT_SqlServerProtocol_EnableNamedPipes_Config
+Configuration DSC_SqlServerProtocol_EnableNamedPipes_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
