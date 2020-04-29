@@ -149,8 +149,8 @@ function Get-TargetResource
         ignored for all other protocols.
 
     .PARAMETER SuppressRestart
-        If set to $true then SQL Server and dependent services will be restarted
-        if a change to the configuration is made. The default value is $false.
+        If set to $true then the any attempt by the resource to restart the services
+        is suppressed. The default value is $false.
 
     .PARAMETER RestartTimeout
         Timeout value for restarting the SQL Server services. The default value
@@ -369,8 +369,8 @@ function Set-TargetResource
         ignored for all other protocols.
 
     .PARAMETER SuppressRestart
-        If set to $true then SQL Server and dependent services will be restarted
-        if a change to the configuration is made. The default value is $false.
+        If set to $true then the any attempt by the resource to restart the services
+        is suppressed. The default value is $false.
 
     .PARAMETER RestartTimeout
         Timeout value for restarting the SQL Server services. The default value
@@ -481,9 +481,9 @@ function Test-TargetResource
         Specifies the name of the named pipe. Only used for the Named Pipes protocol,
         ignored for all other protocols.
 
-    .PARAMETER RestartTimeout
-        If set to $true then SQL Server and dependent services will be restarted
-        if a change to the configuration is made. The default value is $false.
+    .PARAMETER SuppressRestart
+        If set to $true then the any attempt by the resource to restart the services
+        is suppressed. The default value is $false.
 
     .PARAMETER RestartTimeout
         Timeout value for restarting the SQL Server services. The default value
