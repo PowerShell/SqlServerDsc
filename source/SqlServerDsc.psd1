@@ -66,6 +66,7 @@
         'SqlServerMemory'
         'SqlServerNetwork'
         'SqlServerPermission'
+        'SqlServerProtocol'
         'SqlServerReplication'
         'SqlServerRole'
         'SqlServerSecureConnection'
