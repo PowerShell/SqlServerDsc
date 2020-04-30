@@ -121,6 +121,8 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   Protocols.
 * [**SqlServerPermission**](#sqlserverpermission) Grant or revoke permission on
   the SQL Server.
+* [**SqlServerProtocol**](#sqlserverprotocol) resource will manage the SQL Server
+  protocols for a SQL Server instance.
 * [**SqlServerReplication**](#sqlserverreplication) resource to manage SQL Replication
   distribution and publishing.
 * [**SqlServerRole**](#sqlserverrole) resource to manage SQL server roles.
@@ -1694,7 +1696,7 @@ for a SQL Server instance.
 * **`[String` PipeName** _(Write)_: Specifies the name of the named pipe.
   Only used for the Named Pipes protocol, ignored for all other protocols.
 * **`[Boolean]` SuppressRestart** _(Write)_: If set to $true then the any
-  attempt by the resource to restart the services is suppressed. The default
+  attempt by the resource to restart the service is suppressed. The default
   value is $false.
 * **`[UInt16]` RestartTimeout** _(Write)_: Timeout value for restarting
   the SQL Server services. The default value is 120 seconds.
