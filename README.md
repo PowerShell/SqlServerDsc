@@ -1660,8 +1660,8 @@ for a SQL Server instance.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
 * If a protocol is disabled that prevents the cmdlet `Restart-SqlService` to

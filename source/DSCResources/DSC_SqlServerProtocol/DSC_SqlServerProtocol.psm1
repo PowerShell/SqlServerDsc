@@ -19,8 +19,9 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
         are 'TcpIp', 'NamedPipes', or 'ShareMemory'.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Default value is
-        $env:COMPUTERNAME.
+        Specifies the host name of the SQL Server to be configured. If the SQL
+        Server belongs to a cluster or availability group specify the host name
+        for the listener or cluster group. Default value is `$env:COMPUTERNAME`.
 
     .PARAMETER SuppressRestart
         If set to $true then the any attempt by the resource to restart the service
@@ -145,8 +146,9 @@ function Get-TargetResource
         are 'TcpIp', 'NamedPipes', or 'ShareMemory'.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Default value is
-        $env:COMPUTERNAME.
+        Specifies the host name of the SQL Server to be configured. If the SQL
+        Server belongs to a cluster or availability group specify the host name
+        for the listener or cluster group. Default value is `$env:COMPUTERNAME`.
 
     .PARAMETER Enabled
         Specifies if the protocol should be enabled or disabled.
@@ -365,8 +367,9 @@ function Set-TargetResource
         are 'TcpIp', 'NamedPipes', or 'ShareMemory'.
 
     .PARAMETER ServerName
-        Specifies the host name of the SQL Server to be configured. Default value is
-        $env:COMPUTERNAME.
+        Specifies the host name of the SQL Server to be configured. If the SQL
+        Server belongs to a cluster or availability group specify the host name
+        for the listener or cluster group. Default value is `$env:COMPUTERNAME`.
 
     .PARAMETER Enabled
         Specifies if the protocol should be enabled or disabled.
