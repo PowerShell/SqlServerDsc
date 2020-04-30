@@ -1,6 +1,6 @@
 # Description
 
-The `SqlServerProtocol` DSC resource will manage the SQL Server protocols
+The `SqlServerProtocol` DSC resource manage the SQL Server protocols
 for a SQL Server instance.
 
 ## Requirements

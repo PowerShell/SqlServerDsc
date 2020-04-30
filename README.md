@@ -121,7 +121,7 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   Protocols.
 * [**SqlServerPermission**](#sqlserverpermission) Grant or revoke permission on
   the SQL Server.
-* [**SqlServerProtocol**](#sqlserverprotocol) resource will manage the SQL Server
+* [**SqlServerProtocol**](#sqlserverprotocol) resource manage the SQL Server
   protocols for a SQL Server instance.
 * [**SqlServerReplication**](#sqlserverreplication) resource to manage SQL Replication
   distribution and publishing.
@@ -1655,7 +1655,7 @@ All issues are not listed here, see [here for all open issues](https://github.co
 
 ### SqlServerProtocol
 
-The `SqlServerProtocol` DSC resource will manage the SQL Server protocols
+The `SqlServerProtocol` DSC resource manage the SQL Server protocols
 for a SQL Server instance.
 
 #### Requirements
