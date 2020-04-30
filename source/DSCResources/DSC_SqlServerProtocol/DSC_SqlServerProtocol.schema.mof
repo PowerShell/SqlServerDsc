@@ -8,7 +8,7 @@ class DSC_SqlServerProtocol : OMI_BaseResource
     [Write, Description("Specifies to listen on all IP addresses. Only used for the TCP/IP protocol, ignored for all other protocols.")] Boolean ListenOnAllIpAddresses;
     [Write, Description("Specifies the keep alive duration in milliseconds. Only used for the TCP/IP protocol, ignored for all other protocols.")] UInt16 KeepAlive;
     [Write, Description("Specifies the name of the named pipe. Only used for the Named Pipes protocol, ignored for all other protocols.")] String PipeName;
-    [Write, Description("If set to $true then the any attempt by the resource to restart the services is suppressed. The default value is $false.")] Boolean SuppressRestart;
+    [Write, Description("If set to $true then the any attempt by the resource to restart the service is suppressed. The default value is $false.")] Boolean SuppressRestart;
     [Write, Description("Timeout value for restarting the SQL Server services. The default value is 120 seconds.")] UInt16 RestartTimeout;
     [Read, Description("Returns $true or $false whether the instance has multiple IP addresses or not.")] Boolean HasMultiIPAddresses;
 };
