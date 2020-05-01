@@ -100,6 +100,7 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
     `GitVersion.yml` was changed to only raise minor version when the
     commit message contain the word `add`, `adds`, `minor`, `feature`,
     or `features`.
+  - Now code coverage is reported to Codecov.
 - SqlSetup
   - The property `SqlTempdbLogFileGrowth` and `SqlTempdbFileGrowth` now returns
     the correct values. Previously the value of the growth was wrongly
