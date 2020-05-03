@@ -62,6 +62,8 @@ class DSC_SqlSetup : OMI_BaseResource
     [Write, Description("Specifies the file growth increment of each tempdb data file in MB.")] UInt32 SqlTempdbFileGrowth;
     [Write, Description("Specifies the initial size of each tempdb log file in MB.")] UInt32 SqlTempdbLogFileSize;
     [Write, Description("Specifies the file growth increment of each tempdb data file in MB.")] UInt32 SqlTempdbLogFileGrowth;
+    [Write, Description("Specifies the state of the Named Pipes protocol for the SQL Server service. The value $true will enable the Named Pipes protocol and $false will disabled it.")] Boolean NpEnabled;
+    [Write, Description("Specifies the state of the TCP protocol for the SQL Server service. The value $true will enable the TCP protocol and $false will disabled it.")] Boolean TcpEnabled;
     [Write, Description("The timeout, in seconds, to wait for the setup process to finish. Default value is 7200 seconds (2 hours). If the setup process does not finish before this time, and error will be thrown.")] UInt32 SetupProcessTimeout;
     [Write, Description("Feature flags are used to toggle functionality on or off. See the documentation for what additional functionality exist through a feature flag.")] String FeatureFlag[];
     [Read, Description("Returns a boolean value of $true if the instance is clustered, otherwise it returns $false.")] Boolean IsClustered;

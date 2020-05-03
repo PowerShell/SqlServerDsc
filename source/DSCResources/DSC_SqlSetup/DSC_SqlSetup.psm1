@@ -605,6 +605,15 @@ function Get-TargetResource
     .PARAMETER SqlTempdbLogFileGrowth
         Specifies the file growth increment of each tempdb data file in MB.
 
+    .PARAMETER NpEnabled
+        Specifies the state of the Named Pipes protocol for the SQL Server service.
+        The value $true will enable the Named Pipes protocol and $false will disabled
+        it.
+
+    .PARAMETER TcpEnabled
+        Specifies the state of the TCP protocol for the SQL Server service. The
+        value $true will enable the TCP protocol and $false will disabled it.
+
     .PARAMETER SetupProcessTimeout
         The timeout, in seconds, to wait for the setup process to finish. Default
         value is 7200 seconds (2 hours). If the setup process does not finish before
@@ -859,6 +868,14 @@ function Set-TargetResource
         [Parameter()]
         [System.UInt32]
         $SqlTempdbLogFileGrowth,
+
+        [Parameter()]
+        [System.Boolean]
+        $NpEnabled,
+
+        [Parameter()]
+        [System.Boolean]
+        $TcpEnabled,
 
         [Parameter()]
         [System.UInt32]
@@ -1246,6 +1263,30 @@ function Set-TargetResource
                 $setupArguments['SQLSysAdminAccounts'] += $SQLSysAdminAccounts
             }
 
+            if ($PSBoundParameters.ContainsKey('NpEnabled'))
+            {
+                if ($NpEnabled)
+                {
+                    $setupArguments['NPENABLED'] = 1
+                }
+                else
+                {
+                    $setupArguments['NPENABLED'] = 0
+                }
+            }
+
+            if ($PSBoundParameters.ContainsKey('TcpEnabled'))
+            {
+                if ($TcpEnabled)
+                {
+                    $setupArguments['TCPENABLED'] = 1
+                }
+                else
+                {
+                    $setupArguments['TCPENABLED'] = 0
+                }
+            }
+
             $argumentVars += @(
                 'SecurityMode',
                 'SQLCollation',
@@ -1418,18 +1459,14 @@ function Set-TargetResource
     {
         if ($argument -eq 'ProductKey')
         {
-            $setupArguments += @{
-                'PID' = (Get-Variable -Name $argument -ValueOnly)
-            }
+            $setupArguments['PID'] = Get-Variable -Name $argument -ValueOnly
         }
         else
         {
             # If the argument contains a value, then add the argument to the setup argument list
             if (Get-Variable -Name $argument -ValueOnly)
             {
-                $setupArguments += @{
-                    $argument = (Get-Variable -Name $argument -ValueOnly)
-                }
+                $setupArguments[$argument] = Get-Variable -Name $argument -ValueOnly
             }
         }
     }
@@ -1781,6 +1818,19 @@ function Set-TargetResource
     .PARAMETER SqlTempdbLogFileGrowth
         Specifies the file growth increment of each tempdb data file in MB.
 
+    .PARAMETER NpEnabled
+        Specifies the state of the Named Pipes protocol for the SQL Server service.
+        The value $true will enable the Named Pipes protocol and $false will disabled
+        it.
+
+        Not used in Test-TargetResource.
+
+    .PARAMETER TcpEnabled
+        Specifies the state of the TCP protocol for the SQL Server service. The
+        value $true will enable the TCP protocol and $false will disabled it.
+
+        Not used in Test-TargetResource.
+
     .PARAMETER SetupProcessTimeout
         The timeout, in seconds, to wait for the setup process to finish. Default
         value is 7200 seconds (2 hours). If the setup process does not finish before
@@ -2026,6 +2076,14 @@ function Test-TargetResource
         [Parameter()]
         [System.UInt32]
         $SqlTempdbLogFileGrowth,
+
+        [Parameter()]
+        [System.Boolean]
+        $NpEnabled,
+
+        [Parameter()]
+        [System.Boolean]
+        $TcpEnabled,
 
         [Parameter()]
         [System.UInt32]

@@ -79,6 +79,8 @@ Configuration Example
             ASBackupDir            = 'C:\MSOLAP\Backup'
             ASTempDir              = 'C:\MSOLAP\Temp'
             SourcePath             = 'C:\InstallMedia\SQL2016RTM'
+            NpEnabled              = $true
+            TcpEnabled             = $true
             UpdateEnabled          = 'False'
             ForceReboot            = $false
 

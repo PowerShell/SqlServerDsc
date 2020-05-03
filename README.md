@@ -2126,6 +2126,12 @@ with different sizes and growths.
   of each tempdb log file in MB.
 * **`[UInt32]` SqlTempdbLogFileGrowth** _(Write)_: Specifies the file growth
   increment of each tempdb data file in MB.
+* **`[Boolean]` NpEnabled** _(Write)_: Specifies the state of the Named Pipes
+  protocol for the SQL Server service. The value $true will enable the Named
+  Pipes protocol and $false will disabled it.
+* **`[Boolean]` TcpEnabled** _(Write)_: Specifies the state of the TCP protocol
+  for the SQL Server service. The value $true will enable the TCP protocol and
+  $false will disabled it.
 * **`[UInt32]` SetupProcessTimeout** _(Write)_: The timeout, in seconds, to wait
   for the setup process to finish. Default value is 7200 seconds (2 hours). If
   the setup process does not finish before this time, and error will be thrown.

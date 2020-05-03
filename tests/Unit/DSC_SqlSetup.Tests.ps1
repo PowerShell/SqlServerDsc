@@ -1728,7 +1728,7 @@ try
             Assert-VerifiableMock
         }
 
-        Describe "SqlSetup\Set-TargetResource" -Tag 'Set' {
+        Describe 'SqlSetup\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 #region Setting up TestDrive:\
 
@@ -2237,6 +2237,8 @@ try
                             SqlTempDbFileGrowth = 128
                             SqlTempDbLogFileSize = 128
                             SqlTempDbLogFileGrowth = 128
+                            NpEnabled = $true
+                            TcpEnabled = $true
                         }
 
                         if ( $mockSqlMajorVersion -in (13,14) )
@@ -2271,6 +2273,8 @@ try
                             SqlTempDbFileGrowth = 128
                             SqlTempDbLogFileSize = 128
                             SqlTempDbLogFileGrowth = 128
+                            NpEnabled = 1
+                            TcpEnabled = 1
                         }
 
                         { Set-TargetResource @testParameters } | Should -Not -Throw
@@ -2282,7 +2286,7 @@ try
                         Assert-MockCalled -CommandName Import-SQLPSModule -Exactly -Times 1 -Scope It
                     }
 
-                    if( $mockSqlMajorVersion -in (13,14) )
+                    if ($mockSqlMajorVersion -in (13,14))
                     {
                         It 'Should throw when feature parameter contains ''SSMS'' when installing SQL Server 2016 and 2017' {
                             $testParameters += @{
