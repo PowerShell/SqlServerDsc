@@ -31,7 +31,8 @@ MSSQLSERVER | SQLENGINE,CONN,BC,SDK | - | Stopped
 
 All running Database Engine instances also have a SQL Server Agent that is started.
 
-The instance DSCSQLTEST support mixed authentication mode.
+The instance DSCSQLTEST support mixed authentication mode, and will have
+both Named Pipes and TCP/IP protocol enabled.
 
 >**Note:** Some services are stopped to save memory on the build worker. See the
 >column *State*.
@@ -378,6 +379,18 @@ ScriptDatabase4 | DscAdmin1
 **Run order:** 5
 
 **Depends on:** SqlSetup
+
+*The integration tests will clean up and not leave anything on the build
+worker.*
+
+## SqlServerProtocol
+
+**Run order:** 6
+
+**Depends on:** SqlSetup
+
+Depends that the instance `DSCSQLTEST` have the Named Pipes protocol
+enabled (SqlSetup is run with `NpEnabled = $true`).
 
 *The integration tests will clean up and not leave anything on the build
 worker.*
