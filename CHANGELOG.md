@@ -116,23 +116,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     or `features`.
   - Now code coverage is reported to Codecov, and a codecov.yml was added.
   - Updated to support DscResource.Common v0.7.1.
-- SqlSetup
-  - The property `SqlTempdbLogFileGrowth` and `SqlTempdbFileGrowth` now returns
-    the correct values. Previously the value of the growth was wrongly
-    divided by 1KB even if the value was in percent. Now the value for growth
-    is the sum of the average of MB and average of the percentage.
-  - The function `Get-TargetResource` was changed so that the property
-    `SQLTempDBDir` will now return the database `tempdb`'s property
-    `PrimaryFilePath`.
-  - BREAKING CHANGE: Logic that was under feature flag `DetectionSharedFeatures`
-    was made the default and old logic that was used to detect shared features
-    was removed ([issue #1290](https://github.com/dsccommunity/SqlServerDsc/issues/1290)).
-    This was implemented because the previous implementation did not work
-    fully with SQL Server 2017.
-  - Much of the code was refactored into units (functions) to be easier to test.
-    Due to the size of the code the unit tests ran for an abnormal long time,
-    after this refactoring the unit tests runs much quicker.
-- README.md
   - Changed to point to CONTRIBUTING.md on master branch to avoid "404 Page not found"
     ([issue #1508](https://github.com/dsccommunity/SqlServerDsc/issues/1508)).
 - SqlAlias
@@ -174,6 +157,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced the exception handling so it shows the inner exception error
     message that have the actual error that occurred.
   - Corrected the examples.
+- SqlSetup
+  - The property `SqlTempdbLogFileGrowth` and `SqlTempdbFileGrowth` now returns
+    the correct values. Previously the value of the growth was wrongly
+    divided by 1KB even if the value was in percent. Now the value for growth
+    is the sum of the average of MB and average of the percentage.
+  - The function `Get-TargetResource` was changed so that the property
+    `SQLTempDBDir` will now return the database `tempdb`'s property
+    `PrimaryFilePath`.
+  - BREAKING CHANGE: Logic that was under feature flag `DetectionSharedFeatures`
+    was made the default and old logic that was used to detect shared features
+    was removed ([issue #1290](https://github.com/dsccommunity/SqlServerDsc/issues/1290)).
+    This was implemented because the previous implementation did not work
+    fully with SQL Server 2017.
+  - Much of the code was refactored into units (functions) to be easier to test.
+    Due to the size of the code the unit tests ran for an abnormal long time,
+    after this refactoring the unit tests runs much quicker.
 
 ## [13.5.0] - 2020-04-12
 

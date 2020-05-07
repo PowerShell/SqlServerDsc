@@ -447,7 +447,7 @@ REVERT'
             }
         }
 
-        Describe 'SqlAGDatabase\Set-TargetResource' {
+        Describe 'SqlAGDatabase\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServerObject } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server1' }
                 Mock -CommandName Get-PrimaryReplicaServerObject -MockWith { return $mockServer2Object } -Verifiable -ParameterFilter { $AvailabilityGroup.PrimaryReplicaServerName -eq 'Server2' }
@@ -1087,6 +1087,10 @@ REVERT'
                 }
 
                 It 'Should throw the correct error when it fails to remove the database from the availability group' {
+                    $setTargetResourceParameters = $mockSetTargetResourceParameters.Clone()
+                    $setTargetResourceParameters.Ensure = 'Absent'
+                    $setTargetResourceParameters.DatabaseName = @('DB2')
+
                     Mock -CommandName Remove-SqlAvailabilityDatabase -MockWith { throw } -Verifiable
 
                     { Set-TargetResource @mockSetTargetResourceParameters } | Should -Throw 'The operation on the database ''DB2'' failed with the following errors: Failed to remove the database from the availability group.'
