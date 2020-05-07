@@ -2263,7 +2263,6 @@ try
                                 Features = $testParameters.Features
                                 SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                                 PID = $testParameters.ProductKey
-                                AgtSvcStartupType = 'Automatic'
                                 NpEnabled = 1
                             }
 
@@ -2301,7 +2300,6 @@ try
                                 Features = $testParameters.Features
                                 SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                                 PID = $testParameters.ProductKey
-                                AgtSvcStartupType = 'Automatic'
                                 TcpEnabled = 1
                             }
 
@@ -2340,7 +2338,6 @@ try
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                             PID = $testParameters.ProductKey
-                            AgtSvcStartupType = 'Automatic'
                             NpEnabled = 0
                         }
 
@@ -2378,7 +2375,6 @@ try
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
                             PID = $testParameters.ProductKey
-                            AgtSvcStartupType = 'Automatic'
                             TcpEnabled = 0
                         }
 
@@ -2629,7 +2625,6 @@ try
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
                             Action = 'Install'
-                            AgtSvcStartupType = 'Automatic'
                             InstanceName = 'MSSQLSERVER'
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
@@ -2731,7 +2726,6 @@ try
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
                             Action = 'Install'
-                            AGTSVCSTARTUPTYPE = 'Automatic'
                             InstanceName = 'MSSQLSERVER'
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'
@@ -2840,7 +2834,6 @@ try
                             Quiet = 'True'
                             IAcceptSQLServerLicenseTerms = 'True'
                             Action = 'Install'
-                            AGTSVCSTARTUPTYPE = 'Automatic'
                             InstanceName = 'TEST'
                             Features = $testParameters.Features
                             SQLSysAdminAccounts = 'COMPANY\sqladmin COMPANY\SQLAdmins COMPANY\User1'

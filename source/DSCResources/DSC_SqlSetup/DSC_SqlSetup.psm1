@@ -1009,9 +1009,7 @@ function Set-TargetResource
     if ($Action -in @('PrepareFailoverCluster','CompleteFailoverCluster','InstallFailoverCluster','Addnode'))
     {
         # This was brought over from the old module. Should be removed (breaking change).
-        $setupArguments += @{
-            SkipRules = 'Cluster_VerifyForErrors'
-        }
+        $setupArguments['SkipRules'] = 'Cluster_VerifyForErrors'
     }
 
     <#
@@ -1020,10 +1018,8 @@ function Set-TargetResource
     #>
     if ($Action -in @('CompleteFailoverCluster','InstallFailoverCluster'))
     {
-        $setupArguments += @{
-            FailoverClusterNetworkName = $FailoverClusterNetworkName
-            FailoverClusterGroup = $FailoverClusterGroupName
-        }
+        $setupArguments['FailoverClusterNetworkName'] = $FailoverClusterNetworkName
+        $setupArguments['FailoverClusterGroup'] = $FailoverClusterGroupName
     }
 
     # Perform disk mapping for specific cluster installation types
@@ -1140,9 +1136,7 @@ function Set-TargetResource
         }
 
         # Add the cluster disks as a setup argument
-        $setupArguments += @{
-            FailoverClusterDisks = ($failoverClusterDisks | Sort-Object)
-        }
+        $setupArguments['FailoverClusterDisks'] = ($failoverClusterDisks | Sort-Object)
     }
 
     # Determine network mapping for specific cluster installation types
@@ -1187,9 +1181,7 @@ function Set-TargetResource
         }
 
         # Add the networks to the installation arguments
-        $setupArguments += @{
-            FailoverClusterIPAddresses = $clusterIPAddresses
-        }
+        $setupArguments['FailoverClusterIPAddresses'] = $clusterIPAddresses
     }
 
     # Add standard install arguments
@@ -1238,9 +1230,7 @@ function Set-TargetResource
 
         if ($SecurityMode -eq 'SQL')
         {
-            $setupArguments += @{
-                SAPwd = $SAPwd.GetNetworkCredential().Password
-            }
+            $setupArguments['SAPwd'] = $SAPwd.GetNetworkCredential().Password
         }
 
         # Should not be passed when PrepareFailoverCluster is specified
@@ -1253,9 +1243,8 @@ function Set-TargetResource
                     system administrator. The username is stored in $PsDscContext.RunAsUser.
                 #>
                 Write-Verbose -Message ($script:localizedData.AddingFirstSystemAdministratorSqlServer -f $($PsDscContext.RunAsUser))
-                $setupArguments += @{
-                    SQLSysAdminAccounts =  @($PsDscContext.RunAsUser)
-                }
+
+                $setupArguments['SQLSysAdminAccounts'] = @($PsDscContext.RunAsUser)
             }
 
             if ($PSBoundParameters.ContainsKey('SQLSysAdminAccounts'))
@@ -1302,61 +1291,43 @@ function Set-TargetResource
         # tempdb : define SqlTempdbFileCount
         if ($PSBoundParameters.ContainsKey('SqlTempdbFileCount'))
         {
-            $setupArguments += @{
-                SqlTempdbFileCount = $SqlTempdbFileCount
-            }
+            $setupArguments['SqlTempdbFileCount'] = $SqlTempdbFileCount
         }
 
         # tempdb : define SqlTempdbFileSize
         if ($PSBoundParameters.ContainsKey('SqlTempdbFileSize'))
         {
-            $setupArguments += @{
-                SqlTempdbFileSize = $SqlTempdbFileSize
-            }
+            $setupArguments['SqlTempdbFileSize'] = $SqlTempdbFileSize
         }
 
         # tempdb : define SqlTempdbFileGrowth
         if ($PSBoundParameters.ContainsKey('SqlTempdbFileGrowth'))
         {
-            $setupArguments += @{
-                SqlTempdbFileGrowth = $SqlTempdbFileGrowth
-            }
+            $setupArguments['SqlTempdbFileGrowth'] = $SqlTempdbFileGrowth
         }
 
         # tempdb : define SqlTempdbLogFileSize
         if ($PSBoundParameters.ContainsKey('SqlTempdbLogFileSize'))
         {
-            $setupArguments += @{
-                SqlTempdbLogFileSize = $SqlTempdbLogFileSize
-            }
+            $setupArguments['SqlTempdbLogFileSize'] = $SqlTempdbLogFileSize
         }
 
         # tempdb : define SqlTempdbLogFileGrowth
         if ($PSBoundParameters.ContainsKey('SqlTempdbLogFileGrowth'))
         {
-            $setupArguments += @{
-                SqlTempdbLogFileGrowth = $SqlTempdbLogFileGrowth
-            }
+            $setupArguments['SqlTempdbLogFileGrowth'] = $SqlTempdbLogFileGrowth
         }
 
         if ($Action -in @('Install','Upgrade'))
         {
             if ($PSBoundParameters.ContainsKey('AgtSvcStartupType'))
             {
-                $setupArguments.AgtSvcStartupType = $AgtSvcStartupType
-            }
-            else
-            {
-                $setupArguments += @{
-                    AgtSvcStartupType = 'Automatic'
-                }
+                $setupArguments['AgtSvcStartupType'] = $AgtSvcStartupType
             }
 
             if ($PSBoundParameters.ContainsKey('SqlSvcStartupType'))
             {
-                $setupArguments += @{
-                    SqlSvcStartupType = $SqlSvcStartupType
-                }
+                $setupArguments['SqlSvcStartupType'] = $SqlSvcStartupType
             }
         }
     }
@@ -1375,17 +1346,15 @@ function Set-TargetResource
         {
             $setupArguments += (Get-ServiceAccountParameters -ServiceAccount $RSSvcAccount -ServiceType 'RS')
         }
+
         if ($PSBoundParameters.ContainsKey('RsSvcStartupType'))
         {
-            $setupArguments += @{
-                RsSvcStartupType = $RsSvcStartupType
-            }
+            $setupArguments['RsSvcStartupType'] = $RsSvcStartupType
         }
+
         if ($PSBoundParameters.ContainsKey('RSInstallMode'))
         {
-            $setupArguments += @{
-                RSINSTALLMODE = $RSInstallMode
-            }
+            $setupArguments['RSINSTALLMODE'] = $RSInstallMode
         }
     }
 
@@ -1420,9 +1389,8 @@ function Set-TargetResource
                     system administrator. The username is stored in $PsDscContext.RunAsUser.
                 #>
                 Write-Verbose -Message ($script:localizedData.AddingFirstSystemAdministratorAnalysisServices -f $($PsDscContext.RunAsUser))
-                $setupArguments += @{
-                    ASSysAdminAccounts =  @($PsDscContext.RunAsUser)
-                }
+
+                $setupArguments['ASSysAdminAccounts'] = @($PsDscContext.RunAsUser)
             }
 
             if ($PSBoundParameters.ContainsKey("ASSysAdminAccounts"))
@@ -1433,9 +1401,7 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('AsSvcStartupType'))
         {
-            $setupArguments += @{
-                AsSvcStartupType = $AsSvcStartupType
-            }
+            $setupArguments['AsSvcStartupType'] = $AsSvcStartupType
         }
     }
 
@@ -1448,9 +1414,7 @@ function Set-TargetResource
 
         if ($PSBoundParameters.ContainsKey('IsSvcStartupType'))
         {
-            $setupArguments += @{
-                IsSvcStartupType = $IsSvcStartupType
-            }
+            $setupArguments['IsSvcStartupType'] = $IsSvcStartupType
         }
     }
 

@@ -106,6 +106,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
   - Normalize parameter descriptive text for default values.
+- SqlSetup
+  - BREAKING CHANGE: Now if the parameter `AgtSvcStartupType` is not specified
+    in the configuration the resource will no longer by default add an
+    argument to `setup.exe` with a value of `Automatic` for the argument
+    `AGTSVCSTARTUPTYPE`. If the parameter `AgtSvcStartupType` is not specified
+    in the configuration there will be no setup argument added at all
+    ([issue #464](https://github.com/dsccommunity/SqlServerDsc/issues/464)).
 
 ### Fixed
 
