@@ -6,8 +6,6 @@ Import-Module -Name $script:resourceHelperModulePath
 
 $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
-$dom = [AppDomain]::CreateDomain('SqlServerReplication')
-
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -295,7 +293,6 @@ function Test-TargetResource
     return $result
 }
 
-#region helper functions
 function New-ServerConnection
 {
     [CmdletBinding()]
@@ -388,7 +385,17 @@ function New-DistributionPublisher
     )
 
     $rmo = Get-RmoAssembly -SqlMajorVersion $SqlMajorVersion
-    $distributorPublisher = New-object $rmo.GetType('Microsoft.SqlServer.Replication.DistributionPublisher') $PublisherName, $ServerConnection
+
+    try
+    {
+        $distributorPublisher = New-object $rmo.GetType('Microsoft.SqlServer.Replication.DistributionPublisher') $PublisherName, $ServerConnection
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'New-DistributionPublisher'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 
     return $distributorPublisher
 }
@@ -415,7 +422,16 @@ function Install-RemoteDistributor
         $script:localizedData.InstallRemoteDistributor -f $RemoteDistributor
     )
 
-    $ReplicationServer.InstallDistributor($RemoteDistributor, $AdminLinkCredentials.Password)
+    try
+    {
+        $ReplicationServer.InstallDistributor($RemoteDistributor, $AdminLinkCredentials.Password)
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Install-RemoteDistributor'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 }
 
 function Install-LocalDistributor
@@ -440,7 +456,16 @@ function Install-LocalDistributor
         $script:localizedData.InstallLocalDistributor
     )
 
-    $ReplicationServer.InstallDistributor($AdminLinkCredentials.Password, $DistributionDB)
+    try
+    {
+        $ReplicationServer.InstallDistributor($AdminLinkCredentials.Password, $DistributionDB)
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Install-LocalDistributor'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 }
 
 function Uninstall-Distributor
@@ -461,7 +486,16 @@ function Uninstall-Distributor
         $script:localizedData.UninstallDistributor
     )
 
-    $ReplicationServer.UninstallDistributor($UninstallWithForce)
+    try
+    {
+        $ReplicationServer.UninstallDistributor($UninstallWithForce)
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Uninstall-Distributor'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 }
 
 function Register-DistributorPublisher
@@ -506,9 +540,48 @@ function Register-DistributorPublisher
     $distributorPublisher.DistributionDatabase = $DistributionDBName
     $distributorPublisher.WorkingDirectory = $WorkingDirectory
     $distributorPublisher.PublisherSecurity.WindowsAuthentication = $UseTrustedConnection
-    $distributorPublisher.Create()
+
+    try
+    {
+        $distributorPublisher.Create()
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Register-DistributorPublisher'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 }
 
+<#
+    .SYNOPSIS
+        Returns a reference to the ConnectionInfo assembly.
+
+    .DESCRIPTION
+        Returns a reference to the ConnectionInfo assembly.
+
+    .PARAMETER SqlMajorVersion
+        Specifies the major version of the SQL Server instance, e.g. '14'.
+
+    .OUTPUTS
+        [System.Reflection.Assembly]
+
+        Returns a reference to the ConnectionInfo assembly.
+
+    .EXAMPLE
+        Get-ConnectionInfoAssembly -SqlMajorVersion '14'
+
+    .NOTES
+        This should normally work using Import-Module and New-Object instead of
+        using the method [System.Reflection.Assembly]::Load(). But due to a
+        missing assembly in the module SqlServer ('Microsoft.SqlServer.Rmo') we
+        cannot use this:
+
+        Import-Module SqlServer
+        $connectionInfo = New-Object -TypeName 'Microsoft.SqlServer.Management.Common.ServerConnection' -ArgumentList @('testclu01a\SQL2014')
+        # Missing assembly 'Microsoft.SqlServer.Rmo' in module SqlServer prevents this call from working.
+        $replication = New-Object -TypeName 'Microsoft.SqlServer.Replication.ReplicationServer' -ArgumentList @($connectionInfo)
+#>
 function Get-ConnectionInfoAssembly
 {
     [CmdletBinding()]
@@ -520,15 +593,53 @@ function Get-ConnectionInfoAssembly
         $SqlMajorVersion
     )
 
-    $connInfo = $dom.Load("Microsoft.SqlServer.ConnectionInfo, Version=$SqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
+    try
+    {
+        $connectionInfo = [System.Reflection.Assembly]::Load("Microsoft.SqlServer.ConnectionInfo, Version=$SqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
 
-    Write-Verbose -Message (
-        $script:localizedData.LoadAssembly -f $connInfo.FullName
-    )
+        Write-Verbose -Message (
+            $script:localizedData.LoadAssembly -f $connectionInfo.FullName
+        )
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Get-ConnectionInfoAssembly'
 
-    return $connInfo
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
+
+    return $connectionInfo
 }
 
+<#
+    .SYNOPSIS
+        Returns a reference to the RMO assembly.
+
+    .DESCRIPTION
+        Returns a reference to the RMO assembly.
+
+    .PARAMETER SqlMajorVersion
+        Specifies the major version of the SQL Server instance, e.g. '14'.
+
+    .OUTPUTS
+        [System.Reflection.Assembly]
+
+        Returns a reference to the RMO assembly.
+
+    .EXAMPLE
+        Get-RmoAssembly -SqlMajorVersion '14'
+
+    .NOTES
+        This should normally work using Import-Module and New-Object instead of
+        using the method [System.Reflection.Assembly]::Load(). But due to a
+        missing assembly in the module SqlServer ('Microsoft.SqlServer.Rmo') we
+        cannot use this:
+
+        Import-Module SqlServer
+        $connectionInfo = New-Object -TypeName 'Microsoft.SqlServer.Management.Common.ServerConnection' -ArgumentList @('testclu01a\SQL2014')
+        # Missing assembly 'Microsoft.SqlServer.Rmo' in module SqlServer prevents this call from working.
+        $replication = New-Object -TypeName 'Microsoft.SqlServer.Replication.ReplicationServer' -ArgumentList @($connectionInfo)
+#>
 function Get-RmoAssembly
 {
     [CmdletBinding()]
@@ -540,11 +651,20 @@ function Get-RmoAssembly
         $SqlMajorVersion
     )
 
-    $rmo = $dom.Load("Microsoft.SqlServer.Rmo, Version=$SqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
+    try
+    {
+        $rmo = [System.Reflection.Assembly]::Load("Microsoft.SqlServer.Rmo, Version=$SqlMajorVersion.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91")
 
-    Write-Verbose -Message (
-        $script:localizedData.LoadAssembly -f $rmo.FullName
-    )
+        Write-Verbose -Message (
+            $script:localizedData.LoadAssembly -f $rmo.FullName
+        )
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedInFunction -f 'Get-RmoAssembly'
+
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
 
     return $rmo
 }
@@ -567,6 +687,7 @@ function Get-SqlServerMajorVersion
     if (-not $sqlMajorVersion)
     {
         $errorMessage = $script:localizedData.FailedToDetectSqlVersion -f $InstanceName
+
         New-InvalidResultException -Message $errorMessage
     }
 
@@ -593,6 +714,5 @@ function Get-SqlLocalServerName
         return "$($env:COMPUTERNAME)\$InstanceName"
     }
 }
-#endregion
 
 Export-ModuleMember -Function *-TargetResource

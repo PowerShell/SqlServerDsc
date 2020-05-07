@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - A read only property `IsClustered` was added that can be used to determine
     if the instance is clustered.
   - Added the properties `NpEnabled` and `TcpEnabled` ([issue #1161](https://github.com/dsccommunity/SqlServerDsc/issues/1161)).
+- SqlServerReplication
+  - Add integration tests ([issue #755](https://github.com/dsccommunity/SqlServerDsc/issues/755)
 - SqlServerDsc.Common
   - The helper function `Restart-SqlService` was improved to handle Failover
     Clusters better. Now the SQL Server service will only be taken offline
@@ -41,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated the CI pipeline to use latest version of the module ModuleBuilder.
   - Changed to use the property `NuGetVersionV2` from GitVersion in the
     CI pipeline.
+  - The unit tests now run on PowerShell 7 to optimize the total run time.
+- SqlServerDsc.Common
+  - The helper function `Invoke-InstallationMediaCopy` was changed to
+    handle a breaking change in PowerShell 7 ([issue #1530](https://github.com/dsccommunity/SqlServerDsc/issues/1530)).
 - SqlAlwaysOnService
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
@@ -164,6 +170,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerPermission
   - The parameter `ServerName` now throws when passing an empty string or
     null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+- SqlServerReplication
+  - Enhanced the exception handling so it shows the inner exception error
+    message that have the actual error that occurred.
+  - Corrected the examples.
 
 ## [13.5.0] - 2020-04-12
 

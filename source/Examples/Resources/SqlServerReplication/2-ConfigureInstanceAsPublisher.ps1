@@ -18,10 +18,11 @@ Configuration Example
         SqlServerReplication 'publisher'
         {
             Ensure               = 'Present'
-            InstanceName         = 'PUBLISHER'
+            InstanceName         = 'PUBLISHER' # Or 'MSSQLSERVER' for default instance.
             AdminLinkCredentials = $SqlAdministratorCredential
             DistributorMode      = 'Remote'
-            RemoteDistributor    = 'distsqlsrv.company.local'
+            DistributionDBName   = 'MyDistribution'
+            RemoteDistributor    = 'distsqlsrv.company.local\DISTRIBUTOR'
             WorkingDirectory     = 'C:\Temp'
 
             PsDscRunAsCredential = $SqlAdministratorCredential

@@ -96,7 +96,7 @@ stages:
             inputs:
               filePath: './build.ps1'
               arguments: "-Tasks test -PesterScript 'tests/Unit'"
-              pwsh: false
+              pwsh: true
           - task: PublishTestResults@2
             displayName: 'Publish Test Results'
             condition: succeededOrFailed()
@@ -158,6 +158,7 @@ stages:
                   'tests/Integration/DSC_SqlServerRole.Integration.Tests.ps1'
                   'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
                   'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerReplication.Integration.Tests.ps1'
                   # Group 4
                   'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
                   # Group 5
@@ -223,6 +224,7 @@ stages:
                   'tests/Integration/DSC_SqlServerRole.Integration.Tests.ps1'
                   'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
                   'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerReplication.Integration.Tests.ps1'
                   # Group 4
                   'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
                   # Group 5

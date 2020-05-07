@@ -403,10 +403,8 @@ InModuleScope $script:subModuleName {
 
     Describe 'SqlServerDsc.Common\Invoke-InstallationMediaCopy' -Tag 'InvokeInstallationMediaCopy' {
         BeforeAll {
-            $mockSourcePathUNC = '\\server\share'
-            $mockSourcePathUNCWithLeaf = '\\server\share\leaf'
             $mockSourcePathGuid = 'cc719562-0f46-4a16-8605-9f8a47c70402'
-            $mockDestinationPath = 'TestDrive:\'
+            $mockDestinationPath = 'C:\Users\user\AppData\Local\Temp'
 
             $mockShareCredentialUserName = 'COMPANY\SqlAdmin'
             $mockShareCredentialPassword = 'dummyPassW0rd'
@@ -432,6 +430,10 @@ InModuleScope $script:subModuleName {
         }
 
         Context 'When invoking installation media copy, using SourcePath containing leaf' {
+            BeforeAll {
+                $mockSourcePathUNCWithLeaf = '\\server\share\leaf'
+            }
+
             It 'Should call the correct mocks' {
                 {
                     $invokeInstallationMediaCopyParameters = @{
@@ -442,11 +444,11 @@ InModuleScope $script:subModuleName {
                     Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
                 } | Should -Not -Throw
 
-                Assert-MockCalled -CommandName Connect-UncPath -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName New-Guid -Exactly -Times 0 -Scope 'It'
-                Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName Copy-ItemWithRobocopy -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName Disconnect-UncPath -Exactly -Times 1 -Scope 'It'
+                Assert-MockCalled -CommandName Connect-UncPath -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName New-Guid -Exactly -Times 0 -Scope It
+                Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Copy-ItemWithRobocopy -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Disconnect-UncPath -Exactly -Times 1 -Scope It
             }
 
             It 'Should return the correct destination path' {
@@ -458,11 +460,50 @@ InModuleScope $script:subModuleName {
 
                 $invokeInstallationMediaCopyResult = Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
 
-                $invokeInstallationMediaCopyResult | Should -Be ('{0}leaf' -f $mockDestinationPath)
+                $invokeInstallationMediaCopyResult | Should -Be ('{0}\leaf' -f $mockDestinationPath)
+            }
+        }
+
+        Context 'When invoking installation media copy, using SourcePath containing a second leaf' {
+            BeforeAll {
+                $mockSourcePathUNCWithLeaf = '\\server\share\leaf\secondleaf'
+            }
+
+            It 'Should call the correct mocks' {
+                {
+                    $invokeInstallationMediaCopyParameters = @{
+                        SourcePath = $mockSourcePathUNCWithLeaf
+                        SourceCredential = $mockShareCredential
+                    }
+
+                    Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
+                } | Should -Not -Throw
+
+                Assert-MockCalled -CommandName Connect-UncPath -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName New-Guid -Exactly -Times 0 -Scope It
+                Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Copy-ItemWithRobocopy -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Disconnect-UncPath -Exactly -Times 1 -Scope It
+            }
+
+            It 'Should return the correct destination path' {
+                $invokeInstallationMediaCopyParameters = @{
+                    SourcePath = $mockSourcePathUNCWithLeaf
+                    SourceCredential = $mockShareCredential
+                    PassThru = $true
+                }
+
+                $invokeInstallationMediaCopyResult = Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
+
+                $invokeInstallationMediaCopyResult | Should -Be ('{0}\secondleaf' -f $mockDestinationPath)
             }
         }
 
         Context 'When invoking installation media copy, using SourcePath without a leaf' {
+            BeforeAll {
+                $mockSourcePathUNC = '\\server\share'
+            }
+
             It 'Should call the correct mocks' {
                 {
                     $invokeInstallationMediaCopyParameters = @{
@@ -473,11 +514,11 @@ InModuleScope $script:subModuleName {
                     Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
                 } | Should -Not -Throw
 
-                Assert-MockCalled -CommandName Connect-UncPath -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName New-Guid -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName Copy-ItemWithRobocopy -Exactly -Times 1 -Scope 'It'
-                Assert-MockCalled -CommandName Disconnect-UncPath -Exactly -Times 1 -Scope 'It'
+                Assert-MockCalled -CommandName Connect-UncPath -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName New-Guid -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Get-TemporaryFolder -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Copy-ItemWithRobocopy -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Disconnect-UncPath -Exactly -Times 1 -Scope It
             }
 
             It 'Should return the correct destination path' {
@@ -488,7 +529,7 @@ InModuleScope $script:subModuleName {
                 }
 
                 $invokeInstallationMediaCopyResult = Invoke-InstallationMediaCopy @invokeInstallationMediaCopyParameters
-                $invokeInstallationMediaCopyResult | Should -Be ('{0}{1}' -f $mockDestinationPath, $mockSourcePathGuid)
+                $invokeInstallationMediaCopyResult | Should -Be ('{0}\{1}' -f $mockDestinationPath, $mockSourcePathGuid)
             }
         }
     }
@@ -524,7 +565,7 @@ InModuleScope $script:subModuleName {
                 Assert-MockCalled -CommandName New-SmbMapping -ParameterFilter {
                     $RemotePath -eq $mockSourcePathUNC `
                     -and $PSBoundParameters.ContainsKey('UserName') -eq $false
-                } -Exactly -Times 1 -Scope 'It'
+                } -Exactly -Times 1 -Scope It
             }
         }
 
@@ -542,7 +583,7 @@ InModuleScope $script:subModuleName {
                 Assert-MockCalled -CommandName New-SmbMapping -ParameterFilter {
                     $RemotePath -eq $mockSourcePathUNC `
                     -and $UserName -eq $mockShareCredentialUserName
-                } -Exactly -Times 1 -Scope 'It'
+                } -Exactly -Times 1 -Scope It
             }
         }
 
@@ -577,7 +618,7 @@ InModuleScope $script:subModuleName {
                     Disconnect-UncPath @disconnectUncPathParameters
                 } | Should -Not -Throw
 
-                Assert-MockCalled -CommandName Remove-SmbMapping -Exactly -Times 1 -Scope 'It'
+                Assert-MockCalled -CommandName Remove-SmbMapping -Exactly -Times 1 -Scope It
             }
         }
     }
@@ -594,7 +635,7 @@ InModuleScope $script:subModuleName {
                 $testPendingRestartResult = Test-PendingRestart
                 $testPendingRestartResult | Should -BeTrue
 
-                Assert-MockCalled -CommandName Get-RegistryPropertyValue -Exactly -Times 1 -Scope 'It'
+                Assert-MockCalled -CommandName Get-RegistryPropertyValue -Exactly -Times 1 -Scope It
             }
         }
 
@@ -607,7 +648,7 @@ InModuleScope $script:subModuleName {
                 $testPendingRestartResult = Test-PendingRestart
                 $testPendingRestartResult | Should -BeFalse
 
-                Assert-MockCalled -CommandName Get-RegistryPropertyValue -Exactly -Times 1 -Scope 'It'
+                Assert-MockCalled -CommandName Get-RegistryPropertyValue -Exactly -Times 1 -Scope It
             }
         }
     }
@@ -3339,7 +3380,7 @@ InModuleScope $script:subModuleName {
         Assert-VerifiableMock
     }
 
-    Describe 'ActiveDirectoryDsc.Common\Compare-ResourcePropertyState' {
+    Describe 'ActiveDirectoryDsc.Common\Compare-ResourcePropertyState' -Tag 'CompareResourcePropertyState' {
         Context 'When one property is in desired state' {
             BeforeAll {
                 $mockCurrentValues = @{
@@ -3359,10 +3400,12 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 1
-                $compareTargetResourceStateResult.ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult.Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult.Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
             }
         }
 
@@ -3387,14 +3430,18 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 2
-                $compareTargetResourceStateResult[0].ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult[0].Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].InDesiredState | Should -BeTrue
-                $compareTargetResourceStateResult[1].ParameterName | Should -Be 'Location'
-                $compareTargetResourceStateResult[1].Expected | Should -Be 'Sweden'
-                $compareTargetResourceStateResult[1].Actual | Should -Be 'Sweden'
-                $compareTargetResourceStateResult[1].InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'Location'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'Sweden'
+                $property.Actual | Should -Be 'Sweden'
+                $property.InDesiredState | Should -BeTrue
             }
         }
 
@@ -3417,10 +3464,12 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 1
-                $compareTargetResourceStateResult.ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult.Expected | Should -Be 'APP01'
-                $compareTargetResourceStateResult.Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult.InDesiredState | Should -BeFalse
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'APP01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeFalse
             }
         }
 
@@ -3445,14 +3494,18 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 2
-                $compareTargetResourceStateResult[0].ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult[0].Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].InDesiredState | Should -BeTrue
-                $compareTargetResourceStateResult[1].ParameterName | Should -Be 'Location'
-                $compareTargetResourceStateResult[1].Expected | Should -Be 'Europe'
-                $compareTargetResourceStateResult[1].Actual | Should -Be 'Sweden'
-                $compareTargetResourceStateResult[1].InDesiredState | Should -BeFalse
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'Location'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'Europe'
+                $property.Actual | Should -Be 'Sweden'
+                $property.InDesiredState | Should -BeFalse
             }
         }
 
@@ -3475,10 +3528,12 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 1
-                $compareTargetResourceStateResult.ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult.Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult.Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
             }
         }
 
@@ -3506,10 +3561,12 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 1
-                $compareTargetResourceStateResult.ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult.Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult.Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
             }
         }
 
@@ -3539,14 +3596,18 @@ InModuleScope $script:subModuleName {
 
                 $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
                 $compareTargetResourceStateResult | Should -HaveCount 2
-                $compareTargetResourceStateResult[0].ParameterName | Should -Be 'ComputerName'
-                $compareTargetResourceStateResult[0].Expected | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].Actual | Should -Be 'DC01'
-                $compareTargetResourceStateResult[0].InDesiredState | Should -BeTrue
-                $compareTargetResourceStateResult[1].ParameterName | Should -Be 'Location'
-                $compareTargetResourceStateResult[1].Expected | Should -Be 'Europe'
-                $compareTargetResourceStateResult[1].Actual | Should -Be 'Sweden'
-                $compareTargetResourceStateResult[1].InDesiredState | Should -BeFalse
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'ComputerName'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'DC01'
+                $property.Actual | Should -Be 'DC01'
+                $property.InDesiredState | Should -BeTrue
+
+                $property = $compareTargetResourceStateResult.Where({$_.ParameterName -eq 'Location'})
+                $property | Should -Not -BeNulLorEmpty
+                $property.Expected | Should -Be 'Europe'
+                $property.Actual | Should -Be 'Sweden'
+                $property.InDesiredState | Should -BeFalse
             }
         }
 

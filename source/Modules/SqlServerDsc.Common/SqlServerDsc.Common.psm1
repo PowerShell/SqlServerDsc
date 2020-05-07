@@ -241,12 +241,17 @@ function Invoke-InstallationMediaCopy
 
     Connect-UncPath -RemotePath $SourcePath -SourceCredential $SourceCredential
 
+    $SourcePath = $SourcePath.TrimEnd('/\')
     <#
         Create a destination folder so the media files aren't written
         to the root of the Temp folder.
     #>
-    $mediaDestinationFolder = Split-Path -Path $SourcePath -Leaf
-    if (-not $mediaDestinationFolder )
+    $serverName, $shareName, $leafs = ($SourcePath -replace '\\\\') -split '\\'
+    if ($leafs)
+    {
+        $mediaDestinationFolder = $leafs | Select-Object -Last 1
+    }
+    else
     {
         $mediaDestinationFolder = New-Guid | Select-Object -ExpandProperty Guid
     }

@@ -145,7 +145,7 @@ The integration test will leave a database for other integration tests to
 use.
 
 Database | Collation
---- | --- | ---
+--- | ---
 Database1 | Finnish_Swedish_CI_AS
 
 ## SqlDatabaseDefaultLocation
@@ -331,6 +331,17 @@ tests to use.
 Name | Algorithm | Password
 --- | --- | ---
 AsymmetricKey1 | RSA_2048 | P@ssw0rd1
+
+## SqlServerReplication
+
+**Run order:** 3
+
+**Depends on:** SqlSetup
+
+This integration tests depends on that the default instance (`MSSQLSERVER`)
+and the named instance `DSCSQLTEST` have the feature `REPLICATION` installed.
+
+The integration test will not leave anything on any instance.
 
 ## SqlScript
 
