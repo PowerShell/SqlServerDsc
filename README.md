@@ -582,6 +582,8 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
 
 * Target machine must be running Windows Server 2008 R2 or later.
 * Target machine must be running SQL Server Database Engine 2008 or later.
+* Valid values per SQL Server version for the parameter `CompatibilityLevel`
+  can be found in the article [ALTER DATABASE (Transact-SQL) Compatibility Level](https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level).
 
 #### Parameters
 
@@ -591,6 +593,10 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
   Default value is `$env:COMPUTERNAME`.
 * **`[String]` Collation** _(Write)_: The name of the SQL collation to use
   for the new database. Default value is server collation.
+* **`[String]` CompatibilityLevel** _(Write)_: Specifies the version of the SQL
+  Database Compatibility Level to use for the specified database.
+  { Version80 | Version90 | Version100 | Version110 | Version120 | Version130 |
+  Version140 | Version150 }
 * **`[String]` Ensure** _(Write)_: When set to 'Present', the database will be created.
   When set to 'Absent', the database will be dropped. { *Present* | Absent }.
 
