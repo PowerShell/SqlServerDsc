@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerDsc
   - BREAKING CHANGE: Removed resource _SqlServerNetwork_. The functionality
     is now covered by the resources _SqlServerProtocol_ and _SqlServerProtocolTcpIp_.
+  - BREAKING CHANGE: Removed resource _SqlServerEndpointState_. The functionality
+    is now part of the DSC resource _SqlServerEndpoint_ ([issue #968](https://github.com/dsccommunity/SqlServerDsc/issues/968)).
 
 ### Added
 
@@ -163,9 +165,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The parameter `ServerName` now throws when passing an empty string or
     null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerEndpoint
-  - The parameter `ServerName` now throws when passing an empty string or
-    null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
-- SqlServerEndpointState
   - The parameter `ServerName` now throws when passing an empty string or
     null value (part of [issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
 - SqlServerPermission
