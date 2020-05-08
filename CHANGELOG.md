@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerDsc
   - Added new resource SqlServerProtocol ([issue #1377](https://github.com/dsccommunity/SqlServerDsc/issues/1377)).
   - Added new resource SqlServerProtocolTcpIp ([issue #1378](https://github.com/dsccommunity/SqlServerDsc/issues/1378)).
+- SqlServerEndpoint
+  - BREAKING CHANGE: A new required property `EndpointType` was added to
+    support different types of endpoints in the future. For now the only
+    endpoint type that is supported is the database mirror endpoint type
+    (`DatabaseMirroring`).
+  - Added the property `State` to be able to specify if the endpoint should
+    be running, stopped, or disabled. _This property was moved from the now_
+    _removed DSC resource `SqlServerEndpointState`_.
 - SqlSetup
   - A read only property `IsClustered` was added that can be used to determine
     if the instance is clustered.
@@ -89,6 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerDatabaseMail
   - Normalize parameter descriptive text for default values.
 - SqlServerEndpoint
+  - BREAKING CHANGE: Now the properties are only enforced if they are
+    specified in the configuration.
   - Normalize parameter descriptive text for default values.
 - SqlServerEndpointPermission
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and

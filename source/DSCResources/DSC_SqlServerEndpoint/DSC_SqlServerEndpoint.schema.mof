@@ -2,10 +2,12 @@
 class DSC_SqlServerEndpoint : OMI_BaseResource
 {
     [Key, Description("The name of the endpoint.")] String EndpointName;
-    [Write, Description("If the endpoint should be present or absent. Default values is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
-    [Write, Description("The network port the endpoint is listening on. Default value is 5022.")] Uint16 Port;
-    [Write, Description("The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String ServerName;
     [Key, Description("The name of the SQL instance to be configured.")] String InstanceName;
-    [Write, Description("The network IP address the endpoint is listening on. Default the endpoint will listen on any valid IP address.")] String IpAddress;
+    [Required, Description("Specifies the type of endpoint. Currently the only type that is supported is the Database Mirror type."), ValueMap{"DatabaseMirroring"}, Values{"DatabaseMirroring"}] String EndpointType;
+    [Write, Description("If the endpoint should be present or absent. Default values is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Write, Description("The network port the endpoint is listening on. Default value is 5022, but default value is only used during endpoint creation, it is not enforce.")] Uint16 Port;
+    [Write, Description("The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String ServerName;
+    [Write, Description("The network IP address the endpoint is listening on. Default the endpoint will listen on any valid IP address. The default value is only used during endpoint creation, it is not enforce.")] String IpAddress;
     [Write, Description("The owner of the endpoint. Default is the login used for the creation.")] String Owner;
+    [Write, Description("Specifies the state of the endpoint. Valid states are Started, Stopped, or Disabled. When an endpoint is created and the state is not specified then the endpoint will be started after it is created. The state will not be enforced unless the parameter is specified."), ValueMap{"Started","Stopped","Disabled"}, Values{"Started","Stopped","Disabled"}] String State;
 };

@@ -1307,17 +1307,26 @@ the resource [**SqlServerEndpointPermission**](#sqlserverendpointpermission).
 #### Parameters
 
 * **`[String]` EndpointName** _(Key)_: The name of the endpoint.
+* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
+* **`[String]` EndpointType** _(Required)_: Specifies the type of endpoint. Currently
+  the only type that is supported is the Database Mirror type. { *DatabaseMirroring* }.
 * **`[String]` Ensure** _(Write)_: If the endpoint should be present or absent.
   Default values is 'Present'. { *Present* | Absent }.
 * **`[Uint16]` Port** _(Write)_: The network port the endpoint is listening on.
-  Default value is 5022.
+  Default value is 5022, but default value is only used during endpoint creation,
+  it is not enforce.
 * **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
   Default value is $env:COMPUTERNAME.
-* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
 * **`[String]` IpAddress** _(Write)_: The network IP address the endpoint is listening
   on. Default value is '0.0.0.0' which means listen on any valid IP address.
+  The default value is only used during endpoint creation, it is not enforce.
 * **`[String]` Owner** _(Write)_: The owner of the endpoint. Default is the
   login used for the creation.
+* **`[String]` State** _(Write)_: Specifies the state of the endpoint. Valid
+  states are Started, Stopped, or Disabled. When an endpoint is created and
+  the state is not specified then the endpoint will be started after it is
+  created. The state will not be enforced unless the parameter is specified.
+  { Started | Stopped | Disabled }.
 
 #### Examples
 
@@ -1381,8 +1390,7 @@ This resource is used to set the state of an endpoint.
   Default value is $env:COMPUTERNAME.
 * **`[String]` Name** _(Key)_: The name of the endpoint.
 * **`[String]` State** _(Write)_: The state of the endpoint. Valid states are Started,
-  Stopped or Disabled. Default value is 'Started'.
-  { *Started* | Stopped | Disabled }.
+  Stopped or Disabled. { Started | Stopped | Disabled }.
 
 #### Examples
 

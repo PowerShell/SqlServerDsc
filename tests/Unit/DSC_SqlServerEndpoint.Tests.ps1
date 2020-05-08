@@ -75,12 +75,14 @@ try
         $mockDynamicEndpointListenerPort = $mockEndpointListenerPort
         $mockDynamicEndpointListenerIpAddress = $mockEndpointListenerIpAddress
         $mockDynamicEndpointOwner = $mockEndpointOwner
+        $mockDynamicEndpointState = 'Started'
 
         $mockEndpointObject = {
             # TypeName: Microsoft.SqlServer.Management.Smo.Endpoint
             return New-Object -TypeName Object |
                 Add-Member -MemberType NoteProperty -Name 'Name' -Value $mockDynamicEndpointName -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'EndpointType' -Value $mockDynamicEndpointType -PassThru |
+                Add-Member -MemberType NoteProperty -Name 'EndpointState' -Value $mockDynamicEndpointState -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'ProtocolType' -Value $null -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'Owner' -Value $mockDynamicEndpointOwner -PassThru |
                 Add-Member -MemberType ScriptProperty -Name 'Protocol' -Value {
@@ -121,6 +123,12 @@ try
                 Add-Member -MemberType ScriptMethod -Name 'Start' -Value {
                     $script:mockMethodStartRan = $true
                 } -PassThru |
+                Add-Member -MemberType ScriptMethod -Name 'Stop' -Value {
+                    $script:mockMethodStopRan = $true
+                } -PassThru |
+                Add-Member -MemberType ScriptMethod -Name 'Disable' -Value {
+                    $script:mockMethodDisableRan = $true
+                } -PassThru |
                 Add-Member -MemberType ScriptMethod -Name 'Create' -Value {
                     $script:mockMethodCreateRan = $true
 
@@ -155,8 +163,9 @@ try
 
         $defaultParameters = @{
             InstanceName = $mockInstanceName
-            ServerName = $mockServerName
+            ServerName   = $mockServerName
             EndpointName = $mockEndpointName
+            EndpointType = $mockEndpointType
         }
 
         Describe 'DSC_SqlServerEndpoint\Get-TargetResource' -Tag 'Get' {
@@ -224,7 +233,7 @@ try
 
                 Context 'When endpoint exist but with wrong endpoint type' {
                     It 'Should throw the correct error' {
-                        { Get-TargetResource @testParameters } | Should -Throw ($script:localizedData.EndpointFoundButWrongType -f $testParameters.EndpointName)
+                        { Get-TargetResource @testParameters } | Should -Throw ($script:localizedData.EndpointFoundButWrongType -f $testParameters.EndpointName, $mockOtherEndpointType, $mockEndpointType)
                     }
                 }
 
@@ -297,6 +306,18 @@ try
                     It 'Should return that desired state is absent' {
                         $testParameters.Add('Ensure', 'Present')
                         $testParameters.Add('Port', $mockEndpointListenerPort)
+
+                        $result = Test-TargetResource @testParameters
+                        $result | Should -Be $false
+
+                        Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When State is not in desired state' {
+                    It 'Should return that desired state is absent' {
+                        $testParameters.Add('Ensure', 'Present')
+                        $testParameters.Add('State', 'Stopped')
 
                         $result = Test-TargetResource @testParameters
                         $result | Should -Be $false
@@ -566,6 +587,108 @@ try
                     Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
                 }
 
+                $script:mockMethodCreateRan = $false
+                $script:mockMethodStartRan = $false
+                $script:mockMethodAlterRan = $false
+                $script:mockMethodDropRan = $false
+                $script:mockMethodStopRan = $false
+                $script:mockMethodDisableRan = $false
+
+                $mockDynamicEndpointState = 'Stopped'
+
+                It 'Should call Start() method when State is not ''Started''' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                            Port = $mockEndpointListenerPort
+                            IpAddress = $mockEndpointListenerIpAddress
+                            State = 'Stopped'
+                        }
+                    } -Verifiable
+
+                    $testParameters.Add('Ensure', 'Present')
+                    $testParameters.Add('State', 'Started')
+
+                    { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                    $script:mockMethodCreateRan | Should -Be $false
+                    $script:mockMethodStartRan | Should -Be $true
+                    $script:mockMethodStopRan | Should -Be $false
+                    $script:mockMethodAlterRan | Should -Be $false
+                    $script:mockMethodDropRan | Should -Be $false
+                    $script:mockMethodDisableRan | Should -Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+
+                $script:mockMethodCreateRan = $false
+                $script:mockMethodStartRan = $false
+                $script:mockMethodAlterRan = $false
+                $script:mockMethodDropRan = $false
+                $script:mockMethodStopRan = $false
+                $script:mockMethodDisableRan = $false
+
+                $mockDynamicEndpointState = 'Running'
+
+                It 'Should call Stop() method when State is not ''Stopped''' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                            Port = $mockEndpointListenerPort
+                            IpAddress = $mockEndpointListenerIpAddress
+                            State = 'Running'
+                        }
+                    } -Verifiable
+
+                    $testParameters.Add('Ensure', 'Present')
+                    $testParameters.Add('State', 'Stopped')
+
+                    { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                    $script:mockMethodCreateRan | Should -Be $false
+                    $script:mockMethodStartRan | Should -Be $false
+                    $script:mockMethodStopRan | Should -Be $true
+                    $script:mockMethodAlterRan | Should -Be $false
+                    $script:mockMethodDropRan | Should -Be $false
+                    $script:mockMethodDisableRan | Should -Be $false
+
+                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+
+                $script:mockMethodCreateRan = $false
+                $script:mockMethodStartRan = $false
+                $script:mockMethodAlterRan = $false
+                $script:mockMethodDropRan = $false
+                $script:mockMethodStopRan = $false
+                $script:mockMethodDisableRan = $false
+
+                $mockDynamicEndpointState = 'Running'
+
+                It 'Should call Disable() method when State is not ''Disabled''' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return @{
+                            Ensure = 'Present'
+                            Port = $mockEndpointListenerPort
+                            IpAddress = $mockEndpointListenerIpAddress
+                            State = 'Running'
+                        }
+                    } -Verifiable
+
+                    $testParameters.Add('Ensure', 'Present')
+                    $testParameters.Add('State', 'Disabled')
+
+                    { Set-TargetResource @testParameters } | Should -Not -Throw
+
+                    $script:mockMethodCreateRan | Should -Be $false
+                    $script:mockMethodStartRan | Should -Be $false
+                    $script:mockMethodStopRan | Should -Be $false
+                    $script:mockMethodAlterRan | Should -Be $false
+                    $script:mockMethodDropRan | Should -Be $false
+                    $script:mockMethodDisableRan | Should -Be $true
+
+                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+                }
+
                 # Make sure the mock does not return the correct endpoint
                 $mockDynamicEndpointName = $mockOtherEndpointName
 
@@ -613,7 +736,7 @@ try
                 }
             }
 
-            Context '    ' {
+            Context 'When the system is in the desired state' {
                 # Make sure the mock do return the correct endpoint
                 $mockDynamicEndpointName = $mockEndpointName
                 $mockDynamicEndpointListenerPort = $mockEndpointListenerPort

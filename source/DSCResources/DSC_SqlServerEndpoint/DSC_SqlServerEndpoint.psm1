@@ -13,11 +13,23 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
     .PARAMETER EndpointName
         The name of the endpoint.
 
+    .PARAMETER EndpointType
+        Specifies the type of endpoint. Currently the only type that is supported
+        is the Database Mirror type.
+
     .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
         The name of the SQL instance to be configured.
+
+    .NOTES
+        Get-TargetResource throws an error when the endpoint does not match the
+        endpoint type. This is because the endpoint cannot be changed once
+        the endpoint have been created and manual intervention is needed.
+        Also Set-TargetResource and Test-TargetResource depends on that the
+        Get-TargetResource does this check so we don't need to have the same
+        check in those functions as well.
 #>
 function Get-TargetResource
 {
@@ -28,6 +40,11 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $EndpointName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('DatabaseMirroring')]
+        [System.String]
+        $EndpointType,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -51,9 +68,11 @@ function Get-TargetResource
         Port         = ''
         IpAddress    = ''
         Owner        = ''
+        State        = $null
     }
 
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+
     if ($sqlServerObject)
     {
         Write-Verbose -Message (
@@ -63,9 +82,9 @@ function Get-TargetResource
         $endpointObject = $sqlServerObject.Endpoints[$EndpointName]
         if ($endpointObject.Name -eq $EndpointName)
         {
-            if ($sqlServerObject.Endpoints[$EndPointName].EndpointType -ne 'DatabaseMirroring')
+            if ($endpointObject.EndpointType -ne $EndpointType)
             {
-                $errorMessage = $script:localizedData.EndpointFoundButWrongType -f $EndpointName
+                $errorMessage = $script:localizedData.EndpointFoundButWrongType -f $EndpointName, $endpointObject.EndpointType, $EndpointType
                 New-InvalidOperationException -Message $errorMessage
             }
 
@@ -74,14 +93,7 @@ function Get-TargetResource
             $getTargetResourceReturnValues.Port = $endpointObject.Protocol.Tcp.ListenerPort
             $getTargetResourceReturnValues.IpAddress = $endpointObject.Protocol.Tcp.ListenerIPAddress
             $getTargetResourceReturnValues.Owner = $endpointObject.Owner
-        }
-        else
-        {
-            $getTargetResourceReturnValues.Ensure = 'Absent'
-            $getTargetResourceReturnValues.EndpointName = ''
-            $getTargetResourceReturnValues.Port = ''
-            $getTargetResourceReturnValues.IpAddress = ''
-            $getTargetResourceReturnValues.Owner = ''
+            $getTargetResourceReturnValues.State = $endpointObject.EndpointState
         }
     }
     else
@@ -100,11 +112,16 @@ function Get-TargetResource
     .PARAMETER EndpointName
         The name of the endpoint.
 
+    .PARAMETER EndpointType
+        Specifies the type of endpoint. Currently the only type that is supported
+        is the Database Mirror type.
+
     .PARAMETER Ensure
         If the endpoint should be present or absent. Default values is 'Present'.
 
     .PARAMETER Port
-        The network port the endpoint is listening on. Default value is 5022.
+        The network port the endpoint is listening on. Default value is 5022, but
+        default value is only used during endpoint creation, it is not enforce.
 
     .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
@@ -114,10 +131,17 @@ function Get-TargetResource
 
     .PARAMETER IpAddress
         The network IP address the endpoint is listening on. Default value is '0.0.0.0'
-        which means listen on any valid IP address.
+        which means listen on any valid IP address. The default value is only used
+        during endpoint creation, it is not enforce.
 
     .PARAMETER Owner
         The owner of the endpoint. Default is the login used for the creation.
+
+    .PARAMETER State
+        Specifies the state of the endpoint. Valid states are Started, Stopped, or
+        Disabled. When an endpoint is created and the state is not specified then
+        the endpoint will be started after it is created. The state will not be
+        enforced unless the parameter is specified.
 #>
 function Set-TargetResource
 {
@@ -127,6 +151,11 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $EndpointName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('DatabaseMirroring')]
+        [System.String]
+        $EndpointType,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -152,86 +181,169 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String]
-        $Owner
+        $Owner,
+
+        [Parameter()]
+        [ValidateSet('Started', 'Stopped', 'Disabled')]
+        [System.String]
+        $State
     )
 
-    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -ServerName $ServerName -InstanceName $InstanceName
+    $getTargetResourceParameters = @{
+        EndpointName = $EndpointName
+        EndpointType = $EndpointType
+        ServerName = $ServerName
+        InstanceName = $InstanceName
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
 
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+
     if ($sqlServerObject)
     {
-        if ($Ensure -eq 'Present' -and $getTargetResourceResult.Ensure -eq 'Absent')
+        if ($Ensure -eq 'Present')
         {
-            Write-Verbose -Message (
-                $script:localizedData.CreateEndpoint -f $EndpointName, $InstanceName
-            )
-
-            $endpointObject = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Endpoint -ArgumentList $sqlServerObject, $EndpointName
-            $endpointObject.EndpointType = [Microsoft.SqlServer.Management.Smo.EndpointType]::DatabaseMirroring
-            $endpointObject.ProtocolType = [Microsoft.SqlServer.Management.Smo.ProtocolType]::Tcp
-            $endpointObject.Protocol.Tcp.ListenerPort = $Port
-            $endpointObject.Protocol.Tcp.ListenerIPAddress = $IpAddress
-
-            if ($PSBoundParameters.ContainsKey('Owner'))
+            if ($getTargetResourceResult.Ensure -eq 'Absent')
             {
-                $endpointObject.Owner = $Owner
-            }
 
-            $endpointObject.Payload.DatabaseMirroring.ServerMirroringRole = [Microsoft.SqlServer.Management.Smo.ServerMirroringRole]::All
-            $endpointObject.Payload.DatabaseMirroring.EndpointEncryption = [Microsoft.SqlServer.Management.Smo.EndpointEncryption]::Required
-            $endpointObject.Payload.DatabaseMirroring.EndpointEncryptionAlgorithm = [Microsoft.SqlServer.Management.Smo.EndpointEncryptionAlgorithm]::Aes
-            $endpointObject.Create()
-            $endpointObject.Start()
-        }
-        elseif ($Ensure -eq 'Present' -and $getTargetResourceResult.Ensure -eq 'Present')
-        {
-            Write-Verbose -Message (
-                $script:localizedData.SetEndpoint -f $EndpointName, $InstanceName
-            )
+                Write-Verbose -Message (
+                    $script:localizedData.CreateEndpoint -f $EndpointName, $InstanceName
+                )
 
-            # The endpoint already exist, verifying supported endpoint properties so they are in desired state.
-            $endpointObject = $sqlServerObject.Endpoints[$EndpointName]
-            if ($endpointObject)
-            {
-                if ($endpointObject.Protocol.Tcp.ListenerIPAddress -ne $IpAddress)
+                switch ($EndpointType)
                 {
-                    Write-Verbose -Message (
-                        $script:localizedData.UpdatingEndpointIPAddress -f $IpAddress
-                    )
+                    'DatabaseMirroring'
+                    {
+                        $endpointObject = New-Object -TypeName 'Microsoft.SqlServer.Management.Smo.Endpoint' -ArgumentList @($sqlServerObject, $EndpointName)
+                        $endpointObject.EndpointType = [Microsoft.SqlServer.Management.Smo.EndpointType]::DatabaseMirroring
+                        $endpointObject.ProtocolType = [Microsoft.SqlServer.Management.Smo.ProtocolType]::Tcp
+                        $endpointObject.Protocol.Tcp.ListenerPort = $Port
+                        $endpointObject.Protocol.Tcp.ListenerIPAddress = $IpAddress
 
-                    $endpointObject.Protocol.Tcp.ListenerIPAddress = $IpAddress
-                    $endpointObject.Alter()
-                }
+                        if ($PSBoundParameters.ContainsKey('Owner'))
+                        {
+                            $endpointObject.Owner = $Owner
+                        }
 
-                if ($endpointObject.Protocol.Tcp.ListenerPort -ne $Port)
-                {
-                    Write-Verbose -Message (
-                        $script:localizedData.UpdatingEndpointPort -f $Port
-                    )
+                        $endpointObject.Payload.DatabaseMirroring.ServerMirroringRole = [Microsoft.SqlServer.Management.Smo.ServerMirroringRole]::All
+                        $endpointObject.Payload.DatabaseMirroring.EndpointEncryption = [Microsoft.SqlServer.Management.Smo.EndpointEncryption]::Required
+                        $endpointObject.Payload.DatabaseMirroring.EndpointEncryptionAlgorithm = [Microsoft.SqlServer.Management.Smo.EndpointEncryptionAlgorithm]::Aes
+                        $endpointObject.Create()
 
-                    $endpointObject.Protocol.Tcp.ListenerPort = $Port
-                    $endpointObject.Alter()
-                }
-
-                if ($endpointObject.Owner -ne $Owner)
-                {
-                    Write-Verbose -Message (
-                        $script:localizedData.UpdatingEndpointOwner -f $Owner
-                    )
-
-                    $endpointObject.Owner = $Owner
-                    $endpointObject.Alter()
+                        <#
+                            If endpoint state is not specified, then default to
+                            starting the endpoint. If state is specified then
+                            it will be handled later.
+                        #>
+                        if (-not ($PSBoundParameters.ContainsKey('State')))
+                        {
+                            $endpointObject.Start()
+                        }
+                    }
                 }
             }
             else
             {
-                $errorMessage = $script:localizedData.EndpointNotFound -f $EndpointName
-                New-ObjectNotFoundException -Message $errorMessage
+                Write-Verbose -Message (
+                    $script:localizedData.SetEndpoint -f $EndpointName, $InstanceName
+                )
+
+                $endpointObject = $sqlServerObject.Endpoints[$EndpointName]
+
+                if (-not $endpointObject)
+                {
+                    $errorMessage = $script:localizedData.EndpointNotFound -f $EndpointName
+
+                    New-ObjectNotFoundException -Message $errorMessage
+                }
+            }
+
+            <#
+                The endpoint exist or was just created. Verifying supported
+                properties so they are in desired state.
+            #>
+
+            # Properties regardless of endpoint type.
+            if ($PSBoundParameters.ContainsKey('State'))
+            {
+                if ($endpointObject.EndpointState -ne $State)
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ChangingEndpointState -f $State
+                    )
+
+                    switch ($State)
+                    {
+                        'Started'
+                        {
+                            $endpointObject.Start()
+                        }
+
+                        'Stopped'
+                        {
+                            $endpointObject.Stop()
+                        }
+
+                        'Disabled'
+                        {
+                            $endpointObject.Disable()
+                        }
+                    }
+                }
+            }
+
+            # Individual endpoint type properties.
+            switch ($EndpointType)
+            {
+                'DatabaseMirroring'
+                {
+                    if ($PSBoundParameters.ContainsKey('IpAddress'))
+                    {
+                        if ($endpointObject.Protocol.Tcp.ListenerIPAddress -ne $IpAddress)
+                        {
+                            Write-Verbose -Message (
+                                $script:localizedData.UpdatingEndpointIPAddress -f $IpAddress
+                            )
+
+                            $endpointObject.Protocol.Tcp.ListenerIPAddress = $IpAddress
+                            $endpointObject.Alter()
+                        }
+                    }
+
+                    if ($PSBoundParameters.ContainsKey('Port'))
+                    {
+                        if ($endpointObject.Protocol.Tcp.ListenerPort -ne $Port)
+                        {
+                            Write-Verbose -Message (
+                                $script:localizedData.UpdatingEndpointPort -f $Port
+                            )
+
+                            $endpointObject.Protocol.Tcp.ListenerPort = $Port
+                            $endpointObject.Alter()
+                        }
+                    }
+
+                    if ($PSBoundParameters.ContainsKey('Owner'))
+                    {
+                        if ($endpointObject.Owner -ne $Owner)
+                        {
+                            Write-Verbose -Message (
+                                $script:localizedData.UpdatingEndpointOwner -f $Owner
+                            )
+
+                            $endpointObject.Owner = $Owner
+                            $endpointObject.Alter()
+                        }
+                    }
+                }
             }
         }
-        elseif ($Ensure -eq 'Absent' -and $getTargetResourceResult.Ensure -eq 'Present')
+
+        if ($Ensure -eq 'Absent' -and $getTargetResourceResult.Ensure -eq 'Present')
         {
             $endpointObject = $sqlServerObject.Endpoints[$EndpointName]
+
             if ($endpointObject)
             {
                 Write-Verbose -Message (
@@ -243,6 +355,7 @@ function Set-TargetResource
             else
             {
                 $errorMessage = $script:localizedData.EndpointNotFound -f $EndpointName
+
                 New-ObjectNotFoundException -Message $errorMessage
             }
         }
@@ -250,6 +363,7 @@ function Set-TargetResource
     else
     {
         $errorMessage = $script:localizedData.NotConnectedToInstance -f $ServerName, $InstanceName
+
         New-InvalidOperationException -Message $errorMessage
     }
 }
@@ -261,11 +375,16 @@ function Set-TargetResource
     .PARAMETER EndpointName
         The name of the endpoint.
 
+    .PARAMETER EndpointType
+        Specifies the type of endpoint. Currently the only type that is supported
+        is the Database Mirror type.
+
     .PARAMETER Ensure
         If the endpoint should be present or absent. Default values is 'Present'.
 
     .PARAMETER Port
-        The network port the endpoint is listening on. Default value is 5022.
+        The network port the endpoint is listening on. Default value is 5022, but
+        default value is only used during endpoint creation, it is not enforce.
 
     .PARAMETER ServerName
         The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
@@ -275,10 +394,17 @@ function Set-TargetResource
 
     .PARAMETER IpAddress
         The network IP address the endpoint is listening on. Default value is '0.0.0.0'
-        which means listen on any valid IP address.
+        which means listen on any valid IP address. The default value is only used
+        during endpoint creation, it is not enforce.
 
     .PARAMETER Owner
         The owner of the endpoint. Default is the login used for the creation.
+
+    .PARAMETER State
+        Specifies the state of the endpoint. Valid states are Started, Stopped, or
+        Disabled. When an endpoint is created and the state is not specified then
+        the endpoint will be started after it is created. The state will not be
+        enforced unless the parameter is specified.
 #>
 function Test-TargetResource
 {
@@ -289,6 +415,11 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $EndpointName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('DatabaseMirroring')]
+        [System.String]
+        $EndpointType,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -314,29 +445,53 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String]
-        $Owner
+        $Owner,
+
+        [Parameter()]
+        [ValidateSet('Started', 'Stopped', 'Disabled')]
+        [System.String]
+        $State
     )
 
     Write-Verbose -Message (
         $script:localizedData.TestingConfiguration -f $EndpointName, $InstanceName
     )
 
-    $getTargetResourceResult = Get-TargetResource -EndpointName $EndpointName -ServerName $ServerName -InstanceName $InstanceName
+    $getTargetResourceParameters = @{
+        EndpointName = $EndpointName
+        EndpointType = $EndpointType
+        ServerName = $ServerName
+        InstanceName = $InstanceName
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
     if ($getTargetResourceResult.Ensure -eq $Ensure)
     {
         $result = $true
+
+        if ($PSBoundParameters.ContainsKey('Owner'))
+        {
+            if ($getTargetResourceResult.Owner -ne $Owner)
+            {
+                $result = $false
+            }
+        }
+
+
+        if ($PSBoundParameters.ContainsKey('State'))
+        {
+            if ($getTargetResourceResult.State -ne $State)
+            {
+                $result = $false
+            }
+        }
 
         if ($getTargetResourceResult.Ensure -eq 'Present' `
                 -and (
                         $getTargetResourceResult.Port -ne $Port `
                     -or $getTargetResourceResult.IpAddress -ne $IpAddress
                 )
-        )
-        {
-            $result = $false
-        }
-        elseif ($getTargetResourceResult.Ensure -eq 'Present' -and $Owner `
-                -and $getTargetResourceResult.Owner -ne $Owner
         )
         {
             $result = $false
