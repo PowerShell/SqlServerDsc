@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     the product SQL Server 2008 R2 has gone end-of-life the DSC resources
     will no longer try to make the resource work with those. Moving forward,
     and including this release, there might be code changes that will break
-    the resource on Windows Server 2008 R2 or with SQL Server 2008 R2.
+    the resource on Windows Server 2008 R2 or with SQL Server 2008 R2
+    ([issue #1514](https://github.com/dsccommunity/SqlServerDsc/issues/1514)).
   - BREAKING CHANGE: Removed resource _SqlServerNetwork_. The functionality
     is now covered by the resources _SqlServerProtocol_ and _SqlServerProtocolTcpIp_.
 
