@@ -53,8 +53,8 @@ Get-DscResource -Module SqlServerDsc
 
 The minimum Windows Management Framework (PowerShell) version required is 5.0
 or higher, which ships with Windows 10 or Windows Server 2016,
-but can also be installed on Windows 7 SP1, Windows 8.1,
-Windows Server 2008 R2 SP1, Windows Server 2012 and Windows Server 2012 R2.
+but can also be installed on Windows 7 SP1, Windows 8.1, Windows Server 2012,
+and Windows Server 2012 R2.
 
 ## Examples
 
@@ -143,7 +143,7 @@ It will also manage the Availability Group replica on the specified node.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' must have the 'Connect SQL',
   'Alter Any Availability Group', and 'View Server State' permissions.
@@ -225,7 +225,7 @@ group.
 
 ### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must be running Windows Management Framework (WMF) 5 or later.
 
@@ -296,8 +296,8 @@ update the severity or message id.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -326,8 +326,8 @@ update the Notification method.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -356,8 +356,8 @@ the operators email address.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -385,7 +385,7 @@ No description.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
@@ -432,7 +432,7 @@ Always On Availability Group Replica.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * 'NT SERVICE\ClusSvc' or 'NT AUTHORITY\SYSTEM' must have the 'Connect SQL',
   'Alter Any Availability Group', and 'View Server State' permissions.
@@ -506,7 +506,7 @@ No description.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 
 #### Parameters
 
@@ -544,7 +544,7 @@ Enables or disabled SQL Server Always On high availability and disaster recovery
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
@@ -580,8 +580,8 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * Valid values per SQL Server version for the parameter `CompatibilityLevel`
   can be found in the article [ALTER DATABASE (Transact-SQL) Compatibility Level](https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level).
 
@@ -618,8 +618,8 @@ more information about database default locations, please read the article
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -658,8 +658,8 @@ For more information about database owner, please read the article
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -689,8 +689,8 @@ will also get their permission revoked.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -730,8 +730,8 @@ Read more about recovery model in this article
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -758,8 +758,8 @@ manages members in both built-in and user created database roles.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -813,8 +813,8 @@ SQL login.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -878,10 +878,10 @@ Initializes and configures SQL Reporting Services server.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Reporting Services 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Reporting Services 20012 or later.
 * To use parameter `UseSSL` target machine must be running SQL Server Reporting
-  Services 2008 R2 or later.
+  Services 2012 or later.
 * If `PsDscRunAsCredential` common parameter is used to run the resource, the
   specified credential must have permissions to connect to the SQL Server instance
   specified in `DatabaseServerName` and `DatabaseInstanceName`, and have permission
@@ -1073,8 +1073,8 @@ The Set T-SQL script performs the actual change when Test T-SQL script fails.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
 
@@ -1151,8 +1151,8 @@ The Set T-SQL script performs the actual change when Test T-SQL script fails.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
 
@@ -1207,8 +1207,8 @@ on a SQL Server instance.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -1242,8 +1242,8 @@ Resource to manage SQL Server Database Mail.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must be running SQL Server Agent.
 * Target machine must have enabled Database Mail XPs.
 
@@ -1296,8 +1296,8 @@ the resource [**SqlServerEndpointPermission**](#sqlserverendpointpermission).
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Security Requirements
 
@@ -1335,8 +1335,8 @@ This resource is used to give connect permission to an endpoint for a user (logi
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -1369,8 +1369,8 @@ This resource is used to set the state of an endpoint.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
 
@@ -1399,8 +1399,8 @@ No description.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * When the `LoginType` `'SqlLogin'` is used, then the login authentication
   mode must have been set to `Mixed` or `Normal`. If set to `Integrated`
   and error will be thrown.
@@ -1463,8 +1463,8 @@ Read more about max degree of parallelism in this article
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -1541,8 +1541,8 @@ SQL Max Memory = TotalPhysicalMemory - (NumOfSQLThreads\*ThreadStackSize) -
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -1589,8 +1589,8 @@ AlterAnyEndPoint and ViewServerState.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the SQLPS PowerShell module or the SqlServer
   PowerShell module.
 
@@ -1754,8 +1754,8 @@ This resource manage SQL Replication distribution and publishing.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server 2012 or later.
 
 #### Parameters
 
@@ -1800,8 +1800,8 @@ server roles, please read the below articles.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server Database Engine 2012 or later.
 
 #### Parameters
 
@@ -1846,7 +1846,7 @@ In that case, the 'SYSTEM' service account can be used.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * You must have a Certificate that is trusted and issued for
    `ServerAuthentication`.
 * The name of the Certificate must be the fully qualified domain name (FQDN)
@@ -1936,7 +1936,7 @@ Installs SQL Server on the target node.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * For configurations that utilize the 'InstallFailoverCluster' action, the following
   parameters are required (beyond those required for the standalone installation).
   See the article [Install SQL Server from the Command Prompt](https://msdn.microsoft.com/en-us/library/ms144259.aspx)
@@ -2187,7 +2187,7 @@ or that it has finished creating the Availability Group.
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 * Target machine must be running SQL Server Database Engine 2012 or later.
 * Target machine must have access to the Failover Cluster PowerShell module.
 
@@ -2273,7 +2273,7 @@ Port: tcp/135 | SQL Server Integration Services Port
 
 #### Requirements
 
-* Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running Windows Server 2012 or later.
 
 #### Parameters
 
