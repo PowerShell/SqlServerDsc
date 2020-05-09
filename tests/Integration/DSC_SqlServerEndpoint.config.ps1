@@ -50,7 +50,7 @@ Configuration DSC_SqlServerEndpoint_Add_Config
             Port                 = $Node.Port
             IpAddress            = $Node.IpAddress
             Owner                = $Node.Owner
-            State                = 'Running'
+            State                = 'Started'
 
             ServerName           = $Node.ServerName
             InstanceName         = $Node.InstanceName

@@ -23,6 +23,7 @@
 
     # Dependency for integration tests
     LoopbackAdapter             = 'latest'
+    PSPKI                       = 'latest'
 
     # Prerequisites modules needed for examples or integration tests
     PSDscResources              = '2.12.0.0'

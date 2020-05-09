@@ -21,6 +21,7 @@ Configuration Example
             Ensure               = 'Present'
 
             EndpointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             Port                 = 9001
             IpAddress            = '192.168.0.20'
             Owner                = 'sa'

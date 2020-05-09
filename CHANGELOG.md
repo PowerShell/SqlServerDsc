@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerDsc.Common
   - The helper function `Invoke-InstallationMediaCopy` was changed to
     handle a breaking change in PowerShell 7 ([issue #1530](https://github.com/dsccommunity/SqlServerDsc/issues/1530)).
+- CommonTestHelper
+  - The test helper function `New-SQLSelfSignedCertificate` was changed
+    to install the dependent module `PSPKI` through `RequiredModules.psd1`.
 - SqlAlwaysOnService
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
