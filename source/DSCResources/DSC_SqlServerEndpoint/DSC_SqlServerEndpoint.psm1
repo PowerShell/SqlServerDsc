@@ -63,6 +63,7 @@ function Get-TargetResource
     $getTargetResourceReturnValues = @{
         ServerName   = $ServerName
         InstanceName = $InstanceName
+        EndpointType = $EndpointType
         Ensure       = 'Absent'
         EndpointName = ''
         Port         = ''
@@ -206,7 +207,6 @@ function Set-TargetResource
         {
             if ($getTargetResourceResult.Ensure -eq 'Absent')
             {
-
                 Write-Verbose -Message (
                     $script:localizedData.CreateEndpoint -f $EndpointName, $InstanceName
                 )

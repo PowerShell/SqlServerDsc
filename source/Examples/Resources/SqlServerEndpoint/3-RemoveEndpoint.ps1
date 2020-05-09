@@ -20,6 +20,7 @@ Configuration Example
             Ensure               = 'Absent'
 
             EndpointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             InstanceName         = 'INST1'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -30,6 +31,7 @@ Configuration Example
             Ensure               = 'Absent'
 
             EndpointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             InstanceName         = 'INST2'
 
             PsDscRunAsCredential = $SqlAdministratorCredential

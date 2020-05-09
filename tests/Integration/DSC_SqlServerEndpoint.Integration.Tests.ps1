@@ -74,6 +74,7 @@ try
 
                 $resourceCurrentState.Ensure | Should -Be 'Present'
                 $resourceCurrentState.EndpointName | Should -Be $ConfigurationData.AllNodes.EndpointName
+                $resourceCurrentState.EndpointType | Should -Be 'DatabaseMirroring'
                 $resourceCurrentState.Port | Should -Be $ConfigurationData.AllNodes.Port
                 $resourceCurrentState.IpAddress | Should -Be $ConfigurationData.AllNodes.IpAddress
                 $resourceCurrentState.Owner | Should -Be $ConfigurationData.AllNodes.Owner
@@ -124,6 +125,7 @@ try
 
                 $resourceCurrentState.Ensure | Should -Be 'Absent'
                 $resourceCurrentState.EndpointName | Should -BeNullOrEmpty
+                $resourceCurrentState.EndpointType | Should -Be 'DatabaseMirroring'
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {

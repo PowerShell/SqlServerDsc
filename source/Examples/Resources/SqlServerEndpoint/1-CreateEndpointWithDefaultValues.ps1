@@ -20,6 +20,7 @@ Configuration Example
         SqlServerEndpoint 'SQLConfigureEndpoint-Instance1'
         {
             EndpointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             InstanceName         = 'INST1'
 
             PsDscRunAsCredential = $SqlAdministratorCredential
@@ -28,6 +29,7 @@ Configuration Example
         SqlServerEndpoint 'SQLConfigureEndpoint-Instances2'
         {
             EndpointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             InstanceName         = 'INST2'
 
             PsDscRunAsCredential = $SqlAdministratorCredential

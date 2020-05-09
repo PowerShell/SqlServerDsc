@@ -51,6 +51,7 @@ Configuration Example
         SqlServerEndpoint 'HADREndpoint'
         {
             EndPointName         = 'HADR'
+            EndpointType         = 'DatabaseMirroring'
             Ensure               = 'Present'
             Port                 = 5022
             ServerName           = $Node.NodeName
