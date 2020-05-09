@@ -78,7 +78,7 @@ try
                 $resourceCurrentState.Port | Should -Be $ConfigurationData.AllNodes.Port
                 $resourceCurrentState.IpAddress | Should -Be $ConfigurationData.AllNodes.IpAddress
                 $resourceCurrentState.Owner | Should -Be $ConfigurationData.AllNodes.Owner
-                $resourceCurrentState.State | Should -Be 'Running'
+                $resourceCurrentState.State | Should -Be 'Started'
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {
