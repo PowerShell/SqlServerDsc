@@ -187,7 +187,7 @@ try
             }
         }
 
-        $configurationName = "$($script:dscResourceName)_AddDatabase2_Config"
+        $configurationName = "$($script:dscResourceName)_AddDatabase4_Config"
 
         Context ('When using configuration {0}' -f $configurationName) {
             It 'Should compile and apply the MOF without throwing' {
@@ -237,7 +237,7 @@ try
             }
         }
 
-        $configurationName = "$($script:dscResourceName)_AddDatabase2_Config"
+        $configurationName = "$($script:dscResourceName)_AddDatabase5_Config"
 
         Context ('When using configuration {0}' -f $configurationName) {
             It 'Should compile and apply the MOF without throwing' {
