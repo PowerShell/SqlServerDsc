@@ -88,8 +88,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   is present or absent.
 * [**SqlDatabaseDefaultLocation**](#sqldatabasedefaultlocation) resource
   to manage default locations for Data, Logs, and Backups for SQL Server
-* [**SqlDatabaseOwner**](#sqldatabaseowner) resource to manage SQL
-  database owners.
 * [**SqlDatabasePermission**](#sqldatabasepermission) resource to
   manage SQL database permissions.
 * [**SqlDatabaseRecoveryModel**](#sqldatabaserecoverymodel) resource
@@ -649,33 +647,6 @@ more information about database default locations, please read the article
 #### Known issues
 
 All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseDefaultLocation).
-
-### SqlDatabaseOwner
-
-This resource is used to configure the owner of a database.
-For more information about database owner, please read the article
-[Changing the Database Owner](https://technet.microsoft.com/en-us/library/ms190909.aspx).
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
-
-#### Parameters
-
-* **`[String]` DatabaseName** _(Key)_: The name of database to be configured.
-* **`[String]` Name** _(Required)_: The name of the login that will become a owner
-  of the desired sql database.
-* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-
-#### Examples
-
-* [Set database owner](/source/Examples/Resources/SqlDatabaseOwner/1-SetDatabaseOwner.ps1)
-
-#### Known issues
-
-All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseOwner).
 
 ### SqlDatabasePermission
 
