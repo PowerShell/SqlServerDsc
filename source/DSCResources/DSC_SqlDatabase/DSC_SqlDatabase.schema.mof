@@ -8,4 +8,5 @@ class DSC_SqlDatabase : OMI_BaseResource
     [Write, Description("The name of the SQL collation to use for the new database. Default value is server collation.")] String Collation;
     [Write, Description("Specifies the version of the SQL Database Compatibility Level to use for the specified database."), ValueMap{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}, Values{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}] String CompatibilityLevel;
     [Write, Description("The recovery model for the specified database. Default value is Full."), ValueMap{"Simple","Full","BulkLogged"}, Values{"Simple","Full","BulkLogged"}] String RecoveryModel;
+    [Write, Description("The name of the login that should be the owner of the database.")] String OwnerName;
 };
