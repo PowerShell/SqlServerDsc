@@ -261,7 +261,7 @@ function Set-TargetResource
                         $script:localizedData.UpdatingOwner-f $OwnerName
                     )
 
-                    $sqlDatabaseObject.Owner = $OwnerName
+                    $sqlDatabaseObject.SetOwner($OwnerName)
 
                     $wasUpdate = $true
                 }
@@ -299,7 +299,7 @@ function Set-TargetResource
 
                         if ($PSBoundParameters.ContainsKey('OwnerName'))
                         {
-                            $sqlDatabaseObjectToCreate.Owner = $OwnerName
+                            $sqlDatabaseObjectToCreate.SetOwner($OwnerName)
                         }
 
                         if ($PSBoundParameters.ContainsKey('Collation'))
