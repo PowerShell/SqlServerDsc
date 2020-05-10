@@ -232,15 +232,6 @@ worker.*
 *The integration tests will clean up and not leave anything on the build
 worker.*
 
-## SqlServerNetwork
-
-**Run order:** 2
-
-**Depends on:** SqlSetup
-
-*The integration tests will clean up and not leave anything on the build
-worker.*
-
 ## SqlServiceAccount
 
 **Run order:** 2
@@ -396,12 +387,21 @@ worker.*
 
 ## SqlServerProtocol
 
-**Run order:** 6
+**Run order:** 5
 
 **Depends on:** SqlSetup
 
 Depends that the instance `DSCSQLTEST` have the Named Pipes protocol
 enabled (SqlSetup is run with `NpEnabled = $true`).
+
+*The integration tests will clean up and not leave anything on the build
+worker.*
+
+## SqlServerProtocolTcpIp
+
+**Run order:** 6
+
+**Depends on:** SqlSetup
 
 *The integration tests will clean up and not leave anything on the build
 worker.*

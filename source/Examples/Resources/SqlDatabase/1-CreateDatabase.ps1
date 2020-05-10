@@ -67,5 +67,16 @@ Configuration Example
 
             PsDscRunAsCredential = $SqlAdministratorCredential
         }
+
+        SqlDatabase 'Create_Database_with_specific_owner'
+        {
+            Ensure               = 'Present'
+            ServerName           = 'sqltest.company.local'
+            InstanceName         = 'DSC'
+            Name                 = 'FabrikamDataOwner'
+            OwnerName            = 'sa'
+
+            PsDscRunAsCredential = $SqlAdministratorCredential
+        }
     }
 }
