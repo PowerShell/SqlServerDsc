@@ -45,12 +45,6 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Ensure = 'Present',
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -71,7 +65,19 @@ function Get-TargetResource
         $script:localizedData.GetDatabase -f $Name, $InstanceName
     )
 
+    $returnValue = @{
+        Name               = $Name
+        Ensure             = 'Absent'
+        ServerName         = $ServerName
+        InstanceName       = $InstanceName
+        Collation          = $null
+        CompatibilityLevel = $null
+        RecoveryModel      = $null
+        OwnerName          = $null
+    }
+
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+
     if ($sqlServerObject)
     {
         # Check database exists
@@ -79,38 +85,25 @@ function Get-TargetResource
 
         if ($sqlDatabaseObject)
         {
-            $Ensure = 'Present'
-            $sqlDatabaseCollation = $sqlDatabaseObject.Collation
-            $sqlDatabaseCompatibilityLevel = $sqlDatabaseObject.CompatibilityLevel
-            $sqlDatabaseRecoveryModel = $sqlDatabaseObject.RecoveryModel
-            $sqlDatabaseOwner = $sqlDatabaseObject.Owner
+            $returnValue['Ensure'] = 'Present'
+            $returnValue['Collation'] = $sqlDatabaseObject.Collation
+            $returnValue['CompatibilityLevel'] = $sqlDatabaseObject.CompatibilityLevel
+            $returnValue['RecoveryModel'] = $sqlDatabaseObject.RecoveryModel
+            $returnValue['OwnerName'] = $sqlDatabaseObject.Owner
 
             Write-Verbose -Message (
-                $script:localizedData.DatabasePresent -f $Name, $sqlDatabaseCollation, $sqlDatabaseCompatibilityLevel, $sqlDatabaseRecoveryModel
+                $script:localizedData.DatabasePresent -f $Name
             )
         }
         else
         {
-            $Ensure = 'Absent'
-
             Write-Verbose -Message (
                 $script:localizedData.DatabaseAbsent -f $Name
             )
         }
     }
 
-    $returnValue = @{
-        Name               = $Name
-        Ensure             = $Ensure
-        ServerName         = $ServerName
-        InstanceName       = $InstanceName
-        Collation          = $sqlDatabaseCollation
-        CompatibilityLevel = $sqlDatabaseCompatibilityLevel
-        RecoveryModel      = $sqlDatabaseRecoveryModel
-        OwnerName          = $sqlDatabaseOwner
-    }
-
-    $returnValue
+    return $returnValue
 }
 
 <#
@@ -192,69 +185,99 @@ function Set-TargetResource
     )
 
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
+
     if ($sqlServerObject)
     {
-        if ($Ensure -eq 'Present')
+        if ($PSBoundParameters.ContainsKey('CompatibilityLevel'))
         {
-            if (-not $PSBoundParameters.ContainsKey('Collation'))
-            {
-                $Collation = $sqlServerObject.Collation
-            }
-            elseif ($Collation -notin $sqlServerObject.EnumCollations().Name)
-            {
-                $errorMessage = $script:localizedData.InvalidCollation -f $Collation, $InstanceName
-                New-ObjectNotFoundException -Message $errorMessage
-            }
-
-            if (-not $PSBoundParameters.ContainsKey('CompatibilityLevel'))
-            {
-                $CompatibilityLevel = $supportedCompatibilityLevels.$($sqlServerObject.VersionMajor) | Select-Object -Last 1
-            }
-            elseif ($CompatibilityLevel -notin $supportedCompatibilityLevels.$($sqlServerObject.VersionMajor))
+            # Verify that a correct compatibility level is specified.
+            if ($CompatibilityLevel -notin $supportedCompatibilityLevels.$($sqlServerObject.VersionMajor))
             {
                 $errorMessage = $script:localizedData.InvalidCompatibilityLevel -f $CompatibilityLevel, $InstanceName
+
                 New-ObjectNotFoundException -Message $errorMessage
             }
+        }
 
+        if ($PSBoundParameters.ContainsKey('Collation'))
+        {
+            # Verify that the correct collation is used.
+            if ($Collation -notin $sqlServerObject.EnumCollations().Name)
+            {
+
+                $errorMessage = $script:localizedData.InvalidCollation -f $Collation, $InstanceName
+
+                New-ObjectNotFoundException -Message $errorMessage
+            }
+        }
+
+        if ($Ensure -eq 'Present')
+        {
             $sqlDatabaseObject = $sqlServerObject.Databases[$Name]
+
             if ($sqlDatabaseObject)
             {
                 Write-Verbose -Message (
                     $script:localizedData.SetDatabase -f $Name, $InstanceName
                 )
 
-                try
+                $wasUpdate = $false
+
+                if ($PSBoundParameters.ContainsKey('Collation'))
                 {
                     Write-Verbose -Message (
-                        $script:localizedData.UpdatingDatabase -f $Collation, $CompatibilityLevel
+                        $script:localizedData.UpdatingCollation -f $Collation
                     )
 
                     $sqlDatabaseObject.Collation = $Collation
+
+                    $wasUpdate = $true
+                }
+
+                if ($PSBoundParameters.ContainsKey('CompatibilityLevel'))
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.UpdatingCompatibilityLevel -f $CompatibilityLevel
+                    )
+
                     $sqlDatabaseObject.CompatibilityLevel = $CompatibilityLevel
 
-                    if ($PSBoundParameters.ContainsKey('RecoveryModel'))
+                    $wasUpdate = $true
+                }
+
+                if ($PSBoundParameters.ContainsKey('RecoveryModel'))
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.UpdatingRecoveryModel -f $RecoveryModel
+                    )
+
+                    $sqlDatabaseObject.RecoveryModel = $RecoveryModel
+
+                    $wasUpdate = $true
+                }
+
+                if ($PSBoundParameters.ContainsKey('OwnerName'))
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.UpdatingOwner-f $OwnerName
+                    )
+
+                    $sqlDatabaseObject.Owner = $OwnerName
+
+                    $wasUpdate = $true
+                }
+
+                try
+                {
+                    if ($wasUpdate)
                     {
-                        Write-Verbose -Message (
-                            $script:localizedData.UpdatingRecoveryModel -f $RecoveryModel
-                        )
-
-                        $sqlDatabaseObject.RecoveryModel = $RecoveryModel
+                        $sqlDatabaseObject.Alter()
                     }
-
-                    if ($PSBoundParameters.ContainsKey('OwnerName'))
-                    {
-                        Write-Verbose -Message (
-                            $script:localizedData.UpdatingOwner-f $OwnerName
-                        )
-
-                        $sqlDatabaseObject.Owner = $OwnerName
-                    }
-
-                    $sqlDatabaseObject.Alter()
                 }
                 catch
                 {
                     $errorMessage = $script:localizedData.FailedToUpdateDatabase -f $Name
+
                     New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
             }
@@ -263,6 +286,7 @@ function Set-TargetResource
                 try
                 {
                     $sqlDatabaseObjectToCreate = New-Object -TypeName 'Microsoft.SqlServer.Management.Smo.Database' -ArgumentList $sqlServerObject, $Name
+
                     if ($sqlDatabaseObjectToCreate)
                     {
                         Write-Verbose -Message (
@@ -279,14 +303,23 @@ function Set-TargetResource
                             $sqlDatabaseObjectToCreate.Owner = $OwnerName
                         }
 
-                        $sqlDatabaseObjectToCreate.Collation = $Collation
-                        $sqlDatabaseObjectToCreate.CompatibilityLevel = $CompatibilityLevel
+                        if ($PSBoundParameters.ContainsKey('Collation'))
+                        {
+                            $sqlDatabaseObjectToCreate.Collation = $Collation
+                        }
+
+                        if ($PSBoundParameters.ContainsKey('CompatibilityLevel'))
+                        {
+                            $sqlDatabaseObjectToCreate.CompatibilityLevel = $CompatibilityLevel
+                        }
+
                         $sqlDatabaseObjectToCreate.Create()
                     }
                 }
                 catch
                 {
                     $errorMessage = $script:localizedData.FailedToCreateDatabase -f $Name
+
                     New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
             }
@@ -296,6 +329,7 @@ function Set-TargetResource
             try
             {
                 $sqlDatabaseObjectToDrop = $sqlServerObject.Databases[$Name]
+
                 if ($sqlDatabaseObjectToDrop)
                 {
                     Write-Verbose -Message (
@@ -308,6 +342,7 @@ function Set-TargetResource
             catch
             {
                 $errorMessage = $script:localizedData.FailedToDropDatabase -f $Name
+
                 New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
         }
@@ -397,7 +432,14 @@ function Test-TargetResource
         $script:localizedData.TestingConfiguration -f $Name, $InstanceName
     )
 
-    $getTargetResourceResult = Get-TargetResource @PSBoundParameters
+    $getTargetResourceParameters = @{
+        Name = $Name
+        ServerName = $ServerName
+        InstanceName = $InstanceName
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
     $isDatabaseInDesiredState = $true
 
     switch ($Ensure)
@@ -453,10 +495,10 @@ function Test-TargetResource
                     $isDatabaseInDesiredState = $false
                 }
 
-                if ($PSBoundParameters.ContainsKey('OwnerNode') -and $getTargetResourceResult.OwnerNode -ne $OwnerNode)
+                if ($PSBoundParameters.ContainsKey('OwnerName') -and $getTargetResourceResult.OwnerName -ne $OwnerName)
                 {
                     Write-Verbose -Message (
-                        $script:localizedData.OwnerNameWrong -f $Name, $getTargetResourceResult.OwnerNode, $OwnerNode
+                        $script:localizedData.OwnerNameWrong -f $Name, $getTargetResourceResult.OwnerName, $OwnerName
                     )
 
                     $isDatabaseInDesiredState = $false

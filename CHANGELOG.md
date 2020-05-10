@@ -62,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
   - BREAKING CHANGE: The non-mandatory parameters was removed from the
     function `Get-TargetResource` since they were not needed.
+  - BREAKING CHANGE: The properties `CompatibilityLevel` and `Collation`
+    are now only enforced if the are specified in the configuration.
   - Normalize parameter descriptive text for default values.
 - SqlDatabaseDefaultLocation
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and

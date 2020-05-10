@@ -76,7 +76,10 @@ try
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.DatabaseName1
                 $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
                 $resourceCurrentState.InstanceName  | Should -Be $ConfigurationData.AllNodes.InstanceName
+                # Same as the instance collation
                 $resourceCurrentState.Collation | Should -Be 'Finnish_Swedish_CI_AS'
+                $resourceCurrentState.RecoveryModel | Should -Be 'Full'
+                $resourceCurrentState.OwnerName | Should -Be 'sa'
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {
@@ -134,7 +137,157 @@ try
             }
         }
 
-        $configurationName = "$($script:dscResourceName)_RemoveDatabase2_Config"
+        $configurationName = "$($script:dscResourceName)_AddDatabase3_Config"
+
+        Context ('When using configuration {0}' -f $configurationName) {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    $configurationParameters = @{
+                        OutputPath           = $TestDrive
+                        # The variable $ConfigurationData was dot-sourced above.
+                        ConfigurationData    = $ConfigurationData
+                    }
+
+                    & $configurationName @configurationParameters
+
+                    $startDscConfigurationParameters = @{
+                        Path         = $TestDrive
+                        ComputerName = 'localhost'
+                        Wait         = $true
+                        Verbose      = $true
+                        Force        = $true
+                        ErrorAction  = 'Stop'
+                    }
+
+                    Start-DscConfiguration @startDscConfigurationParameters
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                {
+                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
+                    $_.ConfigurationName -eq $configurationName `
+                    -and $_.ResourceId -eq $resourceId
+                }
+
+                $resourceCurrentState.Ensure | Should -Be 'Present'
+                $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.DatabaseName2
+                $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
+                $resourceCurrentState.InstanceName  | Should -Be $ConfigurationData.AllNodes.InstanceName
+                $resourceCurrentState.CompatibilityLevel | Should -Be $ConfigurationData.AllNodes.CompatibilityLevel
+            }
+
+            It 'Should return $true when Test-DscConfiguration is run' {
+                Test-DscConfiguration -Verbose | Should -Be 'True'
+            }
+        }
+
+        $configurationName = "$($script:dscResourceName)_AddDatabase2_Config"
+
+        Context ('When using configuration {0}' -f $configurationName) {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    $configurationParameters = @{
+                        OutputPath           = $TestDrive
+                        # The variable $ConfigurationData was dot-sourced above.
+                        ConfigurationData    = $ConfigurationData
+                    }
+
+                    & $configurationName @configurationParameters
+
+                    $startDscConfigurationParameters = @{
+                        Path         = $TestDrive
+                        ComputerName = 'localhost'
+                        Wait         = $true
+                        Verbose      = $true
+                        Force        = $true
+                        ErrorAction  = 'Stop'
+                    }
+
+                    Start-DscConfiguration @startDscConfigurationParameters
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                {
+                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
+                    $_.ConfigurationName -eq $configurationName `
+                    -and $_.ResourceId -eq $resourceId
+                }
+
+                $resourceCurrentState.Ensure | Should -Be 'Present'
+                $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.DatabaseName2
+                $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
+                $resourceCurrentState.InstanceName  | Should -Be $ConfigurationData.AllNodes.InstanceName
+                $resourceCurrentState.RecoveryModel | Should -Be $ConfigurationData.AllNodes.RecoveryModel
+            }
+
+            It 'Should return $true when Test-DscConfiguration is run' {
+                Test-DscConfiguration -Verbose | Should -Be 'True'
+            }
+        }
+
+        $configurationName = "$($script:dscResourceName)_AddDatabase2_Config"
+
+        Context ('When using configuration {0}' -f $configurationName) {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    $configurationParameters = @{
+                        OutputPath           = $TestDrive
+                        # The variable $ConfigurationData was dot-sourced above.
+                        ConfigurationData    = $ConfigurationData
+                    }
+
+                    & $configurationName @configurationParameters
+
+                    $startDscConfigurationParameters = @{
+                        Path         = $TestDrive
+                        ComputerName = 'localhost'
+                        Wait         = $true
+                        Verbose      = $true
+                        Force        = $true
+                        ErrorAction  = 'Stop'
+                    }
+
+                    Start-DscConfiguration @startDscConfigurationParameters
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                {
+                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
+                    $_.ConfigurationName -eq $configurationName `
+                    -and $_.ResourceId -eq $resourceId
+                }
+
+                $resourceCurrentState.Ensure | Should -Be 'Present'
+                $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.DatabaseName2
+                $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
+                $resourceCurrentState.InstanceName  | Should -Be $ConfigurationData.AllNodes.InstanceName
+                $resourceCurrentState.OwnerName | Should -Be $ConfigurationData.AllNodes.OwnerName
+            }
+
+            It 'Should return $true when Test-DscConfiguration is run' {
+                Test-DscConfiguration -Verbose | Should -Be 'True'
+            }
+        }
+
+        $configurationName = "$($script:dscResourceName)_RemoveDatabases_Config"
 
         Context ('When using configuration {0}' -f $configurationName) {
             It 'Should compile and apply the MOF without throwing' {
