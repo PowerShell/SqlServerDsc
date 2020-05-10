@@ -595,6 +595,10 @@ and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-database
   Database Compatibility Level to use for the specified database.
   { Version80 | Version90 | Version100 | Version110 | Version120 | Version130 |
   Version140 | Version150 }
+* **`[String]` RecoveryModel** _(Write)_: The recovery model for the specified
+  database. { Simple | Full | BulkLogged }
+* **`[String]` OwnerName** _(Write)_: Specifies the name of the login that
+  should be the owner of the database.
 * **`[String]` Ensure** _(Write)_: When set to 'Present', the database will be created.
   When set to 'Absent', the database will be dropped. { *Present* | Absent }.
 
