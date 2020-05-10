@@ -63,7 +63,6 @@
         'SqlServerLogin'
         'SqlServerMaxDop'
         'SqlServerMemory'
-        'SqlServerNetwork'
         'SqlServerPermission'
         'SqlServerProtocol'
         'SqlServerProtocolTcpIp'
