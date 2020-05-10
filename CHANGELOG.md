@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - BREAKING CHANGE: Removed resource _SqlServerNetwork_. The functionality
     is now covered by the resources _SqlServerProtocol_ and _SqlServerProtocolTcpIp_.
   - BREAKING CHANGE: Removed resource _SqlDatabaseOwner_. The functionality
-    is now covered by the resources _SqlDatabase_.
+    is now covered by the resources _SqlDatabase_ ([issue #966](https://github.com/dsccommunity/SqlServerDsc/issues/966)).
 
 ### Added
 
