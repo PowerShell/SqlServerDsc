@@ -166,9 +166,9 @@ Configuration DSC_SqlDatabase_AddDatabase5_Config
 
 <#
     .SYNOPSIS
-        Removes the databases, except Database1 which is left.
+        Removes the second databases that was created.
 #>
-Configuration DSC_SqlDatabase_RemoveDatabases_Config
+Configuration DSC_SqlDatabase_RemoveDatabase2_Config
 {
     Import-DscResource -ModuleName 'SqlServerDsc'
 
@@ -185,8 +185,20 @@ Configuration DSC_SqlDatabase_RemoveDatabases_Config
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.Username, (ConvertTo-SecureString -String $Node.Password -AsPlainText -Force))
         }
+    }
+}
 
-        SqlDatabase 'Integration_Test'
+<#
+    .SYNOPSIS
+        Removes the rest of the databases, except Database1 which is left.
+#>
+Configuration DSC_SqlDatabase_RemoveDatabases_Config
+{
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node $AllNodes.NodeName
+    {
+        SqlDatabase 'RemoveDatabase3'
         {
             Ensure               = 'Absent'
             ServerName           = $Node.ServerName
@@ -198,7 +210,7 @@ Configuration DSC_SqlDatabase_RemoveDatabases_Config
                 -ArgumentList @($Node.Username, (ConvertTo-SecureString -String $Node.Password -AsPlainText -Force))
         }
 
-        SqlDatabase 'Integration_Test'
+        SqlDatabase 'RemoveDatabase4'
         {
             Ensure               = 'Absent'
             ServerName           = $Node.ServerName
@@ -210,7 +222,7 @@ Configuration DSC_SqlDatabase_RemoveDatabases_Config
                 -ArgumentList @($Node.Username, (ConvertTo-SecureString -String $Node.Password -AsPlainText -Force))
         }
 
-        SqlDatabase 'Integration_Test'
+        SqlDatabase 'RemoveDatabase5'
         {
             Ensure               = 'Absent'
             ServerName           = $Node.ServerName

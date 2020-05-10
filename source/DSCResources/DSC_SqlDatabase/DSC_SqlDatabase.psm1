@@ -204,7 +204,6 @@ function Set-TargetResource
             # Verify that the correct collation is used.
             if ($Collation -notin $sqlServerObject.EnumCollations().Name)
             {
-
                 $errorMessage = $script:localizedData.InvalidCollation -f $Collation, $InstanceName
 
                 New-ObjectNotFoundException -Message $errorMessage
