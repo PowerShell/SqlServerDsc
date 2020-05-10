@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlServerDsc
   - BREAKING CHANGE: Removed resource _SqlServerNetwork_. The functionality
     is now covered by the resources _SqlServerProtocol_ and _SqlServerProtocolTcpIp_.
+  - BREAKING CHANGE: Removed the deprecated resource _SqlDatabaseRecoveryModel_.
+    The functionality is covered by the resource _SqlDatabase_ ([issue #967](https://github.com/dsccommunity/SqlServerDsc/issues/967)).
 
 ### Added
 

@@ -92,8 +92,6 @@ A full list of changes in each version can be found in the [change log](CHANGELO
   database owners.
 * [**SqlDatabasePermission**](#sqldatabasepermission) resource to
   manage SQL database permissions.
-* [**SqlDatabaseRecoveryModel**](#sqldatabaserecoverymodel) resource
-  to manage database recovery model.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL database roles.
 * [**SqlDatabaseUser**](#sqldatabaseuser) resource to manage SQL database users.
 * [**SqlRS**](#sqlrs) configures SQL Server Reporting.
@@ -578,6 +576,12 @@ This resource is used to create or delete a database. For more information about
 SQL Server databases, please read the following articles [Create a Database](https://docs.microsoft.com/en-us/sql/relational-databases/databases/create-a-database)
 and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-databases/databases/delete-a-database).
 
+This resource set the recovery model for a database. The recovery model controls
+how transactions are logged, whether the transaction log requires (and allows)
+backing up, and what kinds of restore operations are available. Three recovery
+models exist: full, simple, and bulk-logged. Read more about recovery model in
+the article [View or Change the Recovery Model of a Database](https://msdn.microsoft.com/en-us/library/ms189272.aspx).
+
 #### Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.
@@ -718,37 +722,6 @@ will also get their permission revoked.
 #### Known issues
 
 All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabasePermission).
-
-### SqlDatabaseRecoveryModel
-
-This resource set the recovery model for a database. The recovery model controls
-how transactions are logged, whether the transaction log requires (and allows)
-backing up, and what kinds of restore operations are available.
-Three recovery models exist: full, simple, and bulk-logged.
-Read more about recovery model in this article
-[View or Change the Recovery Model of a Database](https://msdn.microsoft.com/en-us/library/ms189272.aspx)
-
-#### Requirements
-
-* Target machine must be running Windows Server 2008 R2 or later.
-* Target machine must be running SQL Server Database Engine 2008 or later.
-
-#### Parameters
-
-* **`[String]` Name** _(Key)_: The SQL database name.
-* **`[String]` InstanceName** _(Key)_: The name of the SQL instance to be configured.
-* **`[String]` RecoveryModel** _(Required)_: The recovery model to use for the database.
-  { Full | Simple | BulkLogged }.
-* **`[String]` ServerName** _(Write)_: The host name of the SQL Server to be configured.
-  Default value is `$env:COMPUTERNAME`.
-
-#### Examples
-
-* [Set the RecoveryModel of a database](/source/Examples/Resources/SqlDatabaseRecoveryModel/1-SetDatabaseRecoveryModel.ps1)
-
-#### Known issues
-
-All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseRecoveryModel).
 
 ### SqlDatabaseRole
 

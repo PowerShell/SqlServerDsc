@@ -19,7 +19,6 @@ These are the links to the examples for each individual resource.
 - [SqlDatabaseDefaultLocation](Resources/SqlDatabaseDefaultLocation)
 - [SqlDatabaseOwner](Resources/SqlDatabaseOwner)
 - [SqlDatabasePermission](Resources/SqlDatabasePermission)
-- [SqlDatabaseRecoveryModel](Resources/SqlDatabaseRecoveryModel)
 - [SqlDatabaseRole](Resources/SqlDatabaseRole)
 - [SqlDatabaseUser](Resources/SqlDatabaseUser)
 - [SqlRS](Resources/SqlRS)
