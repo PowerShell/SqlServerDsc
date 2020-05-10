@@ -19,32 +19,24 @@ $script:supportedCompatibilityLevels = @{
 
 <#
     .SYNOPSIS
-    This function gets the sql database.
+        This function gets the sql database.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+        When set to 'Present', the database will be created.
+        When set to 'Absent', the database will be dropped.
 
     .PARAMETER Name
-    The name of database to be created or dropped.
+      The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
+       The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    The name of the SQL instance to be configured.
+       The name of the SQL instance to be configured.
 
     .PARAMETER Collation
-    The name of the SQL collation to use for the new database.
-    Default value is server collation.
-
-    .PARAMETER CompatibilityLevel
-    The version of the SQL compatibility level to use for the new database.
-    Default value is server version.
-
-    .PARAMETER RecoveryModel
-    The recovery model to be used for the new database.
-    Default value is Full.
+        The name of the SQL collation to use for the new database.
+        Default value is server collation.
 #>
 
 function Get-TargetResource
@@ -72,22 +64,7 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $InstanceName,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Collation,
-
-        [Parameter()]
-        [ValidateSet('Version80', 'Version90', 'Version100', 'Version110', 'Version120', 'Version130', 'Version140', 'Version150')]
-        [System.String]
-        $CompatibilityLevel,
-
-        [Parameter()]
-        [ValidateSet('Simple', 'Full', 'BulkLogged')]
-        [System.String]
-        $RecoveryModel
+        $InstanceName
     )
 
     Write-Verbose -Message (
@@ -106,6 +83,7 @@ function Get-TargetResource
             $sqlDatabaseCollation = $sqlDatabaseObject.Collation
             $sqlDatabaseCompatibilityLevel = $sqlDatabaseObject.CompatibilityLevel
             $sqlDatabaseRecoveryModel = $sqlDatabaseObject.RecoveryModel
+            $sqlDatabaseOwner = $sqlDatabaseObject.Owner
 
             Write-Verbose -Message (
                 $script:localizedData.DatabasePresent -f $Name, $sqlDatabaseCollation, $sqlDatabaseCompatibilityLevel, $sqlDatabaseRecoveryModel
@@ -129,6 +107,7 @@ function Get-TargetResource
         Collation          = $sqlDatabaseCollation
         CompatibilityLevel = $sqlDatabaseCompatibilityLevel
         RecoveryModel      = $sqlDatabaseRecoveryModel
+        OwnerName          = $sqlDatabaseOwner
     }
 
     $returnValue
@@ -136,32 +115,35 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    This function create or delete a database in the SQL Server instance provided.
+        This function create or delete a database in the SQL Server instance provided.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+        When set to 'Present', the database will be created.
+        When set to 'Absent', the database will be dropped.
 
     .PARAMETER Name
-    The name of database to be created or dropped.
+        The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
+       The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    The name of the SQL instance to be configured.
+       The name of the SQL instance to be configured.
 
     .PARAMETER Collation
-    The name of the SQL collation to use for the new database.
-    Default value is server collation.
+        The name of the SQL collation to use for the new database.
+        Default value is server collation.
 
     .PARAMETER CompatibilityLevel
     The version of the SQL compatibility level to use for the new database.
     Default value is server version.
 
     .PARAMETER RecoveryModel
-    The recovery model to be used for the new database.
-    Default value is Full.
+        The recovery model to be used for the new database.
+        Default value is Full.
+
+    .PARAMETER OwnerName
+        Specifies the name of the login that should be the owner of the database.
 #>
 function Set-TargetResource
 {
@@ -202,7 +184,11 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Simple', 'Full', 'BulkLogged')]
         [System.String]
-        $RecoveryModel
+        $RecoveryModel,
+
+        [Parameter()]
+        [System.String]
+        $OwnerName
     )
 
     $sqlServerObject = Connect-SQL -ServerName $ServerName -InstanceName $InstanceName
@@ -251,7 +237,17 @@ function Set-TargetResource
                         Write-Verbose -Message (
                             $script:localizedData.UpdatingRecoveryModel -f $RecoveryModel
                         )
+
                         $sqlDatabaseObject.RecoveryModel = $RecoveryModel
+                    }
+
+                    if ($PSBoundParameters.ContainsKey('OwnerName'))
+                    {
+                        Write-Verbose -Message (
+                            $script:localizedData.UpdatingOwner-f $OwnerName
+                        )
+
+                        $sqlDatabaseObject.Owner = $OwnerName
                     }
 
                     $sqlDatabaseObject.Alter()
@@ -276,6 +272,11 @@ function Set-TargetResource
                         if ($PSBoundParameters.ContainsKey('RecoveryModel'))
                         {
                             $sqlDatabaseObjectToCreate.RecoveryModel = $RecoveryModel
+                        }
+
+                        if ($PSBoundParameters.ContainsKey('OwnerName'))
+                        {
+                            $sqlDatabaseObjectToCreate.Owner = $OwnerName
                         }
 
                         $sqlDatabaseObjectToCreate.Collation = $Collation
@@ -315,32 +316,35 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    This function tests if the sql database is already created or dropped.
+      This function tests if the sql database is already created or dropped.
 
     .PARAMETER Ensure
-    When set to 'Present', the database will be created.
-    When set to 'Absent', the database will be dropped.
+        When set to 'Present', the database will be created.
+        When set to 'Absent', the database will be dropped.
 
     .PARAMETER Name
-    The name of database to be created or dropped.
+       The name of database to be created or dropped.
 
     .PARAMETER ServerName
-    The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
+       The host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.
 
     .PARAMETER InstanceName
-    The name of the SQL instance to be configured.
+     The name of the SQL instance to be configured.
 
     .PARAMETER Collation
-    The name of the SQL collation to use for the new database.
-    Default value is server collation.
+        The name of the SQL collation to use for the new database.
+        Default value is server collation.
 
     .PARAMETER CompatibilityLevel
-    The version of the SQL compatibility level to use for the new database.
-    Default value is server version.
+        The version of the SQL compatibility level to use for the new database.
+        Default value is server version.
 
     .PARAMETER RecoveryModel
-    The recovery model to be used for the new database.
-    Default value is Full.
+        The recovery model to be used for the new database.
+        Default value is Full.
+
+    .PARAMETER OwnerName
+        Specifies the name of the login that should be the owner of the database.
 #>
 function Test-TargetResource
 {
@@ -382,7 +386,11 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Simple', 'Full', 'BulkLogged')]
         [System.String]
-        $RecoveryModel
+        $RecoveryModel,
+
+        [Parameter()]
+        [System.String]
+        $OwnerName
     )
 
     Write-Verbose -Message (
@@ -440,6 +448,15 @@ function Test-TargetResource
                 {
                     Write-Verbose -Message (
                         $script:localizedData.RecoveryModelWrong -f $Name, $getTargetResourceResult.RecoveryModel, $RecoveryModel
+                    )
+
+                    $isDatabaseInDesiredState = $false
+                }
+
+                if ($PSBoundParameters.ContainsKey('OwnerNode') -and $getTargetResourceResult.OwnerNode -ne $OwnerNode)
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.OwnerNameWrong -f $Name, $getTargetResourceResult.OwnerNode, $OwnerNode
                     )
 
                     $isDatabaseInDesiredState = $false

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added the properties `NpEnabled` and `TcpEnabled` ([issue #1161](https://github.com/dsccommunity/SqlServerDsc/issues/1161)).
 - SqlServerReplication
   - Add integration tests ([issue #755](https://github.com/dsccommunity/SqlServerDsc/issues/755)
+- SqlDatabase
+  - The property `OwnerName` was added.
 - SqlServerDsc.Common
   - The helper function `Restart-SqlService` was improved to handle Failover
     Clusters better. Now the SQL Server service will only be taken offline
@@ -56,14 +58,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlDatabase
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
+  - BREAKING CHANGE: The non-mandatory parameters was removed from the
+    function `Get-TargetResource` since they were not needed.
   - Normalize parameter descriptive text for default values.
 - SqlDatabaseDefaultLocation
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
   - Normalize parameter descriptive text for default values.
-- SqlDatabaseOwner
-  - BREAKING CHANGE: Database changed to DatabaseName for consistency with
-    other modules ([issue #1484](https://github.com/dsccommunity/SqlServerDsc/issues/1484)).
 - SqlDatabasePermission
   - BREAKING CHANGE: The parameter `ServerName` is now non-mandatory and
     defaults to `$env:COMPUTERNAME` ([issue #319](https://github.com/dsccommunity/SqlServerDsc/issues/319)).
