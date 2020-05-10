@@ -60,7 +60,6 @@
         'SqlServerDatabaseMail'
         'SqlServerEndpoint'
         'SqlServerEndpointPermission'
-        'SqlServerEndpointState'
         'SqlServerLogin'
         'SqlServerMaxDop'
         'SqlServerMemory'
