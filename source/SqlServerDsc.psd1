@@ -49,7 +49,6 @@
         'SqlDatabaseDefaultLocation'
         'SqlDatabaseOwner'
         'SqlDatabasePermission'
-        'SqlDatabaseRecoveryModel'
         'SqlDatabaseRole'
         'SqlDatabaseUser'
         'SqlRS'
