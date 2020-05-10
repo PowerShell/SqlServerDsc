@@ -261,7 +261,16 @@ function Set-TargetResource
                         $script:localizedData.UpdatingOwner-f $OwnerName
                     )
 
-                    $sqlDatabaseObject.SetOwner($OwnerName)
+                    try
+                    {
+                        $sqlDatabaseObject.SetOwner($OwnerName)
+                    }
+                    catch
+                    {
+                        $errorMessage = $script:localizedData.FailedToUpdateOwner -f $OwnerName, $Name
+
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                    }
 
                     $wasUpdate = $true
                 }
@@ -299,7 +308,16 @@ function Set-TargetResource
 
                         if ($PSBoundParameters.ContainsKey('OwnerName'))
                         {
-                            $sqlDatabaseObjectToCreate.SetOwner($OwnerName)
+                            try
+                            {
+                                $sqlDatabaseObjectToCreate.SetOwner($OwnerName)
+                            }
+                            catch
+                            {
+                                $errorMessage = $script:localizedData.FailedToUpdateOwner -f $OwnerName, $Name
+
+                                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                            }
                         }
 
                         if ($PSBoundParameters.ContainsKey('Collation'))

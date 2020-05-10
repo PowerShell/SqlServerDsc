@@ -145,6 +145,9 @@ try
                                 throw "Called mocked Create() method without adding the right database. Expected '{0}'. But was '{1}'." `
                                     -f $mockExpectedDatabaseNameToCreate, $this.Name
                             }
+                        } -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name 'SetOwner' -Value {
+                            $script:methodSetOwnerWasCalled += 1
                         } -PassThru -Force
                 )
             )

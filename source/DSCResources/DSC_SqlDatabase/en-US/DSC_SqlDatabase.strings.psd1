@@ -21,4 +21,5 @@ ConvertFrom-StringData @'
     RecoveryModelWrong = The database '{0}' exist and has the recovery model '{1}', but expected it to have the recovery model '{2}'.
     OwnerNameWrong = The database '{0}' exist and has the owner '{1}', but expected it to have the owner '{2}'.
     UpdatingOwner = Changing the database owner to '{0}'.
+    FailedToUpdateOwner = Failed changing to owner to '{0}' for the database '{1}'.
 '@
