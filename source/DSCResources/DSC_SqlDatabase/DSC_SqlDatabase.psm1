@@ -306,20 +306,6 @@ function Set-TargetResource
                             $sqlDatabaseObjectToCreate.RecoveryModel = $RecoveryModel
                         }
 
-                        if ($PSBoundParameters.ContainsKey('OwnerName'))
-                        {
-                            try
-                            {
-                                $sqlDatabaseObjectToCreate.SetOwner($OwnerName)
-                            }
-                            catch
-                            {
-                                $errorMessage = $script:localizedData.FailedToUpdateOwner -f $OwnerName, $Name
-
-                                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
-                            }
-                        }
-
                         if ($PSBoundParameters.ContainsKey('Collation'))
                         {
                             $sqlDatabaseObjectToCreate.Collation = $Collation
@@ -331,6 +317,16 @@ function Set-TargetResource
                         }
 
                         $sqlDatabaseObjectToCreate.Create()
+
+                        <#
+                            This must be run after the object is created because
+                            the owner property is read-only and the method cannot
+                            be call until the object has been created.
+                        #>
+                        if ($PSBoundParameters.ContainsKey('OwnerName'))
+                        {
+                            $sqlDatabaseObjectToCreate.SetOwner($OwnerName)
+                        }
                     }
                 }
                 catch
