@@ -769,10 +769,10 @@ Describe 'SqlServerDsc.Common\Restart-SqlService' -Tag 'RestartSqlService' {
             It 'Should restart SQL Service and running SQL Agent service' {
                 { Restart-SqlService -ServerName $env:COMPUTERNAME -InstanceName 'MSSQLSERVER' } | Should -Not -Throw
 
-                # Assert-MockCalled -CommandName Connect-SQL -ParameterFilter {
-                #     # Make sure we assert just the first call to Connect-SQL
-                #     $PSBoundParameters.ContainsKey('ErrorAction') -eq $false
-                # } -Scope It -Exactly -Times 1
+                Assert-MockCalled -CommandName Connect-SQL -ParameterFilter {
+                    # Make sure we assert just the first call to Connect-SQL
+                    $PSBoundParameters.ContainsKey('ErrorAction') -eq $false
+                } -Scope It -Exactly -Times 1
 
                 Assert-MockCalled -CommandName Restart-SqlClusterService -Scope It -Exactly -Times 0 -ModuleName $script:subModuleName
                 Assert-MockCalled -CommandName Get-Service -Scope It -Exactly -Times 1
@@ -1895,7 +1895,7 @@ Describe 'SqlServerDsc.Common\Update-AvailabilityGroupReplica' -Tag 'UpdateAvail
                 $mockErrorMessage | Should -Not -BeNullOrEmpty
 
                 # Support both Pester 4 and 5.
-                if ((Get-Module pester).Version -ge '5.0.0.0')
+                if ((Get-Module -Name Pester).Version -ge '5.0.0')
                 {
                     $mockErrorMessage = $mockErrorMessage + '*'
                 }
@@ -1939,22 +1939,22 @@ Describe 'SqlServerDsc.Common\Test-LoginEffectivePermissions' -Tag 'TestLoginEff
                     }
                 }
             }
+        }
 
-            $testLoginEffectiveServerPermissionsParams = @{
-                ServerName = 'Server1'
-                InstanceName = 'MSSQLSERVER'
-                Login = 'NT SERVICE\ClusSvc'
-                Permissions = @()
-            }
+        $testLoginEffectiveServerPermissionsParams = @{
+            ServerName = 'Server1'
+            InstanceName = 'MSSQLSERVER'
+            Login = 'NT SERVICE\ClusSvc'
+            Permissions = @()
+        }
 
-            $testLoginEffectiveLoginPermissionsParams = @{
-                ServerName = 'Server1'
-                InstanceName = 'MSSQLSERVER'
-                Login = 'NT SERVICE\ClusSvc'
-                Permissions = @()
-                SecurableClass = 'LOGIN'
-                SecurableName = 'Login1'
-            }
+        $testLoginEffectiveLoginPermissionsParams = @{
+            ServerName = 'Server1'
+            InstanceName = 'MSSQLSERVER'
+            Login = 'NT SERVICE\ClusSvc'
+            Permissions = @()
+            SecurableClass = 'LOGIN'
+            SecurableName = 'Login1'
         }
     }
 
@@ -3233,9 +3233,8 @@ Describe 'SqlServerDsc.Common\Invoke-SqlScript' -Tag 'InvokeSqlScript' {
         BeforeAll {
             $throwMessage = "Failed to import SQLPS module."
 
-                Mock -CommandName Import-SQLPSModule -MockWith {
-                    throw $throwMessage
-                }
+            Mock -CommandName Import-SQLPSModule -MockWith {
+                throw $throwMessage
             }
         }
 
