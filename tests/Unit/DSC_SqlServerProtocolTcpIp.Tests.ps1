@@ -923,14 +923,14 @@ try
                         Mock -CommandName Get-ServerProtocolObject -MockWith {
                             return New-Object -TypeName PSObject |
                                     Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                            Name  = 'IPAll'
-                                            IPAll = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            TcpPort = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value '1433' -PassThru -Force
-                                                            TcpDynamicPorts = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value '' -PassThru -Force
-                                                        } -PassThru -Force
+                                        Name  = 'IPAll'
+                                        IPAll = New-Object -TypeName PSObject |
+                                            Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                TcpPort = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'Value' -Value '1433' -PassThru -Force
+                                                TcpDynamicPorts = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'Value' -Value '' -PassThru -Force
+                                            } -PassThru -Force
                                     } -PassThru |
                                     Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                                         <#
@@ -988,14 +988,14 @@ try
                         Mock -CommandName Get-ServerProtocolObject -MockWith {
                             return New-Object -TypeName PSObject |
                                     Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                            Name  = 'IPAll'
-                                            IPAll = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            TcpPort = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value '' -PassThru -Force
-                                                            TcpDynamicPorts = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value '50000' -PassThru -Force
-                                                        } -PassThru -Force
+                                        Name  = 'IPAll'
+                                        IPAll = New-Object -TypeName PSObject |
+                                            Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                TcpPort = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'Value' -Value '' -PassThru -Force
+                                                TcpDynamicPorts = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'Value' -Value '50000' -PassThru -Force
+                                            } -PassThru -Force
                                     } -PassThru |
                                     Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                                         <#
@@ -1054,12 +1054,12 @@ try
                             Mock -CommandName Get-ServerProtocolObject -MockWith {
                                 return New-Object -TypeName PSObject |
                                         Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                                Name  = 'IP1'
-                                                IP1 = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            Enabled = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value $false -PassThru -Force
-                                                        } -PassThru -Force
+                                            Name  = 'IP1'
+                                            IP1 = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                        Enabled = New-Object -TypeName PSObject |
+                                                            Add-Member -MemberType NoteProperty -Name 'Value' -Value $false -PassThru -Force
+                                                    } -PassThru -Force
                                         } -PassThru |
                                         Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                                             <#
@@ -1116,12 +1116,12 @@ try
                             Mock -CommandName Get-ServerProtocolObject -MockWith {
                                 return New-Object -TypeName PSObject |
                                         Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                                Name  = 'IP1'
-                                                IP1 = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            Enabled = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value $true -PassThru -Force
-                                                        } -PassThru -Force
+                                            Name  = 'IP1'
+                                            IP1 = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                        Enabled = New-Object -TypeName PSObject |
+                                                            Add-Member -MemberType NoteProperty -Name 'Value' -Value $true -PassThru -Force
+                                                    } -PassThru -Force
                                         } -PassThru |
                                         Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                                             <#
@@ -1179,12 +1179,12 @@ try
                             Mock -CommandName Get-ServerProtocolObject -MockWith {
                                 return New-Object -TypeName PSObject |
                                         Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                                Name  = 'IP1'
-                                                IP1 = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            IpAddress = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value '10.0.0.1' -PassThru -Force
-                                                        } -PassThru -Force
+                                            Name  = 'IP1'
+                                            IP1 = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                        IpAddress = New-Object -TypeName PSObject |
+                                                            Add-Member -MemberType NoteProperty -Name 'Value' -Value '10.0.0.1' -PassThru -Force
+                                                    } -PassThru -Force
                                         } -PassThru |
                                         Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {
                                             <#
@@ -1242,12 +1242,12 @@ try
                             Mock -CommandName Get-ServerProtocolObject -MockWith {
                                 return New-Object -TypeName PSObject |
                                         Add-Member -MemberType NoteProperty -Name 'IPAddresses' -Value @{
-                                                Name  = 'IP1'
-                                                IP1 = New-Object -TypeName PSObject |
-                                                        Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
-                                                            Enabled = New-Object -TypeName PSObject |
-                                                                Add-Member -MemberType NoteProperty -Name 'Value' -Value $true -PassThru -Force
-                                                        } -PassThru -Force
+                                            Name  = 'IP1'
+                                            IP1 = New-Object -TypeName PSObject |
+                                                    Add-Member -MemberType NoteProperty -Name 'IPAddressProperties' -Value @{
+                                                        Enabled = New-Object -TypeName PSObject |
+                                                            Add-Member -MemberType NoteProperty -Name 'Value' -Value $true -PassThru -Force
+                                                    } -PassThru -Force
                                         } -PassThru |
                                         Add-Member -MemberType ScriptMethod -Name 'Alter' -Value {} -PassThru -Force
                             }
