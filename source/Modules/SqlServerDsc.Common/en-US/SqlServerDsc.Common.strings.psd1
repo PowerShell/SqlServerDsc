@@ -54,7 +54,6 @@ ConvertFrom-StringData @'
     EvaluatePropertyState = Evaluating the state of the property '{0}'. (SQLCOMMON0059)
     PropertyInDesiredState = The parameter '{0}' is in desired state. (SQLCOMMON0060)
     PropertyNotInDesiredState = The parameter '{0}' is not in desired state. (SQLCOMMON0061)
-    ArrayValueThatDoesNotMatch = {0} - {1} (SQLCOMMON0062)
     PropertyValueOfTypeDoesNotMatch = {0} value does not match. Current value is '{1}', but expected the value '{2}'. (SQLCOMMON0063)
     UnableToCompareType = Unable to compare the type {0} as it is not handled by the Test-DscPropertyState cmdlet. (SQLCOMMON0064)
     ArrayDoesNotMatch = One or more values in an array does not match the desired state. Details of the changes are below. (SQLCOMMON0065)
@@ -62,4 +61,10 @@ ConvertFrom-StringData @'
     NotOwnerOfClusterResource = The node '{0}' is not the owner of the cluster resource '{1}'. The owner is '{2}' so no restart is needed. (SQLCOMMON0067)
     LoadedAssembly = Loaded the assembly '{0}'. (SQLCOMMON0068)
     FailedToLoadAssembly = Failed to load the assembly '{0}'. (SQLCOMMON0069)
+    TooManyCimInstances = More than one CIM instance was returned from the current state. (SQLCOMMON0070)
+    TestingCimInstance = Testing CIM instance '{0}' with the key properties '{1}'. (SQLCOMMON0071)
+    MissingCimInstance = The CIM instance '{0}' with the key properties '{1}' is missing. (SQLCOMMON0072)
+    ArrayValueIsAbsent = The array value '{0}' is absent. (SQLCOMMON0073)
+    ArrayValueIsPresent = The array value '{0}' is present. (SQLCOMMON0073)
+    KeyPropertiesMissing = The hashtable passed to function Test-DscPropertyState is missing the key 'KeyProperties'. This must be set to the property names that makes each instance in the CIM instance collection unique. (SQLCOMMON0074)
 '@

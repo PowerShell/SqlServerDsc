@@ -2223,6 +2223,14 @@ function Find-ExceptionByNumber
         An array of property names, from the keys provided in DesiredValues, that
         will be compared. If this parameter is left out, all the keys in the
         DesiredValues will be compared.
+
+    .PARAMETER CimInstanceKeyProperties
+        A hashtable containing a key for each property that contain a collection
+        of CimInstances and the value is an array of strings of the CimInstance
+        key properties.
+        @{
+            Permission = @('State')
+        }
 #>
 function Compare-ResourcePropertyState
 {
@@ -2244,7 +2252,11 @@ function Compare-ResourcePropertyState
 
         [Parameter()]
         [System.String[]]
-        $IgnoreProperties
+        $IgnoreProperties,
+
+        [Parameter()]
+        [System.Collections.Hashtable]
+        $CimInstanceKeyProperties = @{}
     )
 
     if ($PSBoundParameters.ContainsKey('Properties'))
@@ -2306,6 +2318,7 @@ function Compare-ResourcePropertyState
         $isPropertyInDesiredState = Test-DscPropertyState -Values @{
             CurrentValue = $CurrentValues.$parameterName
             DesiredValue = $DesiredValues.$parameterName
+            KeyProperties = $CimInstanceKeyProperties.$parameterName
         }
 
         if ($isPropertyInDesiredState)
@@ -2369,7 +2382,132 @@ function Test-DscPropertyState
         # Either CurrentValue or DesiredValue are $null so return $false
         $returnValue = $false
     }
-    elseif ($Values.DesiredValue.GetType().IsArray -or $Values.CurrentValue.GetType().IsArray)
+    elseif (
+        $Values.DesiredValue -is [Microsoft.Management.Infrastructure.CimInstance[]] `
+        -or $Values.DesiredValue -is [System.Array] -and $Values.DesiredValue[0] -is [Microsoft.Management.Infrastructure.CimInstance]
+    )
+    {
+        if (-not $Values.ContainsKey('KeyProperties'))
+        {
+            $errorMessage = $script:localizedData.KeyPropertiesMissing
+
+            New-InvalidOperationException -Message $errorMessage
+        }
+
+        $propertyState = @()
+
+        <#
+            It is a collection of CIM instances, then recursively call
+            Test-DscPropertyState for each CIM instance in the collection.
+        #>
+        foreach ($desiredCimInstance in $Values.DesiredValue)
+        {
+            <#
+                Use the CIM instance Key properties to filter out the current
+                values if the exist.
+            #>
+            foreach ($keyProperty in $Values.KeyProperties)
+            {
+                $currentCimInstance = $Values.CurrentValue |
+                    Where-Object -Property $keyProperty -EQ -Value $desiredCimInstance.$keyProperty
+            }
+
+            if ($currentCimInstance.Count -gt 1)
+            {
+                $errorMessage = $script:localizedData.TooManyCimInstances
+
+                New-InvalidOperationException -Message $errorMessage
+            }
+
+            if ($currentCimInstance)
+            {
+                $keyCimInstanceProperties = $currentCimInstance.CimInstanceProperties |
+                    Where-Object -FilterScript {
+                        $_.Name -in $Values.KeyProperties
+                    }
+
+                <#
+                    For each key property build a string representation of the
+                    property name and its value.
+                #>
+                $keyPropertyValues = $keyCimInstanceProperties.ForEach({'{0}="{1}"' -f $_.Name, ($_.Value -join ',')})
+
+                Write-Verbose -Message (
+                    $script:localizedData.TestingCimInstance -f @(
+                        $currentCimInstance.CimClass.CimClassName,
+                        ($keyPropertyValues -join ';')
+                    )
+                ) -Verbose
+            }
+            else
+            {
+                $keyCimInstanceProperties = $desiredCimInstance.CimInstanceProperties |
+                    Where-Object -FilterScript {
+                        $_.Name -in $Values.KeyProperties
+                    }
+
+                <#
+                    For each key property build a string representation of the
+                    property name and its value.
+                #>
+                $keyPropertyValues = $keyCimInstanceProperties.ForEach({'{0}="{1}"' -f $_.Name, ($_.Value -join ',')})
+
+                Write-Verbose -Message (
+                    $script:localizedData.MissingCimInstance -f @(
+                        $desiredCimInstance.CimClass.CimClassName,
+                        ($keyPropertyValues -join ';')
+                    )
+                ) -Verbose
+            }
+
+            # Recursively call Test-DscPropertyState with the CimInstance to evaluate.
+            $propertyState += Test-DscPropertyState -Values @{
+                CurrentValue = $currentCimInstance
+                DesiredValue = $desiredCimInstance
+            }
+        }
+
+        # Return $false if one property is found to not be in desired state.
+        $returnValue = -not ($false -in $propertyState)
+    }
+    elseif ($Values.DesiredValue -is [Microsoft.Management.Infrastructure.CimInstance])
+    {
+        $propertyState = @()
+
+        <#
+            It is a CIM instance, recursively call Test-DscPropertyState for each
+            CIM instance property.
+        #>
+        $desiredCimInstanceProperties = $Values.DesiredValue.CimInstanceProperties |
+            Select-Object -Property @('Name', 'Value')
+
+        if ($desiredCimInstanceProperties)
+        {
+            foreach ($desiredCimInstanceProperty in $desiredCimInstanceProperties)
+            {
+                <#
+                    Recursively call Test-DscPropertyState to evaluate each property
+                    in the CimInstance.
+                #>
+                $propertyState += Test-DscPropertyState -Values @{
+                    CurrentValue = $Values.CurrentValue.($desiredCimInstanceProperty.Name)
+                    DesiredValue = $desiredCimInstanceProperty.Value
+                }
+            }
+        }
+        else
+        {
+            if ($Values.CurrentValue.CimInstanceProperties.Count -gt 0)
+            {
+                # Current value did not have any CIM properties, but desired state has.
+                $propertyState += $false
+            }
+        }
+
+        # Return $false if one property is found to not be in desired state.
+        $returnValue = -not ($false -in $propertyState)
+    }
+    elseif ($Values.DesiredValue -is [System.Array] -or $Values.CurrentValue -is [System.Array])
     {
         $compareObjectParameters = @{
             ReferenceObject  = $Values.CurrentValue
@@ -2384,8 +2522,18 @@ function Test-DscPropertyState
 
             $arrayCompare |
                 ForEach-Object -Process {
-                    Write-Verbose -Message ($script:localizedData.ArrayValueThatDoesNotMatch -f `
-                            $_.InputObject, $_.SideIndicator) -Verbose
+                    if ($_.SideIndicator -eq '=>')
+                    {
+                        Write-Verbose -Message (
+                            $script:localizedData.ArrayValueIsAbsent -f $_.InputObject
+                        ) -Verbose
+                    }
+                    else
+                    {
+                        Write-Verbose -Message (
+                            $script:localizedData.ArrayValueIsPresent -f $_.InputObject
+                        ) -Verbose
+                    }
                 }
 
             $returnValue = $false

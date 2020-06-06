@@ -79,6 +79,17 @@ in a future release.
     names. Using this parameter the cluster group will only be taken
     offline and back online if the cluster group owner is one specified
     in this parameter.
+  - The helper function `Compare-ResourcePropertyState` was improved to
+    handle embedded instances by adding a parameter `CimInstanceKeyProperties`
+    that can be used to identify the unique parameter for each embedded
+    instance in a collection.
+  - The helper function `Test-DscPropertyState` was improved to evaluate
+    the properties in a single CIM instance or a collection of CIM instances
+    by recursively call itself.
+  - When the helper function `Test-DscPropertyState` evaluated an array
+    the verbose messages was not very descriptive. Instead of outputting
+    the side indicator from the compare it now outputs a descriptive
+    message.
 
 ### Changed
 
