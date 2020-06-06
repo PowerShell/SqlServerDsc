@@ -168,6 +168,7 @@ stages:
                   'tests/Integration/DSC_SqlServerProtocol.Integration.Tests.ps1'
                   # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
                   'tests/Integration/DSC_SqlServerProtocolTcpIp.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
               )
             name: test
             displayName: 'Run Integration Test'
@@ -235,6 +236,7 @@ stages:
                   'tests/Integration/DSC_SqlServerProtocol.Integration.Tests.ps1'
                   # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
                   'tests/Integration/DSC_SqlServerProtocolTcpIp.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
               )
             name: test
             displayName: 'Run Integration Test'

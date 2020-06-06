@@ -100,6 +100,9 @@ in a future release.
   is present or absent.
 * [**SqlDatabaseDefaultLocation**](#sqldatabasedefaultlocation) resource
   to manage default locations for Data, Logs, and Backups for SQL Server
+* [**SqlDatabaseObjectPermission**](#sqldatabaseobjectpermission) resource
+  to manage the permissions of database objects in a database for a SQL
+  Server instance.
 * [**SqlDatabasePermission**](#sqldatabasepermission) resource to
   manage SQL database permissions.
 * [**SqlDatabaseRole**](#sqldatabaserole) resource to manage SQL database roles.
@@ -666,6 +669,68 @@ more information about database default locations, please read the article
 #### Known issues
 
 All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseDefaultLocation).
+
+### SqlDatabaseObjectPermission
+
+This DSC resource is used to manage the permissions of database objects
+in a database for a SQL Server instance.
+
+For more information about permission names that can be managed, see the
+property names of the [ObjectPermissionSet](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.smo.objectpermissionset#properties) class.
+
+>**Note:** When revoking permission with PermissionState 'GrantWithGrant', both the
+>grantee and _all the other users the grantee has granted the same permission to_,
+>will also get their permission revoked.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2012 or later.
+* Target machine must be running SQL Server 2012 or later.
+* Target machine must have access to the SQLPS PowerShell module or the
+  SqlServer PowerShell module.
+
+#### Parameters
+
+* **`[String]` InstanceName** _(Key)_: Specifies the name of the SQL instance
+  to be configured.
+* **`[String]` DatabaseName** _(Key)_: Specifies the name of the database
+  where the object resides.
+* **`[String]` SchemaName** _(Key)_: Specifies the name of the schema for
+  the database object.
+* **`[String]` ObjectName** _(Key)_: Specifies the name of the database
+  object to set permission for. Can be an empty value when setting permission
+  for a schema.
+* **`[String]` ObjectType** _(Key)_: Specifies the type of the database
+  object specified in parameter `ObjectName`. { Schema | Table | View |
+  StoredProcedure }.
+* **`[String]` Name** _(Key)_: Specifies the name of the database user,
+  user-defined database role, or database application role that will have
+  the permission.
+* **`[DSC_DatabaseObjectPermission[]]` Permission** _(Required)_: Specifies
+  the permissions as an array of embedded instances of the DSC_DatabaseObjectPermission
+  CIM class.
+* **`[String]` ServerName** _(Write)_: Specifies the host name of the SQL
+  Server to be configured. Default value is `$env:COMPUTERNAME`.
+
+##### Embedded instance DSC_DatabaseObjectPermission
+
+* **`[String]` State** _(Key)_: Specifies the state of the permission.
+  Valid values are 'Grant', 'Deny' and 'GrantWithGrant'.
+* **`[String[]]` Permission** _(Required)_: Specifies the set of permissions
+  for the database object for the principal assigned to 'Name'. Valid
+  permission names can be found in the article [ObjectPermissionSet Class properties](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.smo.objectpermissionset#properties).
+* **`[String]` Ensure** _(Key)_: Specifies the desired state of the permission.
+  When set to 'Present', the permissions will be added. When set to 'Absent',
+  the permissions will be removed. Default value is 'Present'.
+
+#### Examples
+
+* [Add Database Permission](/source/Examples/Resources/SqlDatabaseObjectPermission/1-AddDatabaseObjectPermissions.ps1)
+* [Remove Database Permission](/source/Examples/Resources/SqlDatabaseObjectPermission/2-RemoveDatabaseObjectPermissions.ps1)
+
+#### Known issues
+
+All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlDatabaseObjectPermission).
 
 ### SqlDatabasePermission
 

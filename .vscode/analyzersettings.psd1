@@ -1,7 +1,7 @@
 @{
     CustomRulePath      = '.\output\RequiredModules\DscResource.AnalyzerRules'
     IncludeDefaultRules = $true
-    IncludeRules   = @(
+    IncludeRules        = @(
         # DSC Resource Kit style guideline rules.
         'PSAvoidDefaultValueForMandatoryParameter',
         'PSAvoidDefaultValueSwitchParameter',
@@ -38,7 +38,46 @@
         'PSUseDeclaredVarsMoreThanAssignments',
         'PSUsePSCredentialType',
 
+        # Additional rules
+        'PSUseConsistentWhitespace',
+        'UseCorrectCasing',
+        'PSPlaceOpenBrace',
+        'PSPlaceCloseBrace',
+        'AlignAssignmentStatement',
+
         'Measure-*'
     )
 
+    Rules               = @{
+        PSUseConsistentWhitespace  = @{
+            Enable                          = $true
+            CheckOpenBrace                  = $false
+            CheckInnerBrace                 = $true
+            CheckOpenParen                  = $true
+            CheckOperator                   = $false
+            CheckSeparator                  = $true
+            CheckPipe                       = $true
+            CheckPipeForRedundantWhitespace = $true
+            CheckParameter                  = $false
+        }
+
+        PSPlaceOpenBrace           = @{
+            Enable             = $true
+            OnSameLine         = $false
+            NewLineAfter       = $true
+            IgnoreOneLineBlock = $false
+        }
+
+        PSPlaceCloseBrace          = @{
+            Enable             = $true
+            NoEmptyLineBefore  = $true
+            IgnoreOneLineBlock = $false
+            NewLineAfter       = $true
+        }
+
+        PSAlignAssignmentStatement = @{
+            Enable         = $true
+            CheckHashtable = $true
+        }
+    }
 }

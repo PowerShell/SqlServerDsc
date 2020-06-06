@@ -1,0 +1,20 @@
+[ClassVersion("1.0.0.0"), FriendlyName("SqlDatabaseObjectPermission")]
+class DSC_SqlDatabaseObjectPermission : OMI_BaseResource
+{
+    [Key, Description("Specifies the name of the SQL instance to be configured.")] String InstanceName;
+    [Key, Description("Specifies the name of the database where the object resides.")] String DatabaseName;
+    [Key, Description("Specifies the name of the schema for the database object.")] String SchemaName;
+    [Key, Description("Specifies the name of the database object to set permission for. Can be an empty value when setting permission for a schema.")] String ObjectName;
+    [Key, Description("Specifies the type of the database object specified in parameter ObjectName."), ValueMap{"Schema", "Table","View","StoredProcedure"}, Values{"Schema", "Table","View","StoredProcedure"}] String ObjectType;
+    [Key, Description("Specifies the name of the database user, user-defined database role, or database application role that will have the permission.")] String Name;
+    [Required, EmbeddedInstance("DSC_DatabaseObjectPermission"), Description("Specifies the permissions as an array of embedded instances of the DSC_DatabaseObjectPermission CIM class.")] String Permission[];
+    [Write, Description("Specifies the host name of the SQL Server to be configured. Default value is $env:COMPUTERNAME.")] String ServerName;
+};
+
+[ClassVersion("1.0.0")]
+class DSC_DatabaseObjectPermission
+{
+    [Key, Description("Specifies the state of the permission. Valid values are 'Grant', 'Deny' and 'GrantWithGrant'."), ValueMap{"Grant","Deny","GrantWithGrant"}, Values{"Grant","Deny","GrantWithGrant"}] String State;
+    [Required, Description("Specifies the set of permissions for the database object for the principal assigned to 'Name'.")] String Permission[];
+    [Write, Description("Specifies the desired state of the permission. When set to 'Present', the permissions will be added. When set to 'Absent', the permissions will be removed. Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+};

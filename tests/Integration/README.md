@@ -413,3 +413,23 @@ worker.*
 
 *The integration tests will clean up and not leave anything on the build
 worker.*
+
+## SqlDatabaseObjectPermission
+
+**Run order:** 6
+
+**Depends on:** SqlSetup, SqlDatabase (and uses SqlScriptQuery)
+
+The integration test will leave these database objects for other integration tests
+to use.
+
+Database | Object Name | Object Type | Schema
+--- | --- | --- | ---
+Database1 | Table1 | Table | dbo
+
+The integration test will leave these user permissions for database objects
+for other integration tests to use.
+
+User name | Database | Object Name | Permission
+--- | --- | --- | ---
+User1 | Database1 | Table1 | Select
