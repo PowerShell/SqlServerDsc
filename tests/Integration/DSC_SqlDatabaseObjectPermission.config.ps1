@@ -87,8 +87,8 @@ Configuration DSC_SqlDatabaseObjectPermission_Prerequisites_Config
             PsDscRunAsCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @(
-                    $Node.Admin_Username,
-                    (ConvertTo-SecureString -String $Node.Admin_Password -AsPlainText -Force)
+                    $Node.Username,
+                    (ConvertTo-SecureString -String $Node.Password -AsPlainText -Force)
                 )
         }
     }
