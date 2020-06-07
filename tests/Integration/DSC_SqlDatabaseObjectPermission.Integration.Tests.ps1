@@ -107,17 +107,17 @@ try
                 $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
-                $getTargetResourceResult.Permission | Should -HaveCount 2
-                $getTargetResourceResult.Permission[0] | Should -BeOfType 'CimInstance'
-                $getTargetResourceResult.Permission[1] | Should -BeOfType 'CimInstance'
+                $resourceCurrentState.Permission | Should -HaveCount 2
+                $resourceCurrentState.Permission[0] | Should -BeOfType 'CimInstance'
+                $resourceCurrentState.Permission[1] | Should -BeOfType 'CimInstance'
 
-                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Grant' })
+                $grantPermission = $resourceCurrentState.Permission.Where( { $_.State -eq 'Grant' })
                 $grantPermission | Should -Not -BeNullOrEmpty
                 $grantPermission.Ensure | Should -Be 'Present'
                 $grantPermission.Permission | Should -HaveCount 1
                 $grantPermission.Permission | Should -Contain @('Select')
 
-                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Deny' })
+                $grantPermission = $resourceCurrentState.Permission.Where( { $_.State -eq 'Deny' })
                 $grantPermission | Should -Not -BeNullOrEmpty
                 $grantPermission.Ensure | Should -Be 'Present'
                 $grantPermission.Permission | Should -HaveCount 2
@@ -176,17 +176,17 @@ try
                 $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
-                $getTargetResourceResult.Permission | Should -HaveCount 2
-                $getTargetResourceResult.Permission[0] | Should -BeOfType 'CimInstance'
-                $getTargetResourceResult.Permission[1] | Should -BeOfType 'CimInstance'
+                $resourceCurrentState.Permission | Should -HaveCount 2
+                $resourceCurrentState.Permission[0] | Should -BeOfType 'CimInstance'
+                $resourceCurrentState.Permission[1] | Should -BeOfType 'CimInstance'
 
-                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Grant' })
+                $grantPermission = $resourceCurrentState.Permission.Where( { $_.State -eq 'Grant' })
                 $grantPermission | Should -Not -BeNullOrEmpty
                 $grantPermission.Ensure | Should -Be 'Absent'
                 $grantPermission.Permission | Should -HaveCount 1
                 $grantPermission.Permission | Should -Contain @('Select')
 
-                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Deny' })
+                $grantPermission = $resourceCurrentState.Permission.Where( { $_.State -eq 'Deny' })
                 $grantPermission | Should -Not -BeNullOrEmpty
                 $grantPermission.Ensure | Should -Be 'Absent'
                 $grantPermission.Permission | Should -HaveCount 2
