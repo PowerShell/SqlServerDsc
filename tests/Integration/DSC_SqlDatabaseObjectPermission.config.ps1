@@ -1,3 +1,7 @@
+# Suppressing this rule because ConvertTo-SecureString is used to simplify the tests.
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
+param ()
+
 $configFile = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'json')
 if (Test-Path -Path $configFile)
 {
