@@ -36,26 +36,26 @@ else
 
                 GetQuery        = @'
 select b.name + '.' + a.name As ObjectName
-from sys.objects a
-inner join sys.schemas b
+from [$(DatabaseName)].sys.objects a
+inner join [$(DatabaseName)].sys.schemas b
     on a.schema_id = b.schema_id
 where a.name = '$(TableName)'
 FOR JSON AUTO
 '@
 
                 TestQuery       = @'
-if (select count(name) from sys.objects where name = '$(TableName)') = 0
+if (select count(name) from [$(DatabaseName)].sys.objects where name = '$(TableName)') = 0
 BEGIN
-    RAISERROR ('Did not find table [$(TableName)]', 16, 1)
+    RAISERROR ('Did not find table [$(TableName)] in database [$(DatabaseName)].', 16, 1)
 END
 ELSE
 BEGIN
-    PRINT 'Found table [$(TableName)]'
+    PRINT 'Found table [$(TableName)] in database [$(DatabaseName)].'
 END
 '@
 
                 SetQuery        = @'
-CREATE TABLE [dbo].[Table1](
+CREATE TABLE [$(DatabaseName)].[dbo].[$(TableName)](
     [Name] [nchar](10) NULL
 ) ON [PRIMARY]
 '@
@@ -86,6 +86,7 @@ Configuration DSC_SqlDatabaseObjectPermission_Prerequisites_Config
             QueryTimeout         = 30
             Variable             = @(
                 ('TableName={0}' -f $Node.TableName)
+                ('DatabaseName={0}' -f $Node.DatabaseName)
             )
 
             PsDscRunAsCredential = New-Object `
