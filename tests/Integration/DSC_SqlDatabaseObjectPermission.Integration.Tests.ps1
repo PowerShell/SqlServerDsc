@@ -102,9 +102,27 @@ try
                 $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
                 $resourceCurrentState.InstanceName | Should -Be $ConfigurationData.AllNodes.InstanceName
                 $resourceCurrentState.DatabaseName | Should -Be $ConfigurationData.AllNodes.DatabaseName
+                $resourceCurrentState.SchemaName | Should -Be $ConfigurationData.AllNodes.SchemaName
+                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.ObjectName
+                $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
-                # TODO: Make sure to test all properties.
+                $getTargetResourceResult.Permission | Should -HaveCount 2
+                $getTargetResourceResult.Permission[0] | Should -BeOfType 'CimInstance'
+                $getTargetResourceResult.Permission[1] | Should -BeOfType 'CimInstance'
+
+                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Grant' })
+                $grantPermission | Should -Not -BeNullOrEmpty
+                $grantPermission.Ensure | Should -Be 'Present'
+                $grantPermission.Permission | Should -HaveCount 1
+                $grantPermission.Permission | Should -Contain @('Select')
+
+                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Deny' })
+                $grantPermission | Should -Not -BeNullOrEmpty
+                $grantPermission.Ensure | Should -Be 'Present'
+                $grantPermission.Permission | Should -HaveCount 2
+                $grantPermission.Permission | Should -Contain @('Delete')
+                $grantPermission.Permission | Should -Contain @('Alter')
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {
@@ -153,9 +171,27 @@ try
                 $resourceCurrentState.ServerName | Should -Be $ConfigurationData.AllNodes.ServerName
                 $resourceCurrentState.InstanceName | Should -Be $ConfigurationData.AllNodes.InstanceName
                 $resourceCurrentState.DatabaseName | Should -Be $ConfigurationData.AllNodes.DatabaseName
+                $resourceCurrentState.SchemaName | Should -Be $ConfigurationData.AllNodes.SchemaName
+                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.ObjectName
+                $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
-                # TODO: Make sure to test all properties.
+                $getTargetResourceResult.Permission | Should -HaveCount 2
+                $getTargetResourceResult.Permission[0] | Should -BeOfType 'CimInstance'
+                $getTargetResourceResult.Permission[1] | Should -BeOfType 'CimInstance'
+
+                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Grant' })
+                $grantPermission | Should -Not -BeNullOrEmpty
+                $grantPermission.Ensure | Should -Be 'Absent'
+                $grantPermission.Permission | Should -HaveCount 1
+                $grantPermission.Permission | Should -Contain @('Select')
+
+                $grantPermission = $getTargetResourceResult.Permission.Where( { $_.State -eq 'Deny' })
+                $grantPermission | Should -Not -BeNullOrEmpty
+                $grantPermission.Ensure | Should -Be 'Absent'
+                $grantPermission.Permission | Should -HaveCount 2
+                $grantPermission.Permission | Should -Contain @('Delete')
+                $grantPermission.Permission | Should -Contain @('Alter')
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {
