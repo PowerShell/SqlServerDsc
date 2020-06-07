@@ -182,7 +182,7 @@ try
 
                 $grantPermission = $resourceCurrentState.Permission.Where( { $_.State -eq 'Grant' })
                 $grantPermission | Should -Not -BeNullOrEmpty
-                $grantPermission.Ensure | Should -Be 'Absent'
+                $grantPermission.Ensure | Should -Be 'Present'
                 $grantPermission.Permission | Should -HaveCount 1
                 $grantPermission.Permission | Should -Contain @('Select')
 
