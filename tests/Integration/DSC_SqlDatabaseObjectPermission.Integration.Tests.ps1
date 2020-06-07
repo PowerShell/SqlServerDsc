@@ -103,7 +103,7 @@ try
                 $resourceCurrentState.InstanceName | Should -Be $ConfigurationData.AllNodes.InstanceName
                 $resourceCurrentState.DatabaseName | Should -Be $ConfigurationData.AllNodes.DatabaseName
                 $resourceCurrentState.SchemaName | Should -Be $ConfigurationData.AllNodes.SchemaName
-                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.ObjectName
+                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.TableName
                 $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
@@ -172,7 +172,7 @@ try
                 $resourceCurrentState.InstanceName | Should -Be $ConfigurationData.AllNodes.InstanceName
                 $resourceCurrentState.DatabaseName | Should -Be $ConfigurationData.AllNodes.DatabaseName
                 $resourceCurrentState.SchemaName | Should -Be $ConfigurationData.AllNodes.SchemaName
-                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.ObjectName
+                $resourceCurrentState.ObjectName | Should -Be $ConfigurationData.AllNodes.TableName
                 $resourceCurrentState.ObjectType | Should -Be 'Table'
                 $resourceCurrentState.Name | Should -Be $ConfigurationData.AllNodes.User1_Name
 
