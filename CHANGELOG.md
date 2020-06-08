@@ -42,7 +42,7 @@ in a future release.
   - Fixing a problem with the latest ModuleBuild 1.7.0 that breaks the CI
     pipeline.
   - Prepare repository for auto-documentation by adding README.md to each
-    resource folder with the content of the README.md.
+    resource folder with the content from the root README.md.
 - SqlServerDsc.Common
   - Added function `Import-Assembly` that can help import an assembly
     into the PowerShell session.
