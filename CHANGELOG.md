@@ -41,6 +41,8 @@ in a future release.
   - Added new resource SqlServerProtocolTcpIp ([issue #1378](https://github.com/dsccommunity/SqlServerDsc/issues/1378)).
   - Fixing a problem with the latest ModuleBuild 1.7.0 that breaks the CI
     pipeline.
+  - Prepare repository for auto-documentation by adding README.md to each
+    resource folder with the content of the README.md.
 - SqlServerDsc.Common
   - Added function `Import-Assembly` that can help import an assembly
     into the PowerShell session.

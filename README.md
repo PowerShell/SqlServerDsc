@@ -73,7 +73,7 @@ in a future release.
 
 * SqlDatabaseOwner _(replaced by a property in [**SqlDatabase**](#sqldatabase))_.
 * SqlDatabaseRecoveryModel _(replaced by a property in [**SqlDatabase**](#sqldatabase))_.
-* SqlServerEndpointState _(replaced by [**SqlServerEndpoint**](#sqlserverendpoint))_.
+* SqlServerEndpointState _(replaced by a property in [**SqlServerEndpoint**](#sqlserverendpoint))_.
 * SqlServerNetwork _(replaced by [**SqlServerProtocol**](#sqlserverprotocol) and_
   _[**SqlServerProtocolTcpIp**](#sqlserverprotocoltcpip))_.
 

@@ -1,6 +1,6 @@
 # Description
 
-The `SqlServerProtocol` DSC resource manage the SQL Server protocols
+The `SqlProtocol` DSC resource manage the SQL Server protocols
 for a SQL Server instance.
 
 For more information about protocol properties look at the following articles:
@@ -25,3 +25,7 @@ For more information about protocol properties look at the following articles:
   not have access then the correct credential must be provided in
   the built-in parameter `PSDscRunAsCredential`. If not the following error
   can appear; `An internal error occurred`.
+
+## Known issues
+
+All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlProtocol).
