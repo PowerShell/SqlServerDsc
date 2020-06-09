@@ -1,6 +1,4 @@
-# Description
-
-## DEPRECATION NOTICE
+# DEPRECATION NOTICE
 
 The `SqlServerEndpointState` DSC resource is **DEPRECATED**. The resource
 is replaced by a property in the resource `SqlServerEndpoint`.

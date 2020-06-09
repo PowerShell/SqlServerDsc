@@ -1,6 +1,4 @@
-# Description
-
-## DEPRECATION NOTICE
+# DEPRECATION NOTICE
 
 The `SqlServerNetwork` DSC resource is **DEPRECATED**. The resource
 is replaced by the resources `SqlServerProtocol` and `SqlServerProtocolTcpIp`.
