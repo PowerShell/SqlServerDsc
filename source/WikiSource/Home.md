@@ -8,7 +8,8 @@ that are available, current capabilities, known issues, and information to
 help plan a DSC based implementation of SqlServerDsc.
 
 Please leave comments, feature requests, and bug reports for this module in
-the [issues section](../issues) for this repository.
+the [issues section](https://github.com/dsccommunity/SqlServerDsc/issues)
+for this repository.
 
 _This wiki is currently updated manually by a maintainer, so there can be_
 _some delay before this wiki is updated for the latest release._
