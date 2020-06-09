@@ -1,7 +1,7 @@
 # Description
 
 The `SqlAgentOperator` DSC resource is used to add/remove SQL Agent Operators.
-You can also update the operators email address.
+The resource can also update the operators email address.
 
 ## Requirements
 

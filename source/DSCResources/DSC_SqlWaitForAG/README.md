@@ -5,10 +5,10 @@ created. This is used to wait for an Availability Group to create the
 cluster role/group in the cluster.
 
 >Note: This only evaluates if the cluster role/group has been created and
->when it found it will wait for RetryIntervalSec a last time before returning.
->There is currently no check to validate that the Availability Group was
->successfully created or that it has finished creating the Availability
->Group.
+>when it is found it will wait for RetryIntervalSec one last time before
+>returning. There is currently no check to validate that the Availability
+>Group was successfully created or that it has finished creating the
+>Availability Group.
 
 ## Requirements
 

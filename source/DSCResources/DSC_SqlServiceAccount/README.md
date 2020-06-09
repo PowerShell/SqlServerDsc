@@ -1,6 +1,6 @@
 # Description
 
-The `SqlServiceAccount` DSC resource manage the service account for SQL
+The `SqlServiceAccount` DSC resource manages the service account for SQL
 Server services.
 
 ## Requirements

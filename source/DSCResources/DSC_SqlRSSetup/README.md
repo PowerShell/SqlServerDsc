@@ -28,7 +28,7 @@ used, then the installation will run as SYSTEM.
 
 >NOTE: When using the action 'Uninstall' and the target node to begin with
 >requires a restart, on the first run the Microsoft SQL Server Reporting
->Services instance will not be uninstalled, but instead exit with code
+>Services instance will not be uninstalled, but instead exits with code
 >3010 and the node will be, by default, restarted. On the second run after
 >restart, the Microsoft SQL Server Reporting Services instance will be
 >uninstalled. If the parameter SuppressRestart is used, then the node must

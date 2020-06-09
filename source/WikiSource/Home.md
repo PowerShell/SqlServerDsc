@@ -4,8 +4,8 @@
 
 Here you will find all the information you need to make use of the SqlServerDsc
 DSC resources in the latest release. This includes details of the resources
-that are available, current capabilities and known issues, and information
-to help plan a DSC based implementation of SqlServerDsc.
+that are available, current capabilities, known issues, and information to
+help plan a DSC based implementation of SqlServerDsc.
 
 Please leave comments, feature requests, and bug reports for this module in
 the [issues section](../issues) for this repository.

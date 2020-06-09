@@ -1,7 +1,7 @@
 # Description
 
-The `SqlProtocolTcpIp` DSC resource manage the TCP/IP
-protocol IP address groups for a SQL Server instance.
+The `SqlProtocolTcpIp` DSC resource manages the TCP/IP
+IP address groups for a SQL Server instance.
 
 IP Address groups are added depending on available network cards, see
 [Adding or Removing IP Addresses](https://docs.microsoft.com/en-us/sql/tools/configuration-manager/tcp-ip-properties-ip-addresses-tab#adding-or-removing-ip-addresses).

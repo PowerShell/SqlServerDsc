@@ -15,7 +15,7 @@ Get T-SQL script, Set T-SQL script and the Test T-SQL script.
 
 * There is a known problem running this resource using PowerShell 4.0.
 See [issue #273](https://github.com/dsccommunity/SqlServerDsc/issues/273)
-for more information._
+for more information.
 
 All issues are not listed here, see [here for all open issues](https://github.com/dsccommunity/SqlServerDsc/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+SqlScript).
 

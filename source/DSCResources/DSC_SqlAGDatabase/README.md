@@ -1,7 +1,7 @@
 # Description
 
-The `SqlAGDatabase` DSC resource is used to add and/or remove databases
-to a specified availability group.
+The `SqlAGDatabase` DSC resource is used to add databases or remove
+databases from a specified availability group.
 
 ## Requirements
 

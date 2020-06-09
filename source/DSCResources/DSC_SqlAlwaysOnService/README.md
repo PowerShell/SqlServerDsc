@@ -1,7 +1,7 @@
 # Description
 
-The `SqlAlwaysOnService` DSC resource enables or disabled SQL Server Always
-On high availability and disaster recovery (Always On HADR) for an SQL
+The `SqlAlwaysOnService` DSC resource enables or disables SQL Server Always
+On high availability and disaster recovery (Always On HADR) for a SQL
 Server instance.
 
 ## Requirements

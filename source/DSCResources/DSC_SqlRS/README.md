@@ -26,7 +26,7 @@ All issues are not listed here, see [here for all open issues](https://github.co
 
 ### Error: The parameter is incorrect (HRESULT:-2147024809)
 
-This is for example caused by trying to add an URL with the wrong format
+This is caused by trying to add an URL with the wrong format
 i.e. 'htp://+:80'.
 
 ### Error: The Url has already been reserved (HRESULT:-2147220932)

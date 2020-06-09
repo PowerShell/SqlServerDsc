@@ -1,6 +1,6 @@
 # Description
 
-The `SqlPermission` DSC resource sets server permissions to a user
+The `SqlPermission` DSC resource sets server permissions for a user
 (login).
 
 >**Note:** Currently the resource only supports ConnectSql, AlterAnyAvailabilityGroup,

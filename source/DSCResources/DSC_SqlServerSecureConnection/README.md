@@ -1,6 +1,6 @@
 # Description
 
-The `SqlSecureConnection` DSC resource Configures SQL connections
+The `SqlSecureConnection` DSC resource configures SQL connections
 to be encrypted. Read more about encrypted connections in this article
 [Enable Encrypted Connections](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-encrypted-connections-to-the-database-engine).
 

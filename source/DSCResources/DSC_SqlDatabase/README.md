@@ -5,7 +5,7 @@ For more information about SQL Server databases, please read the following
 articles [Create a Database](https://docs.microsoft.com/en-us/sql/relational-databases/databases/create-a-database)
 and [Delete a Database](https://docs.microsoft.com/en-us/sql/relational-databases/databases/delete-a-database).
 
-This resource set the recovery model for a database. The recovery model controls
+This resource sets the recovery model for a database. The recovery model controls
 how transactions are logged, whether the transaction log requires (and allows)
 backing up, and what kinds of restore operations are available. Three recovery
 models exist: full, simple, and bulk-logged. Read more about recovery model in

@@ -1,6 +1,6 @@
 # Description
 
-The `SqlAGListener` DSC resource is used to add configure the listener
+The `SqlAGListener` DSC resource is used to configure the listener
 for an Always On Availability Group.
 
 ## Requirements

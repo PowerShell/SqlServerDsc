@@ -1,7 +1,7 @@
 # Description
 
 The `SqlAgentFailsafe` DSC resource is used to add/remove the SQL Agent
-Failsafe Operator. You can also update the Notification method.
+Failsafe Operator. The resource can also update the Notification method.
 
 ## Requirements
 

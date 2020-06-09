@@ -1,8 +1,8 @@
 # Description
 
-The `SqlDatabaseUser` DSC resource is used to create a database users.
+The `SqlDatabaseUser` DSC resource is used to create database users.
 A database user can be created with or without a login, and a database
-users can be mapped to a certificate or asymmetric key. The resource also
+user can be mapped to a certificate or asymmetric key. The resource also
 allows re-mapping of the SQL login.
 
 > **Note:** This resource does not yet support [Contained Databases](https://docs.microsoft.com/en-us/sql/relational-databases/databases/contained-databases).

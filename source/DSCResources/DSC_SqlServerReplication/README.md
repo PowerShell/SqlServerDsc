@@ -1,6 +1,6 @@
 # Description
 
-The `SqlReplication` DSC resource manage SQL Replication distribution
+The `SqlReplication` DSC resource manages SQL Replication distribution
 and publishing.
 
 ## Requirements

@@ -1,7 +1,7 @@
 # Description
 
 The `SqlAgentAlert` DSC resource is used to add/remove SQL Agent Alerts.
-You can also update the severity or message id.
+The resource can also update the severity or message id.
 
 ## Requirements
 

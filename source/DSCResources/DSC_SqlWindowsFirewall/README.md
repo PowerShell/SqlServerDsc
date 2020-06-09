@@ -1,8 +1,8 @@
 # Description
 
 The `SqlWindowsFirewall` DSC resource will set default firewall rules for
-the supported features. Currently the features supported are Database Engine,
-Analysis Services, SQL Browser, SQL Reporting Services and Integration Services.
+the Database Engine, Analysis Services, SQL Browser, SQL Reporting Services,
+and Integration Services features.
 
 ## Requirements
 
