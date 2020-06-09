@@ -24,7 +24,7 @@ To get started either:
 Install-Module -Name SqlServerDsc -Repository PSGallery
 ```
 
-- Download SqlServerDsc from the [PowerShell Gallery](http://www.powershellgallery.com/packages/SqlServerDsc)
+- Download SqlServerDsc from the [PowerShell Gallery](https://www.powershellgallery.com/packages/SqlServerDsc)
   and then unzip it to one of your PowerShell modules folders (such as
   `$env:ProgramFiles\WindowsPowerShell\Modules`).
 
@@ -39,6 +39,6 @@ Get-DscResource -Module SqlServerDsc
 
 The SqlServerDsc module requires PowerShell v5.0 or higher.
 
-Optionally the PowerShell Module [_SqlServer_]((http://www.powershellgallery.com/packages/SqlServer))
+Optionally the PowerShell Module [_SqlServer_](https://www.powershellgallery.com/packages/SqlServer)
 can be installed which then will be used instead of the PowerShell module
 _SQLPS_ that is installed with SQL Server.
