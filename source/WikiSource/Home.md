@@ -1,6 +1,6 @@
-# Welcome to the ActiveDirectoryDsc wiki
+# Welcome to the SqlServerDsc wiki
 
-<sup>*SqlServerDsc release v#.#.#*</sup>
+<sup>*SqlServerDsc v#.#.#*</sup>
 
 Here you will find all the information you need to make use of the SqlServerDsc
 DSC resources in the latest release. This includes details of the resources
