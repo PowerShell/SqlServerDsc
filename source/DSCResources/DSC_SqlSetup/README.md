@@ -48,7 +48,7 @@ having breaking changes.
 <!-- markdownlint-disable MD013 -->
 Flag | Description
 --- | ---
-- | -
+ - | -
 <!-- markdownlint-enable MD013 -->
 
 ## Skip rules
