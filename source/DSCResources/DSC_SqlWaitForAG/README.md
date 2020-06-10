@@ -20,7 +20,7 @@ cluster role/group in the cluster.
 * This resource evaluates if the Windows Failover Cluster role/group
   has been created. But the Windows Failover Cluster role/group is created
   before the Availability Group is in a ready state. When the Windows Failover
-  Cluster role/group is found the resource will wait for one more time
+  Cluster role/group is found the resource will wait one more time
   according to the value of `RetryIntervalSec` before returning. There is
   currently no check to validate that the Availability Group was successfully
   created and is in a ready state. A workaround is instead use [`WaitForAny`](https://docs.microsoft.com/en-us/powershell/scripting/dsc/reference/resources/windows/waitforanyresource?view=powershell-7)
