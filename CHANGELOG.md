@@ -324,6 +324,7 @@ in a future release.
 
 - SqlServerDsc
   - Added continuous delivery with a new CI pipeline.
+    - Added verbose messages to measure the time it takes to run the tests.
     - Update build.ps1 from latest template.
 
 ### Changed

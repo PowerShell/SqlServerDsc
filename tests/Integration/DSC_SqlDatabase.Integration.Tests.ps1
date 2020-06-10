@@ -9,6 +9,8 @@ $script:dscModuleName = 'SqlServerDsc'
 $script:dscResourceFriendlyName = 'SqlDatabase'
 $script:dscResourceName = "DSC_$($script:dscResourceFriendlyName)"
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 try
 {
     Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -371,4 +373,7 @@ try
 finally
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test {1} ran for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:DSCResourceFriendlyName) -Verbose
+    $script:timer.Stop()
 }

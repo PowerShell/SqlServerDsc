@@ -20,6 +20,8 @@ $script:dscResourceName = 'DSC_SqlServerLogin'
 
 function Invoke-TestSetup
 {
+    $script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
     try
     {
         Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -45,6 +47,9 @@ function Invoke-TestSetup
 function Invoke-TestCleanup
 {
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    Write-Verbose -Message ('Test {1} ran for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:dscResourceName) -Verbose
+    $script:timer.Stop()
 }
 
 Invoke-TestSetup

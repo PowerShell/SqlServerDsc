@@ -5,6 +5,8 @@
 
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
+$script:timer = [System.Diagnostics.Stopwatch]::StartNew()
+
 if (-not (Test-BuildCategory -Type 'Unit'))
 {
     return
@@ -3869,3 +3871,6 @@ InModuleScope $script:subModuleName {
         }
     }
 }
+
+Write-Verbose -Message ('Test {1} ran for {0} minutes' -f ([System.TimeSpan]::FromMilliseconds($script:timer.ElapsedMilliseconds)).ToString('mm\:ss'), $script:subModuleName) -Verbose
+$script:timer.Stop()
