@@ -331,6 +331,10 @@ function Set-TargetResource
 
                                         'Grant'
                                         {
+                                            if ($sqlObject.EnumObjectPermissions($Name).PermissionState -eq "GrantWithGrant")
+                                            {
+                                                $sqlObject.Revoke($permissionSet, $Name, $false, $true)
+                                            }
                                             $sqlObject.Grant($permissionSet, $Name)
                                         }
 
