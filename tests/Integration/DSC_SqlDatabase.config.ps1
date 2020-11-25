@@ -30,11 +30,13 @@ else
                 DatabaseName3      = 'Database3'
                 DatabaseName4      = 'Database4'
                 DatabaseName5      = 'Database5'
+                DatabaseName6      = 'Database6'
 
                 Collation          = 'SQL_Latin1_General_Pref_CP850_CI_AS'
                 CompatibilityLevel = 'Version120'
                 RecoveryModel      = 'Simple'
                 OwnerName          = 'sa'
+                SnapshotIsolation  = $true
             }
         )
     }
@@ -156,6 +158,31 @@ Configuration DSC_SqlDatabase_AddDatabase5_Config
             InstanceName         = $Node.InstanceName
             Name                 = $Node.DatabaseName5
             OwnerName            = $Node.OwnerName
+
+            PsDscRunAsCredential = New-Object `
+                -TypeName System.Management.Automation.PSCredential `
+                -ArgumentList @($Node.Username, (ConvertTo-SecureString -String $Node.Password -AsPlainText -Force))
+        }
+    }
+}
+
+<#
+    .SYNOPSIS
+        Creates a database with a specific snapshot isolation.
+#>
+Configuration DSC_SqlDatabase_AddDatabase6_Config
+{
+    Import-DscResource -ModuleName 'SqlServerDsc'
+
+    node $AllNodes.NodeName
+    {
+        SqlDatabase 'Integration_Test'
+        {
+            Ensure               = 'Present'
+            ServerName           = $Node.ServerName
+            InstanceName         = $Node.InstanceName
+            Name                 = $Node.DatabaseName6
+            SnapshotIsolation    = $Node.SnapshotIsolation
 
             PsDscRunAsCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `

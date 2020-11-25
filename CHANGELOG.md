@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlReplication
   - The resource are now using the helper function `Get-SqlInstanceMajorVersion`
     ([issue #1408](https://github.com/dsccommunity/SqlServerDsc/issues/1408)).
+- SqlDatabase
+  - Support enabling or disabling snapshot isolation
+    ([issue #845](https://github.com/dsccommunity/SqlServerDsc/issues/845)).
 
 ### Fixed
 - SqlDatabaseRole

@@ -9,4 +9,5 @@ class DSC_SqlDatabase : OMI_BaseResource
     [Write, Description("Specifies the version of the _SQL Database Compatibility Level_ to use for the specified database."), ValueMap{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}, Values{"Version80","Version90","Version100","Version110","Version120","Version130","Version140","Version150"}] String CompatibilityLevel;
     [Write, Description("The recovery model for the specified database."), ValueMap{"Simple","Full","BulkLogged"}, Values{"Simple","Full","BulkLogged"}] String RecoveryModel;
     [Write, Description("Specifies the name of the login that should be the owner of the database.")] String OwnerName;
+    [Write, Description("Enables snapshot isolation for the specified database.")] Boolean SnapshotIsolation;
 };
