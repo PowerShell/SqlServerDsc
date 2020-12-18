@@ -25,9 +25,17 @@ Import-Module -Name $script:subModulePath -Force -ErrorAction 'Stop'
 #endregion HEADER
 
 BeforeAll {
-    # Loading mocked classes
-    Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SMO.cs')
-    Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SqlPowerShellSqlExecutionException.cs')
+    # Loading mocked SMO classes.
+    if (-not ('Microsoft.SqlServer.Management.Smo.Server' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SMO.cs')
+    }
+
+    # Loading mocked SqlPowerShellSqlExecutionException class.
+    if (-not ('Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs') -ChildPath 'SqlPowerShellSqlExecutionException.cs')
+    }
 
     # Load the default SQL Module stub
     Import-SQLModuleStub
@@ -2576,12 +2584,12 @@ Describe 'SqlServerDsc.Common\Test-AvailabilityReplicaSeedingModeAutomatic' -Tag
             return $mock
         }
 
-        $mockSeedingMode = 'Manual'
+        $mockDynamic_SeedingMode = 'Manual'
         $mockInvokeQuery = {
             return @{
                 Tables = @{
                     Rows = @{
-                        seeding_mode_desc = $mockSeedingMode
+                        seeding_mode_desc = $mockDynamic_SeedingMode
                     }
                 }
             }
@@ -2601,20 +2609,8 @@ Describe 'SqlServerDsc.Common\Test-AvailabilityReplicaSeedingModeAutomatic' -Tag
             Mock -CommandName Invoke-Query -MockWith $mockInvokeQuery
         }
 
-        It 'Should return $false when the instance version is <Version>' -TestCase @(
-            @{
-                Version = 11
-            }
-            @{
-                Version = 12
-            }
-        ) {
-            param
-            (
-                $Version
-            )
-
-            $mockSqlVersion = $Version
+        It 'Should return $false when the instance version is <_>' -ForEach @(11, 12) {
+            $mockSqlVersion = $_
 
             Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should -Be $false
 
@@ -2623,23 +2619,8 @@ Describe 'SqlServerDsc.Common\Test-AvailabilityReplicaSeedingModeAutomatic' -Tag
         }
 
         # Test SQL 2016 and later where Seeding Mode is supported.
-        It 'Should return $false when the instance version is <Version> and the replica seeding mode is manual' -TestCases @(
-            @{
-                Version = 13
-            }
-            @{
-                Version = 14
-            }
-            @{
-                Version = 15
-            }
-        ) {
-            param
-            (
-                $Version
-            )
-
-            $mockSqlVersion = $Version
+        It 'Should return $false when the instance version is <_> and the replica seeding mode is manual' -ForEach @(13, 14, 15) {
+            $mockSqlVersion = $_
 
             Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should -Be $false
 
@@ -2655,24 +2636,9 @@ Describe 'SqlServerDsc.Common\Test-AvailabilityReplicaSeedingModeAutomatic' -Tag
         }
 
         # Test SQL 2016 and later where Seeding Mode is supported.
-        It 'Should return $true when the instance version is <Version> and the replica seeding mode is automatic' -TestCases @(
-            @{
-                Version = 13
-            }
-            @{
-                Version = 14
-            }
-            @{
-                Version = 15
-            }
-        ) {
-            param
-            (
-                $Version
-            )
-
-            $mockSqlVersion = $Version
-            $mockSeedingMode = 'Automatic'
+        It 'Should return $true when the instance version is <_> and the replica seeding mode is automatic' -ForEach @(13, 14, 15) {
+            $mockSqlVersion = $_
+            $mockDynamic_SeedingMode = 'Automatic'
 
             Test-AvailabilityReplicaSeedingModeAutomatic @testAvailabilityReplicaSeedingModeAutomaticParams | Should -Be $true
 
@@ -3309,7 +3275,7 @@ Describe 'SqlServerDsc.Common\Test-ActiveNode' -Tag 'TestActiveNode' {
             $mockServerObject.IsMemberOfWsfcCluster = $true
         }
 
-        It 'Should return <Result> when the node name is <ComputerNamePhysicalNetBIOS>' -TestCases @(
+        It 'Should return <Result> when the node name is <ComputerNamePhysicalNetBIOS>' -ForEach @(
             @{
                 ComputerNamePhysicalNetBIOS = $env:COMPUTERNAME
                 Result = $true
@@ -3319,12 +3285,6 @@ Describe 'SqlServerDsc.Common\Test-ActiveNode' -Tag 'TestActiveNode' {
                 Result = $false
             }
         ) {
-            param
-            (
-                $ComputerNamePhysicalNetBIOS,
-                $Result
-            )
-
             $mockServerObject.ComputerNamePhysicalNetBIOS = $ComputerNamePhysicalNetBIOS
 
             Test-ActiveNode -ServerObject $mockServerObject | Should -Be $Result
@@ -3482,7 +3442,7 @@ Describe 'SqlServerDsc.Common\Find-ExceptionByNumber' -Tag 'FindExceptionByNumbe
 }
 
 Describe 'SqlServerDsc.Common\Get-ProtocolNameProperties' -Tag 'GetProtocolNameProperties' {
-    It "Should return the correct values when the protocol is '<DisplayName>'" -TestCases @(
+    It "Should return the correct values when the protocol is '<DisplayName>'" -ForEach @(
         @{
             ParameterValue = 'TcpIp'
             DisplayName    = 'TCP/IP'
@@ -3499,18 +3459,6 @@ Describe 'SqlServerDsc.Common\Get-ProtocolNameProperties' -Tag 'GetProtocolNameP
             Name           = 'Sm'
         }
     ) {
-        param
-        (
-            [System.String]
-            $ParameterValue,
-
-            [System.String]
-            $DisplayName,
-
-            [System.String]
-            $Name
-        )
-
         $result = Get-ProtocolNameProperties -ProtocolName $ParameterValue
 
         $result.DisplayName | Should -Be $DisplayName
