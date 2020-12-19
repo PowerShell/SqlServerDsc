@@ -24,12 +24,12 @@ BeforeAll {
 
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
-    $PSDefaultParameterValues = @{
-        'InModuleScope:ModuleName' = $script:dscResourceName
-    }
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscResourceName
 }
 
 AfterAll {
+    $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
+
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 }
 
@@ -67,6 +67,12 @@ Describe 'SqlProtocol\Get-TargetResource' -Tag 'Get' {
                     exported function names (Get-, Set-, Test-TargetResource).
                 #>
                 InModuleScope -ScriptBlock {
+                    <#
+                        We want to test that functions aligns with a certain strict mode,
+                        but not necessarily want to enforce if during runtime in a user
+                        environment. This enables strict mode in the module's scope when
+                        the tests run.
+                    #>
                     Set-StrictMode -Version 1.0
 
                     $getTargetResourceParameters = @{

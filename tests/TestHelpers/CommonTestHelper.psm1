@@ -492,6 +492,7 @@ function Get-InvalidOperationRecord
 function Get-InvalidResultRecord
 {
     [CmdletBinding()]
+    [Alias('Get-ObjectNotFoundRecord')]
     param
     (
         [Parameter()]
