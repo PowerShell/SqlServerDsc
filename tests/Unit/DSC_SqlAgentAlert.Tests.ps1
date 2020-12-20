@@ -1,21 +1,13 @@
 <#
     .SYNOPSIS
-        Automated unit test for DSC_SqlAgentAlert DSC resource.
+        Unit test for DSC_SqlAgentAlert DSC resource.
 
 #>
 
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+BeforeAll {
+    $script:dscModuleName = 'SqlServerDsc'
+    $script:dscResourceName = 'DSC_SqlAgentAlert'
 
-if (-not (Test-BuildCategory -Type 'Unit'))
-{
-    return
-}
-
-$script:dscModuleName = 'SqlServerDsc'
-$script:dscResourceName = 'DSC_SqlAgentAlert'
-
-function Invoke-TestSetup
-{
     try
     {
         Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
@@ -30,535 +22,767 @@ function Invoke-TestSetup
         -DSCResourceName $script:dscResourceName `
         -ResourceType 'Mof' `
         -TestType 'Unit'
+
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscResourceName
 }
 
-function Invoke-TestCleanup
-{
+AfterAll {
+    $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
+
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 }
 
-Invoke-TestSetup
+Describe 'DSC_SqlAgentAlert\Get-TargetResource' -Tag 'Get' {
+    BeforeAll {
+        InModuleScope -ScriptBlock {
+            $script:mockServerName = 'localhost'
+            $script:mockInstanceName = 'MSSQLSERVER'
 
-try
-{
-    InModuleScope $script:dscResourceName {
-        $mockServerName = 'localhost'
-        $mockInstanceName = 'MSSQLSERVER'
-        $mockSqlAgentAlertSevName = 'TestAlertSev'
-        $mockSqlAgentAlertSeverity = '17'
-        $mockSqlAgentAlertMsgName = 'TestAlertMsg'
-        $mockSqlAgentAlertMessageId = '825'
-        $mockInvalidOperationForCreateMethod = $false
-        $mockInvalidOperationForDropMethod = $false
-        $mockInvalidOperationForAlterMethod = $false
-        $mockExpectedSqlAgentAlertToCreate = 'Sev16'
-        $mockExpectedSqlAgentAlertToDrop = 'Sev18'
-
-        # Default parameters that are used for the It-blocks
-        $mockDefaultParameters = @{
-            InstanceName = $mockInstanceName
-            ServerName   = $mockServerName
+            # Default parameters that are used for the It-blocks
+            $script:mockDefaultParameters = @{
+                InstanceName = $mockInstanceName
+                ServerName   = $mockServerName
+            }
         }
 
-        #region Function mocks
+        # Mocked object for Connect-SQL.
         $mockConnectSQL = {
             return @(
                 (
-                New-Object -TypeName Object |
-                    Add-Member -MemberType NoteProperty -Name InstanceName -Value $mockInstanceName -PassThru |
-                    Add-Member -MemberType NoteProperty -Name ComputerNamePhysicalNetBIOS -Value $mockServerName -PassThru |
-                    Add-Member -MemberType ScriptProperty -Name JobServer -Value {
-                        return (New-Object -TypeName Object |
-                            Add-Member -MemberType NoteProperty -Name Name -Value $mockServerName -PassThru |
-                            Add-Member -MemberType ScriptProperty -Name Alerts -Value {
-                                return ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Agent.Alert |
-                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentAlertSevName -PassThru -Force |
-                                    Add-Member -MemberType NoteProperty -Name Severity -Value $mockSqlAgentAlertSeverity -PassThru -Force |
-                                    Add-Member -MemberType NoteProperty -Name MessageId -Value 0 -PassThru -Force |
-                                    Add-Member -MemberType ScriptMethod -Name Drop -Value {
-                                        if ($mockInvalidOperationForDropMethod)
-                                        {
-                                            throw 'Mock Drop Method was called with invalid operation.'
-                                        }
-                                        if ( $this.Name -ne $mockExpectedSqlAgentAlertToDrop )
-                                        {
-                                            throw "Called mocked Drop() method without dropping the right sql agent alert. Expected '{0}'. But was '{1}'." `
-                                            -f $mockExpectedSqlAgentAlertToDrop, $this.Name
-                                        }
-                                    } -PassThru -Force |
-                                    Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                                        if ($mockInvalidOperationForAlterMethod)
-                                        {
-                                            throw 'Mock Alter Method was called with invalid operation.'
-                                        }
-                                    } -PassThru -Force
-                                ),
-                                ( New-Object -TypeName Microsoft.SqlServer.Management.Smo.Agent.Alert |
-                                    Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentAlertMsgName -PassThru -Force |
-                                    Add-Member -MemberType NoteProperty -Name Severity -Value 0 -PassThru -Force |
-                                    Add-Member -MemberType NoteProperty -Name MessageId -Value $mockSqlAgentAlertMessageId -PassThru -Force |
-                                    Add-Member -MemberType ScriptMethod -Name Drop -Value {
-                                        if ($mockInvalidOperationForDropMethod)
-                                        {
-                                            throw 'Mock Drop Method was called with invalid operation.'
-                                        }
-                                        if ( $this.Name -ne $mockExpectedSqlAgentAlertToDrop )
-                                        {
-                                            throw "Called mocked Drop() method without dropping the right sql agent alert. Expected '{0}'. But was '{1}'." `
-                                            -f $mockExpectedSqlAgentAlertToDrop, $this.Name
-                                        }
-                                    } -PassThru -Force |
-                                    Add-Member -MemberType ScriptMethod -Name Alter -Value {
-                                        if ($mockInvalidOperationForAlterMethod)
-                                        {
-                                            throw 'Mock Alter Method was called with invalid operation.'
-                                        }
-                                        if ($this.MessageId -eq 7)
-                                        {
-                                            throw "Called mocked Create() method for a message id that doesn't exist."
-                                        }
-                                        if ($this.Severity -eq 999)
-                                        {
-                                            throw "Called mocked Create() method for a severity that doesn't exist."
-                                        }
-                                    } -PassThru -Force
-                                )
-                            } -PassThru
-                        )
-                    } -PassThru -Force
-                )
-            )
-        }
-
-        $mockNewSqlAgentAlert  = {
-            return @(
-                (
-                    New-Object -TypeName Object |
-                        Add-Member -MemberType NoteProperty -Name Name -Value $mockSqlAgentAlertSevName -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name Create -Value {
-                            if ($mockInvalidOperationForCreateMethod)
-                            {
-                                throw 'Mock Create Method was called with invalid operation.'
-                            }
-
-                            if ($this.Name -ne $mockExpectedSqlAgentAlertToCreate )
-                            {
-                                throw "Called mocked Create() method without adding the right sql agent alert. Expected '{0}'. But was '{1}'." `
-                                    -f $mockExpectedSqlAgentAlertToCreate, $this.Name
-                            }
-                            if ($this.MessageId -eq 7)
-                            {
-                                throw "Called mocked Create() method for a message id that doesn't exist."
-                            }
-                            if ($this.Severity -eq 999)
-                            {
-                                throw "Called mocked Create() method for a severity that doesn't exist."
-                            }
+                    New-Object -TypeName 'Object' |
+                        Add-Member -MemberType 'ScriptProperty' -Name 'JobServer' -Value {
+                            return (
+                                New-Object -TypeName 'Object' |
+                                    Add-Member -MemberType 'ScriptProperty' -Name 'Alerts' -Value {
+                                        return @(
+                                            (
+                                                New-Object -TypeName 'Object' |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value 'TestAlertSev' -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Severity' -Value '17' -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'MessageId' -Value 0 -PassThru -Force
+                                            ),
+                                            (
+                                                New-Object -TypeName 'Object' |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value 'TestAlertMsg' -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Severity' -Value 0 -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'MessageId' -Value '825' -PassThru -Force
+                                            )
+                                        )
+                                    } -PassThru
+                            )
                         } -PassThru -Force
                 )
             )
         }
-        #endregion
+    }
 
-        Describe "DSC_SqlAgentAlert\Get-TargetResource" -Tag 'Get' {
-            BeforeEach {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-                Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
-                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                } -Verifiable
+    Context 'When Connect-SQL returns nothing' {
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith {
+                return $null
             }
-
-            Context 'When Connect-SQL returns nothing' {
-                It 'Should throw the correct error' {
-                    Mock -CommandName Connect-SQL -MockWith {
-                        return $null
-                    }
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'TestAlertSev'
-                    }
-                    { Get-TargetResource @testParameters } | Should -Throw ($script:localizedData.ConnectServerFailed -f $testParameters.ServerName, $testParameters.InstanceName)
-                }
-            }
-
-            Context 'When the system is not in the desired state' {
-                $testParameters = $mockDefaultParameters
-                $testParameters += @{
-                    Name         = 'MissingAlert'
-                }
-
-                It 'Should return the state as absent' {
-                    $result = Get-TargetResource @testParameters
-                    $result.Ensure | Should -Be 'Absent'
-                }
-
-                It 'Should return the same values as passed as parameters' {
-                    $result = Get-TargetResource @testParameters
-                    $result.ServerName | Should -Be $testParameters.ServerName
-                    $result.InstanceName | Should -Be $testParameters.InstanceName
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 2 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 4 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
-                }
-            }
-
-            Context 'When the system is in the desired state for a sql agent alert' {
-
-                $testParameters = $mockDefaultParameters
-                $testParameters += @{
-                    Name         = 'TestAlertSev'
-                }
-
-                It 'Should return the state as present' {
-                    $result = Get-TargetResource @testParameters
-                    $result.Ensure | Should -Be 'Present'
-                }
-
-                It 'Should return the same values as passed as parameters' {
-                    $result = Get-TargetResource @testParameters
-                    $result.ServerName | Should -Be $testParameters.ServerName
-                    $result.InstanceName | Should -Be $testParameters.InstanceName
-                    $result.Name | Should -Be $testParameters.Name
-                    $result.Severity | Should -Be $mockSqlAgentAlertSeverity
-                    $result.MessageId | Should -Be 0
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 2 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 4 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
-                }
-            }
-
-            Assert-VerifiableMock
         }
 
-        Describe "DSC_SqlAgentAlert\Test-TargetResource" -Tag 'Test' {
-            BeforeEach {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-                Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
-                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                } -Verifiable
+        It 'Should throw the correct error' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters.Clone()
+                $mockTestParameters.Name = 'TestAlertSev'
+
+                $mockErrorRecord = Get-InvalidOperationRecord -Message (
+                    $script:localizedData.ConnectServerFailed -f $mockTestParameters.ServerName, $mockTestParameters.InstanceName
+                )
+
+                { Get-TargetResource @mockTestParameters } |
+                    Should -Throw -ExpectedMessage $mockErrorRecord.Exception.Message
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state' {
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+
+            InModuleScope -ScriptBlock {
+                $script:mockTestParameters = $mockDefaultParameters.Clone()
+                $script:mockTestParameters.Name = 'MissingAlert'
+            }
+        }
+
+        It 'Should return the state as absent' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $result = Get-TargetResource @mockTestParameters
+
+                $result.Ensure | Should -Be 'Absent'
             }
 
-            Context 'When the system is not in the desired state and Ensure is set to Present' {
-                It 'Should return the state as false when desired sql agent alert does not exist' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
+            Should -Invoke -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+        }
+
+        It 'Should return the same values as passed as parameters' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $result = Get-TargetResource @mockTestParameters
+
+                $result.ServerName | Should -Be $mockTestParameters.ServerName
+                $result.InstanceName | Should -Be $mockTestParameters.InstanceName
+            }
+        }
+    }
+
+    Context 'When the system is in the desired state for a sql agent alert' {
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+
+            InModuleScope -ScriptBlock {
+                $script:mockTestParameters = $mockDefaultParameters.Clone()
+                $script:mockTestParameters.Name = 'TestAlertSev'
+            }
+        }
+
+        It 'Should return the state as present' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $result = Get-TargetResource @mockTestParameters
+
+                $result.Ensure | Should -Be 'Present'
+            }
+
+            Should -Invoke -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+        }
+
+        It 'Should return the same values as passed as parameters' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $result = Get-TargetResource @mockTestParameters
+
+                $result.ServerName | Should -Be $mockTestParameters.ServerName
+                $result.InstanceName | Should -Be $mockTestParameters.InstanceName
+                $result.Name | Should -Be $mockTestParameters.Name
+                $result.Severity | Should -Be '17'
+                $result.MessageId | Should -Be 0
+            }
+        }
+    }
+}
+
+Describe 'DSC_SqlAgentAlert\Test-TargetResource' -Tag 'Test' {
+    BeforeAll {
+        InModuleScope -ScriptBlock {
+            $script:mockServerName = 'localhost'
+            $script:mockInstanceName = 'MSSQLSERVER'
+
+            # Default parameters that are used for the It-blocks
+            $script:mockDefaultParameters = @{
+                InstanceName = $mockInstanceName
+                ServerName   = $mockServerName
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state' {
+        Context 'When the alert does not exist' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'TestAlertSev'
+                        Ensure       = 'Present'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = '17'
+                        MessageId    = '825'
+                    }
+                }
+            }
+
+            It 'Should return the state as false' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
                         Name         = 'MissingAlert'
                         Severity     = '25'
                         Ensure       = 'Present'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $false
+                    $result = Test-TargetResource @mockTestParameters
+
+                    $result | Should -BeFalse
                 }
 
-                It 'Should return the state as false when desired sql agent alert exists but has the incorrect severity' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+            }
+        }
+
+        Context 'When the alert should not exist' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'TestAlertSev'
+                        Ensure       = 'Present'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = '17'
+                        MessageId    = '825'
+                    }
+                }
+            }
+
+            It 'Should return the state as false' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
+                        Name   = 'TestAlertSev'
+                        Ensure = 'Absent'
+                    }
+
+                    $result = Test-TargetResource @mockTestParameters
+
+                    $result | Should -BeFalse
+                }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+            }
+        }
+
+        Context 'When enforcing a severity alert' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'TestAlertSev'
+                        Ensure       = 'Present'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = '17'
+                        MessageId    = '825'
+                    }
+                }
+            }
+
+            It 'Should return the state as false when desired sql agent alert exists but has the incorrect severity' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
                         Name            = 'TestAlertSev'
                         Ensure          = 'Present'
                         Severity        = '25'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $false
-                }
+                    $result = Test-TargetResource @mockTestParameters
 
-                It 'Should return the state as false when desired sql agent alert exists but has the incorrect message id' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name            = 'TestAlertSev'
-                        Ensure          = 'Present'
-                        MessageId       = '825'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $false
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 3 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 6 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
+                    $result | Should -BeFalse
                 }
             }
 
-            Context 'When the system is not in the desired state and Ensure is set to Absent' {
-                It 'Should return the state as false when non-desired sql agent alert exist' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'TestAlertSev'
+            It 'Should return the state as false when desired sql agent alert exists but has the incorrect message id' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
+                        Name            = 'TestAlertSev'
+                        Ensure          = 'Present'
+                        MessageId       = '500'
+                    }
+
+                    $result = Test-TargetResource @mockTestParameters
+
+                    $result | Should -BeFalse
+                }
+            }
+        }
+    }
+
+    Context 'When the system is in the desired state' {
+        Context 'When an alert does not exist' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'MissingAlert'
+                        Ensure       = 'Absent'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = $null
+                        MessageId    = $null
+                    }
+                }
+            }
+
+            It 'Should return the state as true' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
+                        Name   = 'MissingAlert'
                         Ensure = 'Absent'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $false
-                }
+                    $result = Test-TargetResource @mockTestParameters
 
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope Context
+                    $result | Should -BeTrue
                 }
+            }
+        }
 
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 2 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
+        Context 'When enforcing a severity alert' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'TestAlertSev'
+                        Ensure       = 'Present'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = '17'
+                        MessageId    = '825'
+                    }
                 }
             }
 
-            Context 'When the system is in the desired state and Ensure is set to Present' {
-                It 'Should return the state as true when desired sql agent alert exist' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
+            It 'Should return the state as true when desired sql agent alert exist' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
                         Name      = 'TestAlertSev'
                         Ensure    = 'Present'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $true
+                    $result = Test-TargetResource @mockTestParameters
+
+                    $result | Should -BeTrue
                 }
 
-                It 'Should return the state as true when desired sql agent alert exists and has the correct severity' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+            }
+
+            It 'Should return the state as true when desired sql agent alert exists and has the correct severity' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
                         Name            = 'TestAlertSev'
                         Ensure          = 'Present'
                         Severity        = '17'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $true
-                }
+                    $result = Test-TargetResource @mockTestParameters
 
-                It 'Should return the state as true when desired sql agent alert exists and has the correct message id' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
+                    $result | Should -BeTrue
+                }
+            }
+        }
+
+        Context 'When enforcing a message alert' {
+            BeforeAll {
+                Mock -CommandName Get-TargetResource -MockWith {
+                    return @{
+                        Name         = 'TestAlertMsg'
+                        Ensure       = 'Present'
+                        ServerName   = $ServerName
+                        InstanceName = $InstanceName
+                        Severity     = '17'
+                        MessageId    = '825'
+                    }
+                }
+            }
+
+            It 'Should return the state as true when desired sql agent alert exists and has the correct message id' {
+                InModuleScope -ScriptBlock {
+                    Set-StrictMode -Version 1.0
+
+                    $mockTestParameters = $mockDefaultParameters
+                    $mockTestParameters += @{
                         Name            = 'TestAlertMsg'
                         Ensure          = 'Present'
                         MessageId       = '825'
                     }
 
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $true
-                }
+                    $result = Test-TargetResource @mockTestParameters
 
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 3 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 6 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
+                    $result | Should -BeTrue
                 }
             }
-
-            Context 'When the system is in the desired state and Ensure is set to Absent' {
-                It 'Should return the state as true when desired sql agent alert does not exist' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'MissingAlert'
-                        Ensure = 'Absent'
-                    }
-
-                    $result = Test-TargetResource @testParameters
-                    $result | Should -Be $true
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 1 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 2 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
-                }
-            }
-
-            Assert-VerifiableMock
-        }
-
-        Describe "DSC_SqlAgentAlert\Set-TargetResource" -Tag 'Set' {
-            BeforeEach {
-                Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-                Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
-                    $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                } -Verifiable
-            }
-
-            Context 'When Connect-SQL returns nothing' {
-                It 'Should throw the correct error' {
-                    Mock -CommandName Get-TargetResource -Verifiable
-                    Mock -CommandName Connect-SQL -MockWith {
-                        return $null
-                    }
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'Message7'
-                        Ensure = 'Present'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw ($script:localizedData.ConnectServerFailed -f $testParameters.ServerName, $testParameters.InstanceName)
-                }
-            }
-
-            Context 'When the system is not in the desired state and Ensure is set to Present'{
-                It 'Should not throw when creating the sql agent alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'TestAlertSev'
-                        Ensure = 'Present'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Not -Throw
-                }
-
-                It 'Should not throw when changing the severity'  {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name      = 'TestAlertSev'
-                        Ensure    = 'Present'
-                        Severity  = '17'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Not -Throw
-                }
-
-                It 'Should not throw when changing the message id' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'TestAlertMsg'
-                        Ensure     = 'Present'
-                        MessageId  = '825'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Not -Throw
-                }
-
-                It 'Should throw when changing severity and message id' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'TestAlertMsg'
-                        Ensure     = 'Present'
-                        Severity   = '17'
-                        MessageId  = '825'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw
-                }
-
-                It 'Should throw when message id is not valid when altering existing alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'TestAlertMsg'
-                        Ensure     = 'Present'
-                        MessageId  = '7'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw
-                }
-
-                It 'Should throw when severity is not valid when altering existing alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'TestAlertMsg'
-                        Ensure     = 'Present'
-                        Severity   = '999'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw
-                }
-
-                It 'Should throw when message id is not valid when creating  alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'NewAlertMsg'
-                        Ensure     = 'Present'
-                        MessageId  = '7'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw
-                }
-
-                It 'Should throw when severity is not valid when creating alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name       = 'NewAlertMsg'
-                        Ensure     = 'Present'
-                        Severity   = '999'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Throw
-                }
-
-                $mockInvalidOperationForCreateMethod = $true
-                It 'Should throw the correct error when Create() method was called with invalid operation' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'NewAlert'
-                        Ensure = 'Present'
-                    }
-                    $errorMessage = ($script:localizedData.CreateAlertSetError -f $testParameters.Name, $testParameters.ServerName, $testParameters.InstanceName)
-                    { Set-TargetResource @testParameters } | Should -Throw $errorMessage
-                }
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 9 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 21 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
-                }
-            }
-
-            Context 'When the system is not in the desired state and Ensure is set to Absent' {
-                It 'Should not throw when dropping the sql agent alert' {
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name   = 'Sev16'
-                        Ensure = 'Absent'
-                    }
-                    { Set-TargetResource @testParameters } | Should -Not -Throw
-                }
-
-                It 'Should throw the correct error when Drop() method was called with invalid operation' {
-                    $mockInvalidOperationForDropMethod = $true
-                    $testParameters = $mockDefaultParameters
-                    $testParameters += @{
-                        Name      = 'TestAlertSev'
-                        Ensure    = 'Absent'
-                    }
-                    $errorMessage = ($script:localizedData.DropAlertSetError -f $testParameters.Name, $testParameters.ServerName, $testParameters.InstanceName)
-                    { Set-TargetResource @testParameters } | Should -Throw $errorMessage
-                }
-
-
-                It 'Should call the mock function Connect-SQL' {
-                    Assert-MockCalled -CommandName Connect-SQL -Exactly -Times 2 -Scope Context
-                }
-
-                It 'Should call the mock function New-Object with TypeName equal to Microsoft.SqlServer.Management.Smo.Agent.Alert' {
-                    Assert-MockCalled -CommandName New-Object -Exactly -Times 4 -ParameterFilter {
-                        $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-                    } -Scope Context
-                }
-            }
-             Assert-VerifiableMock
         }
     }
 }
-finally
-{
-    Invoke-TestCleanup
+
+Describe 'DSC_SqlAgentAlert\Set-TargetResource' -Tag 'Set' {
+    BeforeAll {
+        InModuleScope -ScriptBlock {
+            $script:mockServerName = 'localhost'
+            $script:mockInstanceName = 'MSSQLSERVER'
+
+            # Default parameters that are used for the It-blocks
+            $script:mockDefaultParameters = @{
+                InstanceName = $mockInstanceName
+                ServerName   = $mockServerName
+            }
+        }
+
+        $mockInvalidOperationForCreateMethod = $false
+        $mockInvalidOperationForDropMethod = $false
+        $mockInvalidOperationForAlterMethod = $false
+        $mockExpectedSqlAgentAlertToCreate = 'MissingAlertSev'
+        $mockExpectedSqlAgentAlertToDrop = 'Sev18'
+
+        # Mocked object for Connect-SQL.
+        $mockConnectSQL = {
+            return @(
+                (
+                    New-Object -TypeName 'Object' |
+                        Add-Member -MemberType 'NoteProperty' -Name 'InstanceName' -Value $mockInstanceName -PassThru |
+                        Add-Member -MemberType 'NoteProperty' -Name 'ComputerNamePhysicalNetBIOS' -Value $mockServerName -PassThru |
+                        Add-Member -MemberType 'ScriptProperty' -Name 'JobServer' -Value {
+                            return (
+                                New-Object -TypeName 'Object' |
+                                    Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value $mockServerName -PassThru |
+                                    Add-Member -MemberType 'ScriptProperty' -Name 'Alerts' -Value {
+                                        return @(
+                                            (
+                                                New-Object -TypeName 'Object' |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value 'TestAlertSev' -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'Severity' -Value '17' -PassThru |
+                                                    Add-Member -MemberType 'NoteProperty' -Name 'MessageId' -Value 0 -PassThru |
+                                                    Add-Member -MemberType 'ScriptMethod' -Name 'Drop' -Value {
+                                                        if ($mockInvalidOperationForDropMethod)
+                                                        {
+                                                            throw 'Mock Drop Method was called with invalid operation.'
+                                                        }
+
+                                                        if ( $this.Name -ne $mockExpectedSqlAgentAlertToDrop )
+                                                        {
+                                                            throw "Called mocked Drop() method without dropping the right sql agent alert. Expected '{0}'. But was '{1}'." `
+                                                                -f $mockExpectedSqlAgentAlertToDrop, $this.Name
+                                                        }
+                                                    } -PassThru |
+                                                    Add-Member -MemberType 'ScriptMethod' -Name 'Alter' -Value {
+                                                        if ($mockInvalidOperationForAlterMethod)
+                                                        {
+                                                            throw 'Mock Alter Method was called with invalid operation.'
+                                                        }
+                                                    } -PassThru -Force
+                                            ),
+                                            (
+                                                New-Object -TypeName 'Object' |
+                                                    Add-Member -MemberType NoteProperty -Name 'Name' -Value 'TestAlertMsg' -PassThru |
+                                                    Add-Member -MemberType NoteProperty -Name 'Severity' -Value 0 -PassThru |
+                                                    Add-Member -MemberType NoteProperty -Name 'MessageId' -Value '825' -PassThru |
+                                                    Add-Member -MemberType ScriptMethod -Name 'Drop' -Value {
+                                                        if ($mockInvalidOperationForDropMethod)
+                                                        {
+                                                            throw 'Mocking that the method Drop is throwing an invalid operation.'
+                                                        }
+
+                                                        if ($this.Name -ne $mockExpectedSqlAgentAlertToDrop)
+                                                        {
+                                                            throw "Called mocked Drop() method without dropping the right sql agent alert. Expected '{0}'. But was '{1}'." `
+                                                                -f $mockExpectedSqlAgentAlertToDrop, $this.Name
+                                                        }
+                                                    } -PassThru |
+                                                    Add-Member -MemberType 'ScriptMethod' -Name 'Alter' -Value {
+                                                        if ($mockInvalidOperationForAlterMethod)
+                                                        {
+                                                            throw 'Mock Alter Method was called with invalid operation.'
+                                                        }
+
+                                                        if ($this.MessageId -eq 7)
+                                                        {
+                                                            throw "Called mocked Create() method for a message id that doesn't exist."
+                                                        }
+
+                                                        if ($this.Severity -eq 999)
+                                                        {
+                                                            throw "Called mocked Create() method for a severity that doesn't exist."
+                                                        }
+                                                    } -PassThru -Force
+                                            )
+                                        )
+                                    } -PassThru
+                            )
+                        } -PassThru -Force
+                )
+            )
+        }
+
+        <#
+            Mocked object for New-Object with parameter filter
+            $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'.
+        #>
+        $mockNewSqlAgentAlert = {
+            return @(
+                (
+                    New-Object -TypeName 'Object' |
+                        # Using the value from the second property passed in the parameter ArgumentList of the cmdlet New-Object.
+                        Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value $ArgumentList[1] -PassThru |
+                        Add-Member -MemberType 'NoteProperty' -Name 'Severity' -Value $null -PassThru |
+                        Add-Member -MemberType 'NoteProperty' -Name 'MessageId' -Value $null -PassThru |
+                        Add-Member -MemberType 'ScriptMethod' -Name 'Create' -Value {
+                            if ($mockInvalidOperationForCreateMethod)
+                            {
+                                throw 'Mocking that the method Create is throwing an invalid operation.'
+                            }
+
+                            if ($this.Name -ne $mockExpectedSqlAgentAlertToCreate)
+                            {
+                                throw "Called mocked Create() method without adding the right sql agent alert. Expected '{0}'. But was '{1}'." `
+                                    -f $mockExpectedSqlAgentAlertToCreate, $this.Name
+                            }
+                        } -PassThru -Force
+                )
+            )
+        }
+    }
+
+    Context 'When Connect-SQL returns nothing' {
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith {
+                return $null
+            }
+        }
+
+        It 'Should throw the correct error' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name   = 'Message7'
+                    Ensure = 'Present'
+                }
+
+                $mockErrorRecord = Get-InvalidOperationRecord -Message (
+                    $script:localizedData.ConnectServerFailed -f $mockTestParameters.ServerName, $mockTestParameters.InstanceName
+                )
+
+                { Set-TargetResource @mockTestParameters } |
+                    Should -Throw -ExpectedMessage $mockErrorRecord.Exception.Message
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state and Ensure is set to Present'{
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+            Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
+                $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
+            } -Verifiable
+        }
+
+        It 'Should not throw when creating the sql agent alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name   = 'MissingAlertSev'
+                    Ensure = 'Present'
+                    Severity  = '16'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Not -Throw
+            }
+
+            Should -Invoke -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+            Should -Invoke -CommandName New-Object -ParameterFilter {
+                $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It 'Should not throw when changing the severity' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name      = 'TestAlertSev'
+                    Ensure    = 'Present'
+                    Severity  = '17'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Not -Throw
+            }
+        }
+
+        It 'Should not throw when changing the message id' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'TestAlertMsg'
+                    Ensure     = 'Present'
+                    MessageId  = '825'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Not -Throw
+            }
+        }
+
+        It 'Should throw when changing severity and message id' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'TestAlertMsg'
+                    Ensure     = 'Present'
+                    Severity   = '17'
+                    MessageId  = '825'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Throw
+            }
+        }
+
+        It 'Should throw when message id is not valid when altering existing alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'TestAlertMsg'
+                    Ensure     = 'Present'
+                    MessageId  = '7'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Throw
+            }
+        }
+
+        It 'Should throw when severity is not valid when altering existing alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'TestAlertMsg'
+                    Ensure     = 'Present'
+                    Severity   = '999'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Throw
+            }
+        }
+
+        It 'Should throw when message id is not valid when creating  alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'NewAlertMsg'
+                    Ensure     = 'Present'
+                    MessageId  = '7'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Throw
+            }
+        }
+
+        It 'Should throw when severity is not valid when creating alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name       = 'NewAlertMsg'
+                    Ensure     = 'Present'
+                    Severity   = '999'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Throw
+            }
+        }
+
+        It 'Should throw the correct error when Create() method was called with invalid operation' {
+            $mockInvalidOperationForCreateMethod = $true
+
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name   = 'NewAlert'
+                    Ensure = 'Present'
+                }
+
+                $mockErrorRecord = Get-InvalidOperationRecord -Message (
+                    $script:localizedData.CreateAlertSetError -f $mockTestParameters.Name, $mockTestParameters.ServerName, $mockTestParameters.InstanceName
+                )
+
+                <#
+                    Using wildcard for comparison due to that the mock throws and adds
+                    the mocked exception message on top of the original message.
+                #>
+                { Set-TargetResource @mockTestParameters } |
+                    Should -Throw -ExpectedMessage ($mockErrorRecord.Exception.Message + '*')
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state and Ensure is set to Absent' {
+        BeforeAll {
+            Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
+            Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
+                $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
+            } -Verifiable
+        }
+
+        It 'Should not throw when dropping the sql agent alert' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name   = 'Sev16'
+                    Ensure = 'Absent'
+                }
+
+                { Set-TargetResource @mockTestParameters } | Should -Not -Throw
+            }
+
+            Should -Invoke -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+        }
+
+        It 'Should throw the correct error when Drop() method was called with invalid operation' {
+            $mockInvalidOperationForDropMethod = $true
+
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $mockTestParameters = $mockDefaultParameters
+                $mockTestParameters += @{
+                    Name      = 'TestAlertSev'
+                    Ensure    = 'Absent'
+                }
+
+                $mockErrorRecord = Get-InvalidOperationRecord -Message (
+                    $script:localizedData.DropAlertSetError -f $mockTestParameters.Name, $mockTestParameters.ServerName, $mockTestParameters.InstanceName
+                )
+
+                <#
+                    Using wildcard for comparison due to that the mock throws and adds
+                    the mocked exception message on top of the original message.
+                #>
+                { Set-TargetResource @mockTestParameters } |
+                    Should -Throw -ExpectedMessage ($mockErrorRecord.Exception.Message + '*')
+            }
+        }
+    }
 }

@@ -288,9 +288,9 @@ Describe 'SqlProtocol\Test-TargetResource' -Tag 'Test' {
 
                 $testTargetResourceResult = Test-TargetResource @testTargetResourceParameters
                 $testTargetResourceResult | Should -BeTrue
-
-                Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
             }
+
+            Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
         }
     }
 
@@ -317,9 +317,9 @@ Describe 'SqlProtocol\Test-TargetResource' -Tag 'Test' {
 
                 $testTargetResourceResult = Test-TargetResource @testTargetResourceParameters
                 $testTargetResourceResult | Should -BeFalse
-
-                Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
             }
+
+            Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
         }
     }
 }
@@ -458,9 +458,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -Be 30000
                     $comparedReturnValue.Actual | Should -Be 30000
                     $comparedReturnValue.InDesiredState | Should -BeTrue
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -513,9 +513,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -Be $MockPipeName
                     $comparedReturnValue.Actual | Should -Be $MockPipeName
                     $comparedReturnValue.InDesiredState | Should -BeTrue
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -548,9 +548,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -BeTrue
                     $comparedReturnValue.Actual | Should -BeTrue
                     $comparedReturnValue.InDesiredState | Should -BeTrue
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
     }
@@ -601,9 +601,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -Be 50000
                     $comparedReturnValue.Actual | Should -Be 30000
                     $comparedReturnValue.InDesiredState | Should -BeFalse
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -658,9 +658,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -Be $mockExpectedPipeName
                     $comparedReturnValue.Actual | Should -Be $MockPipeName
                     $comparedReturnValue.InDesiredState | Should -BeFalse
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -693,9 +693,9 @@ Describe 'SqlProtocol\Compare-TargetResourceState' -Tag 'Compare' {
                     $comparedReturnValue.Expected | Should -BeTrue
                     $comparedReturnValue.Actual | Should -BeFalse
                     $comparedReturnValue.InDesiredState | Should -BeFalse
-
-                    Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                 }
+
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
     }
@@ -762,9 +762,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                 }
 
                 { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
-
-                Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
             }
+
+            Should -Invoke -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
         }
     }
 
@@ -837,9 +837,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -896,9 +896,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -955,9 +955,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -1021,9 +1021,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
                 }
             }
 
@@ -1082,10 +1082,10 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
-                        Should -Invoke -CommandName Write-Warning -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
+                    Should -Invoke -CommandName Write-Warning -Exactly -Times 1 -Scope It
                 }
             }
         }
@@ -1149,9 +1149,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -1206,9 +1206,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 1 -Scope It
                 }
             }
 
@@ -1263,9 +1263,9 @@ Describe 'SqlProtocol\Set-TargetResource' -Tag 'Set' {
                         { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
                         $script:wasMethodAlterCalled | Should -BeTrue
-
-                        Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
                     }
+
+                    Should -Invoke -CommandName Restart-SqlService -Exactly -Times 0 -Scope It
                 }
             }
         }
