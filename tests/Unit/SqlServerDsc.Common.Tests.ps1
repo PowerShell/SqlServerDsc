@@ -1,20 +1,13 @@
 <#
     .SYNOPSIS
-        Automated unit test for helper functions in module SqlServerDsc.Common.
+        Unit test for helper functions in module SqlServerDsc.Common.
 #>
 
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
-
-if (-not (Test-BuildCategory -Type 'Unit'))
-{
-    return
-}
-
+<#
+    TODO: !!! WE SHOULD MOVE THE BELOW INTO THE BeforeALl-BLOCK WHEN THE InModuleScope-BLOCKS ARE FIXED
+#>
 $script:dscModuleName = 'SqlServerDsc'
 $script:subModuleName = 'SqlServerDsc.Common'
-
-#region HEADER
-Remove-Module -Name $script:subModuleName -Force -ErrorAction 'SilentlyContinue'
 
 $script:parentModule = Get-Module -Name $script:dscModuleName -ListAvailable | Select-Object -First 1
 $script:subModulesFolder = Join-Path -Path $script:parentModule.ModuleBase -ChildPath 'Modules'
@@ -22,9 +15,10 @@ $script:subModulesFolder = Join-Path -Path $script:parentModule.ModuleBase -Chil
 $script:subModulePath = Join-Path -Path $script:subModulesFolder -ChildPath $script:subModuleName
 
 Import-Module -Name $script:subModulePath -Force -ErrorAction 'Stop'
-#endregion HEADER
 
 BeforeAll {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
     # Loading mocked SMO classes.
     if (-not ('Microsoft.SqlServer.Management.Smo.Server' -as [Type]))
     {
@@ -39,6 +33,14 @@ BeforeAll {
 
     # Load the default SQL Module stub
     Import-SQLModuleStub
+}
+
+AfterAll {
+    # Unload the module being tested so that it doesn't impact any other tests.
+    Get-Module -Name $script:subModuleName -All | Remove-Module -Force
+
+    # Remove module common test helper.
+    Get-Module -Name 'CommonTestHelper' -All | Remove-Module -Force
 }
 
 Describe 'SqlServerDsc.Common\Get-RegistryPropertyValue' -Tag 'GetRegistryPropertyValue' {

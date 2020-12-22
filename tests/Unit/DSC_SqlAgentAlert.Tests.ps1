@@ -1,7 +1,6 @@
 <#
     .SYNOPSIS
         Unit test for DSC_SqlAgentAlert DSC resource.
-
 #>
 
 BeforeAll {
@@ -32,6 +31,12 @@ AfterAll {
     $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
 
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+
+    # Unload the module being tested so that it doesn't impact any other tests.
+    Get-Module -Name $script:dscResourceName -All | Remove-Module -Force
+
+    # Remove module common test helper.
+    Get-Module -Name 'CommonTestHelper' -All | Remove-Module -Force
 }
 
 Describe 'DSC_SqlAgentAlert\Get-TargetResource' -Tag 'Get' {
@@ -134,6 +139,20 @@ Describe 'DSC_SqlAgentAlert\Get-TargetResource' -Tag 'Get' {
                 $result.InstanceName | Should -Be $mockTestParameters.InstanceName
             }
         }
+
+        It 'Should call the mock function Connect-SQL' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                { Get-TargetResource @mockTestParameters } | Should -Not -Throw
+            }
+
+            Should -Invoke -CommandName Connect-SQL -Exactly -Times 1 -Scope It
+        }
+
+        It 'Should call all verifiable mocks' {
+            Should -InvokeVerifiable
+        }
     }
 
     Context 'When the system is in the desired state for a sql agent alert' {
@@ -171,6 +190,10 @@ Describe 'DSC_SqlAgentAlert\Get-TargetResource' -Tag 'Get' {
                 $result.MessageId | Should -Be 0
             }
         }
+
+        It 'Should call all verifiable mocks' {
+            Should -InvokeVerifiable
+        }
     }
 }
 
@@ -193,12 +216,12 @@ Describe 'DSC_SqlAgentAlert\Test-TargetResource' -Tag 'Test' {
             BeforeAll {
                 Mock -CommandName Get-TargetResource -MockWith {
                     return @{
-                        Name         = 'TestAlertSev'
-                        Ensure       = 'Present'
+                        Name         = $null
+                        Ensure       = 'Absent'
                         ServerName   = $ServerName
                         InstanceName = $InstanceName
-                        Severity     = '17'
-                        MessageId    = '825'
+                        Severity     = $null
+                        MessageId    = $null
                     }
                 }
             }
@@ -219,7 +242,7 @@ Describe 'DSC_SqlAgentAlert\Test-TargetResource' -Tag 'Test' {
                     $result | Should -BeFalse
                 }
 
-                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -252,7 +275,7 @@ Describe 'DSC_SqlAgentAlert\Test-TargetResource' -Tag 'Test' {
                     $result | Should -BeFalse
                 }
 
-                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
         }
 
@@ -367,7 +390,7 @@ Describe 'DSC_SqlAgentAlert\Test-TargetResource' -Tag 'Test' {
                     $result | Should -BeTrue
                 }
 
-                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope Context
+                Should -Invoke -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
             }
 
             It 'Should return the state as true when desired sql agent alert exists and has the correct severity' {
@@ -446,12 +469,9 @@ Describe 'DSC_SqlAgentAlert\Set-TargetResource' -Tag 'Set' {
             return @(
                 (
                     New-Object -TypeName 'Object' |
-                        Add-Member -MemberType 'NoteProperty' -Name 'InstanceName' -Value $mockInstanceName -PassThru |
-                        Add-Member -MemberType 'NoteProperty' -Name 'ComputerNamePhysicalNetBIOS' -Value $mockServerName -PassThru |
                         Add-Member -MemberType 'ScriptProperty' -Name 'JobServer' -Value {
                             return (
                                 New-Object -TypeName 'Object' |
-                                    Add-Member -MemberType 'NoteProperty' -Name 'Name' -Value $mockServerName -PassThru |
                                     Add-Member -MemberType 'ScriptProperty' -Name 'Alerts' -Value {
                                         return @(
                                             (
@@ -733,15 +753,18 @@ Describe 'DSC_SqlAgentAlert\Set-TargetResource' -Tag 'Set' {
                 { Set-TargetResource @mockTestParameters } |
                     Should -Throw -ExpectedMessage ($mockErrorRecord.Exception.Message + '*')
             }
+
+            $mockInvalidOperationForCreateMethod = $false
+        }
+
+        It 'Should call all verifiable mocks' {
+            Should -InvokeVerifiable
         }
     }
 
     Context 'When the system is not in the desired state and Ensure is set to Absent' {
         BeforeAll {
             Mock -CommandName Connect-SQL -MockWith $mockConnectSQL -Verifiable
-            Mock -CommandName New-Object -MockWith $mockNewSqlAgentAlert -ParameterFilter {
-                $TypeName -eq 'Microsoft.SqlServer.Management.Smo.Agent.Alert'
-            } -Verifiable
         }
 
         It 'Should not throw when dropping the sql agent alert' {
@@ -783,6 +806,12 @@ Describe 'DSC_SqlAgentAlert\Set-TargetResource' -Tag 'Set' {
                 { Set-TargetResource @mockTestParameters } |
                     Should -Throw -ExpectedMessage ($mockErrorRecord.Exception.Message + '*')
             }
+
+            $mockInvalidOperationForDropMethod = $false
+        }
+
+        It 'Should call all verifiable mocks' {
+            Should -InvokeVerifiable
         }
     }
 }
