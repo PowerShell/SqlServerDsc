@@ -8,7 +8,7 @@
     .PARAMETER ModuleName
         The name of the module to load the stubs for. Default is 'SqlServer'.
 #>
-function Import-SQLModuleStub
+function Import-SqlModuleStub
 {
     [CmdletBinding(DefaultParameterSetName = 'Module')]
     param
@@ -63,6 +63,24 @@ function Import-SQLModuleStub
 
         Import-Module -Name $moduleStubPath -Force -Global -WarningAction 'SilentlyContinue'
     }
+}
+
+<#
+    .SYNOPSIS
+        Ensure the module stubs are unloaded.
+#>
+function Remove-SqlModuleStub
+{
+    [CmdletBinding()]
+    param ()
+
+    # Possible stub modules.
+    $modulesAndStubs = @(
+        'SQLPSStub'
+        'SqlServerStub'
+    )
+
+    Get-Module $modulesAndStubs | Remove-Module -Force
 }
 
 <#
