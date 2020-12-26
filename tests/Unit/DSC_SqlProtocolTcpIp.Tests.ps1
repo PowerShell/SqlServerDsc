@@ -73,7 +73,8 @@ Describe 'SqlProtocolTcpIp\Get-TargetResource' -Tag 'Get' {
                     $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                     # IP address group should always be returned with the correct casing.
                     $getTargetResourceResult.IpAddressGroup | Should -BeExactly 'IPAll'
-                    $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                    # Use the helper function from inside the module (DscResource.Common).
+                    $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                     $getTargetResourceResult.SuppressRestart | Should -BeFalse
                     $getTargetResourceResult.RestartTimeout | Should -Be 120
                     $getTargetResourceResult.Enabled | Should -BeFalse
@@ -157,7 +158,8 @@ Describe 'SqlProtocolTcpIp\Get-TargetResource' -Tag 'Get' {
 
                         $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                         $getTargetResourceResult.IpAddressGroup | Should -BeExactly 'IPAll'
-                        $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                        # Use the helper function from inside the module (DscResource.Common).
+                        $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                         $getTargetResourceResult.SuppressRestart | Should -BeFalse
                         $getTargetResourceResult.RestartTimeout | Should -Be 120
                         $getTargetResourceResult.Enabled | Should -BeFalse
@@ -205,7 +207,8 @@ Describe 'SqlProtocolTcpIp\Get-TargetResource' -Tag 'Get' {
 
                         $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                         $getTargetResourceResult.IpAddressGroup | Should -BeExactly 'IPAll'
-                        $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                        # Use the helper function from inside the module (DscResource.Common).
+                        $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                         $getTargetResourceResult.SuppressRestart | Should -BeFalse
                         $getTargetResourceResult.RestartTimeout | Should -Be 120
                         $getTargetResourceResult.Enabled | Should -BeFalse
@@ -265,7 +268,8 @@ Describe 'SqlProtocolTcpIp\Get-TargetResource' -Tag 'Get' {
 
                         $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                         $getTargetResourceResult.IpAddressGroup | Should -BeExactly 'IP1'
-                        $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                        # Use the helper function from inside the module (DscResource.Common).
+                        $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                         $getTargetResourceResult.SuppressRestart | Should -BeFalse
                         $getTargetResourceResult.RestartTimeout | Should -Be 120
                         $getTargetResourceResult.Enabled | Should -BeTrue
@@ -323,7 +327,8 @@ Describe 'SqlProtocolTcpIp\Get-TargetResource' -Tag 'Get' {
 
                         $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                         $getTargetResourceResult.IpAddressGroup | Should -BeExactly 'IP1'
-                        $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                        # Use the helper function from inside the module (DscResource.Common).
+                        $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                         $getTargetResourceResult.SuppressRestart | Should -BeFalse
                         $getTargetResourceResult.RestartTimeout | Should -Be 120
                         $getTargetResourceResult.Enabled | Should -BeTrue

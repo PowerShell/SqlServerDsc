@@ -90,7 +90,8 @@ Describe 'SqlProtocol\Get-TargetResource' -Tag 'Get' {
 
                     $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                     $getTargetResourceResult.ProtocolName | Should -Be 'TcpIp'
-                    $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                    # Use the helper function from inside the module (DscResource.Common).
+                    $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                     $getTargetResourceResult.SuppressRestart | Should -BeFalse
                     $getTargetResourceResult.RestartTimeout | Should -Be 120
                     $getTargetResourceResult.Enabled | Should -BeFalse
@@ -135,7 +136,8 @@ Describe 'SqlProtocol\Get-TargetResource' -Tag 'Get' {
 
                     $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                     $getTargetResourceResult.ProtocolName | Should -Be 'TcpIp'
-                    $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                    # Use the helper function from inside the module (DscResource.Common).
+                    $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                     $getTargetResourceResult.SuppressRestart | Should -BeFalse
                     $getTargetResourceResult.RestartTimeout | Should -Be 120
                     $getTargetResourceResult.Enabled | Should -BeTrue
@@ -187,7 +189,8 @@ Describe 'SqlProtocol\Get-TargetResource' -Tag 'Get' {
 
                     $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                     $getTargetResourceResult.ProtocolName | Should -Be 'NamedPipes'
-                    $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                    # Use the helper function from inside the module (DscResource.Common).
+                    $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                     $getTargetResourceResult.SuppressRestart | Should -BeFalse
                     $getTargetResourceResult.RestartTimeout | Should -Be 120
                     $getTargetResourceResult.Enabled | Should -BeTrue
@@ -223,7 +226,8 @@ Describe 'SqlProtocol\Get-TargetResource' -Tag 'Get' {
 
                     $getTargetResourceResult.InstanceName | Should -Be $mockInstanceName
                     $getTargetResourceResult.ProtocolName | Should -Be 'SharedMemory'
-                    $getTargetResourceResult.ServerName | Should -Be $env:COMPUTERNAME
+                    # Use the helper function from inside the module (DscResource.Common).
+                    $getTargetResourceResult.ServerName | Should -Be (Get-ComputerName)
                     $getTargetResourceResult.SuppressRestart | Should -BeFalse
                     $getTargetResourceResult.RestartTimeout | Should -Be 120
                     $getTargetResourceResult.Enabled | Should -BeTrue
