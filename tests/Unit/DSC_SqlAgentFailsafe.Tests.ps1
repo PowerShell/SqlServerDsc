@@ -60,7 +60,6 @@ Describe 'DSC_SqlAgentFailsafe\Get-TargetResource' -Tag 'Get' {
                             return @(
                                 (
                                     New-Object -TypeName 'Object' |
-                                        Add-Member -MemberType 'NoteProperty' -Name Name -Value $mockServerName -PassThru |
                                         Add-Member -MemberType 'ScriptProperty' -Name AlertSystem -Value {
                                             return ( New-Object -TypeName 'Object' |
                                                     Add-Member -MemberType 'NoteProperty' -Name 'FailSafeOperator' -Value 'FailsafeOp' -PassThru |
@@ -417,13 +416,10 @@ Describe 'DSC_SqlAgentFailsafe\Set-TargetResource' -Tag 'Set' {
             return @(
                 (
                     New-Object -TypeName 'Object' |
-                        Add-Member -MemberType 'NoteProperty' -Name 'InstanceName' -Value $mockInstanceName -PassThru |
-                        Add-Member -MemberType 'NoteProperty' -Name 'ComputerNamePhysicalNetBIOS' -Value $mockServerName -PassThru |
                         Add-Member -MemberType 'ScriptProperty' -Name JobServer -Value {
                             return @(
                                 (
                                     New-Object -TypeName 'Object' |
-                                        Add-Member -MemberType 'NoteProperty' -Name Name -Value $mockServerName -PassThru |
                                         Add-Member -MemberType 'ScriptProperty' -Name AlertSystem -Value {
                                             return ( New-Object -TypeName 'Object' |
                                                     Add-Member -MemberType 'NoteProperty' -Name 'FailSafeOperator' -Value 'FailsafeOp' -PassThru |
