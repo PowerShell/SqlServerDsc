@@ -2007,18 +2007,10 @@ Describe 'SqlServerDsc.Common\Update-AvailabilityGroupReplica' -Tag 'UpdateAvail
                 $mockLocalizedString -f $availabilityReplica.Name
             )
 
-            $mockErrorMessage = $mockErrorRecord.Exception.Message
-
-            $mockErrorMessage | Should -Not -BeNullOrEmpty
-
-            # Support both Pester 4 and 5.
-            if ((Get-Module -Name Pester).Version -ge '5.0.0')
-            {
-                $mockErrorMessage = $mockErrorMessage + '*'
-            }
+            $mockErrorRecord.Exception.Message | Should -Not -BeNullOrEmpty
 
             { Update-AvailabilityGroupReplica -AvailabilityGroupReplica $availabilityReplica } |
-                Should -Throw -ExpectedMessage $mockErrorMessage
+                Should -Throw -ExpectedMessage ($mockErrorRecord.Exception.Message + '*')
         }
     }
 }
