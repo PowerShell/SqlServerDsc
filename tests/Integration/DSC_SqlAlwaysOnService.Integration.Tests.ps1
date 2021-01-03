@@ -1,4 +1,6 @@
 BeforeDiscovery {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
     if (-not (Test-BuildCategory -Type 'Integration' -Category @('Skipped')))
     {
         return
@@ -32,8 +34,6 @@ BeforeAll {
         -DSCResourceName $script:dscResourceName `
         -ResourceType 'Mof' `
         -TestType 'Integration'
-
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
     # These sets variables used for verification from the dot-sourced $ConfigurationData variable.
     $mockLoopbackAdapterName = $ConfigurationData.AllNodes.LoopbackAdapterName

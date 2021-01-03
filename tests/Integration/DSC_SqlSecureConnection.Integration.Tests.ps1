@@ -1,4 +1,6 @@
 BeforeDiscovery {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
     if (-not (Test-BuildCategory -Type 'Integration' -Category @('Integration_SQL2016', 'Integration_SQL2017', 'Integration_SQL2019')))
     {
         return
@@ -32,8 +34,6 @@ BeforeAll {
         -DSCResourceName $script:dscResourceName `
         -ResourceType 'Mof' `
         -TestType 'Integration'
-
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
     <#
         This will create a new self signed certificate an write the path to the new

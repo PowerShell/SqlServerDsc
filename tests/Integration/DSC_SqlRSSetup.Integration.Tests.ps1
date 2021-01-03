@@ -1,4 +1,6 @@
 BeforeDiscovery {
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
     # Run only for SQL Server 2017, integration testing at present (not SQL Server 2019)
     if (-not (Test-BuildCategory -Type 'Integration' -Category @('Integration_SQL2017')))
     {
@@ -33,8 +35,6 @@ BeforeAll {
         -DSCResourceName $script:dscResourceName `
         -ResourceType 'Mof' `
         -TestType 'Integration'
-
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
     # Download Microsoft SQL Server Reporting Services (October 2017) executable
     if (-not (Test-Path -Path $ConfigurationData.AllNodes.SourcePath))
