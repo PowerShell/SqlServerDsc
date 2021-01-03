@@ -201,7 +201,7 @@ Read more about this in the [localization style guideline](https://dsccommunity.
 Helper functions or wrapper functions that are used only by the resource can
 preferably be placed in the resource module file. If the functions are of a
 type that could be used by more than one resource, then the functions can also
-be placed in the common module [SqlServerDsc.Common](https://github.com/dsccommunity/SqlServerDsc/blob/master/source/Modules/SqlServerDsc.Common)
+be placed in the common module [SqlServerDsc.Common](https://github.com/dsccommunity/SqlServerDsc/blob/main/source/Modules/SqlServerDsc.Common)
 module file.
 
 If a helper function can be used by more than one DSC module it is preferably
@@ -220,7 +220,7 @@ If want to know how to run this module's tests you can look at the [Testing Guid
 
 #### Using SMO stub classes
 
-There are [stub classes](https://github.com/PowerShell/SqlServerDsc/blob/master/Tests/Unit/Stubs/SMO.cs)
+There are [stub classes](https://github.com/PowerShell/SqlServerDsc/blob/main/Tests/Unit/Stubs/SMO.cs)
 for the SMO classes which can be used and improved on when creating tests where
 SMO classes are used in the code being tested.
 
@@ -231,7 +231,7 @@ the CI.
 
 There are also configuration made by existing integration tests that can be reused
 to write integration tests for other resources. This is documented in
-[Integration tests for SqlServerDsc](https://github.com/PowerShell/SqlServerDsc/blob/master/Tests/Integration/README.md).
+[Integration tests for SqlServerDsc](https://github.com/PowerShell/SqlServerDsc/blob/main/Tests/Integration/README.md).
 
 Since integration tests must run in order because they are dependent on each
 other to some degree. Most resource are dependent on that integration tests

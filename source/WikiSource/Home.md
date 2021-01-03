@@ -58,4 +58,4 @@ _SQLPS_ that is installed with SQL Server.
 
 ## Change log
 
-A full list of changes in each version can be found in the [change log](https://github.com/dsccommunity/SqlServerDsc/blob/master/CHANGELOG.md).
+A full list of changes in each version can be found in the [change log](https://github.com/dsccommunity/SqlServerDsc/blob/main/CHANGELOG.md).

@@ -109,6 +109,7 @@ DscTest:
     - DSCResources/MSFT_SqlDatabaseOwner
     - DSCResources/MSFT_SqlDatabaseRecoveryModel
     - DSCResources/MSFT_SqlServerEndpointState
+  MainGitBranch: main
 
 ####################################################
 #              PSDepend Configuration              #

@@ -20,7 +20,7 @@ please submit a [new issue](https://github.com/dsccommunity/SqlServerDsc/issues/
 Then the community can work together to support (g)MSAs for that DSC resource
 too.
 
-For designing a resource for (g)MSAs see the section [Group Managed Service Account](https://github.com/dsccommunity/SqlServerDsc/blob/master/CONTRIBUTING.md#group-managed-service-account)
+For designing a resource for (g)MSAs see the section [Group Managed Service Account](https://github.com/dsccommunity/SqlServerDsc/blob/main/CONTRIBUTING.md#group-managed-service-account)
 in the contribution guidelines.
 
 <sup>_This was discussed in [issue #738](https://github.com/dsccommunity/SqlServerDsc/issues/738)_.</sup>

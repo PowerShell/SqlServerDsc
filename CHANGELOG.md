@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - SqlServerDsc
+  - Renamed `master` branch to `main` ([issue #1660](https://github.com/dsccommunity/SqlServerDsc/issues/1660)).
   - The module manifest property `DscResourcesToExport` now updates automatically
     using the pipeline.
   - Removed `Export-ModuleMember` from DSC resource that still had it.
