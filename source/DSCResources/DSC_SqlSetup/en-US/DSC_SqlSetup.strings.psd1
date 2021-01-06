@@ -52,7 +52,7 @@ ConvertFrom-StringData @'
     SetupFailed = Please see the 'Summary.txt' log file in the 'Setup Bootstrap\\Log' folder.
     Reboot = Rebooting target node.
     SuppressReboot = Suppressing reboot of target node.
-    TestFailedAfterSet = Test-TargetResource function returned false when Set-TargetResource function verified the desired state. This indicates that the Set-TargetResource did not correctly set the desired state, or that the function Test-TargetResource does not correctly evaluate the desired state.
+    TestFailedAfterSet = Test-TargetResource function returned false when Set-TargetResource function verified the desired state. This indicates that the Set-TargetResource did not correctly set the desired state, or that the function Test-TargetResource does not correctly evaluate the desired state. Please look for reported errors from the setup.exe in the SQL Server setup logs, see more information on how to do that in the article https://docs.microsoft.com/en-us/sql/database-engine/install-windows/view-and-read-sql-server-setup-log-files (View and Read SQL Server Setup Log Files).
     FeaturesFound = Found features already installed: {0}
     NoFeaturesFound = No features are installed.
     UnableToFindFeature = Unable to find feature '{0}' among the installed features: '{1}'.

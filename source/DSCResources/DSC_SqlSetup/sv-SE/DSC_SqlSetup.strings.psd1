@@ -52,7 +52,7 @@ ConvertFrom-StringData @'
     SetupFailed = Vänligen titta i loggfilen 'Summary.txt' i sökvägen 'Setup Bootstrap\\Log'.
     Reboot = Startar om målnod.
     SuppressReboot = Förhindrar omstart av målnod.
-    TestFailedAfterSet = Funktionen Test-TargetResource returnerade falskt när funktionen Set-TargetResource verifierade önskad konfiguration. Detta indikerar att funktionen Set-TargetResource inte på ett korrekt sätt kunde sätta önskad konfiguration, eller att funktionen Test-TargetResource inte utvärderar önskad konfiguration på korrekt sätt.
+    TestFailedAfterSet = Funktionen Test-TargetResource returnerade falskt när funktionen Set-TargetResource verifierade önskad konfiguration. Detta indikerar att funktionen Set-TargetResource inte på ett korrekt sätt kunde sätta önskad konfiguration, eller att funktionen Test-TargetResource inte utvärderar önskad konfiguration på korrekt sätt. Vänligen titta efter rapporterade fel från setup.exe i SQL Server installationsloggarna, för information hur man gör det se artikeln https://docs.microsoft.com/en-us/sql/database-engine/install-windows/view-and-read-sql-server-setup-log-files (View and Read SQL Server Setup Log Files).
     FeaturesFound = Funktioner funna: {0}
     NoFeaturesFound = Inga funktioner är installerad.
     UnableToFindFeature = Kunde inte hitta funktion '{0}' bland som installerade funktionerna: '{1}'.

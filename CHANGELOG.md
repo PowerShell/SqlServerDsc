@@ -41,6 +41,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SqlDatabaseMail
   - Now if a non-mandatory property is not part of the configuration it will
     not be enforced ([issue #1661](https://github.com/dsccommunity/SqlServerDsc/issues/1661)).
+- SqlSetup
+  - When the SqlSetup detects that the expected components was not installed
+    and consequently throws an exception, that exception message now presents
+    a link to an article on how to find the SQL Server setup logs ([issue #1420](https://github.com/dsccommunity/SqlServerDsc/issues/1420)).
+- SqlRSSetup
+  - If parameter `EditionUpgrade` is set to `$false` the `/EditionUpgrade`
+    argument is no longer wrongly added ([issue #1398](https://github.com/dsccommunity/SqlServerDsc/issues/1398)).
 - SqlServerDsc.Common
   - Updated `Get-ServerProtocolObject`, helper function to ensure an exception is
     thrown if the specified instance cannot be obtained ([issue #1628](https://github.com/dsccommunity/SqlServerDsc/issues/1628)).

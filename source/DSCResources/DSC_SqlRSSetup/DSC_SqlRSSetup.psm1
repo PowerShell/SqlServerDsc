@@ -404,8 +404,11 @@ function Set-TargetResource
 
         'EditionUpgrade'
         {
-            $setupArguments += @{
-                'EditionUpgrade' = [System.Management.Automation.SwitchParameter] $true
+            if ($EditionUpgrade -eq $true)
+            {
+                $setupArguments += @{
+                    'EditionUpgrade' = [System.Management.Automation.SwitchParameter] $true
+                }
             }
         }
 
