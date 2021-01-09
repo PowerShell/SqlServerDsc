@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     hinders development and testing on macOS and Linux. Instead the
     resources have been update to use the helper function `Get-ComputerName`
     which returns the current computer name cross-plattform.
+  - Switch to GitHub Action Stale instead of GitHub App (Probot) Stale.
 
 ### Fixed
 
