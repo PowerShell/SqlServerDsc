@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `SqlLogin`, integration tests to make use of amended `Wait-ForIdleLcm`,
     helper function, `-Clear` switch usage to remove intermittent, integration
     test failures ([issue #1634](https://github.com/dsccommunity/SqlServerDsc/issues/1634)).
+- SqlRSSetup
+  - If parameter `SuppressRestart` is set to `$false` the `/norestart`
+    argument is no longer wrongly added ([issue #1401](https://github.com/dsccommunity/SqlServerDsc/issues/1401)).
 
 ## [15.0.1] - 2021-01-09
 

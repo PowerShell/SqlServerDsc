@@ -652,6 +652,33 @@ try
                     }
                 }
 
+                Context 'When Reporting Services are installed with parameter SuppressRestart set to $false' {
+                    BeforeEach {
+                        $mockSetTargetResourceParameters['ProductKey'] = $mockProductKey
+                        $mockSetTargetResourceParameters['SuppressRestart'] = $false
+
+                        $mockStartSqlSetupProcess_ExpectedArgumentList = @{
+                            Quiet = [System.Management.Automation.SwitchParameter] $true
+                            IAcceptLicenseTerms = [System.Management.Automation.SwitchParameter] $true
+                            PID = $mockProductKey
+                        }
+
+                        Mock -CommandName Start-SqlSetupProcess -MockWith {
+                            Test-SetupArgument -Argument $ArgumentList -ExpectedArgument $mockStartSqlSetupProcess_ExpectedArgumentList
+
+                            return 0
+                        }
+                    }
+
+                    It 'Should call the correct mock with the expected arguments' {
+                        { Set-TargetResource @mockSetTargetResourceParameters } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Start-SqlSetupProcess -ParameterFilter {
+                            $FilePath -eq $mockSetTargetResourceParameters.SourcePath
+                        } -Exactly -Times 1 -Scope 'It'
+                    }
+                }
+
                 Context 'When Reporting Services are installed with parameters EditionUpgrade set to $false' {
                     BeforeEach {
                         $mockSetTargetResourceParameters['ProductKey'] = $mockProductKey
@@ -681,7 +708,7 @@ try
 
                 Context 'When Reporting Services are installed using parameter SourceCredential' {
                     BeforeAll {
-                        $mockLocalPath = 'C:\LocalPath'
+                        $mockLocalPath = Join-Path -Path $TestDrive - -ChildPath 'LocalPath'
 
                         $mockShareCredentialUserName = 'COMPANY\SqlAdmin'
                         $mockShareCredentialPassword = 'dummyPassW0rd'

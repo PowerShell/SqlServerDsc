@@ -397,8 +397,11 @@ function Set-TargetResource
 
         'SuppressRestart'
         {
-            $setupArguments += @{
-                'norestart' = [System.Management.Automation.SwitchParameter] $true
+            if ($SuppressRestart -eq $true)
+            {
+                $setupArguments += @{
+                    'norestart' = [System.Management.Automation.SwitchParameter] $true
+                }
             }
         }
 
