@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- SqlTraceFlag
+  - Fixed Assembly not loaded error
+   ([issue #1680](https://github.com/dsccommunity/SqlServerDsc/issues/1680)).
+
 ### Changed
 
 - SqlLogin
