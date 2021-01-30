@@ -5,9 +5,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- SqlDatabaseUser
-  - Added -ServerName to Assert-SqlLogin. @PSBoundParameters doesn't capture $ServerName when it is not explicitly set by the caller. ([issue #1647](https://github.com/dsccommunity/SqlServerDsc/issues/1647)).
-
 ### Changed
 
 - SqlLogin
@@ -55,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     argument is no longer wrongly added ([issue #1401](https://github.com/dsccommunity/SqlServerDsc/issues/1401)).
 - SqlSetup
   - Added/corrected `InstallSharedDir`, property output when using SQL Server 2019.
+- SqlDatabaseUser
+  - Added parameter `ServerName` to the call of `Assert-SqlLogin`.
+    `@PSBoundParameters` doesn't capture the default value of `ServerName`
+    when it is not explicitly set by the caller ([issue #1647](https://github.com/dsccommunity/SqlServerDsc/issues/1647)).
 
 ## [15.0.1] - 2021-01-09
 
