@@ -82,7 +82,7 @@ Pester:
     - source/DSCResources/MSFT_SqlDatabaseOwner
     - source/DSCResources/MSFT_SqlDatabaseRecoveryModel
     - source/DSCResources/MSFT_SqlServerEndpointState
-  Script:
+  Path:
     - tests/Unit
   ExcludeTag:
   Tag:
