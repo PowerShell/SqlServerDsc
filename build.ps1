@@ -36,8 +36,9 @@ param
     $RequiredModulesDirectory = $(Join-Path 'output' 'RequiredModules'),
 
     [Parameter()]
+    [Alias('PesterScript')]
     [object[]]
-    $PesterScript,
+    $PesterPath,
 
     # Filter which tags to run when invoking Pester tests
     # This is used in the Invoke-Pester.pester.build.ps1 tasks
