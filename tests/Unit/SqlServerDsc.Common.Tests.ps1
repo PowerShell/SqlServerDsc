@@ -39,10 +39,14 @@ BeforeAll {
     }
 
     $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:subModuleName
+    $PSDefaultParameterValues['Mock:ModuleName'] = $script:subModuleName
+    $PSDefaultParameterValues['Should:ModuleName'] = $script:subModuleName
 }
 
 AfterAll {
     $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
+    $PSDefaultParameterValues.Remove('Mock:ModuleName')
+    $PSDefaultParameterValues.Remove('Should:ModuleName')
 
     # Unload the module being tested so that it doesn't impact any other tests.
     Get-Module -Name $script:subModuleName -All | Remove-Module -Force

@@ -24,10 +24,14 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 
     $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscResourceName
+    $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscResourceName
+    $PSDefaultParameterValues['Should:ModuleName'] = $script:dscResourceName
 }
 
 AfterAll {
     $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
+    $PSDefaultParameterValues.Remove('Mock:ModuleName')
+    $PSDefaultParameterValues.Remove('Should:ModuleName')
 
     Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 
