@@ -36,6 +36,8 @@ param
     $RequiredModulesDirectory = $(Join-Path 'output' 'RequiredModules'),
 
     [Parameter()]
+    # This alias is to prepare for the rename of this parameter to PesterPath when Pester 4 support is removed
+    [Alias('PesterPath')]
     [object[]]
     $PesterScript,
 

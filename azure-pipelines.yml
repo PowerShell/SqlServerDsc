@@ -101,7 +101,7 @@ stages:
             displayName: 'Run Unit Test'
             inputs:
               filePath: './build.ps1'
-              arguments: "-Tasks test -PesterScript 'tests/Unit'"
+              arguments: "-Tasks test -PesterPath 'tests/Unit'"
               pwsh: true
           - task: PublishTestResults@2
             displayName: 'Publish Test Results'
@@ -143,7 +143,7 @@ stages:
               script: 'winrm quickconfig -quiet'
               pwsh: false
           - powershell: |
-              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterPath @(
                   # Run the integration tests in a specific group order.
                   # Group 1
                   'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
@@ -212,7 +212,7 @@ stages:
               script: 'winrm quickconfig -quiet'
               pwsh: false
           - powershell: |
-              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterPath @(
                   # Run the integration tests in a specific group order.
                   # Group 1
                   'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
@@ -280,7 +280,7 @@ stages:
               script: 'winrm quickconfig -quiet'
               pwsh: false
           - powershell: |
-              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterPath @(
                   # Run the integration tests in a specific group order.
                   # Group 1
                   'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
