@@ -9,9 +9,9 @@ class DSC_SqlLogin : OMI_BaseResource
         Values{"WindowsUser","WindowsGroup","SqlLogin","Certificate","AsymmetricKey","ExternalUser","ExternalGroup"}] String LoginType;
     [Write, Description("The hostname of the _SQL Server_ to be configured. Default value is the current computer name.")] String ServerName;
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Specifies the password as a `[PSCredential]` object. Only applies to _SQL Logins_.")] String LoginCredential;
-    [Write, Description("Specifies if the login is required to have its password change on the next login. Only applies to _SQL Logins_. Default value is `$true`. This cannot be updated on a pre-existing _SQL Login_ and any attempt to do this will throw an exception.")] Boolean LoginMustChangePassword;
-    [Write, Description("Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to _SQL Logins_. Default value is `$true`.")] Boolean LoginPasswordExpirationEnabled;
-    [Write, Description("Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to _SQL Logins_. Default value is `$true`.")] Boolean LoginPasswordPolicyEnforced;
+    [Write, Description("Specifies if the login is required to have its password change on the next login. Only applies to _SQL Logins_. This cannot be updated on a pre-existing _SQL Login_ and any attempt to do this will throw an exception.")] Boolean LoginMustChangePassword;
+    [Write, Description("Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to _SQL Logins_.")] Boolean LoginPasswordExpirationEnabled;
+    [Write, Description("Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to _SQL Logins_.")] Boolean LoginPasswordPolicyEnforced;
     [Write, Description("Specifies if the login is disabled. Default value is `$false`.")] Boolean Disabled;
     [Write, Description("Specifies the default database name.")] String DefaultDatabase;
 };
