@@ -163,15 +163,15 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $LoginMustChangePassword = $true,
+        $LoginMustChangePassword,
 
         [Parameter()]
         [System.Boolean]
-        $LoginPasswordExpirationEnabled = $true,
+        $LoginPasswordExpirationEnabled,
 
         [Parameter()]
         [System.Boolean]
-        $LoginPasswordPolicyEnforced = $true,
+        $LoginPasswordPolicyEnforced,
 
         [Parameter()]
         [System.Boolean]
@@ -195,15 +195,15 @@ function Set-TargetResource
                 if ( $login.LoginType -eq 'SqlLogin' )
                 {
                     # There is no way to update 'MustChangePassword' on existing login so must explicitly throw exception to avoid this functionality being assumed
-                    if ( $login.MustChangePassword -ne $LoginMustChangePassword )
+                    if ( $PSBoundParameters.ContainsKey('LoginMustChangePassword') -and $login.MustChangePassword -ne $LoginMustChangePassword )
                     {
                         $errorMessage = $script:localizedData.MustChangePasswordCannotBeChanged
                         New-InvalidOperationException -Message $errorMessage
                     }
 
                     # `PasswordPolicyEnforced and `PasswordExpirationEnabled` must be updated together (if one or both are not in the desired state)
-                    if ( $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced -or
-                         $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled )
+                    if ( ( $PSBoundParameters.ContainsKey('LoginPasswordPolicyEnforced') -and $login.PasswordPolicyEnforced -ne $LoginPasswordPolicyEnforced ) -or
+                         ( $PSBoundParameters.ContainsKey('LoginPasswordExpirationEnabled') -and $login.PasswordExpirationEnabled -ne $LoginPasswordExpirationEnabled ) )
                     {
                         Write-Verbose -Message (
                             $script:localizedData.SetPasswordPolicyEnforced -f $LoginPasswordPolicyEnforced, $Name, $ServerName, $InstanceName
@@ -212,8 +212,15 @@ function Set-TargetResource
                             $script:localizedData.SetPasswordExpirationEnabled -f $LoginPasswordExpirationEnabled, $Name, $ServerName, $InstanceName
                         )
 
-                        $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
-                        $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
+                        if ( $PSBoundParameters.ContainsKey('LoginPasswordPolicyEnforced') )
+                        {
+                            $login.PasswordPolicyEnforced = $LoginPasswordPolicyEnforced
+                        }
+
+                        if ( $PSBoundParameters.ContainsKey('LoginPasswordExpirationEnabled') )
+                        {
+                            $login.PasswordExpirationEnabled = $LoginPasswordExpirationEnabled
+                        }
 
                         Update-SQLServerLogin -Login $login
                     }
@@ -421,15 +428,15 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $LoginMustChangePassword = $true,
+        $LoginMustChangePassword,
 
         [Parameter()]
         [System.Boolean]
-        $LoginPasswordExpirationEnabled = $true,
+        $LoginPasswordExpirationEnabled,
 
         [Parameter()]
         [System.Boolean]
-        $LoginPasswordPolicyEnforced = $true,
+        $LoginPasswordPolicyEnforced,
 
         [Parameter()]
         [System.Boolean]
@@ -504,7 +511,7 @@ function Test-TargetResource
 
         if ( $LoginType -eq 'SqlLogin' )
         {
-            if ( $LoginPasswordExpirationEnabled -ne $loginInfo.LoginPasswordExpirationEnabled )
+            if ( $PSBoundParameters.ContainsKey('LoginPasswordExpirationEnabled') -and $LoginPasswordExpirationEnabled -ne $loginInfo.LoginPasswordExpirationEnabled )
             {
                 if ($LoginPasswordExpirationEnabled)
                 {
@@ -522,7 +529,7 @@ function Test-TargetResource
                 $testPassed = $false
             }
 
-            if ( $LoginPasswordPolicyEnforced -ne $loginInfo.LoginPasswordPolicyEnforced )
+            if ( $PSBoundParameters.ContainsKey('LoginPasswordPolicyEnforced') -and $LoginPasswordPolicyEnforced -ne $loginInfo.LoginPasswordPolicyEnforced )
             {
                 if ($LoginPasswordPolicyEnforced)
                 {
