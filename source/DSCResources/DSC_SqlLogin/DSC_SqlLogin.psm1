@@ -107,13 +107,13 @@ function Get-TargetResource
         The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
 
     .PARAMETER LoginMustChangePassword
-        Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Does not update pre-existing SQL Logins. Default is $true.
+        Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Does not update pre-existing SQL Logins.
 
     .PARAMETER LoginPasswordExpirationEnabled
-        Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
+        Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
 
     .PARAMETER LoginPasswordPolicyEnforced
-        Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
+        Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
 
     .PARAMETER Disabled
         Specifies if the login is disabled. Default is $false.
@@ -372,13 +372,13 @@ function Set-TargetResource
         The credential containing the password for a SQL Login. Only applies if the login type is SqlLogin.
 
     .PARAMETER LoginMustChangePassword
-        Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins. Default is $true.
+        Specifies if the login is required to have its password change on the next login. Only applies to SQL Logins.
 
     .PARAMETER LoginPasswordExpirationEnabled
-        Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins. Default is $true.
+        Specifies if the login password is required to expire in accordance to the operating system security policy. Only applies to SQL Logins.
 
     .PARAMETER LoginPasswordPolicyEnforced
-        Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins. Default is $true.
+        Specifies if the login password is required to conform to the password policy specified in the system security policy. Only applies to SQL Logins.
 
     .PARAMETER Disabled
         Specifies if the login is disabled. Default is $false.
