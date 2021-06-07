@@ -20,7 +20,7 @@ BuildWorkflow:
     - package_module_nupkg
 
   hqrmtest:
-    - DscResource_Tests_Stop_On_Fail
+    - Invoke_HQRM_Tests_Stop_On_Fail
 
   test:
     - Pester_Tests_Stop_On_Fail
@@ -48,6 +48,8 @@ ModuleBuildTasks:
     - '*.ib.tasks'
   DscResource.DocGenerator:
     - 'Task.*'
+  DscResource.Test:
+    - 'Task.*'
 
 TaskHeader: |
   param($Path)
@@ -74,7 +76,17 @@ NestedModule:
 #          Pester Configuration (Sampler)          #
 ####################################################
 Pester:
-  OutputFormat: NUnitXML
+  Configuration:
+    Run:
+      Path:
+        - tests/Unit
+    CodeCoverage:
+      CoveragePercentTarget: 85
+      OutputPath: JaCoCo_coverage.xml
+      OutputEncoding: ascii
+    TestResult:
+      OutputFormat: NUnitXML
+      OutputEncoding: ascii
   ExcludeFromCodeCoverage:
     - Modules/DscResource.Common
     # Deprecated resources
@@ -82,36 +94,34 @@ Pester:
     - source/DSCResources/MSFT_SqlDatabaseOwner
     - source/DSCResources/MSFT_SqlDatabaseRecoveryModel
     - source/DSCResources/MSFT_SqlServerEndpointState
-  Script:
-    - tests/Unit
-  ExcludeTag:
-  Tag:
-  CodeCoverageThreshold: 85
-  CodeCoverageOutputFile: JaCoCo_coverage.xml
-  CodeCoverageOutputFileEncoding: ascii
 
 ####################################################
 #      Pester Configuration (DscResource.Test)     #
 ####################################################
 DscTest:
-  ExcludeTag:
-    - "Common Tests - New Error-Level Script Analyzer Rules"
-  Tag:
-  ExcludeSourceFile:
-    - output
-    # Deprecated resources
-    - source/DSCResources/MSFT_SqlServerNetwork
-    - source/DSCResources/MSFT_SqlDatabaseOwner
-    - source/DSCResources/MSFT_SqlDatabaseRecoveryModel
-    - source/DSCResources/MSFT_SqlServerEndpointState
-  ExcludeModuleFile:
-    - Modules/DscResource.Common
-    # Deprecated resources
-    - DSCResources/MSFT_SqlServerNetwork
-    - DSCResources/MSFT_SqlDatabaseOwner
-    - DSCResources/MSFT_SqlDatabaseRecoveryModel
-    - DSCResources/MSFT_SqlServerEndpointState
-  MainGitBranch: main
+  Pester:
+    Configuration:
+      Filter:
+        ExcludeTag:
+          - "Common Tests - New Error-Level Script Analyzer Rules"
+      Output:
+        Verbosity: Detailed
+  Script:
+    ExcludeSourceFile:
+      - output
+      # Deprecated resources
+      - DSCResources/MSFT_SqlServerNetwork
+      - DSCResources/MSFT_SqlDatabaseOwner
+      - DSCResources/MSFT_SqlDatabaseRecoveryModel
+      - DSCResources/MSFT_SqlServerEndpointState
+    ExcludeModuleFile:
+      - Modules/DscResource.Common
+      # Deprecated resources
+      - DSCResources/MSFT_SqlServerNetwork
+      - DSCResources/MSFT_SqlDatabaseOwner
+      - DSCResources/MSFT_SqlDatabaseRecoveryModel
+      - DSCResources/MSFT_SqlServerEndpointState
+    MainGitBranch: main
 
 ####################################################
 #              PSDepend Configuration              #
