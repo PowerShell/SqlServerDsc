@@ -463,6 +463,18 @@ function Set-TargetResource
 
             Invoke-RsCimMethod @invokeRsCimMethodParameters
 
+            <#
+                When initializing SSRS 2019, the call to InitializeReportServer
+                always fails, even if IsInitialized flag is $false.
+                It also seems that simply restarting SSRS at this point initializes
+                it.
+
+                We will ignore $SuppressRestart here.
+            #>
+            Write-Verbose -Message $script:localizedData.Restart
+            Restart-ReportingServicesService -InstanceName $InstanceName -WaitTime 30
+            $restartReportingService = $false
+
             $reportingServicesData = Get-ReportingServicesData -InstanceName $InstanceName
 
             <#
@@ -473,6 +485,8 @@ function Set-TargetResource
             #>
             if ( -not $reportingServicesData.Configuration.IsInitialized )
             {
+                $restartReportingService = $true
+
                 $invokeRsCimMethodParameters = @{
                     CimInstance = $reportingServicesData.Configuration
                     MethodName  = 'InitializeReportServer'
@@ -487,6 +501,8 @@ function Set-TargetResource
             if ( $PSBoundParameters.ContainsKey('UseSsl') -and $UseSsl -ne $currentConfig.UseSsl )
             {
                 Write-Verbose -Message "Changing value for using SSL to '$UseSsl'."
+
+                $restartReportingService = $true
 
                 $invokeRsCimMethodParameters = @{
                     CimInstance = $reportingServicesData.Configuration
