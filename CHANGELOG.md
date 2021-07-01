@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `Microsoft.AnalysisServices.Server` object. The new functionality is used
     when the parameter `FeatureFlag` is set to `'AnalysisServicesConnection'`.
     This functionality will be the default in a future breaking release.
+- SqlLogin
+  - `LoginMustChangePassword`, `LoginPasswordExpirationEnabled` and `LoginPasswordPolicyEnforced`
+    parameters no longer enforce default values [issue #1669](https://github.com/dsccommunity/SqlServerDsc/issues/1669).
 
 ### Added
 
@@ -51,7 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - SqlSetup
   - Fixed integration tests for SQL Server 2016 and SQL Server 2017.
-
 ## [15.1.1] - 2021-02-12
 
 ### Fixed
